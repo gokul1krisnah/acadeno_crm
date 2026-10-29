@@ -14,3 +14,4 @@ flutter pub get
 flutter build web --release --no-tree-shake-icons
 
 echo "=== Flutter Web Release Build Complete ==="
+
