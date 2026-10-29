@@ -1,0 +1,169 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // -------------------------------------------------------------------------
+    // Helper Functions
+    // -------------------------------------------------------------------------
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isBootstrapSuperAdmin() {
+      return isSignedIn() && request.auth.uid == 'aOt6zw43GPTebTKWAP4d0hQHYEz2';
+    }
+
+    function userDocExists() {
+      return isSignedIn() &&
+        exists(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+
+    function currentUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function isActiveUser() {
+      return isBootstrapSuperAdmin() ||
+        (userDocExists() && currentUserData().isActive != false);
+    }
+
+    function hasRole(roles) {
+      return isBootstrapSuperAdmin() ||
+        (isActiveUser() && currentUserData().role in roles);
+    }
+
+    function isSuperAdmin() {
+      return hasRole(['super_admin', 'admin']);
+    }
+
+    function isAdminOrManager() {
+      return hasRole(['super_admin', 'admin', 'manager']);
+    }
+
+    // -------------------------------------------------------------------------
+    // Users Collection (`users/{userId}`)
+    // - Users must NOT modify their own role or isActive status.
+    // -------------------------------------------------------------------------
+    match /users/{userId} {
+      allow get: if isSignedIn() && (request.auth.uid == userId || isAdminOrManager());
+      allow list: if isAdminOrManager();
+
+      allow create: if isSuperAdmin() ||
+        (isSignedIn() &&
+          request.auth.uid == userId &&
+          request.resource.data.role == 'executive' &&
+          request.resource.data.isActive == true);
+
+      allow update: if isSuperAdmin() ||
+        (isAdminOrManager() &&
+          userId != request.auth.uid &&
+          !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role'])) ||
+        (isSignedIn() &&
+          request.auth.uid == userId &&
+          resource.data.isActive != false &&
+          !request.resource.data.diff(resource.data).affectedKeys().hasAny([
+            'role',
+            'isActive',
+            'uid',
+            'createdBy'
+          ]));
+
+      allow delete: if isSuperAdmin();
+    }
+
+    // -------------------------------------------------------------------------
+    // Leads Collection (`leads/{leadId}`)
+    // - Admins & Managers have full read/write access.
+    // - Sales Executives can ONLY read leads assigned to their UID (or created
+    //   by them as walk-in leads). They CANNOT list or read the full database.
+    // -------------------------------------------------------------------------
+    match /leads/{leadId} {
+      allow get, list: if isAdminOrManager() ||
+        (isActiveUser() &&
+          (resource.data.assignedToUid == request.auth.uid ||
+           resource.data.createdByUid == request.auth.uid));
+
+      allow create: if (isAdminOrManager() ||
+          (isActiveUser() &&
+           request.resource.data.createdByUid == request.auth.uid &&
+           request.resource.data.assignedToUid == request.auth.uid)) &&
+        request.resource.data.name is string &&
+        request.resource.data.name.size() > 0 &&
+        request.resource.data.phoneNormalized is string &&
+        request.resource.data.phoneNormalized.size() == 10;
+
+      allow update: if isAdminOrManager() ||
+        (isActiveUser() &&
+          resource.data.assignedToUid == request.auth.uid &&
+          request.resource.data.assignedToUid == resource.data.assignedToUid &&
+          request.resource.data.phoneNormalized == resource.data.phoneNormalized);
+
+      allow delete: if isSuperAdmin();
+    }
+
+    // -------------------------------------------------------------------------
+    // Phone Uniqueness Index (`lead_phones/{phone10}`)
+    // - Enforces unique 10-digit phone numbers at the database level.
+    // -------------------------------------------------------------------------
+    match /lead_phones/{phone10} {
+      allow get: if isActiveUser();
+      allow list: if isAdminOrManager();
+      allow create: if isActiveUser() &&
+        phone10.size() == 10 &&
+        !exists(/databases/$(database)/documents/lead_phones/$(phone10));
+      allow update, delete: if isAdminOrManager();
+    }
+
+    // -------------------------------------------------------------------------
+    // Assignments Collection (`assignments/{assignmentId}`)
+    // - Only Admins and Managers can assign or reassign leads.
+    // - Sales Executives can ONLY read their own assignments (`executiveUid == auth.uid`)
+    //   and update call outcome fields on their own assignments.
+    // -------------------------------------------------------------------------
+    match /assignments/{assignmentId} {
+      allow get, list: if isAdminOrManager() ||
+        (isActiveUser() && resource.data.executiveUid == request.auth.uid);
+
+      allow create: if (isAdminOrManager() ||
+          (isActiveUser() &&
+           request.resource.data.executiveUid == request.auth.uid &&
+           request.resource.data.assignedByUid == request.auth.uid)) &&
+        request.resource.data.leadId is string &&
+        request.resource.data.executiveUid is string &&
+        request.resource.data.dateKey is string &&
+        request.resource.data.assignedByUid is string;
+
+      allow update: if isAdminOrManager() ||
+        (isActiveUser() &&
+          resource.data.executiveUid == request.auth.uid &&
+          request.resource.data.executiveUid == resource.data.executiveUid &&
+          request.resource.data.leadId == resource.data.leadId &&
+          request.resource.data.dateKey == resource.data.dateKey);
+
+      allow delete: if isAdminOrManager();
+    }
+
+    // -------------------------------------------------------------------------
+    // Permanent Call Logs (`call_logs/{logId}`)
+    // - Immutable once created (FR-3.7 / FR-6.2).
+    // -------------------------------------------------------------------------
+    match /call_logs/{logId} {
+      allow get, list: if isAdminOrManager() ||
+        (isActiveUser() && resource.data.executiveUid == request.auth.uid);
+      allow create: if isActiveUser() &&
+        request.resource.data.executiveUid == request.auth.uid;
+      allow update, delete: if false;
+    }
+
+    // -------------------------------------------------------------------------
+    // Immutable Security & Operational Audit Log (`audit_log/{auditId}`)
+    // - Protected against unauthorized modification or deletion.
+    // -------------------------------------------------------------------------
+    match /audit_log/{auditId} {
+      allow get, list: if isAdminOrManager();
+      allow create: if isActiveUser();
+      allow update, delete: if false;
+    }
+  }
+}
+

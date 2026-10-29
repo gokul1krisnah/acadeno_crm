@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "244810173048",
+    "project_id": "acadenocrm-b727a",
+    "storage_bucket": "acadenocrm-b727a.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:244810173048:android:3199b83bb477c70392fb8d",
+        "android_client_info": {
+          "package_name": "com.example.acadeno_crm"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDE0A-jXKJkFkM5qVidJalL90H4q7ShaNY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:244810173048:android:21e932681b8fe6ee92fb8d",
+        "android_client_info": {
+          "package_name": "com.example.acadeno_lead_manager"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDE0A-jXKJkFkM5qVidJalL90H4q7ShaNY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
