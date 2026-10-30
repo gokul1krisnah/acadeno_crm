@@ -297,19 +297,28 @@ class FirestoreLeadsBackend implements LeadsBackend {
     }
 
     final doc = await _users.doc(uid).get();
-    final data = doc.data();
+    var data = doc.data();
     if (data == null) {
-      if (isAdminSession) {
-        return (
-          uid: uid,
-          name: currentUserDisplayName,
-          role: 'super_admin',
-          isActive: true,
-        );
-      }
-      throw const LeadPermissionException(
-        'User profile not found in users collection. Contact your Admin.',
-      );
+      final authUser = _firebaseAuth.currentUser;
+      final authEmail = authUser?.email?.trim() ?? '';
+      final fallbackName = authUser?.displayName?.trim().isNotEmpty == true
+          ? authUser!.displayName!.trim()
+          : (authEmail.isNotEmpty
+              ? authEmail.split('@').first
+              : (isAdminSession ? 'Super Admin' : 'Executive'));
+      final fallbackRole = isAdminSession ? 'super_admin' : 'hr';
+      data = {
+        'email': authEmail,
+        'name': fallbackName,
+        'role': fallbackRole,
+        'isActive': true,
+      };
+      try {
+        await _users.doc(uid).set({
+          ...data,
+          'createdAt': FieldValue.serverTimestamp(),
+        }, SetOptions(merge: true));
+      } catch (_) {}
     }
 
     final isActive = data['isActive'] != false;
