@@ -1,3 +1,4 @@
+import 'package:acadeno_crm/shared/widgets/acadeno_dropdown.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -832,39 +833,13 @@ class _UserManagementViewState extends State<UserManagementView> {
   }
 
   Widget _buildRoleFilterDropdown() {
-    return DropdownButtonFormField<String>(
+    return AcadenoDropdown<String>(
+      label: 'Role',
       value: _roleFilter,
-      isExpanded: true,
-      decoration: InputDecoration(
-        labelText: 'Role',
-        isDense: true,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: _borderColor),
-        ),
-      ),
       items: const [
-        DropdownMenuItem(
-          value: 'all',
-          child: Text(
-            'All Roles',
-            overflow: TextOverflow.ellipsis,
-            maxLines: 1,
-          ),
-        ),
-        DropdownMenuItem(
-          value: 'admin',
-          child: Text('Admin', overflow: TextOverflow.ellipsis, maxLines: 1),
-        ),
-        DropdownMenuItem(
-          value: 'hr',
-          child: Text(
-            'HR & Operation Manager',
-            overflow: TextOverflow.ellipsis,
-            maxLines: 1,
-          ),
-        ),
+        AcadenoDropdownItem(value: 'all', label: 'All Roles'),
+        AcadenoDropdownItem(value: 'admin', label: 'Admin'),
+        AcadenoDropdownItem(value: 'hr', label: 'HR & Operation Manager'),
       ],
       onChanged: (v) => setState(() => _roleFilter = v ?? 'all'),
     );

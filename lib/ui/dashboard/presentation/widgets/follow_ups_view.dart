@@ -1,3 +1,4 @@
+import 'package:acadeno_crm/shared/widgets/acadeno_dropdown.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
@@ -421,37 +422,17 @@ class _FollowUpsViewState extends State<FollowUpsView> {
                         _buildFilterPill('Overdue only ($overdueCount)'),
                         _buildFilterPill('Due today'),
                         const SizedBox(width: 8),
-                        Container(
-                          height: 34,
-                          padding: const EdgeInsets.symmetric(horizontal: 10),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: const Color(0xFFD0D5DD)),
-                          ),
-                          child: DropdownButtonHideUnderline(
-                            child: DropdownButton<String>(
-                              value: _selectedExecFilter,
-                              isDense: true,
-                              style: const TextStyle(
-                                fontSize: 12.5,
-                                fontWeight: FontWeight.w600,
-                                color: Color(0xFF0F172A),
-                              ),
-                              items: ['All executives', ...executives]
-                                  .map(
-                                    (e) => DropdownMenuItem(
-                                      value: e,
-                                      child: Text(e),
-                                    ),
-                                  )
-                                  .toList(),
-                              onChanged: (v) {
-                                if (v != null) {
-                                  setState(() => _selectedExecFilter = v);
-                                }
-                              },
-                            ),
+                        SizedBox(
+                          width: 170,
+                          child: AcadenoDropdown.strings(
+                            value: _selectedExecFilter,
+                            items: ['All executives', ...executives],
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                            onChanged: (v) {
+                              if (v != null) {
+                                setState(() => _selectedExecFilter = v);
+                              }
+                            },
                           ),
                         ),
                       ],
@@ -529,32 +510,15 @@ class _FollowUpsViewState extends State<FollowUpsView> {
     List<String> executives,
     ValueChanged<String> onChanged,
   ) {
-    return Container(
-      height: 34,
-      padding: const EdgeInsets.symmetric(horizontal: 10),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF8FAFC),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: const Color(0xFFD0D5DD)),
-      ),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<String>(
-          value: value,
-          isDense: true,
-          style: const TextStyle(
-            fontSize: 12.5,
-            fontWeight: FontWeight.w600,
-            color: Color(0xFF0F172A),
-          ),
-          items: executives
-              .map((e) => DropdownMenuItem(value: e, child: Text(e)))
-              .toList(),
-          onChanged: (v) {
-            if (v != null) {
-              onChanged(v);
-            }
-          },
-        ),
+    return SizedBox(
+      width: 150,
+      child: AcadenoDropdown.strings(
+        value: value,
+        items: executives,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        onChanged: (v) {
+          if (v != null) onChanged(v);
+        },
       ),
     );
   }

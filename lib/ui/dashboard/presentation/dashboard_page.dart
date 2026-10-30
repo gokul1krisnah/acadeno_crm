@@ -25,7 +25,7 @@ import 'widgets/import_leads_view.dart';
 import 'widgets/leads_assign_view.dart';
 import 'widgets/team_management_view.dart';
 import 'widgets/user_management_view.dart';
-import 'widgets/admin_account_dialog.dart';
+import 'widgets/settings_view.dart';
 
 const _primary = Color(0xFF4338CA);
 const _bg = Color(0xFFF5F6FA);
@@ -79,6 +79,7 @@ class _DashboardViewState extends State<_DashboardView> {
     _NavItem(Icons.upload_outlined, 'Import'),
     _NavItem(Icons.groups_outlined, 'Team Management'),
     _NavItem(Icons.manage_accounts_outlined, 'User Management'),
+    _NavItem(Icons.settings_outlined, 'Settings'),
   ];
 
   String get _today {
@@ -327,7 +328,9 @@ class _DashboardViewState extends State<_DashboardView> {
                                 else if (state.selectedNavIndex == 6)
                                   const TeamManagementView()
                                 else if (state.selectedNavIndex == 7)
-                                  const UserManagementView(),
+                                  const UserManagementView()
+                                 else if (state.selectedNavIndex == 8)
+                                   SettingsView(onLogout: _logout),
                               ],
                             ),
                           ),
@@ -455,7 +458,10 @@ class _DashboardViewState extends State<_DashboardView> {
           ),
           const Divider(height: 1),
           InkWell(
-            onTap: () => showAdminAccountDialog(context, me),
+            onTap: () {
+              if (inDrawer) Navigator.of(context).pop();
+              cubit.selectNav(8);
+            },
             borderRadius: BorderRadius.circular(8),
             child: ListTile(
               contentPadding: const EdgeInsets.only(left: 12, right: 4),
@@ -467,30 +473,17 @@ class _DashboardViewState extends State<_DashboardView> {
                   style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w700),
                 ),
               ),
-              title: Row(
-                children: [
-                  Flexible(
-                    child: Text(
-                      name,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13.5),
-                    ),
-                  ),
-                  const SizedBox(width: 4),
-                  const Icon(Icons.settings_outlined, size: 14, color: _primary),
-                ],
+              title: Text(
+                name,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13.5),
               ),
               subtitle: Text(
                 roleLabel,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(fontSize: 12, color: Color(0xFF16A34A), fontWeight: FontWeight.w600),
-              ),
-              trailing: IconButton(
-                icon: const Icon(Icons.logout, size: 18, color: _muted),
-                tooltip: 'Sign out',
-                onPressed: _logout,
               ),
             ),
           ),
@@ -553,7 +546,7 @@ class _DashboardViewState extends State<_DashboardView> {
               ),
               const SizedBox(width: 8),
               InkWell(
-                onTap: () => showAdminAccountDialog(context, me),
+                onTap: () => context.read<DashboardCubit>().selectNav(8),
                 borderRadius: BorderRadius.circular(8),
                 child: Container(
                   width: 40,
@@ -682,7 +675,7 @@ class _DashboardViewState extends State<_DashboardView> {
                       label: const Text('Admin Account',
                           style: TextStyle(
                               fontWeight: FontWeight.w600, fontSize: 13)),
-                      onPressed: () => showAdminAccountDialog(context, me),
+                      onPressed: () => context.read<DashboardCubit>().selectNav(8),
                     ),
                   ),
                   const SizedBox(width: 10),
@@ -754,7 +747,7 @@ class _DashboardViewState extends State<_DashboardView> {
                 label: const Text('Admin Account',
                     style:
                         TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
-                onPressed: () => showAdminAccountDialog(context, me),
+                onPressed: () => context.read<DashboardCubit>().selectNav(8),
               ),
             ),
             const SizedBox(width: 10),
@@ -1086,9 +1079,38 @@ class _TeamToday extends StatelessWidget {
     );
 
     if (activeUsers.isEmpty) {
-      return const _Panel(
+      return _Panel(
         title: 'Team today',
-        trailing: Text('Live', style: TextStyle(color: _muted)),
+        badge: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+          decoration: BoxDecoration(
+            color: const Color(0xFFF0FDF4),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: const Color(0xFFBBF7D0)),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 6,
+                height: 6,
+                decoration: const BoxDecoration(
+                  color: Color(0xFF16A34A),
+                  shape: BoxShape.circle,
+                ),
+              ),
+              const SizedBox(width: 5),
+              const Text(
+                'Live',
+                style: TextStyle(
+                  color: Color(0xFF15803D),
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ),
         child: Padding(
           padding: EdgeInsets.symmetric(vertical: 24),
           child: Center(
@@ -1145,20 +1167,35 @@ class _TeamToday extends StatelessWidget {
 
     return _Panel(
       title: 'Team today',
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 8,
-            height: 8,
-            decoration: const BoxDecoration(
-              color: Color(0xFF16A34A),
-              shape: BoxShape.circle,
+      badge: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF0FDF4),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: const Color(0xFFBBF7D0)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 6,
+              height: 6,
+              decoration: const BoxDecoration(
+                color: Color(0xFF16A34A),
+                shape: BoxShape.circle,
+              ),
             ),
-          ),
-          const SizedBox(width: 6),
-          const Text('Live', style: TextStyle(color: _muted, fontSize: 12)),
-        ],
+            const SizedBox(width: 5),
+            const Text(
+              'Live',
+              style: TextStyle(
+                color: Color(0xFF15803D),
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
       ),
       child: LayoutBuilder(
         builder: (context, constraints) {
@@ -1252,7 +1289,7 @@ class _TeamToday extends StatelessWidget {
                     child: Text(
                       'INTERESTED',
                       style: h,
-                      textAlign: TextAlign.center,
+                      textAlign: TextAlign.left,
                     ),
                   ),
                   Expanded(
@@ -1260,7 +1297,7 @@ class _TeamToday extends StatelessWidget {
                     child: Text(
                       'CONVERTED',
                       style: h,
-                      textAlign: TextAlign.center,
+                      textAlign: TextAlign.left,
                     ),
                   ),
                   Expanded(
@@ -1268,7 +1305,7 @@ class _TeamToday extends StatelessWidget {
                     child: Text(
                       'OVERDUE',
                       style: h,
-                      textAlign: TextAlign.center,
+                      textAlign: TextAlign.left,
                     ),
                   ),
                 ],
@@ -1331,14 +1368,14 @@ class _TeamToday extends StatelessWidget {
                         flex: 2,
                         child: Text(
                           '${r.interested}',
-                          textAlign: TextAlign.center,
+                          textAlign: TextAlign.left,
                         ),
                       ),
                       Expanded(
                         flex: 2,
                         child: Text(
                           '${r.converted}',
-                          textAlign: TextAlign.center,
+                          textAlign: TextAlign.left,
                           style: const TextStyle(
                             fontWeight: FontWeight.w700,
                             color: Color(0xFF15803D),
@@ -1349,7 +1386,7 @@ class _TeamToday extends StatelessWidget {
                         flex: 2,
                         child: Text(
                           '${r.overdue}',
-                          textAlign: TextAlign.center,
+                          textAlign: TextAlign.left,
                           style: TextStyle(
                             fontWeight: FontWeight.w600,
                             color: r.overdue > 0

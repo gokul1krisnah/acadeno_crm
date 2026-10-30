@@ -1,3 +1,4 @@
+import 'package:acadeno_crm/shared/widgets/acadeno_dropdown.dart';
 import 'package:acadeno_crm/shared/extensions/build_context_extension.dart';
 import 'package:acadeno_crm/shared/snackbar_alerts/snack_alert.dart';
 import 'package:acadeno_crm/ui/leads/application/admin_leads_cubit.dart';
@@ -363,41 +364,16 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                           (v == null || v.trim().isEmpty) ? 'Required' : null,
                     ),
                     const SizedBox(height: 12),
-                    DropdownButtonFormField<String>(
-                      isExpanded: true,
-                      initialValue: source,
-                      decoration: InputDecoration(
-                        labelText: 'Source Event / Consent',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        isDense: true,
-                      ),
+                    AcadenoDropdown.strings(
+                      label: 'Source Event / Consent',
+                      value: source,
                       items: const [
-                        DropdownMenuItem(
-                          value: 'Direct visit',
-                          child: Text('Direct visit'),
-                        ),
-                        DropdownMenuItem(
-                          value: 'AI Webinar',
-                          child: Text('AI Webinar'),
-                        ),
-                        DropdownMenuItem(
-                          value: 'Python workshop',
-                          child: Text('Python workshop'),
-                        ),
-                        DropdownMenuItem(
-                          value: 'Industrial visit',
-                          child: Text('Industrial visit'),
-                        ),
-                        DropdownMenuItem(
-                          value: 'College visit',
-                          child: Text('College visit'),
-                        ),
-                        DropdownMenuItem(
-                          value: 'Add-on course',
-                          child: Text('Add-on course'),
-                        ),
+                        'Direct visit',
+                        'AI Webinar',
+                        'Python workshop',
+                        'Industrial visit',
+                        'College visit',
+                        'Add-on course',
                       ],
                       onChanged: (v) => setD(() => source = v ?? source),
                     ),

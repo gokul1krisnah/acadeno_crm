@@ -1,3 +1,4 @@
+import 'package:acadeno_crm/shared/widgets/acadeno_dropdown.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -280,35 +281,15 @@ class _ImportLeadsBodyState extends State<_ImportLeadsBody> {
             children: [
               SizedBox(
                 width: isMobile ? double.infinity : 340,
-                child: DropdownButtonFormField<String>(
-                  isExpanded: true,
-                  initialValue: state.sourceEvent,
-                  decoration: const InputDecoration(
-                    labelText: 'Source Event / Campaign',
-                    border: OutlineInputBorder(),
-                    isDense: true,
-                  ),
+                child: AcadenoDropdown.strings(
+                  label: 'Source Event / Campaign',
+                  value: state.sourceEvent,
                   items: const [
-                    DropdownMenuItem(
-                      value: 'AI & Machine Learning Workshop (Nov)',
-                      child: Text('AI & Machine Learning Workshop (Nov)'),
-                    ),
-                    DropdownMenuItem(
-                      value: 'Python Bootcamp Registration',
-                      child: Text('Python Bootcamp Registration'),
-                    ),
-                    DropdownMenuItem(
-                      value: 'NIT Calicut Industrial Visit',
-                      child: Text('NIT Calicut Industrial Visit'),
-                    ),
-                    DropdownMenuItem(
-                      value: 'CET College Seminar Leads',
-                      child: Text('CET College Seminar Leads'),
-                    ),
-                    DropdownMenuItem(
-                      value: 'Direct Walk-in / Referral Sheet',
-                      child: Text('Direct Walk-in / Referral Sheet'),
-                    ),
+                    'AI & Machine Learning Workshop (Nov)',
+                    'Python Bootcamp Registration',
+                    'NIT Calicut Industrial Visit',
+                    'CET College Seminar Leads',
+                    'Direct Walk-in / Referral Sheet',
                   ],
                   onChanged: (v) {
                     if (v != null) cubit.setSourceEvent(v);
@@ -317,31 +298,14 @@ class _ImportLeadsBodyState extends State<_ImportLeadsBody> {
               ),
               SizedBox(
                 width: isMobile ? double.infinity : 280,
-                child: DropdownButtonFormField<String>(
-                  isExpanded: true,
-                  initialValue: state.consentBasis,
-                  decoration: const InputDecoration(
-                    labelText: 'DPDP Consent Basis',
-                    border: OutlineInputBorder(),
-                    isDense: true,
-                  ),
+                child: AcadenoDropdown.strings(
+                  label: 'DPDP Consent Basis',
+                  value: state.consentBasis,
                   items: const [
-                    DropdownMenuItem(
-                      value: 'Event registration form',
-                      child: Text('Event registration form'),
-                    ),
-                    DropdownMenuItem(
-                      value: 'College attendance sheet',
-                      child: Text('College attendance sheet'),
-                    ),
-                    DropdownMenuItem(
-                      value: 'Website inquiry form',
-                      child: Text('Website inquiry form'),
-                    ),
-                    DropdownMenuItem(
-                      value: 'Direct verbal consent / Walk-in',
-                      child: Text('Direct verbal consent / Walk-in'),
-                    ),
+                    'Event registration form',
+                    'College attendance sheet',
+                    'Website inquiry form',
+                    'Direct verbal consent / Walk-in',
                   ],
                   onChanged: (v) {
                     if (v != null) cubit.setConsentBasis(v);

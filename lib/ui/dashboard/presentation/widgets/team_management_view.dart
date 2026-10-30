@@ -1,3 +1,4 @@
+import 'package:acadeno_crm/shared/widgets/acadeno_dropdown.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -462,41 +463,15 @@ class _TeamManagementViewState extends State<TeamManagementView> {
                   ),
                 ],
               ),
-              Container(
-                height: 34,
-                padding: const EdgeInsets.symmetric(horizontal: 10),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: const Color(0xFFD0D5DD)),
-                ),
-                child: DropdownButtonHideUnderline(
-                  child: DropdownButton<String>(
-                    value: _selectedDateRange,
-                    isDense: true,
-                    style: const TextStyle(
-                      fontSize: 12.5,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFF0F172A),
-                    ),
-                    items: const [
-                      DropdownMenuItem(value: 'Today', child: Text('Today')),
-                      DropdownMenuItem(
-                        value: 'This week',
-                        child: Text('This week'),
-                      ),
-                      DropdownMenuItem(
-                        value: 'This month',
-                        child: Text('This month'),
-                      ),
-                      DropdownMenuItem(
-                        value: 'All Time',
-                        child: Text('All Time'),
-                      ),
-                    ],
-                    onChanged: (v) {
-                      if (v != null) setState(() => _selectedDateRange = v);
-                    },
-                  ),
+              SizedBox(
+                width: 140,
+                child: AcadenoDropdown.strings(
+                  value: _selectedDateRange,
+                  items: const ['Today', 'This week', 'This month', 'All Time'],
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  onChanged: (v) {
+                    if (v != null) setState(() => _selectedDateRange = v);
+                  },
                 ),
               ),
             ],
