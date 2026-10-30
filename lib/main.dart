@@ -46,7 +46,7 @@ class AcadenoApp extends StatefulWidget {
   State<AcadenoApp> createState() => _AcadenoAppState();
 }
 
-class _AcadenoAppState extends State<AcadenoApp> {
+class _AcadenoAppState extends State<AcadenoApp> with WidgetsBindingObserver {
   final AppRouter _appRouter = AppRouter();
   final GlobalKey<ScaffoldMessengerState> _scaffoldMessengerKey =
       GlobalKey<ScaffoldMessengerState>();
@@ -54,6 +54,7 @@ class _AcadenoAppState extends State<AcadenoApp> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     // Listen for incoming foreground push notifications from Firebase
     AppNotificationService.instance.onForegroundMessage.listen((message) {
       final notif = message.notification;
@@ -118,6 +119,24 @@ class _AcadenoAppState extends State<AcadenoApp> {
         ),
       );
     });
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    // When the app is minimized/paused, gracefully pause Firestore network connection.
+    // This prevents Android OS DNS lookup failures (UnknownHostException) in the background and saves battery.
+    if (state == AppLifecycleState.paused || state == AppLifecycleState.hidden) {
+      FirebaseFirestore.instance.disableNetwork().catchError((_) {});
+    } else if (state == AppLifecycleState.resumed) {
+      FirebaseFirestore.instance.enableNetwork().catchError((_) {});
+    }
   }
 
   @override
