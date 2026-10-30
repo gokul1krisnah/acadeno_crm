@@ -352,24 +352,7 @@ class _ImportLeadsBodyState extends State<_ImportLeadsBody> {
                       ),
                     ),
                   ),
-                  TextButton.icon(
-                    style: TextButton.styleFrom(
-                      foregroundColor: const Color(0xFF0F172A),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 6,
-                      ),
-                    ),
-                    onPressed: () => _openPasteCsvDialog(context),
-                    icon: const Icon(Icons.paste_rounded, size: 16),
-                    label: const Text(
-                      'Paste CSV Text',
-                      style: TextStyle(
-                        fontSize: 12.5,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
+
                 ],
               ),
             ],
@@ -441,42 +424,22 @@ class _ImportLeadsBodyState extends State<_ImportLeadsBody> {
                           ),
                         ),
                         const SizedBox(height: 14),
-                        Wrap(
-                          spacing: 12,
-                          runSpacing: 8,
-                          alignment: WrapAlignment.center,
-                          children: [
-                            ElevatedButton.icon(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF4338CA),
-                                foregroundColor: Colors.white,
-                                elevation: 0,
-                                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                              ),
-                              onPressed: () => _pickAndParseFile(context),
-                              icon: const Icon(Icons.folder_open_rounded, size: 18),
-                              label: const Text(
-                                'Browse Excel / CSV File',
-                                style: TextStyle(fontWeight: FontWeight.w700),
-                              ),
+                        ElevatedButton.icon(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF4338CA),
+                            foregroundColor: Colors.white,
+                            elevation: 0,
+                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 13),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
                             ),
-                            OutlinedButton.icon(
-                              style: OutlinedButton.styleFrom(
-                                foregroundColor: const Color(0xFF4B5563),
-                                side: const BorderSide(color: Color(0xFFD0D5DD)),
-                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                              ),
-                              onPressed: () => _openPasteCsvDialog(context),
-                              icon: const Icon(Icons.paste_rounded, size: 16),
-                              label: const Text('Or Paste CSV Text'),
-                            ),
-                          ],
+                          ),
+                          onPressed: () => _pickAndParseFile(context),
+                          icon: const Icon(Icons.folder_open_rounded, size: 20),
+                          label: const Text(
+                            'Browse Excel / CSV File',
+                            style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
+                          ),
                         ),
                       ],
                     ),
@@ -1222,68 +1185,6 @@ class _ImportLeadsBodyState extends State<_ImportLeadsBody> {
       context: context,
       message:
           'Skipped & error report copied to clipboard (${csv.split("\n").length - 1} rows)!',
-    );
-  }
-
-  void _openPasteCsvDialog(BuildContext context) {
-    final textController = TextEditingController();
-    final cubit = context.read<LeadImportCubit>();
-
-    showDialog(
-      context: context,
-      builder: (dlgCtx) => AlertDialog(
-        title: const Text(
-          'Paste CSV Lines',
-          style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
-        ),
-        content: SizedBox(
-          width: 500,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Paste rows copied directly from Excel, Numbers, or Google Sheets with column headers (Name, Phone, College...):',
-                style: TextStyle(fontSize: 12.5, color: Color(0xFF667085)),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: textController,
-                maxLines: 8,
-                decoration: const InputDecoration(
-                  hintText:
-                      'Name,Phone,Email,College...\nArun,9847011111,arun@gmail.com,NIT Calicut...',
-                  border: OutlineInputBorder(),
-                  isDense: true,
-                ),
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dlgCtx),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF4338CA),
-              foregroundColor: Colors.white,
-            ),
-            onPressed: () {
-              final text = textController.text.trim();
-              if (text.isEmpty) return;
-              Navigator.pop(dlgCtx);
-              cubit.parseCsvContent(
-                text,
-                'pasted_data.csv',
-                fileSizeBytes: text.length,
-              );
-            },
-            child: const Text('Parse Rows'),
-          ),
-        ],
-      ),
     );
   }
 

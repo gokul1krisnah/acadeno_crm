@@ -7,3 +7,4 @@ class NativeFilePicker {
   static Future<({Uint8List bytes, String name})?> pickFile() =>
       impl.pickFileImpl();
 }
+
