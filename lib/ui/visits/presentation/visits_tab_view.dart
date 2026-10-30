@@ -144,85 +144,83 @@ class VisitsTabView extends StatelessWidget {
       context: context,
       builder: (ctx) => Dialog(
         backgroundColor: Colors.white,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 440),
           child: Padding(
             padding: EdgeInsets.all(ctx.devicePadding.clamp(16.0, 22.0)),
             child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFEEEDFD),
-                      borderRadius: BorderRadius.circular(12),
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFEEEDFD),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Icon(
+                        Icons.directions_car_filled_outlined,
+                        color: Color(0xFF4338CA),
+                      ),
                     ),
-                    child: const Icon(
-                      Icons.directions_car_filled_outlined,
-                      color: Color(0xFF4338CA),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Directions to ${visit.collegeName}',
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w800,
-                            color: Color(0xFF0F172A),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Directions to ${visit.collegeName}',
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w800,
+                              color: Color(0xFF0F172A),
+                            ),
                           ),
-                        ),
-                        Text(
-                          visit.subtitle,
-                          style: const TextStyle(
-                            fontSize: 12.5,
-                            color: Color(0xFF667085),
+                          Text(
+                            visit.subtitle,
+                            style: const TextStyle(
+                              fontSize: 12.5,
+                              color: Color(0xFF667085),
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 14),
-              const Text(
-                '• Route: Kozhikode – Mukkam Road (22 km · ~42 mins)\n• Reporting point: Main Placement Cell & CSE Seminar Hall\n• Assigned team: Field Executives',
-                style: TextStyle(
-                  fontSize: 13,
-                  color: Color(0xFF344054),
-                  height: 1.5,
+                  ],
                 ),
-              ),
-              const SizedBox(height: 16),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () => Navigator.pop(ctx),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF4338CA),
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                const SizedBox(height: 14),
+                const Text(
+                  '• Route: Kozhikode – Mukkam Road (22 km · ~42 mins)\n• Reporting point: Main Placement Cell & CSE Seminar Hall\n• Assigned team: Field Executives',
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: Color(0xFF344054),
+                    height: 1.5,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.pop(ctx),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF4338CA),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
+                    child: const Text('Got it'),
                   ),
-                  child: const Text('Got it'),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
-    ),
     );
   }
 
@@ -246,106 +244,107 @@ class VisitsTabView extends StatelessWidget {
           horizontal: ctx.devicePadding.clamp(16.0, 24.0),
           vertical: 24,
         ),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 480),
           child: Padding(
             padding: EdgeInsets.all(ctx.devicePadding.clamp(16.0, 20.0)),
             child: SingleChildScrollView(
               child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Record Visit Outcome · ${visit.collegeName} (FR-8.2)',
-                style: const TextStyle(
-                  fontSize: 17,
-                  fontWeight: FontWeight.w800,
-                  color: Color(0xFF0F172A),
-                ),
-              ),
-              const SizedBox(height: 14),
-              TextField(
-                controller: metCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'People met (HOD / Placement officer / Faculty)',
-                  border: OutlineInputBorder(),
-                  isDense: true,
-                ),
-              ),
-              const SizedBox(height: 10),
-              Row(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(
-                    child: TextField(
-                      controller: leadsCtrl,
-                      keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(
-                        labelText: 'Leads collected (FR-8.3)',
-                        border: OutlineInputBorder(),
-                        isDense: true,
-                      ),
+                  Text(
+                    'Record Visit Outcome · ${visit.collegeName} (FR-8.2)',
+                    style: const TextStyle(
+                      fontSize: 17,
+                      fontWeight: FontWeight.w800,
+                      color: Color(0xFF0F172A),
                     ),
                   ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: TextField(
-                      controller: interestedCtrl,
-                      keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(
-                        labelText: 'Interested so far',
-                        border: OutlineInputBorder(),
-                        isDense: true,
+                  const SizedBox(height: 14),
+                  TextField(
+                    controller: metCtrl,
+                    decoration: const InputDecoration(
+                      labelText:
+                          'People met (HOD / Placement officer / Faculty)',
+                      border: OutlineInputBorder(),
+                      isDense: true,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: leadsCtrl,
+                          keyboardType: TextInputType.number,
+                          decoration: const InputDecoration(
+                            labelText: 'Leads collected (FR-8.3)',
+                            border: OutlineInputBorder(),
+                            isDense: true,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: TextField(
+                          controller: interestedCtrl,
+                          keyboardType: TextInputType.number,
+                          decoration: const InputDecoration(
+                            labelText: 'Interested so far',
+                            border: OutlineInputBorder(),
+                            isDense: true,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  TextField(
+                    controller: nextCtrl,
+                    decoration: const InputDecoration(
+                      labelText: 'Next action & follow-up date',
+                      border: OutlineInputBorder(),
+                      isDense: true,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        cubit.recordVisitOutcome(
+                          visitId: visit.id,
+                          metPeople: metCtrl.text.trim(),
+                          nextAction: nextCtrl.text.trim(),
+                          leadsCollected:
+                              int.tryParse(leadsCtrl.text.trim()) ?? 0,
+                          interestedCount:
+                              int.tryParse(interestedCtrl.text.trim()) ?? 0,
+                        );
+                        Navigator.pop(ctx);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF4338CA),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 13),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: const Text(
+                        'Save Visit Outcome',
+                        style: TextStyle(fontWeight: FontWeight.w700),
                       ),
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 10),
-              TextField(
-                controller: nextCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'Next action & follow-up date',
-                  border: OutlineInputBorder(),
-                  isDense: true,
-                ),
-              ),
-              const SizedBox(height: 16),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () {
-                    cubit.recordVisitOutcome(
-                      visitId: visit.id,
-                      metPeople: metCtrl.text.trim(),
-                      nextAction: nextCtrl.text.trim(),
-                      leadsCollected: int.tryParse(leadsCtrl.text.trim()) ?? 0,
-                      interestedCount:
-                          int.tryParse(interestedCtrl.text.trim()) ?? 0,
-                    );
-                    Navigator.pop(ctx);
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF4338CA),
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 13),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: const Text(
-                    'Save Visit Outcome',
-                    style: TextStyle(fontWeight: FontWeight.w700),
-                  ),
-                ),
-              ),
-            ],
+            ),
           ),
         ),
       ),
-    ),
     );
   }
 
@@ -369,115 +368,116 @@ class VisitsTabView extends StatelessWidget {
           horizontal: ctx.devicePadding.clamp(16.0, 24.0),
           vertical: 24,
         ),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 480),
           child: Padding(
             padding: EdgeInsets.all(ctx.devicePadding.clamp(16.0, 20.0)),
             child: SingleChildScrollView(
               child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Log / Plan College Visit (FR-8.1)',
-                style: TextStyle(
-                  fontSize: 17,
-                  fontWeight: FontWeight.w800,
-                  color: Color(0xFF0F172A),
-                ),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: collegeCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'College Name *',
-                  hintText: 'e.g. MES College Kuttippuram',
-                  border: OutlineInputBorder(),
-                  isDense: true,
-                ),
-              ),
-              const SizedBox(height: 10),
-              Row(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(
-                    child: TextField(
-                      controller: monthCtrl,
-                      decoration: const InputDecoration(
-                        labelText: 'Month (e.g. NOV)',
-                        border: OutlineInputBorder(),
-                        isDense: true,
-                      ),
+                  const Text(
+                    'Log / Plan College Visit (FR-8.1)',
+                    style: TextStyle(
+                      fontSize: 17,
+                      fontWeight: FontWeight.w800,
+                      color: Color(0xFF0F172A),
                     ),
                   ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: TextField(
-                      controller: dayCtrl,
-                      decoration: const InputDecoration(
-                        labelText: 'Day (e.g. 04)',
-                        border: OutlineInputBorder(),
-                        isDense: true,
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: collegeCtrl,
+                    decoration: const InputDecoration(
+                      labelText: 'College Name *',
+                      hintText: 'e.g. MES College Kuttippuram',
+                      border: OutlineInputBorder(),
+                      isDense: true,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: monthCtrl,
+                          decoration: const InputDecoration(
+                            labelText: 'Month (e.g. NOV)',
+                            border: OutlineInputBorder(),
+                            isDense: true,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: TextField(
+                          controller: dayCtrl,
+                          decoration: const InputDecoration(
+                            labelText: 'Day (e.g. 04)',
+                            border: OutlineInputBorder(),
+                            isDense: true,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  TextField(
+                    controller: subCtrl,
+                    decoration: const InputDecoration(
+                      labelText: 'Time & Department',
+                      border: OutlineInputBorder(),
+                      isDense: true,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  TextField(
+                    controller: purposeCtrl,
+                    decoration: const InputDecoration(
+                      labelText: 'Visit Purpose',
+                      border: OutlineInputBorder(),
+                      isDense: true,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        if (collegeCtrl.text.trim().isEmpty) return;
+                        CollegeSelectorField.saveCollegeIfNew(
+                          collegeCtrl.text.trim(),
+                        );
+                        cubit.addCollegeVisit(
+                          collegeName: collegeCtrl.text.trim(),
+                          dayNumber: dayCtrl.text.trim(),
+                          monthShort: monthCtrl.text.trim(),
+                          subtitle: subCtrl.text.trim(),
+                          purpose: purposeCtrl.text.trim(),
+                        );
+                        Navigator.pop(ctx);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFD95D24),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 13),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: const Text(
+                        'Add Visit',
+                        style: TextStyle(fontWeight: FontWeight.w700),
                       ),
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 10),
-              TextField(
-                controller: subCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'Time & Department',
-                  border: OutlineInputBorder(),
-                  isDense: true,
-                ),
-              ),
-              const SizedBox(height: 10),
-              TextField(
-                controller: purposeCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'Visit Purpose',
-                  border: OutlineInputBorder(),
-                  isDense: true,
-                ),
-              ),
-              const SizedBox(height: 16),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () {
-                    if (collegeCtrl.text.trim().isEmpty) return;
-                    CollegeSelectorField.saveCollegeIfNew(collegeCtrl.text.trim());
-                    cubit.addCollegeVisit(
-                      collegeName: collegeCtrl.text.trim(),
-                      dayNumber: dayCtrl.text.trim(),
-                      monthShort: monthCtrl.text.trim(),
-                      subtitle: subCtrl.text.trim(),
-                      purpose: purposeCtrl.text.trim(),
-                    );
-                    Navigator.pop(ctx);
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFD95D24),
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 13),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: const Text(
-                    'Add Visit',
-                    style: TextStyle(fontWeight: FontWeight.w700),
-                  ),
-                ),
-              ),
-            ],
+            ),
           ),
         ),
       ),
-    ),
     );
   }
 }
