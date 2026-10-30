@@ -12,3 +12,4 @@ class FileDownloadHelper {
   }) =>
       impl.downloadCsv(fileName: fileName, content: content);
 }
+

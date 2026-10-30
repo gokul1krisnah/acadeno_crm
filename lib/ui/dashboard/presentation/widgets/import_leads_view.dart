@@ -1,5 +1,6 @@
 import 'package:acadeno_crm/shared/widgets/acadeno_dropdown.dart';
 import 'package:file_picker/file_picker.dart';
+import '../../../../core/utils/native_file_picker.dart';
 import '../../../../core/utils/file_download_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -1288,26 +1289,20 @@ class _ImportLeadsBodyState extends State<_ImportLeadsBody> {
 
   void _pickAndParseFile(BuildContext context) async {
     try {
-      final result = await FilePicker.platform.pickFiles(
-        type: FileType.custom,
-        allowedExtensions: ['csv', 'xlsx', 'xls', 'txt'],
-        withData: true,
-      );
-
-      if (result != null && result.files.isNotEmpty) {
-        final file = result.files.first;
-        final bytes = file.bytes;
-        if (bytes != null && bytes.isNotEmpty) {
-          if (context.mounted) {
-            context.read<LeadImportCubit>().parseFileBytes(bytes, file.name);
-          }
-          return;
+      final picked = await NativeFilePicker.pickFile();
+      if (picked != null && picked.bytes.isNotEmpty) {
+        if (context.mounted) {
+          context.read<LeadImportCubit>().parseFileBytes(picked.bytes, picked.name);
         }
       }
     } catch (e) {
-      debugPrint('FilePicker notice: ');
+      debugPrint('Native file picker error: ');
       if (context.mounted) {
-        _openPasteCsvDialog(context);
+        SnackBarAlert.showToast(
+          context: context,
+          message: 'Could not open file selector: ',
+          isWarning: true,
+        );
       }
     }
   }

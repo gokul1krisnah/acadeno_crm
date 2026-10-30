@@ -11,3 +11,4 @@ Future<bool> downloadCsv({
     return false;
   }
 }
+
