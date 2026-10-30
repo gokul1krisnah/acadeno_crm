@@ -1,5 +1,4 @@
 import 'package:acadeno_crm/shared/widgets/acadeno_dropdown.dart';
-import 'package:file_picker/file_picker.dart';
 import '../../../../core/utils/native_file_picker.dart';
 import '../../../../core/utils/file_download_helper.dart';
 import 'package:flutter/material.dart';
