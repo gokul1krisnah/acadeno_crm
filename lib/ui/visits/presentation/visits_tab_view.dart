@@ -1,3 +1,4 @@
+import 'package:acadeno_crm/shared/widgets/college_selector_field.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -139,16 +140,18 @@ class VisitsTabView extends StatelessWidget {
   }
 
   void _showDirectionsSheet(BuildContext context, ExecutiveCollegeVisit visit) {
-    showModalBottomSheet(
+    showDialog(
       context: context,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
-      ),
-      builder: (ctx) => SafeArea(
-        child: Padding(
-          padding: EdgeInsets.all(ctx.devicePadding),
-          child: Column(
+      builder: (ctx) => Dialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 440),
+          child: Padding(
+            padding: EdgeInsets.all(ctx.devicePadding.clamp(16.0, 22.0)),
+            child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -219,6 +222,7 @@ class VisitsTabView extends StatelessWidget {
           ),
         ),
       ),
+    ),
     );
   }
 
@@ -234,22 +238,23 @@ class VisitsTabView extends StatelessWidget {
     final leadsCtrl = TextEditingController(text: '54');
     final interestedCtrl = TextEditingController(text: '14');
 
-    showModalBottomSheet(
+    showDialog(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (ctx) => Padding(
-        padding: EdgeInsets.only(
-          left: ctx.devicePadding,
-          right: ctx.devicePadding,
-          top: 18,
-          bottom: MediaQuery.of(ctx).viewInsets.bottom + 20,
+      builder: (ctx) => Dialog(
+        backgroundColor: Colors.white,
+        insetPadding: EdgeInsets.symmetric(
+          horizontal: ctx.devicePadding.clamp(16.0, 24.0),
+          vertical: 24,
         ),
-        child: SingleChildScrollView(
-          child: Column(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 480),
+          child: Padding(
+            padding: EdgeInsets.all(ctx.devicePadding.clamp(16.0, 20.0)),
+            child: SingleChildScrollView(
+              child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -340,6 +345,7 @@ class VisitsTabView extends StatelessWidget {
           ),
         ),
       ),
+    ),
     );
   }
 
@@ -355,22 +361,23 @@ class VisitsTabView extends StatelessWidget {
       text: 'Promote Python & Data Science workshop · meet HOD',
     );
 
-    showModalBottomSheet(
+    showDialog(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (ctx) => Padding(
-        padding: EdgeInsets.only(
-          left: ctx.devicePadding,
-          right: ctx.devicePadding,
-          top: 18,
-          bottom: MediaQuery.of(ctx).viewInsets.bottom + 20,
+      builder: (ctx) => Dialog(
+        backgroundColor: Colors.white,
+        insetPadding: EdgeInsets.symmetric(
+          horizontal: ctx.devicePadding.clamp(16.0, 24.0),
+          vertical: 24,
         ),
-        child: SingleChildScrollView(
-          child: Column(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 480),
+          child: Padding(
+            padding: EdgeInsets.all(ctx.devicePadding.clamp(16.0, 20.0)),
+            child: SingleChildScrollView(
+              child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -442,6 +449,7 @@ class VisitsTabView extends StatelessWidget {
                 child: ElevatedButton(
                   onPressed: () {
                     if (collegeCtrl.text.trim().isEmpty) return;
+                    CollegeSelectorField.saveCollegeIfNew(collegeCtrl.text.trim());
                     cubit.addCollegeVisit(
                       collegeName: collegeCtrl.text.trim(),
                       dayNumber: dayCtrl.text.trim(),
@@ -469,6 +477,7 @@ class VisitsTabView extends StatelessWidget {
           ),
         ),
       ),
+    ),
     );
   }
 }

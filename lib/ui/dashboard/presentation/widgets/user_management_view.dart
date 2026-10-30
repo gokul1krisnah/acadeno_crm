@@ -523,7 +523,7 @@ class _UserManagementViewState extends State<UserManagementView> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'Add new team accounts, assign roles, bind Android devices, and manage system access',
+                      'Add new team accounts, assign roles, and manage system access',
                       style: const TextStyle(fontSize: 13, color: _textMuted),
                     ),
                   ],
@@ -736,7 +736,7 @@ class _UserManagementViewState extends State<UserManagementView> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       const Text(
-                        'Team Directory & Device Binding',
+                        'Team Directory',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w700,
@@ -930,11 +930,10 @@ class _UserManagementViewState extends State<UserManagementView> {
           child: const Row(
             children: [
               Expanded(flex: 3, child: Text('USER', style: _tblHdr)),
-              Expanded(flex: 3, child: Text('EMAIL & UID', style: _tblHdr)),
-              Expanded(flex: 2, child: Text('ROLE', style: _tblHdr)),
-              Expanded(flex: 3, child: Text('DEVICE SECURITY', style: _tblHdr)),
+              Expanded(flex: 4, child: Text('EMAIL & UID', style: _tblHdr)),
+              Expanded(flex: 3, child: Text('ROLE', style: _tblHdr)),
               Expanded(flex: 1, child: Text('ACTIVE', style: _tblHdr)),
-              SizedBox(width: 80, child: Text('ACTIONS', style: _tblHdr)),
+              SizedBox(width: 100, child: Text('ACTIONS', style: _tblHdr, textAlign: TextAlign.right)),
             ],
           ),
         ),
@@ -1024,7 +1023,7 @@ class _UserManagementViewState extends State<UserManagementView> {
 
                     // EMAIL & UID
                     Expanded(
-                      flex: 3,
+                      flex: 4,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -1070,7 +1069,7 @@ class _UserManagementViewState extends State<UserManagementView> {
 
                     // ROLE
                     Expanded(
-                      flex: 2,
+                      flex: 3,
                       child: Container(
                         height: 32,
                         padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -1124,53 +1123,7 @@ class _UserManagementViewState extends State<UserManagementView> {
                       ),
                     ),
 
-                    // DEVICE SECURITY
-                    Expanded(
-                      flex: 3,
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  user.deviceName.isNotEmpty
-                                      ? user.deviceName
-                                      : 'No device bound',
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: user.deviceName.isNotEmpty
-                                        ? _textDark
-                                        : _textMuted,
-                                    fontWeight: user.deviceName.isNotEmpty
-                                        ? FontWeight.w600
-                                        : FontWeight.normal,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(width: 6),
-                          IconButton(
-                            icon: const Icon(
-                              Icons.phonelink_erase_outlined,
-                              size: 16,
-                            ),
-                            tooltip: 'Reset device binding (PR-5.1)',
-                            onPressed: () =>
-                                cubit.resetUserDevice(user.uid, user.name),
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.logout_rounded, size: 16),
-                            tooltip: 'Force remote sign-out (PR-5.3)',
-                            onPressed: () =>
-                                cubit.forceSignOutUser(user.uid, user.name),
-                          ),
-                        ],
-                      ),
-                    ),
+
 
                     // ACTIVE
                     Expanded(
@@ -1202,10 +1155,15 @@ class _UserManagementViewState extends State<UserManagementView> {
 
                     // ACTIONS
                     SizedBox(
-                      width: 80,
+                      width: 100,
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
+                          IconButton(
+                            icon: const Icon(Icons.logout_rounded, size: 16),
+                            tooltip: 'Remote sign out session',
+                            onPressed: () => cubit.forceSignOutUser(user.uid, user.name),
+                          ),
                           if (isMe)
                             IconButton(
                               icon: const Icon(
@@ -1432,28 +1390,9 @@ class _UserManagementViewState extends State<UserManagementView> {
                       alignment: WrapAlignment.spaceBetween,
                       crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
-                        Text(
-                          'Device: ${user.deviceName.isNotEmpty ? user.deviceName : "None"}',
-                          style: const TextStyle(
-                            fontSize: 11.5,
-                            color: _textMuted,
-                          ),
-                        ),
                         Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            TextButton.icon(
-                              onPressed: () =>
-                                  cubit.resetUserDevice(user.uid, user.name),
-                              icon: const Icon(
-                                Icons.phonelink_erase_outlined,
-                                size: 14,
-                              ),
-                              label: const Text(
-                                'Reset device',
-                                style: TextStyle(fontSize: 11),
-                              ),
-                            ),
                             if (isMe)
                               IconButton(
                                 icon: const Icon(

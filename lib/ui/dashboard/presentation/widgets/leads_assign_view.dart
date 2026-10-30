@@ -1,3 +1,4 @@
+import 'package:acadeno_crm/shared/widgets/college_selector_field.dart';
 import 'package:acadeno_crm/shared/widgets/acadeno_dropdown.dart';
 import 'package:acadeno_crm/shared/extensions/build_context_extension.dart';
 import 'package:acadeno_crm/shared/snackbar_alerts/snack_alert.dart';
@@ -351,17 +352,12 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                       validator: LeadPhoneValidator.validate,
                     ),
                     const SizedBox(height: 12),
-                    TextFormField(
+                    CollegeSelectorField(
                       controller: collegeC,
-                      decoration: InputDecoration(
-                        labelText: 'College · Branch · Year',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        isDense: true,
-                      ),
-                      validator: (v) =>
-                          (v == null || v.trim().isEmpty) ? 'Required' : null,
+                      additionalColleges: state.allLeads
+                          .map((l) => l.collegeBranch.split(RegExp(r'[·\-]')).first.trim())
+                          .where((s) => s.isNotEmpty)
+                          .toList(),
                     ),
                     const SizedBox(height: 12),
                     AcadenoDropdown.strings(
@@ -414,6 +410,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                       if (!formKey.currentState!.validate()) return;
                       setD(() => saving = true);
                       try {
+                        await CollegeSelectorField.saveCollegeIfNew(collegeC.text);
                         final created = await cubit.createLead(
                           name: nameC.text.trim(),
                           phone: phoneC.text.trim(),
@@ -615,17 +612,12 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                       validator: LeadPhoneValidator.validate,
                     ),
                     const SizedBox(height: 12),
-                    TextFormField(
+                    CollegeSelectorField(
                       controller: collegeC,
-                      decoration: InputDecoration(
-                        labelText: 'College · Branch · Year',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        isDense: true,
-                      ),
-                      validator: (v) =>
-                          (v == null || v.trim().isEmpty) ? 'Required' : null,
+                      additionalColleges: state.allLeads
+                          .map((l) => l.collegeBranch.split(RegExp(r'[·\-]')).first.trim())
+                          .where((s) => s.isNotEmpty)
+                          .toList(),
                     ),
                     const SizedBox(height: 12),
                     Row(
@@ -751,6 +743,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                       if (!formKey.currentState!.validate()) return;
                       setD(() => saving = true);
                       try {
+                        await CollegeSelectorField.saveCollegeIfNew(collegeC.text);
                         await cubit.updateLead(
                           leadId: lead.id,
                           name: nameC.text.trim(),

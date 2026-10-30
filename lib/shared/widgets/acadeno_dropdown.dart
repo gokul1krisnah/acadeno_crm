@@ -47,7 +47,7 @@ class AcadenoDropdown<T> extends StatelessWidget {
     this.validator,
     this.fillColor = Colors.white,
     this.borderColor = const Color(0xFFE5E7EB),
-    this.borderRadius = 8.0,
+    this.borderRadius = 14.0,
     this.enabled = true,
   });
 
@@ -66,7 +66,7 @@ class AcadenoDropdown<T> extends StatelessWidget {
     String? Function(String?)? validator,
     Color? fillColor = Colors.white,
     Color? borderColor = const Color(0xFFE5E7EB),
-    double borderRadius = 8.0,
+    double borderRadius = 14.0,
     bool enabled = true,
   }) {
     return AcadenoDropdown<String>(
@@ -102,7 +102,7 @@ class AcadenoDropdown<T> extends StatelessWidget {
       isExpanded: isExpanded,
       isDense: isDense,
       dropdownColor: Colors.white,
-      borderRadius: BorderRadius.circular(10),
+      borderRadius: BorderRadius.circular(14),
       elevation: 4,
       icon: const Icon(
         Icons.keyboard_arrow_down_rounded,

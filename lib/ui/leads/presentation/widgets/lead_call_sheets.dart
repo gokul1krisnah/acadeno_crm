@@ -1,3 +1,4 @@
+import 'package:acadeno_crm/shared/widgets/college_selector_field.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -49,30 +50,30 @@ class LeadCallSheets {
       'Wrong number',
     ];
 
-    showModalBottomSheet(
+    showDialog(
       context: context,
-      isScrollControlled: true,
-      isDismissible: false,
-      enableDrag: false,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
-      ),
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setSheetState) {
-          final pad = ctx.devicePadding;
-          final discountVal = int.tryParse(discountCtrl.text.trim()) ?? 0;
-          final needsManagerApproval = discountVal > 500;
+      barrierDismissible: false,
+      builder: (ctx) => Dialog(
+        backgroundColor: Colors.white,
+        insetPadding: EdgeInsets.symmetric(
+          horizontal: ctx.devicePadding.clamp(16.0, 24.0),
+          vertical: 24,
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 480),
+          child: StatefulBuilder(
+            builder: (ctx, setSheetState) {
+              final pad = ctx.devicePadding.clamp(16.0, 20.0);
+              final discountVal = int.tryParse(discountCtrl.text.trim()) ?? 0;
+              final needsManagerApproval = discountVal > 500;
 
-          return Padding(
-            padding: EdgeInsets.only(
-              left: pad,
-              right: pad,
-              top: 18,
-              bottom: MediaQuery.of(ctx).viewInsets.bottom + 20,
-            ),
-            child: SingleChildScrollView(
-              child: Column(
+              return Padding(
+                padding: EdgeInsets.all(pad),
+                child: SingleChildScrollView(
+                  child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -538,6 +539,8 @@ class LeadCallSheets {
           );
         },
       ),
+    ),
+    ),
     );
   }
 
@@ -569,17 +572,23 @@ class LeadCallSheets {
       ),
     ];
 
-    showModalBottomSheet(
+    showDialog(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
-      ),
-      builder: (ctx) => Padding(
-        padding: EdgeInsets.all(ctx.devicePadding),
-        child: SingleChildScrollView(
-          child: Column(
+      builder: (ctx) => Dialog(
+        backgroundColor: Colors.white,
+        insetPadding: EdgeInsets.symmetric(
+          horizontal: ctx.devicePadding.clamp(16.0, 24.0),
+          vertical: 24,
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 460),
+          child: Padding(
+            padding: EdgeInsets.all(ctx.devicePadding.clamp(16.0, 20.0)),
+            child: SingleChildScrollView(
+              child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -777,6 +786,8 @@ class LeadCallSheets {
           ),
         ),
       ),
+    ),
+    ),
     );
   }
 
@@ -794,25 +805,26 @@ class LeadCallSheets {
     String? lookupFeedback;
     bool lookupFoundDuplicate = false;
 
-    showModalBottomSheet(
+    showDialog(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
-      ),
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setSheetState) {
-          final pad = ctx.devicePadding;
-          return Padding(
-            padding: EdgeInsets.only(
-              left: pad,
-              right: pad,
-              top: 18,
-              bottom: MediaQuery.of(ctx).viewInsets.bottom + 20,
-            ),
-            child: SingleChildScrollView(
-              child: Column(
+      builder: (ctx) => Dialog(
+        backgroundColor: Colors.white,
+        insetPadding: EdgeInsets.symmetric(
+          horizontal: ctx.devicePadding.clamp(16.0, 24.0),
+          vertical: 24,
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 480),
+          child: StatefulBuilder(
+            builder: (ctx, setSheetState) {
+              final pad = ctx.devicePadding.clamp(16.0, 20.0);
+              return Padding(
+                padding: EdgeInsets.all(pad),
+                child: SingleChildScrollView(
+                  child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -900,13 +912,9 @@ class LeadCallSheets {
                     ),
                   ),
                   const SizedBox(height: 10),
-                  TextField(
+                  CollegeSelectorField(
                     controller: collegeCtrl,
-                    decoration: const InputDecoration(
-                      labelText: 'College · Branch · Year',
-                      isDense: true,
-                      border: OutlineInputBorder(),
-                    ),
+                    label: 'College · Branch · Year',
                   ),
                   const SizedBox(height: 10),
                   DropdownButtonFormField<String>(
@@ -954,7 +962,8 @@ class LeadCallSheets {
                                 });
                                 return;
                               }
-                              final ok = await cubit.addWalkInLead(
+                              await CollegeSelectorField.saveCollegeIfNew(collegeCtrl.text);
+                            final ok = await cubit.addWalkInLead(
                                 name: nameCtrl.text,
                                 phone: phoneCtrl.text,
                                 collegeBranchYear: collegeCtrl.text,
@@ -984,6 +993,8 @@ class LeadCallSheets {
           );
         },
       ),
+    ),
+    ),
     );
   }
 
@@ -994,21 +1005,23 @@ class LeadCallSheets {
     final state = context.read<LeadsCubit>().state;
     final user = context.read<HomeCubit>().state.user;
 
-    showModalBottomSheet(
+    showDialog(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.white,
-      constraints: BoxConstraints(
-        maxHeight: MediaQuery.sizeOf(context).height * 0.85,
-      ),
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
-      ),
-      builder: (ctx) => SafeArea(
-        child: Padding(
-          padding: EdgeInsets.all(ctx.devicePadding),
-          child: SingleChildScrollView(
-            child: Column(
+      builder: (ctx) => Dialog(
+        backgroundColor: Colors.white,
+        insetPadding: EdgeInsets.symmetric(
+          horizontal: ctx.devicePadding.clamp(16.0, 24.0),
+          vertical: 24,
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 480),
+          child: Padding(
+            padding: EdgeInsets.all(ctx.devicePadding.clamp(16.0, 20.0)),
+            child: SingleChildScrollView(
+              child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -1124,6 +1137,8 @@ class LeadCallSheets {
           ),
         ),
       ),
+    ),
+    ),
     );
   }
 

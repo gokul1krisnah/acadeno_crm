@@ -159,16 +159,18 @@ class FollowUpsTabView extends StatelessWidget {
 
   void _showSnoozeSheet(BuildContext context, ExecutiveFollowUpItem item) {
     final cubit = context.read<FollowUpsCubit>();
-    showModalBottomSheet(
+    showDialog(
       context: context,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
-      ),
-      builder: (ctx) => SafeArea(
-        child: Padding(
-          padding: EdgeInsets.all(ctx.devicePadding),
-          child: Column(
+      builder: (ctx) => Dialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 420),
+          child: Padding(
+            padding: EdgeInsets.all(ctx.devicePadding.clamp(16.0, 22.0)),
+            child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -239,6 +241,7 @@ class FollowUpsTabView extends StatelessWidget {
           ),
         ),
       ),
+    ),
     );
   }
 }

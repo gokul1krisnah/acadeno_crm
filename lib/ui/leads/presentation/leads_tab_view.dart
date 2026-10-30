@@ -772,16 +772,20 @@ class _LeadsTabViewState extends State<LeadsTabView> {
   }
 
   void _showQuickMenu(BuildContext context) {
-    showModalBottomSheet(
+    showDialog(
       context: context,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
-      ),
-      builder: (ctx) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
+      builder: (ctx) => Dialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 400),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
             ListTile(
               leading: const Icon(
                 Icons.bar_chart_rounded,
@@ -830,6 +834,8 @@ class _LeadsTabViewState extends State<LeadsTabView> {
           ],
         ),
       ),
+    ),
+    ),
     );
   }
 }

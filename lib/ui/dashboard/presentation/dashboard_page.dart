@@ -850,30 +850,35 @@ class _DashboardViewState extends State<_DashboardView> {
         NumberFormat('#,###').format(totalLeads),
         totalLeads > 0 ? '$totalAssigned assigned to team' : 'No leads in pool',
         _text,
+        icon: Icons.groups_rounded,
       ),
       _StatCard(
         'Calls / Contacted',
         '$contactedCount / ${totalAssigned > 0 ? totalAssigned : totalLeads}',
         '$contactedPct% of assigned',
         _primary,
+        icon: Icons.phone_in_talk_rounded,
       ),
       _StatCard(
         'Follow-ups due',
         '$followUpsCount',
         'Across ${activeUsers.length} active members',
         const Color(0xFF1D4ED8),
+        icon: Icons.event_repeat_rounded,
       ),
       _StatCard(
         'Overdue / Pending',
         '$overdueCount',
         overdueCount > 0 ? 'Requires team attention' : 'All clear',
         const Color(0xFFC2410C),
+        icon: Icons.hourglass_top_rounded,
       ),
       _StatCard(
         'Converted leads',
         '$convertedCount',
         '$conversionPct% conversion rate',
         const Color(0xFF15803D),
+        icon: Icons.stars_rounded,
       ),
     ];
 
@@ -973,8 +978,15 @@ class _Panel extends StatelessWidget {
       padding: EdgeInsets.all(panelPad),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: _border),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFEDF2F7)),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x050F172A),
+            blurRadius: 12,
+            offset: Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1030,44 +1042,93 @@ class _Panel extends StatelessWidget {
 class _StatCard extends StatelessWidget {
   final String label, value, sub;
   final Color color;
-  const _StatCard(this.label, this.value, this.sub, this.color);
+  final IconData? icon;
+
+  const _StatCard(
+    this.label,
+    this.value,
+    this.sub,
+    this.color, {
+    this.icon,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final cardPad = context.devicePadding.clamp(12.0, 16.0);
+    final cardPad = context.devicePadding.clamp(14.0, 18.0);
     return Container(
       padding: EdgeInsets.all(cardPad),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: _border),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFEDF2F7)),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x060F172A),
+            blurRadius: 10,
+            offset: Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            label,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(color: _muted, fontSize: 13),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Color(0xFF64748B),
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              if (icon != null)
+                Container(
+                  width: 32,
+                  height: 32,
+                  decoration: BoxDecoration(
+                    color: color.withOpacity(0.08),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(icon, color: color, size: 18),
+                ),
+            ],
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 8),
           Text(
             value,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.w700,
+              fontSize: 26,
+              fontWeight: FontWeight.w800,
               color: color,
+              letterSpacing: -0.5,
             ),
           ),
           const SizedBox(height: 6),
-          Text(
-            sub,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(color: _muted, fontSize: 12),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF8FAFC),
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: Text(
+              sub,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                color: Color(0xFF64748B),
+                fontSize: 11.5,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
           ),
         ],
       ),

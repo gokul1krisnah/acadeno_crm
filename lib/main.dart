@@ -165,6 +165,7 @@ class _AcadenoAppState extends State<AcadenoApp> with WidgetsBindingObserver {
           contentTextStyle: AppTypography.body(
             size: 13,
             weight: FontWeight.w600,
+
             color: AppColors.white,
           ),
         ),
