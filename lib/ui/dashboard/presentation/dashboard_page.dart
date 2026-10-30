@@ -194,11 +194,12 @@ class _DashboardViewState extends State<_DashboardView> {
                         ),
                   body: SafeArea(
                     child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         if (showSidebar) _sidebar(me, state.selectedNavIndex),
                         Expanded(
                           child: SingleChildScrollView(
+                            physics: const ClampingScrollPhysics(),
                             padding: EdgeInsets.all(pad),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
