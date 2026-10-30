@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:acadeno_crm/shared/theme/app_colors.dart';
 import 'package:acadeno_crm/shared/theme/app_typography.dart';
 import 'package:auto_route/auto_route.dart';
@@ -18,6 +19,12 @@ Future<void> main() async {
   await AppSecurityService.instance.enableScreenshotProtection();
 
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
+  // Enable offline persistence & auto-reconnection for Firestore on mobile
+  FirebaseFirestore.instance.settings = const Settings(
+    persistenceEnabled: true,
+    cacheSizeBytes: Settings.CACHE_SIZE_UNLIMITED,
+  );
 
   // Initialize Firebase Cloud Messaging Push & In-App Notification Service
   await AppNotificationService.instance.initialize();
