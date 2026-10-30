@@ -1,3 +1,5 @@
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 import 'package:acadeno_crm/core/router/app_router.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -978,6 +980,27 @@ class FirestoreLeadsBackend implements LeadsBackend {
         'status': 'pending',
         'createdAt': FieldValue.serverTimestamp(),
       });
+
+      // Direct Vercel Push Dispatch for Android out-of-app delivery
+      if (execFcmToken.isNotEmpty) {
+        try {
+          http.post(
+            Uri.parse('/api/send-push'),
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode({
+              'token': execFcmToken,
+              'title': alertTitle,
+              'body': alertSubtitle,
+              'data': {
+                'type': 'lead_assigned',
+                'dateKey': dateKey,
+                'tabIndex': '0',
+                'leadCount': '$leadCount',
+              },
+            }),
+          ).timeout(const Duration(seconds: 4)).ignore();
+        } catch (_) {}
+      }
     } catch (_) {}
     await _appendAudit(
       actorUid: actor.uid,
