@@ -1007,26 +1007,28 @@ class FirestoreLeadsBackend implements LeadsBackend {
         .snapshots()
         .asyncMap((assignmentSnap) async {
                     if (assignmentSnap.docs.isEmpty) {
-            final directLeadsSnap = await _leads
-                .where('assignedToUid', isEqualTo: actor.uid)
-                .get();
-            if (directLeadsSnap.docs.isNotEmpty) {
-              return directLeadsSnap.docs.map((d) {
-                final lead = LeadRecord.fromFirestore(d);
-                return lead.toExecutiveLeadItem();
-              }).toList();
-            }
-            if (actor.name.isNotEmpty) {
-              final byNameSnap = await _leads
-                  .where('assignedTo', isEqualTo: actor.name)
+            try {
+              final directLeadsSnap = await _leads
+                  .where('assignedToUid', isEqualTo: actor.uid)
                   .get();
-              if (byNameSnap.docs.isNotEmpty) {
-                return byNameSnap.docs.map((d) {
+              if (directLeadsSnap.docs.isNotEmpty) {
+                return directLeadsSnap.docs.map((d) {
                   final lead = LeadRecord.fromFirestore(d);
                   return lead.toExecutiveLeadItem();
                 }).toList();
               }
-            }
+              if (actor.name.isNotEmpty) {
+                final byNameSnap = await _leads
+                    .where('assignedTo', isEqualTo: actor.name)
+                    .get();
+                if (byNameSnap.docs.isNotEmpty) {
+                  return byNameSnap.docs.map((d) {
+                    final lead = LeadRecord.fromFirestore(d);
+                    return lead.toExecutiveLeadItem();
+                  }).toList();
+                }
+              }
+            } catch (_) {}
             return const <ExecutiveLeadItem>[];
           }
 
