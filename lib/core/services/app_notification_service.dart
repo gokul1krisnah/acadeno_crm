@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 import '../../firebase_options.dart';
 
@@ -15,6 +16,31 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
+
+    // Show Android heads-up notification in system tray when backgrounded
+    if (!kIsWeb) {
+      final localNotifications = FlutterLocalNotificationsPlugin();
+      const androidDetails = AndroidNotificationDetails(
+        'acadeno_crm_high_importance',
+        'Acadeno Lead Notifications',
+        channelDescription: 'High priority alerts for assigned student leads',
+        importance: Importance.max,
+        priority: Priority.high,
+        playSound: true,
+        enableVibration: true,
+      );
+      const notificationDetails = NotificationDetails(android: androidDetails);
+
+      final title = message.notification?.title ?? message.data['title'] ?? '📞 Acadeno CRM';
+      final body = message.notification?.body ?? message.data['body'] ?? 'You have a new update';
+
+      await localNotifications.show(
+        id: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+        title: title,
+        body: body,
+        notificationDetails: notificationDetails,
+      );
+    }
   } catch (_) {}
 }
 
@@ -28,6 +54,7 @@ class AppNotificationService {
   final FirebaseMessaging _fcm = FirebaseMessaging.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FlutterLocalNotificationsPlugin _localNotifications = FlutterLocalNotificationsPlugin();
 
   String? _fcmToken;
   String? get fcmToken => _fcmToken;
@@ -42,8 +69,25 @@ class AppNotificationService {
   /// Initializes push notification channels, requests permissions, and captures FCM token.
   Future<void> initialize() async {
     try {
-      // 1. Register background message handler on native platforms
+      // 1. Setup Android high-importance notification channel
       if (!kIsWeb) {
+        const androidInit = AndroidInitializationSettings('@mipmap/ic_launcher');
+        const initSettings = InitializationSettings(android: androidInit);
+        await _localNotifications.initialize(settings: initSettings);
+
+        const androidChannel = AndroidNotificationChannel(
+          'acadeno_crm_high_importance',
+          'Acadeno Lead Notifications',
+          description: 'High priority alerts for assigned student leads',
+          importance: Importance.max,
+          playSound: true,
+          enableVibration: true,
+        );
+
+        await _localNotifications
+            .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+            ?.createNotificationChannel(androidChannel);
+
         FirebaseMessaging.onBackgroundMessage(
           _firebaseMessagingBackgroundHandler,
         );
@@ -85,9 +129,15 @@ class AppNotificationService {
         syncCurrentUserToken();
       });
 
-      // 6. Listen to incoming foreground messages
+      // 6. Listen to incoming foreground messages & trigger local notification heads-up
       FirebaseMessaging.onMessage.listen((RemoteMessage message) {
         _foregroundMessageController.add(message);
+        if (!kIsWeb) {
+          showNativeNotification(
+            title: message.notification?.title ?? message.data['title'] ?? '📞 Acadeno CRM',
+            body: message.notification?.body ?? message.data['body'] ?? 'New lead assigned',
+          );
+        }
       });
 
       // 7. Handle notification taps when app is in background or opened
@@ -108,6 +158,34 @@ class AppNotificationService {
       await syncCurrentUserToken();
     } catch (e) {
       debugPrint('AppNotificationService init notice: $e');
+    }
+  }
+
+  /// Displays an Android system tray heads-up banner with sound and vibration
+  Future<void> showNativeNotification({
+    required String title,
+    required String body,
+  }) async {
+    if (kIsWeb) return;
+    try {
+      const androidDetails = AndroidNotificationDetails(
+        'acadeno_crm_high_importance',
+        'Acadeno Lead Notifications',
+        channelDescription: 'High priority alerts for assigned student leads',
+        importance: Importance.max,
+        priority: Priority.high,
+        playSound: true,
+        enableVibration: true,
+      );
+      const details = NotificationDetails(android: androidDetails);
+      await _localNotifications.show(
+        id: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+        title: title,
+        body: body,
+        notificationDetails: details,
+      );
+    } catch (e) {
+      debugPrint('Error showing local notification: $e');
     }
   }
 
