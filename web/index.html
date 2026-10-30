@@ -44,6 +44,16 @@
           });
       });
     }
+
+    // Helper exposed to Flutter for background sync messaging
+    window.startBackgroundSync = function (uid) {
+      if (navigator.serviceWorker && navigator.serviceWorker.controller) {
+        navigator.serviceWorker.controller.postMessage({
+          type: 'START_BACKGROUND_SYNC',
+          uid: uid
+        });
+      }
+    };
   </script>
   <script src="flutter_bootstrap.js" async></script>
 </body>
