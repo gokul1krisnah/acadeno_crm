@@ -46,7 +46,20 @@ Future<({Uint8List bytes, String name})?> pickFileImpl() async {
     reader.readAsArrayBuffer(file);
   });
 
-  // Trigger system file selection dialog
+  // Handle dialog cancel when focus returns to the window
+  html.EventListener? focusListener;
+  focusListener = (html.Event _) {
+    Future.delayed(const Duration(milliseconds: 800), () {
+      if (!completer.isCompleted &&
+          (uploadInput.files == null || uploadInput.files!.isEmpty)) {
+        uploadInput.remove();
+        html.window.removeEventListener('focus', focusListener);
+        completer.complete(null);
+      }
+    });
+  };
+  html.window.addEventListener('focus', focusListener);
+
   uploadInput.click();
   return completer.future;
 }
