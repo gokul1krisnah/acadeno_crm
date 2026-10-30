@@ -622,14 +622,93 @@ class _DashboardViewState extends State<_DashboardView> {
       );
     }
 
-    return Wrap(
-      alignment: WrapAlignment.spaceBetween,
-      crossAxisAlignment: WrapCrossAlignment.center,
-      runSpacing: 12,
-      spacing: 12,
-      children: [
-        Row(
-          mainAxisSize: MainAxisSize.min,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isCompact = constraints.maxWidth < 860;
+        if (isCompact) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  if (showMenuButton) ...[
+                    IconButton(
+                      onPressed: () => _scaffoldKey.currentState?.openDrawer(),
+                      icon: const Icon(Icons.menu_rounded, color: _text),
+                    ),
+                    const SizedBox(width: 8),
+                  ],
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Dashboard',
+                          style: TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.w700,
+                            color: _text,
+                            letterSpacing: -0.3,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          '$_today · Acadeno Research & Innovation Centre',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(color: _muted, fontSize: 13),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  SizedBox(
+                    height: 40,
+                    child: OutlinedButton.icon(
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: _text,
+                        side: const BorderSide(color: _border),
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      icon: const Icon(Icons.manage_accounts_outlined,
+                          size: 18, color: _primary),
+                      label: const Text('Admin Account',
+                          style: TextStyle(
+                              fontWeight: FontWeight.w600, fontSize: 13)),
+                      onPressed: () => showAdminAccountDialog(context, me),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  SizedBox(
+                    height: 40,
+                    child: ElevatedButton(
+                      style: _primaryBtn,
+                      onPressed: () =>
+                          context.read<DashboardCubit>().selectNav(1),
+                      child: const Text("Assign today's leads"),
+                    ),
+                  ),
+                  const Spacer(),
+                  IconButton(
+                    icon: const Icon(Icons.logout, color: _muted, size: 22),
+                    tooltip: 'Sign out',
+                    onPressed: _logout,
+                  ),
+                ],
+              ),
+            ],
+          );
+        }
+
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             if (showMenuButton) ...[
               IconButton(
@@ -638,7 +717,7 @@ class _DashboardViewState extends State<_DashboardView> {
               ),
               const SizedBox(width: 8),
             ],
-            Flexible(
+            Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -648,77 +727,56 @@ class _DashboardViewState extends State<_DashboardView> {
                       fontSize: 26,
                       fontWeight: FontWeight.w700,
                       color: _text,
+                      letterSpacing: -0.3,
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     '$_today · Acadeno Research & Innovation Centre',
-                    style: const TextStyle(color: _muted),
+                    style: const TextStyle(color: _muted, fontSize: 13.5),
                   ),
                 ],
               ),
             ),
-          ],
-        ),
-        Wrap(
-          spacing: 10,
-          runSpacing: 10,
-          crossAxisAlignment: WrapCrossAlignment.center,
-          children: [
+            const SizedBox(width: 16),
             SizedBox(
-              width: 240,
-              height: 42,
-              child: TextField(
-                decoration: InputDecoration(
-                  hintText: 'Search name, phone, college...',
-                  hintStyle: const TextStyle(fontSize: 14, color: _muted),
-                  filled: true,
-                  fillColor: Colors.white,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 12),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: const BorderSide(color: _border),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: const BorderSide(color: _border),
-                  ),
-                ),
-              ),
-            ),
-            SizedBox(
-              height: 42,
+              height: 40,
               child: OutlinedButton.icon(
                 style: OutlinedButton.styleFrom(
                   foregroundColor: _text,
                   side: const BorderSide(color: _border),
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  padding: const EdgeInsets.symmetric(horizontal: 14),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8)),
                 ),
-                icon: const Icon(Icons.manage_accounts_outlined, size: 18, color: _primary),
-                label: const Text('Admin Account', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+                icon: const Icon(Icons.manage_accounts_outlined,
+                    size: 18, color: _primary),
+                label: const Text('Admin Account',
+                    style:
+                        TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
                 onPressed: () => showAdminAccountDialog(context, me),
               ),
             ),
+            const SizedBox(width: 10),
             SizedBox(
-              height: 42,
+              height: 40,
               child: ElevatedButton(
                 style: _primaryBtn,
                 onPressed: () => context.read<DashboardCubit>().selectNav(1),
                 child: const Text("Assign today's leads"),
               ),
             ),
+            const SizedBox(width: 6),
             IconButton(
               icon: const Icon(Icons.logout, color: _muted, size: 22),
               tooltip: 'Sign out',
               onPressed: _logout,
             ),
           ],
-        ),
-      ],
+        );
+      },
     );
   }
-
   Widget _stats(
     List<Map<String, dynamic>> leads,
     List<DashboardUserModel> activeUsers,
@@ -1464,23 +1522,29 @@ class _OverdueFollowUps extends StatelessWidget {
         child: const Text('Manage in Leads'),
       ),
       child: overdue.isEmpty
-          ? const Padding(
-              padding: EdgeInsets.symmetric(vertical: 20),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+          ? Container(
+              padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 14),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF0FDF4),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: const Color(0xFFDCFCE7)),
+              ),
+              child: const Row(
                 children: [
                   Icon(
-                    Icons.check_circle_outline,
+                    Icons.check_circle_rounded,
                     color: Color(0xFF15803D),
-                    size: 18,
+                    size: 20,
                   ),
-                  SizedBox(width: 8),
-                  Text(
-                    'All follow-ups are up to date!',
-                    style: TextStyle(
-                      color: Color(0xFF15803D),
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
+                  SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      'All follow-ups are up to date! No overdue calls.',
+                      style: TextStyle(
+                        color: Color(0xFF15803D),
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                 ],

@@ -45,10 +45,13 @@ class _AcadenoAppState extends State<AcadenoApp> {
   @override
   void initState() {
     super.initState();
-    // Listen for incoming foreground push notifications
+    // Listen for incoming foreground push notifications from Firebase
     AppNotificationService.instance.onForegroundMessage.listen((message) {
-      final title = message.notification?.title ?? 'ACADENO CRM';
-      final body = message.notification?.body ?? '';
+      final notif = message.notification;
+      if (notif == null) return;
+      final title = (notif.title ?? '').trim();
+      final body = (notif.body ?? '').trim();
+      if (title.isEmpty && body.isEmpty) return;
       _scaffoldMessengerKey.currentState?.showSnackBar(
         SnackBar(
           content: Row(

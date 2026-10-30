@@ -152,44 +152,7 @@ class AppNotificationService {
     }
   }
 
-  /// Dispatches a test push notification: fires foreground listener and logs to Firestore `notification_queue`.
-  Future<void> sendLocalTestNotification({
-    required String title,
-    required String body,
-    Map<String, String>? data,
-  }) async {
-    final message = RemoteMessage(
-      notification: RemoteNotification(
-        title: title,
-        body: body,
-      ),
-      data: data ?? {'type': 'test'},
-      sentTime: DateTime.now(),
-    );
-
-    // 1. Emit to in-app foreground listeners
-    _foregroundMessageController.add(message);
-
-    // 2. Persist to Firestore `notification_queue`
-    try {
-      final user = _auth.currentUser;
-      await _firestore.collection('notification_queue').add({
-        'title': title,
-        'body': body,
-        'data': data ?? {'type': 'test'},
-        'recipientUid': user?.uid,
-        'recipientEmail': user?.email,
-        'fcmToken': _fcmToken,
-        'status': 'sent_locally',
-        'createdAt': FieldValue.serverTimestamp(),
-      });
-    } catch (e) {
-      debugPrint('Error recording test notification to Firestore: $e');
-    }
-  }
-
   void dispose() {
     _foregroundMessageController.close();
   }
 }
-
