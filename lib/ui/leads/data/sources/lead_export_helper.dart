@@ -8,7 +8,7 @@ class LeadExportHelper {
     final buffer = StringBuffer();
     // CSV Header row
     buffer.writeln(
-      'Lead ID,Name,Phone,Email,College & Branch,Campaign / Source,Status,Assigned To,Follow-up Slot,Last Contact,Notes,Created Date',
+      'Lead ID,Name,Phone,Email,College & Branch,Campaign / Source,Status,Assigned To,Assignment Slot,Last Contact,Notes,Created Date',
     );
 
     for (final l in leads) {
@@ -19,14 +19,15 @@ class LeadExportHelper {
       final college = _escape(l.collegeBranch);
       final source = _escape(l.source);
       final status = _escape(l.status);
-      final assignedTo = _escape(l.assignedToName ?? '—');
-      final followUp = _escape(l.followUpTime ?? '—');
+      final assignedTo = _escape(l.assignedToName);
+      final assignmentSlot = _escape(l.assignedDateLabel ?? '—');
       final lastContact = _escape(l.lastContact);
       final notes = _escape(l.notes);
-      final createdAt = _escape(l.createdAt.toIso8601String().split('T').first);
+      final createdAt =
+          _escape(l.createdAt?.toIso8601String().split('T').first ?? '—');
 
       buffer.writeln(
-        '$id,$name,$phone,$email,$college,$source,$status,$assignedTo,$followUp,$lastContact,$notes,$createdAt',
+        '$id,$name,$phone,$email,$college,$source,$status,$assignedTo,$assignmentSlot,$lastContact,$notes,$createdAt',
       );
     }
 
@@ -54,4 +55,3 @@ class LeadExportHelper {
     return v;
   }
 }
-
