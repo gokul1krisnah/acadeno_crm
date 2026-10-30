@@ -1,3 +1,4 @@
+import 'package:acadeno_crm/core/services/offline_queue_service.dart';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
@@ -124,6 +125,39 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                             ],
                           ),
                         ),
+                      ),
+                      // Offline Sync Status Pill (RL-5, RL-6)
+                      StreamBuilder<int>(
+                        stream: OfflineQueueService.instance.pendingCountStream,
+                        initialData: OfflineQueueService.instance.pendingCount,
+                        builder: (context, snapshot) {
+                          final pending = snapshot.data ?? 0;
+                          if (pending == 0) return const SizedBox.shrink();
+                          return Container(
+                            margin: const EdgeInsets.only(right: 8),
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFFFFBEB),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: const Color(0xFFFDE68A)),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(Icons.cloud_upload_outlined, size: 14, color: Color(0xFFD97706)),
+                                const SizedBox(width: 4),
+                                Text(
+                                  '$pending syncing',
+                                  style: const TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w700,
+                                    color: Color(0xFFB45309),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
                       ),
                       // Bell icon button with orange unread badge
                       InkWell(

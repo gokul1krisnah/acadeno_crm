@@ -329,8 +329,8 @@ class _DashboardViewState extends State<_DashboardView> {
                                   const TeamManagementView()
                                 else if (state.selectedNavIndex == 7)
                                   const UserManagementView()
-                                 else if (state.selectedNavIndex == 8)
-                                   SettingsView(onLogout: _logout),
+                                else if (state.selectedNavIndex == 8)
+                                  SettingsView(onLogout: _logout),
                               ],
                             ),
                           ),
@@ -359,12 +359,11 @@ class _DashboardViewState extends State<_DashboardView> {
         ? rawName
         : (user?.email?.split('@').first ?? 'Admin');
     final rawRole = (me['role'] ?? '').toString().trim().toLowerCase();
-    final roleLabel = (rawRole == 'hr')
-        ? 'HR & Operation Manager'
-        : 'Admin';
+    final roleLabel = (rawRole == 'hr') ? 'HR & Operation Manager' : 'Admin';
 
     // Auto-heal admin role in Firestore so the user is consistently tagged as admin
-    if ((me['role'] != 'admin' || me['email'] == null) && cubit.currentUserId != null) {
+    if ((me['role'] != 'admin' || me['email'] == null) &&
+        cubit.currentUserId != null) {
       FirebaseFirestore.instance
           .collection('users')
           .doc(cubit.currentUserId)
@@ -470,20 +469,31 @@ class _DashboardViewState extends State<_DashboardView> {
                 backgroundColor: _primary,
                 child: Text(
                   initials,
-                  style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w700),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
               title: Text(
                 name,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13.5),
+                style: const TextStyle(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 13.5,
+                ),
               ),
               subtitle: Text(
                 roleLabel,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(fontSize: 12, color: Color(0xFF16A34A), fontWeight: FontWeight.w600),
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: Color(0xFF16A34A),
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
           ),
@@ -493,7 +503,11 @@ class _DashboardViewState extends State<_DashboardView> {
     );
   }
 
-  Widget _header({required Map<String, dynamic> me, required bool isMobile, required bool showMenuButton}) {
+  Widget _header({
+    required Map<String, dynamic> me,
+    required bool isMobile,
+    required bool showMenuButton,
+  }) {
     if (isMobile) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -556,7 +570,11 @@ class _DashboardViewState extends State<_DashboardView> {
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(color: _border),
                   ),
-                  child: const Icon(Icons.manage_accounts_outlined, color: _primary, size: 20),
+                  child: const Icon(
+                    Icons.manage_accounts_outlined,
+                    color: _primary,
+                    size: 20,
+                  ),
                 ),
               ),
               const SizedBox(width: 8),
@@ -670,12 +688,20 @@ class _DashboardViewState extends State<_DashboardView> {
                           borderRadius: BorderRadius.circular(8),
                         ),
                       ),
-                      icon: const Icon(Icons.manage_accounts_outlined,
-                          size: 18, color: _primary),
-                      label: const Text('Admin Account',
-                          style: TextStyle(
-                              fontWeight: FontWeight.w600, fontSize: 13)),
-                      onPressed: () => context.read<DashboardCubit>().selectNav(8),
+                      icon: const Icon(
+                        Icons.manage_accounts_outlined,
+                        size: 18,
+                        color: _primary,
+                      ),
+                      label: const Text(
+                        'Admin Account',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 13,
+                        ),
+                      ),
+                      onPressed: () =>
+                          context.read<DashboardCubit>().selectNav(8),
                     ),
                   ),
                   const SizedBox(width: 10),
@@ -740,13 +766,18 @@ class _DashboardViewState extends State<_DashboardView> {
                   side: const BorderSide(color: _border),
                   padding: const EdgeInsets.symmetric(horizontal: 14),
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8)),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
                 ),
-                icon: const Icon(Icons.manage_accounts_outlined,
-                    size: 18, color: _primary),
-                label: const Text('Admin Account',
-                    style:
-                        TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+                icon: const Icon(
+                  Icons.manage_accounts_outlined,
+                  size: 18,
+                  color: _primary,
+                ),
+                label: const Text(
+                  'Admin Account',
+                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                ),
                 onPressed: () => context.read<DashboardCubit>().selectNav(8),
               ),
             ),
@@ -770,6 +801,7 @@ class _DashboardViewState extends State<_DashboardView> {
       },
     );
   }
+
   Widget _stats(
     List<Map<String, dynamic>> leads,
     List<DashboardUserModel> activeUsers,
@@ -1302,11 +1334,7 @@ class _TeamToday extends StatelessWidget {
                   ),
                   Expanded(
                     flex: 2,
-                    child: Text(
-                      'OVERDUE',
-                      style: h,
-                      textAlign: TextAlign.left,
-                    ),
+                    child: Text('OVERDUE', style: h, textAlign: TextAlign.left),
                   ),
                 ],
               ),
@@ -1660,7 +1688,9 @@ class _CollegeVisits extends StatelessWidget {
         child: const Text('+ Plan visit'),
       ),
       child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-        stream: FirebaseFirestore.instance.collection('college_visits').snapshots(),
+        stream: FirebaseFirestore.instance
+            .collection('college_visits')
+            .snapshots(),
         builder: (context, snapshot) {
           final List<List<String>> displayVisits;
           if (snapshot.hasData && snapshot.data!.docs.isNotEmpty) {
@@ -1668,8 +1698,12 @@ class _CollegeVisits extends StatelessWidget {
               final data = d.data();
               final day = ' ';
               final name = (data['collegeName'] ?? 'College').toString();
-              final desc = (data['purpose'] ?? data['subtitle'] ?? 'Campus visit').toString();
-              final status = (data['status'] ?? data['statusLabel'] ?? 'Planned').toString();
+              final desc =
+                  (data['purpose'] ?? data['subtitle'] ?? 'Campus visit')
+                      .toString();
+              final status =
+                  (data['status'] ?? data['statusLabel'] ?? 'Planned')
+                      .toString();
               return [day, name, desc, status];
             }).toList();
           } else {
@@ -1699,11 +1733,16 @@ class _CollegeVisits extends StatelessWidget {
                           children: [
                             Text(
                               r[1],
-                              style: const TextStyle(fontWeight: FontWeight.w600),
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
                             Text(
                               r[2],
-                              style: const TextStyle(color: _muted, fontSize: 12),
+                              style: const TextStyle(
+                                color: _muted,
+                                fontSize: 12,
+                              ),
                             ),
                           ],
                         ),
@@ -1715,7 +1754,11 @@ class _CollegeVisits extends StatelessWidget {
                               const Color(0xFFDCFCE7),
                               const Color(0xFF15803D),
                             )
-                          : _badge('Planned', const Color(0xFFEEF0FF), _primary),
+                          : _badge(
+                              'Planned',
+                              const Color(0xFFEEF0FF),
+                              _primary,
+                            ),
                     ],
                   ),
                 ),

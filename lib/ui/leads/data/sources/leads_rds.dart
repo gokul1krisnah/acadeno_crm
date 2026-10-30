@@ -1,3 +1,4 @@
+import 'package:acadeno_crm/core/services/offline_queue_service.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:acadeno_crm/core/router/app_router.dart';
@@ -1217,20 +1218,33 @@ class FirestoreLeadsBackend implements LeadsBackend {
       // Allow call log creation even if offline or partial
     }
 
-    await _callLogs.add({
-      'leadId': leadId,
-      'leadName': leadName,
-      'executiveUid': actor.uid,
-      'executiveName': actor.name,
-      'collegeInfo': collegeInfo,
-      'campaign': campaign,
-      'outcome': outcome,
-      'duration': duration.trim().isEmpty ? '2m 15s' : duration.trim(),
-      'notes': notes.trim().isEmpty ? 'Logged $outcome outcome' : notes.trim(),
-      'courseEnrolled': ?courseEnrolled,
-      'discountAmount': ?discountAmount,
-      'createdAt': FieldValue.serverTimestamp(),
-    });
+    try {
+      await _callLogs.add({
+        'leadId': leadId,
+        'leadName': leadName,
+        'executiveUid': actor.uid,
+        'executiveName': actor.name,
+        'collegeInfo': collegeInfo,
+        'campaign': campaign,
+        'outcome': outcome,
+        'duration': duration.trim().isEmpty ? '2m 15s' : duration.trim(),
+        'notes': notes.trim().isEmpty ? 'Logged $outcome outcome' : notes.trim(),
+        'courseEnrolled': ?courseEnrolled,
+        'discountAmount': ?discountAmount,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+    } catch (_) {
+      // Offline fallback: Queue locally for guaranteed background sync (RL-5, RL-6)
+      await OfflineQueueService.instance.enqueueOutcome(
+        leadId: leadId,
+        leadName: leadName,
+        outcome: outcome,
+        duration: duration,
+        notes: notes,
+        courseEnrolled: courseEnrolled,
+        discountAmount: discountAmount,
+      );
+    }
 
     final needsApproval = outcome == 'Converted' && (discountAmount ?? 0) > 500;
     return CallOutcomeResult(

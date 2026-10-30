@@ -1,3 +1,4 @@
+import 'core/services/offline_queue_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:acadeno_crm/shared/theme/app_colors.dart';
 import 'package:acadeno_crm/shared/theme/app_typography.dart';
@@ -31,6 +32,7 @@ Future<void> main() async {
 
   // Hive must be ready before the splash screen restores the session.
   await AuthSessionLocalDs.init();
+  await OfflineQueueService.init();
 
   configureDependencies();
 
