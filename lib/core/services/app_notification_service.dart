@@ -16,9 +16,10 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
-
-    // Show Android heads-up notification in system tray when backgrounded
-    if (!kIsWeb) {
+    // When a RemoteMessage contains a `notification` payload, the Android system
+    // tray displays it automatically. We only show a manual local notification if
+    // the payload is data-only (no system notification block).
+    if (!kIsWeb && message.notification == null) {
       final localNotifications = FlutterLocalNotificationsPlugin();
       const androidDetails = AndroidNotificationDetails(
         'acadeno_crm_high_importance',
@@ -28,14 +29,15 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
         priority: Priority.high,
         playSound: true,
         enableVibration: true,
+        tag: 'lead_assigned',
       );
       const notificationDetails = NotificationDetails(android: androidDetails);
 
-      final title = message.notification?.title ?? message.data['title'] ?? '📞 Acadeno CRM';
-      final body = message.notification?.body ?? message.data['body'] ?? 'You have a new update';
+      final title = message.data['title'] ?? '📞 Acadeno CRM';
+      final body = message.data['body'] ?? 'You have a new update';
 
       await localNotifications.show(
-        id: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+        id: 1001,
         title: title,
         body: body,
         notificationDetails: notificationDetails,
@@ -129,13 +131,14 @@ class AppNotificationService {
         syncCurrentUserToken();
       });
 
-      // 6. Listen to incoming foreground messages & trigger local notification heads-up
+      // 6. Listen to incoming foreground messages
       FirebaseMessaging.onMessage.listen((RemoteMessage message) {
         _foregroundMessageController.add(message);
-        if (!kIsWeb) {
+        // Only trigger local notification in foreground if no system notification is attached
+        if (!kIsWeb && message.notification == null) {
           showNativeNotification(
-            title: message.notification?.title ?? message.data['title'] ?? '📞 Acadeno CRM',
-            body: message.notification?.body ?? message.data['body'] ?? 'New lead assigned',
+            title: message.data['title'] ?? '📞 Acadeno CRM',
+            body: message.data['body'] ?? 'New lead assigned',
           );
         }
       });
@@ -176,10 +179,11 @@ class AppNotificationService {
         priority: Priority.high,
         playSound: true,
         enableVibration: true,
+        tag: 'lead_assigned',
       );
       const details = NotificationDetails(android: androidDetails);
       await _localNotifications.show(
-        id: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+        id: 1001,
         title: title,
         body: body,
         notificationDetails: details,

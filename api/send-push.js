@@ -40,6 +40,12 @@ module.exports = async function handler(req, res) {
     return res.status(400).json({ error: 'FCM token is required' });
   }
 
+  // To prevent double notification on Android devices:
+  // We send notification block ONLY on webpush and APNs.
+  // On Android, we provide Android notification with tag and collapseKey
+  // so the OS displays exactly ONE clean notification and updates if another arrives.
+  const notificationTag = String(data?.dateKey || 'lead_assigned');
+
   const message = {
     token: token,
     notification: {
@@ -48,6 +54,8 @@ module.exports = async function handler(req, res) {
     },
     data: {
       click_action: 'FLUTTER_NOTIFICATION_CLICK',
+      title: title || '📞 Acadeno CRM',
+      body: body || 'You have new leads assigned',
       type: String(data?.type || 'lead_assigned'),
       dateKey: String(data?.dateKey || ''),
       tabIndex: String(data?.tabIndex || '0'),
@@ -55,8 +63,10 @@ module.exports = async function handler(req, res) {
     },
     android: {
       priority: 'high',
+      collapseKey: 'leads_assignment',
       notification: {
         channelId: 'acadeno_crm_high_importance',
+        tag: notificationTag,
         sound: 'default',
         priority: 'high',
         defaultSound: true,
@@ -70,7 +80,8 @@ module.exports = async function handler(req, res) {
       notification: {
         title: title || '📞 Acadeno CRM',
         body: body || 'You have new leads assigned',
-        icon: '/icons/Icon-192.png'
+        icon: '/icons/Icon-192.png',
+        tag: notificationTag
       }
     }
   };

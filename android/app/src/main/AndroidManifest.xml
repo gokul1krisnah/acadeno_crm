@@ -5,7 +5,7 @@
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
 
     <application
-        android:label="acadeno_crm"
+        android:label="Acadeno CRM"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
