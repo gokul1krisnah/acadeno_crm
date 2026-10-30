@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'dart:typed_data';
 import 'package:file_picker/file_picker.dart';
 
@@ -9,12 +8,6 @@ Future<({Uint8List bytes, String name})?> pickFileImpl() async {
   );
 
   if (file == null) return null;
-  if (file.bytes != null && file.bytes!.isNotEmpty) {
-    return (bytes: file.bytes!, name: file.name);
-  }
-  if (file.path != null && file.path!.isNotEmpty) {
-    final bytes = await File(file.path!).readAsBytes();
-    return (bytes: bytes, name: file.name);
-  }
-  return null;
+  final bytes = await file.readAsBytes();
+  return (bytes: bytes, name: file.name);
 }
