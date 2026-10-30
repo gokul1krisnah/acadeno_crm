@@ -132,7 +132,8 @@ class _AcadenoAppState extends State<AcadenoApp> with WidgetsBindingObserver {
     super.didChangeAppLifecycleState(state);
     // When the app is minimized/paused, gracefully pause Firestore network connection.
     // This prevents Android OS DNS lookup failures (UnknownHostException) in the background and saves battery.
-    if (state == AppLifecycleState.paused || state == AppLifecycleState.hidden) {
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.hidden) {
       FirebaseFirestore.instance.disableNetwork().catchError((_) {});
     } else if (state == AppLifecycleState.resumed) {
       FirebaseFirestore.instance.enableNetwork().catchError((_) {});

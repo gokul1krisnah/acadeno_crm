@@ -982,29 +982,19 @@ class _Panel extends StatelessWidget {
           LayoutBuilder(
             builder: (context, constraints) {
               if (constraints.maxWidth < 430 && trailing != null) {
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                return Wrap(
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  spacing: 8,
+                  runSpacing: 4,
                   children: [
-                    Row(
-                      children: [
-                        Flexible(
-                          child: Text(
-                            title,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ),
-                        if (badge != null) ...[
-                          const SizedBox(width: 8),
-                          badge!,
-                        ],
-                      ],
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
-                    const SizedBox(height: 10),
+                    if (badge != null) badge!,
                     trailing!,
                   ],
                 );
@@ -1023,8 +1013,8 @@ class _Panel extends StatelessWidget {
                     ),
                   ),
                   if (badge != null) ...[const SizedBox(width: 8), badge!],
+                  if (trailing != null) ...[const SizedBox(width: 10), trailing!],
                   const Spacer(),
-                  ?trailing,
                 ],
               );
             },
@@ -1468,9 +1458,20 @@ class _Conversions extends StatelessWidget {
 
     return _Panel(
       title: 'Conversions by source',
-      trailing: Text(
-        '${leads.length} leads',
-        style: const TextStyle(color: _muted, fontSize: 12),
+      trailing: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2.5),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF3F4F6),
+          borderRadius: BorderRadius.circular(6),
+        ),
+        child: Text(
+          '${leads.length} leads',
+          style: const TextStyle(
+            color: _muted,
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
       ),
       child: LayoutBuilder(
         builder: (context, constraints) {
@@ -1585,6 +1586,10 @@ class _OverdueFollowUps extends StatelessWidget {
       ),
       trailing: TextButton(
         onPressed: onReassign,
+        style: TextButton.styleFrom(
+          visualDensity: VisualDensity.compact,
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        ),
         child: const Text('Manage in Leads'),
       ),
       child: overdue.isEmpty
@@ -1686,6 +1691,10 @@ class _CollegeVisits extends StatelessWidget {
       title: 'College visits this week',
       trailing: TextButton(
         onPressed: onPlanVisit,
+        style: TextButton.styleFrom(
+          visualDensity: VisualDensity.compact,
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        ),
         child: const Text('+ Plan visit'),
       ),
       child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
