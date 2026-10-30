@@ -7,6 +7,7 @@ import 'package:acadeno_crm/ui/leads/application/admin_leads_state.dart';
 import 'package:acadeno_crm/ui/leads/data/model/lead_models.dart';
 import 'package:acadeno_crm/ui/leads/data/repository/leads_repo.dart';
 import 'package:acadeno_crm/ui/leads/data/sources/leads_rds.dart';
+import 'package:acadeno_crm/ui/leads/data/sources/lead_export_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -929,7 +930,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                     ),
                     SizedBox(
                       height: 42,
-                      child: OutlinedButton(
+                      child: OutlinedButton.icon(
                         style: OutlinedButton.styleFrom(
                           backgroundColor: Colors.white,
                           foregroundColor: _text,
@@ -939,9 +940,50 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                           ),
                         ),
                         onPressed: () => _tryDashboardCubit()?.selectNav(5),
-                        child: const Text(
-                          'Import Excel',
+                        icon: const Icon(Icons.upload_file_rounded, size: 16),
+                        label: const Text(
+                          'Import Leads',
                           style: TextStyle(fontWeight: FontWeight.w600),
+                        ),
+                      ),
+                    ),
+                    SizedBox(
+                      height: 42,
+                      child: OutlinedButton.icon(
+                        style: OutlinedButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          foregroundColor: _text,
+                          side: const BorderSide(color: _border),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        onPressed: () async {
+                          final leadsToExport = state.filteredLeads;
+                          if (leadsToExport.isEmpty) {
+                            SnackBarAlert.showToast(
+                              context: context,
+                              message: 'No leads found to export with the current filters.',
+                              isWarning: true,
+                            );
+                            return;
+                          }
+                          final success = await LeadExportHelper.exportLeads(
+                            leads: leadsToExport,
+                          );
+                          if (context.mounted) {
+                            SnackBarAlert.showToast(
+                              context: context,
+                              message: success
+                                  ? 'Successfully exported \ leads to CSV!'
+                                  : 'Export copied to clipboard (\ leads)',
+                            );
+                          }
+                        },
+                        icon: const Icon(Icons.download_rounded, size: 16),
+                        label: Text(
+                          'Export (\)',
+                          style: const TextStyle(fontWeight: FontWeight.w600),
                         ),
                       ),
                     ),

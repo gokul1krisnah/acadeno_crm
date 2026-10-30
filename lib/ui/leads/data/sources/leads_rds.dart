@@ -1218,23 +1218,9 @@ class FirestoreLeadsBackend implements LeadsBackend {
       // Allow call log creation even if offline or partial
     }
 
-    try {
-      await _callLogs.add({
-        'leadId': leadId,
-        'leadName': leadName,
-        'executiveUid': actor.uid,
-        'executiveName': actor.name,
-        'collegeInfo': collegeInfo,
-        'campaign': campaign,
-        'outcome': outcome,
-        'duration': duration.trim().isEmpty ? '2m 15s' : duration.trim(),
-        'notes': notes.trim().isEmpty ? 'Logged $outcome outcome' : notes.trim(),
-        'courseEnrolled': ?courseEnrolled,
-        'discountAmount': ?discountAmount,
-        'createdAt': FieldValue.serverTimestamp(),
-      });
-    } catch (_) {
-      // Offline fallback: Queue locally for guaranteed background sync (RL-5, RL-6)
+    final clientId = 'call___';
+
+    if (!OfflineQueueService.instance.isOnline) {
       await OfflineQueueService.instance.enqueueOutcome(
         leadId: leadId,
         leadName: leadName,
@@ -1243,7 +1229,38 @@ class FirestoreLeadsBackend implements LeadsBackend {
         notes: notes,
         courseEnrolled: courseEnrolled,
         discountAmount: discountAmount,
+        executiveUid: actor.uid,
+        executiveName: actor.name,
       );
+    } else {
+      try {
+        await _callLogs.doc(clientId).set({
+          'leadId': leadId,
+          'leadName': leadName,
+          'executiveUid': actor.uid,
+          'executiveName': actor.name,
+          'collegeInfo': collegeInfo,
+          'campaign': campaign,
+          'outcome': outcome,
+          'duration': duration.trim().isEmpty ? '2m 15s' : duration.trim(),
+          'notes': notes.trim().isEmpty ? 'Logged  outcome' : notes.trim(),
+          if (courseEnrolled != null) 'courseEnrolled': courseEnrolled,
+          if (discountAmount != null) 'discountAmount': discountAmount,
+          'createdAt': FieldValue.serverTimestamp(),
+        }, SetOptions(merge: true));
+      } catch (_) {
+        await OfflineQueueService.instance.enqueueOutcome(
+          leadId: leadId,
+          leadName: leadName,
+          outcome: outcome,
+          duration: duration,
+          notes: notes,
+          courseEnrolled: courseEnrolled,
+          discountAmount: discountAmount,
+          executiveUid: actor.uid,
+          executiveName: actor.name,
+        );
+      }
     }
 
     final needsApproval = outcome == 'Converted' && (discountAmount ?? 0) > 500;

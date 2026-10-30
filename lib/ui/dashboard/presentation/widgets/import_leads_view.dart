@@ -1,4 +1,6 @@
 import 'package:acadeno_crm/shared/widgets/acadeno_dropdown.dart';
+import 'package:file_picker/file_picker.dart';
+import '../../../../core/utils/file_download_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -438,14 +440,42 @@ class _ImportLeadsBodyState extends State<_ImportLeadsBody> {
                           ),
                         ),
                         const SizedBox(height: 14),
-                        OutlinedButton.icon(
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: const Color(0xFF4338CA),
-                            side: const BorderSide(color: Color(0xFFC7D2FE)),
-                          ),
-                          onPressed: () => _pickAndParseFile(context),
-                          icon: const Icon(Icons.folder_open_rounded, size: 16),
-                          label: const Text('Browse Files'),
+                        Wrap(
+                          spacing: 12,
+                          runSpacing: 8,
+                          alignment: WrapAlignment.center,
+                          children: [
+                            ElevatedButton.icon(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF4338CA),
+                                foregroundColor: Colors.white,
+                                elevation: 0,
+                                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                              ),
+                              onPressed: () => _pickAndParseFile(context),
+                              icon: const Icon(Icons.folder_open_rounded, size: 18),
+                              label: const Text(
+                                'Browse Excel / CSV File',
+                                style: TextStyle(fontWeight: FontWeight.w700),
+                              ),
+                            ),
+                            OutlinedButton.icon(
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: const Color(0xFF4B5563),
+                                side: const BorderSide(color: Color(0xFFD0D5DD)),
+                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                              ),
+                              onPressed: () => _openPasteCsvDialog(context),
+                              icon: const Icon(Icons.paste_rounded, size: 16),
+                              label: const Text('Or Paste CSV Text'),
+                            ),
+                          ],
                         ),
                       ],
                     ),
@@ -1166,15 +1196,19 @@ class _ImportLeadsBodyState extends State<_ImportLeadsBody> {
   // Dialogs & File Operations
   // ---------------------------------------------------------------------------
 
-  void _downloadSampleTemplate(BuildContext context) {
-    Clipboard.setData(
-      const ClipboardData(text: LeadImportParser.sampleTemplateCsv),
+  void _downloadSampleTemplate(BuildContext context) async {
+    final success = await FileDownloadHelper.downloadCsv(
+      fileName: 'acadeno_leads_template.csv',
+      content: LeadImportParser.sampleTemplateCsv,
     );
-    SnackBarAlert.showToast(
-      context: context,
-      message:
-          'Sample CSV template copied to clipboard! You can also save it as acadeno_leads_template.csv.',
-    );
+    if (context.mounted) {
+      SnackBarAlert.showToast(
+        context: context,
+        message: success
+            ? 'Sample CSV template downloaded successfully!'
+            : 'Sample CSV template copied to clipboard!',
+      );
+    }
   }
 
   void _downloadErrorReport(BuildContext context, LeadImportState state) {
@@ -1253,8 +1287,29 @@ class _ImportLeadsBodyState extends State<_ImportLeadsBody> {
   }
 
   void _pickAndParseFile(BuildContext context) async {
-    // For universal web/desktop compatibility: provide file picker or text input
-    _openPasteCsvDialog(context);
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['csv', 'xlsx', 'xls', 'txt'],
+        withData: true,
+      );
+
+      if (result != null && result.files.isNotEmpty) {
+        final file = result.files.first;
+        final bytes = file.bytes;
+        if (bytes != null && bytes.isNotEmpty) {
+          if (context.mounted) {
+            context.read<LeadImportCubit>().parseFileBytes(bytes, file.name);
+          }
+          return;
+        }
+      }
+    } catch (e) {
+      debugPrint('FilePicker notice: ');
+      if (context.mounted) {
+        _openPasteCsvDialog(context);
+      }
+    }
   }
 
   void _openEditRowDialog(BuildContext context, LeadImportItem item) {

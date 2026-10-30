@@ -1,3 +1,4 @@
+import 'package:acadeno_crm/core/services/offline_queue_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -134,16 +135,27 @@ class VisitsRds {
     required int interestedCount,
   }) async {
     final uid = _firebaseAuth.currentUser?.uid;
-    await _visits.doc(visitId).set({
-      'status': 'Completed',
-      'statusLabel': 'Completed',
-      'metSummary': metPeople.trim(),
-      'outcomeNotes': metPeople.trim(),
-      'nextActionSummary': nextAction.trim(),
-      'leadsCollected': leadsCollected,
-      'interestedCount': interestedCount,
-      'updatedByUid': uid,
-      'updatedAt': FieldValue.serverTimestamp(),
-    }, SetOptions(merge: true));
+    try {
+      await _visits.doc(visitId).set({
+        'status': 'Completed',
+        'statusLabel': 'Completed',
+        'metSummary': metPeople.trim(),
+        'outcomeNotes': metPeople.trim(),
+        'nextActionSummary': nextAction.trim(),
+        'leadsCollected': leadsCollected,
+        'interestedCount': interestedCount,
+        'updatedByUid': uid,
+        'updatedAt': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+    } catch (_) {
+      await OfflineQueueService.instance.enqueueVisitOutcome(
+        visitId: visitId,
+        metPeople: metPeople,
+        nextAction: nextAction,
+        leadsCollected: leadsCollected,
+        interestedCount: interestedCount,
+        executiveUid: uid,
+      );
+    }
   }
 }

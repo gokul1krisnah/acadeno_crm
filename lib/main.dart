@@ -1,3 +1,5 @@
+import 'shared/widgets/offline_status_bar.dart';
+import 'package:flutter/foundation.dart';
 import 'core/services/offline_queue_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:acadeno_crm/shared/theme/app_colors.dart';
@@ -22,10 +24,12 @@ Future<void> main() async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   // Enable offline persistence & auto-reconnection for Firestore on mobile
-  FirebaseFirestore.instance.settings = const Settings(
-    persistenceEnabled: true,
-    cacheSizeBytes: Settings.CACHE_SIZE_UNLIMITED,
-  );
+  if (!kIsWeb) {
+    FirebaseFirestore.instance.settings = const Settings(
+      persistenceEnabled: true,
+      cacheSizeBytes: Settings.CACHE_SIZE_UNLIMITED,
+    );
+  }
 
   // Initialize Firebase Cloud Messaging Push & In-App Notification Service
   await AppNotificationService.instance.initialize();
@@ -33,6 +37,7 @@ Future<void> main() async {
   // Hive must be ready before the splash screen restores the session.
   await AuthSessionLocalDs.init();
   await OfflineQueueService.init();
+  OfflineQueueService.instance.initialize();
 
   configureDependencies();
 
@@ -170,6 +175,17 @@ class _AcadenoAppState extends State<AcadenoApp> with WidgetsBindingObserver {
           ),
         ),
       ),
+      builder: (context, child) {
+        return Material(
+          color: Colors.white,
+          child: Column(
+            children: [
+              const OfflineStatusBar(),
+              Expanded(child: child ?? const SizedBox.shrink()),
+            ],
+          ),
+        );
+      },
       routerConfig: _appRouter.config(
         deepLinkBuilder: (_) => DeepLink([const SplashRoute()]),
       ),
