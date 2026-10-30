@@ -54,6 +54,11 @@ class _SettingsViewState extends State<SettingsView>
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
+    _tabController.addListener(() {
+      if (!_tabController.indexIsChanging && mounted) {
+        setState(() {});
+      }
+    });
 
     final currentUser = _auth.currentUser;
     final initialName = (currentUser?.displayName ?? '').trim();
@@ -291,6 +296,7 @@ class _SettingsViewState extends State<SettingsView>
                 child: TabBar(
                   controller: _tabController,
                   isScrollable: true,
+                  onTap: (_) => setState(() {}),
                   labelColor: _primary,
                   unselectedLabelColor: _muted,
                   indicatorColor: _primary,
@@ -325,16 +331,19 @@ class _SettingsViewState extends State<SettingsView>
 
         const SizedBox(height: 16),
 
-        // Tab Content
-        Expanded(
-          child: TabBarView(
-            controller: _tabController,
-            children: [
-              _buildAccountAndSecurityTab(),
-              _buildOrganizationTab(),
-              _buildSystemInfoTab(),
-            ],
-          ),
+        // Active Tab Content
+        Builder(
+          builder: (context) {
+            switch (_tabController.index) {
+              case 0:
+                return _buildAccountAndSecurityTab();
+              case 1:
+                return _buildOrganizationTab();
+              case 2:
+              default:
+                return _buildSystemInfoTab();
+            }
+          },
         ),
       ],
     );
@@ -344,7 +353,7 @@ class _SettingsViewState extends State<SettingsView>
   // Tab 1: Account & Security
   // ---------------------------------------------------------------------------
   Widget _buildAccountAndSecurityTab() {
-    return SingleChildScrollView(
+    return Padding(
       padding: const EdgeInsets.only(bottom: 40),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -592,7 +601,7 @@ class _SettingsViewState extends State<SettingsView>
   // Tab 2: Organization & CRM
   // ---------------------------------------------------------------------------
   Widget _buildOrganizationTab() {
-    return SingleChildScrollView(
+    return Padding(
       padding: const EdgeInsets.only(bottom: 40),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -681,7 +690,7 @@ class _SettingsViewState extends State<SettingsView>
   // Tab 3: System & Notifications
   // ---------------------------------------------------------------------------
   Widget _buildSystemInfoTab() {
-    return SingleChildScrollView(
+    return Padding(
       padding: const EdgeInsets.only(bottom: 40),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
