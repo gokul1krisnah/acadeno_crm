@@ -57,6 +57,7 @@ class AlertsCubit extends Cubit<AlertsState> {
 
   // FR-9.1: Mark all alerts read
   void markAllAlertsRead() {
+    _repository.markAllAlertsRead();
     final updated = List<ExecutiveAlertItem>.from(state.alerts);
     for (final a in updated) {
       a.isUnread = false;
@@ -74,13 +75,18 @@ class AlertsCubit extends Cubit<AlertsState> {
     final updated = List<ExecutiveAlertItem>.from(state.alerts);
     final idx = updated.indexWhere((a) => a.id == id);
     if (idx != -1) {
-      updated[idx].isUnread = !updated[idx].isUnread;
+      final newStatus = !updated[idx].isUnread;
+      updated[idx].isUnread = newStatus;
+      if (!newStatus) {
+        _repository.markAlertRead(id);
+      }
       emit(state.copyWith(alerts: updated));
     }
   }
 
   // FR-9.1: Mark a single alert as read
   void markSingleAlertRead(String id) {
+    _repository.markAlertRead(id);
     final updated = List<ExecutiveAlertItem>.from(state.alerts);
     final idx = updated.indexWhere((a) => a.id == id);
     if (idx != -1) {

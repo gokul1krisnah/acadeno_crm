@@ -919,6 +919,57 @@ class FirestoreLeadsBackend implements LeadsBackend {
     });
 
     final targetNames = createdAssignments.map((a) => a.leadName).join(', ');
+    final leadCount = createdAssignments.length;
+    final leadNamesList = createdAssignments.map((a) => a.leadName).toList();
+    final leadNamesPreview = leadNamesList.take(3).join(', ');
+    final leadNamesSuffix =
+        leadNamesList.length > 3 ? ' +${leadNamesList.length - 3} more' : '';
+    final alertTitle = reassignedCount > 0 && newlyAssignedCount > 0
+        ? '📞 $newlyAssignedCount New & $reassignedCount Reassigned Leads'
+        : reassignedCount > 0
+        ? '🔄 $reassignedCount Leads Reassigned to You'
+        : '📞 $leadCount Leads Assigned for $dateLabel';
+    final alertSubtitle =
+        'Assigned by ${actor.name} · ($leadNamesPreview$leadNamesSuffix)';
+
+    try {
+      final alertDoc = _firestore.collection('alerts').doc();
+      await alertDoc.set({
+        'id': alertDoc.id,
+        'recipientUid': executive.uid,
+        'recipientName': executive.name,
+        'title': alertTitle,
+        'subtitle': alertSubtitle,
+        'category': 'assignment',
+        'leadCount': leadCount,
+        'leadIds': cleanIds,
+        'leadNames': leadNamesList,
+        'assignedByUid': actor.uid,
+        'assignedByName': actor.name,
+        'dateKey': dateKey,
+        'dateLabel': dateLabel,
+        'isRead': false,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+
+      final execFcmToken = (execData['fcmToken'] ?? '').toString();
+      await _firestore.collection('notification_queue').add({
+        'recipientUid': executive.uid,
+        'recipientName': executive.name,
+        'recipientEmail': executive.email,
+        'fcmToken': execFcmToken.isNotEmpty ? execFcmToken : null,
+        'title': alertTitle,
+        'body': alertSubtitle,
+        'data': {
+          'type': 'lead_assigned',
+          'dateKey': dateKey,
+          'tabIndex': '0',
+          'leadCount': '$leadCount',
+        },
+        'status': 'pending',
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+    } catch (_) {}
     await _appendAudit(
       actorUid: actor.uid,
       actorName: actor.name,

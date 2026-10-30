@@ -10,4 +10,10 @@ class AlertsRepository {
 
   Stream<List<ExecutiveAlertItem>> watchAlerts({String? executiveUid}) =>
       _rds.watchAlerts(executiveUid: executiveUid);
+
+  Future<void> markAllAlertsRead({String? executiveUid}) =>
+      _rds.markAllAlertsRead(executiveUid: executiveUid);
+
+  Future<void> markAlertRead(String alertId) =>
+      _rds.markAlertRead(alertId);
 }
