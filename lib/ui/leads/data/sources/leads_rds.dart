@@ -1088,6 +1088,28 @@ class FirestoreLeadsBackend implements LeadsBackend {
       final records = snap.docs
           .map((d) => CallHistoryRecord.fromMap(d.id, d.data()))
           .toList();
+
+      // Merge locally queued calls so the executive sees them in My Record immediately (RL-5, RL-6)
+      final queued = OfflineQueueService.instance.getQueuedCalls();
+      for (final q in queued) {
+        if (!records.any((r) => r.id == q.clientId)) {
+          records.insert(
+            0,
+            CallHistoryRecord(
+              id: q.clientId,
+              leadName: q.leadName,
+              collegeInfo: '—',
+              campaign: 'Direct visit',
+              outcome: q.outcome,
+              duration: q.duration,
+              timestamp: 'Today · Pending sync',
+              notes: q.notes,
+            ),
+          );
+        }
+      }
+
+      records.sort((a, b) => b.id.compareTo(a.id));
       return records;
     });
   }

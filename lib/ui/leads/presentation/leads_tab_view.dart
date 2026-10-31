@@ -1,3 +1,4 @@
+import 'package:acadeno_crm/core/services/app_phone_call_service.dart';
 import 'package:acadeno_crm/core/services/offline_queue_service.dart';
 import 'dart:ui';
 
@@ -325,15 +326,7 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                 builder: (_) {
                                   final due = state.dueNowLead!;
                                   return InkWell(
-                                    onTap: () =>
-                                        LeadCallSheets.showCallAndOutcomeSheet(
-                                          context,
-                                          leadId: due.id,
-                                          leadName: due.name,
-                                          maskedPhone: due.maskedPhone,
-                                          collegeInfo: due.collegeInfo,
-                                          campaignTag: due.campaignTag,
-                                        ),
+                                    onTap: () => AppPhoneCallService.instance.dialLead(context, due),
                                     borderRadius: BorderRadius.circular(16),
                                     child: Container(
                                       padding: const EdgeInsets.symmetric(
@@ -642,15 +635,7 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                           context,
                                           lead: item,
                                         ),
-                                    onTapCall: () =>
-                                        LeadCallSheets.showCallAndOutcomeSheet(
-                                          context,
-                                          leadId: item.id,
-                                          leadName: item.name,
-                                          maskedPhone: item.maskedPhone,
-                                          collegeInfo: item.collegeInfo,
-                                          campaignTag: item.campaignTag,
-                                        ),
+                                    onTapCall: () => AppPhoneCallService.instance.dialLead(context, item),
                                   );
                                 },
                               ),

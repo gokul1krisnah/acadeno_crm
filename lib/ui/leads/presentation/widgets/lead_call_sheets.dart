@@ -1,3 +1,4 @@
+import 'package:acadeno_crm/core/services/app_phone_call_service.dart';
 import 'package:acadeno_crm/shared/widgets/college_selector_field.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -20,6 +21,7 @@ class LeadCallSheets {
     String maskedPhone = '98470 •••11',
     String collegeInfo = 'NIT Calicut · CSE · 3rd yr',
     String campaignTag = 'AI & ML Workshop',
+    String initialDuration = '0s',
   }) {
     final cubit = context.read<LeadsCubit>();
     final followUpsCubit = context.read<FollowUpsCubit>();
@@ -27,7 +29,9 @@ class LeadCallSheets {
     final user = context.read<HomeCubit>().state.user;
     String selectedOutcome = 'Interested';
     String selectedFollowUpSlot = 'Tomorrow · 10:30 AM';
-    final durationCtrl = TextEditingController(text: '2m 18s');
+    final durationCtrl = TextEditingController(
+      text: initialDuration.isNotEmpty ? initialDuration : '0s',
+    );
     final notesCtrl = TextEditingController();
 
     // Enrolment form controllers (FR-5.3)
@@ -668,14 +672,7 @@ class LeadCallSheets {
                         ElevatedButton.icon(
                           onPressed: () {
                             Navigator.pop(ctx);
-                            showCallAndOutcomeSheet(
-                              context,
-                              leadId: lead.id,
-                              leadName: lead.name,
-                              maskedPhone: lead.maskedPhone,
-                              collegeInfo: lead.collegeInfo,
-                              campaignTag: lead.campaignTag,
-                            );
+                            AppPhoneCallService.instance.dialLead(context, lead);
                           },
                           icon: const Icon(Icons.phone_outlined, size: 16),
                           label: const Text('Call'),
@@ -1074,18 +1071,22 @@ class LeadCallSheets {
                   Row(
                     children: [
                       _miniPerfStat(
-                        'Calls (Oct)',
-                        '254',
+                        'Total Calls',
+                        '${state.callRecords.length}',
                         const Color(0xFF4338CA),
                       ),
                       const SizedBox(width: 8),
                       _miniPerfStat(
                         'Interested',
-                        '62',
+                        '${state.callRecords.where((r) => r.outcome.trim().toLowerCase() == "interested").length}',
                         const Color(0xFF0284C7),
                       ),
                       const SizedBox(width: 8),
-                      _miniPerfStat('Converted', '14', const Color(0xFF15803D)),
+                      _miniPerfStat(
+                        'Converted',
+                        '${state.callRecords.where((r) => r.outcome.trim().toLowerCase() == "converted").length}',
+                        const Color(0xFF15803D),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 14),
@@ -1098,10 +1099,33 @@ class LeadCallSheets {
                     ),
                   ),
                   const SizedBox(height: 8),
-                  ...state.callRecords
-                      .take(6)
-                      .map(
-                        (rec) => Container(
+                  if (state.callRecords.isEmpty)
+                    Container(
+                      padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+                      alignment: Alignment.center,
+                      child: Column(
+                        children: [
+                          Icon(Icons.call_end_outlined, size: 36, color: Colors.grey.shade400),
+                          const SizedBox(height: 8),
+                          Text(
+                            'No call records logged yet',
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.grey.shade600,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Calls you make will be recorded here with duration and outcome.',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(fontSize: 11.5, color: Colors.grey.shade500),
+                          ),
+                        ],
+                      ),
+                    )
+                  else
+                  ...state.callRecords.map((rec) => Container(
                           margin: const EdgeInsets.only(bottom: 8),
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(

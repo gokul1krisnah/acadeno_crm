@@ -261,6 +261,25 @@ class OfflineQueueService {
     _pendingCountController.add(count);
   }
 
+  /// Returns locally queued call outcomes for instant offline UI display.
+  List<QueuedCallOutcome> getQueuedCalls() {
+    final box = _box;
+    if (box == null) return const [];
+    final list = <QueuedCallOutcome>[];
+    for (final key in box.keys) {
+      final raw = box.get(key);
+      if (raw != null) {
+        try {
+          final data = jsonDecode(raw) as Map<String, dynamic>;
+          if (data['type'] == 'call_outcome') {
+            list.add(QueuedCallOutcome.fromMap(data));
+          }
+        } catch (_) {}
+      }
+    }
+    return list;
+  }
+
   /// Queues a call outcome locally with an idempotent client ID.
   Future<void> enqueueOutcome({
     required String leadId,

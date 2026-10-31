@@ -7,6 +7,7 @@ import 'package:auto_route/auto_route.dart';
 import 'core/injection/injection.dart';
 import 'core/router/app_router.dart';
 import 'core/services/app_notification_service.dart';
+import 'core/services/app_phone_call_service.dart';
 import 'core/services/app_security_service.dart';
 import 'core/services/offline_queue_service.dart';
 import 'shared/theme/app_colors.dart';
@@ -49,6 +50,7 @@ Future<void> main() async {
   await AuthSessionLocalDs.init();
   await OfflineQueueService.init();
   OfflineQueueService.instance.initialize();
+  AppPhoneCallService.instance.initialize();
 
   configureDependencies();
 
