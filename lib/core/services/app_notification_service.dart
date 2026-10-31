@@ -130,12 +130,12 @@ class AppNotificationService {
         sound: true,
       );
 
-      // 4. Retrieve FCM device token
+      // 4. Retrieve FCM device token with fast timeout so offline startup never hangs
       try {
-        _fcmToken = await _fcm.getToken();
+        _fcmToken = await _fcm.getToken().timeout(const Duration(milliseconds: 1000));
         debugPrint('FCM Device Token: $_fcmToken');
       } catch (e) {
-        debugPrint('FCM getToken notice: $e');
+        debugPrint('FCM getToken notice (offline or skipped): $e');
       }
 
       // 5. Listen to token refresh events
@@ -170,8 +170,8 @@ class AppNotificationService {
         }
       });
 
-      // 9. Sync token if user is already signed in
-      await syncCurrentUserToken();
+      // 9. Sync token in background if user is already signed in (non-blocking)
+      unawaited(syncCurrentUserToken());
 
       // 10. Start automated 9:00 AM daily morning notification
       scheduleDailyMorningBriefing();

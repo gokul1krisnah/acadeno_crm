@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 
 import '../sources/auth_session_local_ds.dart';
 import '../sources/firebase_auth_rds.dart';
@@ -84,7 +86,7 @@ class AuthRepository {
 
     try {
       // Validates and refreshes the backend auth token (fails if disabled/deleted/revoked).
-      await user.reload();
+      await user.reload().timeout(const Duration(milliseconds: 1000));
       sessionVerifiedOnline = true;
       return currentUser;
     } on FirebaseAuthException catch (e) {
@@ -92,11 +94,16 @@ class AuthRepository {
         sessionVerifiedOnline = false;
         return user;
       }
-      await signOut();
-      return null;
-    } catch (_) {
-      await signOut();
-      return null;
+      if (e.code == 'user-disabled' || e.code == 'user-not-found') {
+        await signOut();
+        return null;
+      }
+      sessionVerifiedOnline = false;
+      return user;
+    } catch (e) {
+      debugPrint('restoreSession: user.reload offline or timed out, trusting local session');
+      sessionVerifiedOnline = false;
+      return user;
     }
   }
 

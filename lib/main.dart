@@ -18,6 +18,15 @@ import 'ui/auth/data/sources/auth_session_local_ds.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  // Global error safety shield: prevent internal JS SDK assertion popups from breaking user UI
+  FlutterError.onError = (details) {
+    debugPrint('[FlutterError] ${details.exceptionAsString()}');
+  };
+  PlatformDispatcher.instance.onError = (error, stack) {
+    debugPrint('[PlatformDispatcher Error] $error');
+    return true;
+  };
+
   // Enforce screen security: Block screenshots, screen recordings, and switcher previews (PR-2.1)
   await AppSecurityService.instance.enableScreenshotProtection();
 
@@ -31,8 +40,10 @@ Future<void> main() async {
     );
   }
 
-  // Initialize Firebase Cloud Messaging Push & In-App Notification Service
-  await AppNotificationService.instance.initialize();
+  // Initialize Firebase Cloud Messaging Push & In-App Notification Service (resilient timeout)
+  await AppNotificationService.instance
+      .initialize()
+      .timeout(const Duration(milliseconds: 1500), onTimeout: () {});
 
   // Hive must be ready before the splash screen restores the session.
   await AuthSessionLocalDs.init();

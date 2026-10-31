@@ -1,3 +1,5 @@
+import 'dart:async';
+import '../data/sources/auth_session_local_ds.dart';
 import 'package:acadeno_crm/core/router/app_router.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -19,6 +21,9 @@ class LoginCubit extends Cubit<LoginState> {
   LoginCubit(this._authRepository) : super(const LoginState.initial());
 
   final AuthRepository _authRepository;
+
+  /// Cached session metadata from Hive local storage.
+  AuthSession? get savedSession => _authRepository.savedSession;
 
   /// True if the currently signed-in user has admin privileges.
   bool isAdmin = false;
@@ -70,7 +75,18 @@ class LoginCubit extends Cubit<LoginState> {
   /// persisted session) otherwise.
   Future<bool> restoreSession() async {
     try {
-      final user = await _authRepository.restoreSession();
+      final user = await _authRepository.restoreSession().timeout(
+        const Duration(milliseconds: 1500),
+        onTimeout: () {
+          final current = _authRepository.currentUser;
+          final saved = _authRepository.savedSession;
+          if (current != null && saved != null && current.uid == saved.uid) {
+            _authRepository.sessionVerifiedOnline = false;
+            return current;
+          }
+          return null;
+        },
+      );
       if (user == null) {
         _resetRole();
         return false;
@@ -82,14 +98,35 @@ class LoginCubit extends Cubit<LoginState> {
       if (denial != null) {
         return false;
       }
-      // Keep persisted session in sync with current state
-      await _authRepository.saveSession(
-        user,
-        role: currentRole,
-        isAdmin: isAdmin,
-      );
+      // Keep persisted session in sync if online; do not block startup
+      if (_authRepository.sessionVerifiedOnline) {
+        try {
+          await _authRepository.saveSession(
+            user,
+            role: currentRole,
+            isAdmin: isAdmin,
+          ).timeout(const Duration(milliseconds: 500));
+        } catch (_) {}
+      }
       return true;
     } catch (_) {
+      // Offline safety: do not wipe session on network timeout
+      final saved = _authRepository.savedSession;
+      final current = _authRepository.currentUser;
+      if (saved != null && current != null && saved.uid == current.uid) {
+        final isOfflineAdmin = (saved.isAdmin) ||
+            current.uid == _kAdminUid ||
+            _kAdminRoles.contains(saved.role?.toLowerCase());
+        if (isOfflineAdmin) {
+          isAdmin = true;
+          isAdminSession = true;
+          currentRole = saved.role ?? 'admin';
+        } else {
+          _resetRole();
+          currentRole = saved.role ?? 'executive';
+        }
+        return true;
+      }
       await _authRepository.signOut();
       _resetRole();
       return false;
@@ -106,31 +143,56 @@ class LoginCubit extends Cubit<LoginState> {
   /// [isAdmin]. Returns a failure message if access is denied (the user is
   /// signed out and the persisted session cleared), or null if allowed.
   Future<String?> _authorize(User user, {bool offline = false}) async {
+    // 1. If offline was detected, immediately trust cached Hive session without waiting
+    if (offline) {
+      final saved = _authRepository.savedSession;
+      if (saved != null && saved.uid == user.uid) {
+        final isOfflineAdmin = saved.isAdmin ||
+            user.uid == _kAdminUid ||
+            _kAdminRoles.contains(saved.role?.toLowerCase());
+        if (isOfflineAdmin) {
+          isAdmin = true;
+          isAdminSession = true;
+          currentRole = saved.role ?? 'admin';
+        } else {
+          _resetRole();
+          currentRole = saved.role ?? 'executive';
+        }
+        return null;
+      }
+    }
+
     DocumentSnapshot<Map<String, dynamic>>? doc;
     try {
       doc = await FirebaseFirestore.instance
           .collection('users')
           .doc(user.uid)
-          .get();
-    } on FirebaseException catch (e) {
-      // Backend unreachable while restoring: trust cached session from Hive
-      if (offline || e.code == 'unavailable') {
-        final saved = _authRepository.savedSession;
-        final isOfflineAdmin =
-            (saved?.isAdmin ?? false) ||
+          .get()
+          .timeout(const Duration(milliseconds: 1200));
+    } catch (e) {
+      // Backend unreachable or timed out: trust cached session from Hive
+      final saved = _authRepository.savedSession;
+      if (saved != null && saved.uid == user.uid) {
+        final isOfflineAdmin = saved.isAdmin ||
             user.uid == _kAdminUid ||
-            _kAdminRoles.contains(saved?.role?.toLowerCase());
+            _kAdminRoles.contains(saved.role?.toLowerCase());
         if (isOfflineAdmin) {
           isAdmin = true;
           isAdminSession = true;
-          currentRole = saved?.role ?? 'admin';
+          currentRole = saved.role ?? 'admin';
         } else {
           _resetRole();
-          currentRole = saved?.role ?? 'hr';
+          currentRole = saved.role ?? 'executive';
         }
         return null;
       }
-      rethrow;
+      if (user.uid == _kAdminUid) {
+        isAdmin = true;
+        isAdminSession = true;
+        currentRole = 'admin';
+        return null;
+      }
+      return 'Offline: unable to verify session';
     }
 
     if (!doc.exists) {

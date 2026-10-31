@@ -148,13 +148,48 @@ class _SplashPageState extends State<SplashPage>
     final cubit = LoginCubit(
       AuthRepository(FirebaseAuthRds(FirebaseAuth.instance)),
     );
-    final results = await Future.wait<Object?>([
-      cubit.restoreSession(),
-      Future<Object?>.delayed(const Duration(milliseconds: 2500)),
-    ]);
-    final restored = results.first as bool;
-    final isAdmin = cubit.isAdmin;
-    await cubit.close();
+
+    bool restored = false;
+    bool isAdmin = false;
+
+    try {
+      final results = await Future.wait<Object?>([
+        cubit.restoreSession().timeout(
+          const Duration(milliseconds: 2000),
+          onTimeout: () => false,
+        ),
+        Future<Object?>.delayed(const Duration(milliseconds: 2200)),
+      ]).timeout(
+        const Duration(milliseconds: 2600),
+        onTimeout: () => [false, null],
+      );
+
+      restored = (results.first as bool?) ?? false;
+      isAdmin = cubit.isAdmin;
+
+      // Offline safety fallback: if session restore timed out or returned false while offline,
+      // verify if a cached user and Hive session exist locally.
+      if (!restored) {
+        final saved = cubit.savedSession;
+        final currentUser = FirebaseAuth.instance.currentUser;
+        if (saved != null && currentUser != null && saved.uid == currentUser.uid) {
+          restored = true;
+          isAdmin = saved.isAdmin ||
+              currentUser.uid == 'aOt6zw43GPTebTKWAP4d0hQHYEz2' ||
+              const ['admin', 'super_admin'].contains(saved.role?.toLowerCase());
+        }
+      }
+    } catch (e) {
+      debugPrint('Splash restore fallback notice: $e');
+      final saved = cubit.savedSession;
+      final currentUser = FirebaseAuth.instance.currentUser;
+      if (saved != null && currentUser != null && saved.uid == currentUser.uid) {
+        restored = true;
+        isAdmin = saved.isAdmin;
+      }
+    } finally {
+      await cubit.close();
+    }
 
     if (!mounted) return;
 

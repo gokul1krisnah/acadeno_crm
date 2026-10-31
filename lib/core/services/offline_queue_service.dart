@@ -408,7 +408,8 @@ class OfflineQueueService {
       final todayKey = LeadDateHelper.todayDateKey();
       final leadRef = firestore.collection('leads').doc(item.leadId);
       final assignId = '${item.leadId}_$todayKey';
-      final assignRef = firestore.collection('lead_assignments').doc(assignId);
+      final assignRef1 = firestore.collection('assignments').doc(assignId);
+      final assignRef2 = firestore.collection('lead_assignments').doc(assignId);
 
       // 1. Determine status update rules
       String nextStatus = item.outcome;
@@ -433,13 +434,15 @@ class OfflineQueueService {
         'updatedAt': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true));
 
-      // 3. Assignment document update (merge)
-      await assignRef.set({
+      // 3. Assignment document update (merge to both collections for complete sync)
+      final assignUpdate = {
         'isDone': true,
         'lastOutcome': item.outcome,
         'leadStatus': nextStatus,
         'updatedAt': FieldValue.serverTimestamp(),
-      }, SetOptions(merge: true));
+      };
+      await assignRef1.set(assignUpdate, SetOptions(merge: true));
+      await assignRef2.set(assignUpdate, SetOptions(merge: true));
 
       // 4. Call log with DETERMINISTIC document ID (clientId) -> guarantees zero duplicates!
       final logRef = firestore.collection('call_logs').doc(item.clientId);

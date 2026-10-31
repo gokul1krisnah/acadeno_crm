@@ -278,20 +278,22 @@ class FirestoreLeadsBackend implements LeadsBackend {
   Future<({String uid, String name, String role, bool isActive})>
   _verifyCurrentActor({bool requireAdminOrManager = false}) async {
     final uid = currentUserId;
+    final authUser = _firebaseAuth.currentUser;
+    final authEmail = authUser?.email?.trim() ?? '';
+    final fallbackName = authUser?.displayName?.trim().isNotEmpty == true
+        ? authUser!.displayName!.trim()
+        : (authEmail.isNotEmpty
+            ? authEmail.split('@').first
+            : (isAdminSession ? 'Super Admin' : 'Executive'));
+    final fallbackRole = isAdminSession ? 'super_admin' : 'executive';
+
     if (uid == null || uid.trim().isEmpty) {
       if (isAdminSession) {
         return (
           uid: 'admin_session',
           name: 'Super Admin',
           role: 'super_admin',
-          boolIsActive: true,
-        ).let(
-          (v) => (
-            uid: v.uid,
-            name: v.name,
-            role: v.role,
-            isActive: v.boolIsActive,
-          ),
+          isActive: true,
         );
       }
       throw const LeadPermissionException(
@@ -299,7 +301,28 @@ class FirestoreLeadsBackend implements LeadsBackend {
       );
     }
 
-    final doc = await _users.doc(uid).get();
+    // Immediately resolve offline actor without hanging on network
+    if (!OfflineQueueService.instance.isOnline) {
+      return (
+        uid: uid,
+        name: fallbackName,
+        role: fallbackRole,
+        isActive: true,
+      );
+    }
+
+    DocumentSnapshot<Map<String, dynamic>>? doc;
+    try {
+      doc = await _users.doc(uid).get().timeout(const Duration(milliseconds: 1000));
+    } catch (_) {
+      return (
+        uid: uid,
+        name: fallbackName,
+        role: fallbackRole,
+        isActive: true,
+      );
+    }
+
     var data = doc.data();
     if (data == null) {
       final authUser = _firebaseAuth.currentUser;
@@ -1033,76 +1056,22 @@ class FirestoreLeadsBackend implements LeadsBackend {
     final effectiveDateKey = dateKey ?? LeadDateHelper.todayDateKey();
 
     // 2. Query ONLY this executive's assignments for the target date.
-    // NEVER fetch all leads and filter locally.
+    // Use synchronous .map to prevent targetId desynchronization & WatchChangeAggregator crashes on Web (RL-5, RL-6)
     yield* _assignments
         .where('executiveUid', isEqualTo: actor.uid)
         .where('dateKey', isEqualTo: effectiveDateKey)
         .snapshots()
-        .asyncMap((assignmentSnap) async {
-                    if (assignmentSnap.docs.isEmpty) {
-            try {
-              final directLeadsSnap = await _leads
-                  .where('assignedToUid', isEqualTo: actor.uid)
-                  .get();
-              if (directLeadsSnap.docs.isNotEmpty) {
-                return directLeadsSnap.docs.map((d) {
-                  final lead = LeadRecord.fromFirestore(d);
-                  return lead.toExecutiveLeadItem();
-                }).toList();
-              }
-              if (actor.name.isNotEmpty) {
-                final byNameSnap = await _leads
-                    .where('assignedTo', isEqualTo: actor.name)
-                    .get();
-                if (byNameSnap.docs.isNotEmpty) {
-                  return byNameSnap.docs.map((d) {
-                    final lead = LeadRecord.fromFirestore(d);
-                    return lead.toExecutiveLeadItem();
-                  }).toList();
-                }
-              }
-            } catch (_) {}
+        .map((assignmentSnap) {
+          if (assignmentSnap.docs.isEmpty) {
             return const <ExecutiveLeadItem>[];
           }
 
-          final assignments = assignmentSnap.docs
-              .map(LeadAssignmentModel.fromFirestore)
-              .toList();
-
-          // Load the corresponding lead details by document ID
-          final items = <ExecutiveLeadItem>[];
-          for (final assignment in assignments) {
-            if (assignment.leadId.isEmpty) continue;
-            try {
-              final leadDoc = await _leads.doc(assignment.leadId).get();
-              if (leadDoc.exists && leadDoc.data() != null) {
-                final leadRecord = LeadRecord.fromFirestore(leadDoc);
-                // Ensure the lead wasn't reassigned away to a different executive
-                if (leadRecord.assignedToUid != null &&
-                    leadRecord.assignedToUid!.isNotEmpty &&
-                    leadRecord.assignedToUid != actor.uid) {
-                  continue;
-                }
-                items.add(
-                  leadRecord.toExecutiveLeadItem(assignment: assignment),
-                );
-              } else {
-                items.add(
-                  assignment.toFallbackLeadRecord().toExecutiveLeadItem(
-                    assignment: assignment,
-                  ),
-                );
-              }
-            } catch (_) {
-              // Fallback to assignment's denormalized lead summary if individual doc read fails
-              items.add(
-                assignment.toFallbackLeadRecord().toExecutiveLeadItem(
-                  assignment: assignment,
-                ),
-              );
-            }
-          }
-          return items;
+          return assignmentSnap.docs.map((doc) {
+            final assignment = LeadAssignmentModel.fromFirestore(doc);
+            return assignment.toFallbackLeadRecord().toExecutiveLeadItem(
+              assignment: assignment,
+            );
+          }).toList();
         });
   }
 
@@ -1159,14 +1128,70 @@ class FirestoreLeadsBackend implements LeadsBackend {
     final assignId = LeadAssignmentModel.docId(leadId, todayKey);
     final assignRef = _assignments.doc(assignId);
 
+    final isFollowUpPending = outcome == 'Follow-up' ||
+        outcome == 'Callback' ||
+        outcome == 'Interested' ||
+        outcome == 'No answer';
+
+    final clientId =
+        'call_${leadId}_${DateTime.now().millisecondsSinceEpoch}_${leadId.hashCode.abs()}';
+
+    // 1. If offline, IMMEDIATELY enqueue to persistent Hive queue & apply local cache writes (RL-5, RL-6)
+    if (!OfflineQueueService.instance.isOnline) {
+      await OfflineQueueService.instance.enqueueOutcome(
+        leadId: leadId,
+        leadName: leadName,
+        outcome: outcome,
+        duration: duration,
+        notes: notes,
+        courseEnrolled: courseEnrolled,
+        discountAmount: discountAmount,
+        executiveUid: actor.uid,
+        executiveName: actor.name,
+      );
+
+      // Write to local Firestore offline cache so UI updates immediately
+      try {
+        await leadRef.set({
+          'status': outcome,
+          'lastContact': 'Today',
+          'isDone': !isFollowUpPending,
+          'isLocked': false,
+          'lockedByUid': null,
+          'lockedMessage': null,
+          if (outcome == 'Follow-up' || outcome == 'Callback')
+            'followUpTime': 'Tomorrow · 10:30 AM',
+          if (outcome == 'No answer')
+            'followUpTime': 'Today · 4:30 PM',
+          if (outcome == 'Interested')
+            'followUpTime': 'Today · 5:30 PM',
+          if (notes.trim().isNotEmpty) 'notes': notes.trim(),
+          'updatedAt': FieldValue.serverTimestamp(),
+        }, SetOptions(merge: true));
+
+        await assignRef.set({
+          'isDone': true,
+          'lastOutcome': outcome,
+          'leadStatus': outcome,
+          'updatedAt': FieldValue.serverTimestamp(),
+        }, SetOptions(merge: true));
+      } catch (_) {}
+
+      final needsApproval = outcome == 'Converted' && (discountAmount ?? 0) > 500;
+      return CallOutcomeResult(
+        collegeInfo: collegeInfo,
+        needsDiscountApproval: needsApproval,
+      );
+    }
+
+    // 2. If online, update Firestore with strict timeouts, falling back to offline queue on failure
     try {
-      final leadSnap = await leadRef.get();
+      final leadSnap = await leadRef.get().timeout(const Duration(milliseconds: 1500));
       if (leadSnap.exists && leadSnap.data() != null) {
         final lead = LeadRecord.fromFirestore(leadSnap);
         collegeInfo = lead.collegeBranch;
         campaign = lead.source;
 
-        // FR-3.5 Status rules: Converted is never overwritten; No answer never erases Interested
         String nextStatus = lead.status;
         if (lead.status != 'Converted') {
           if (outcome == 'No answer' && lead.status == 'Interested') {
@@ -1180,11 +1205,6 @@ class FirestoreLeadsBackend implements LeadsBackend {
           'Today · $outcome logged by ${actor.name}${notes.trim().isNotEmpty ? " ($notes)" : ""}',
           ...lead.timeline,
         ];
-
-        final isFollowUpPending = outcome == 'Follow-up' ||
-            outcome == 'Callback' ||
-            outcome == 'Interested' ||
-            outcome == 'No answer';
 
         await leadRef.update({
           'status': nextStatus,
@@ -1202,25 +1222,38 @@ class FirestoreLeadsBackend implements LeadsBackend {
           if (notes.trim().isNotEmpty) 'notes': notes.trim(),
           'timeline': nextTimeline,
           'updatedAt': FieldValue.serverTimestamp(),
-        });
+        }).timeout(const Duration(milliseconds: 1500));
 
-        final assignSnap = await assignRef.get();
+        final assignSnap = await assignRef.get().timeout(const Duration(milliseconds: 1500));
         if (assignSnap.exists) {
           await assignRef.update({
             'isDone': true,
             'lastOutcome': outcome,
             'leadStatus': nextStatus,
             'updatedAt': FieldValue.serverTimestamp(),
-          });
+          }).timeout(const Duration(milliseconds: 1500));
         }
       }
     } catch (_) {
-      // Allow call log creation even if offline or partial
+      // Partial failure or timeout: queue locally
     }
 
-    final clientId = 'call___';
-
-    if (!OfflineQueueService.instance.isOnline) {
+    try {
+      await _callLogs.doc(clientId).set({
+        'leadId': leadId,
+        'leadName': leadName,
+        'executiveUid': actor.uid,
+        'executiveName': actor.name,
+        'collegeInfo': collegeInfo,
+        'campaign': campaign,
+        'outcome': outcome,
+        'duration': duration.trim().isEmpty ? '2m 15s' : duration.trim(),
+        'notes': notes.trim().isEmpty ? 'Logged $outcome outcome' : notes.trim(),
+        if (courseEnrolled != null) 'courseEnrolled': courseEnrolled,
+        if (discountAmount != null) 'discountAmount': discountAmount,
+        'createdAt': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true)).timeout(const Duration(milliseconds: 1500));
+    } catch (_) {
       await OfflineQueueService.instance.enqueueOutcome(
         leadId: leadId,
         leadName: leadName,
@@ -1232,35 +1265,6 @@ class FirestoreLeadsBackend implements LeadsBackend {
         executiveUid: actor.uid,
         executiveName: actor.name,
       );
-    } else {
-      try {
-        await _callLogs.doc(clientId).set({
-          'leadId': leadId,
-          'leadName': leadName,
-          'executiveUid': actor.uid,
-          'executiveName': actor.name,
-          'collegeInfo': collegeInfo,
-          'campaign': campaign,
-          'outcome': outcome,
-          'duration': duration.trim().isEmpty ? '2m 15s' : duration.trim(),
-          'notes': notes.trim().isEmpty ? 'Logged  outcome' : notes.trim(),
-          if (courseEnrolled != null) 'courseEnrolled': courseEnrolled,
-          if (discountAmount != null) 'discountAmount': discountAmount,
-          'createdAt': FieldValue.serverTimestamp(),
-        }, SetOptions(merge: true));
-      } catch (_) {
-        await OfflineQueueService.instance.enqueueOutcome(
-          leadId: leadId,
-          leadName: leadName,
-          outcome: outcome,
-          duration: duration,
-          notes: notes,
-          courseEnrolled: courseEnrolled,
-          discountAmount: discountAmount,
-          executiveUid: actor.uid,
-          executiveName: actor.name,
-        );
-      }
     }
 
     final needsApproval = outcome == 'Converted' && (discountAmount ?? 0) > 500;

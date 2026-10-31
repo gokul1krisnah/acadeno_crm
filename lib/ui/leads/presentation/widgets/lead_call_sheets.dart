@@ -492,31 +492,37 @@ class LeadCallSheets {
                             flex: 2,
                             child: ElevatedButton(
                               onPressed: () async {
-                                final result = await cubit.recordCallOutcome(
-                                  leadId: leadId,
-                                  leadName: leadName,
-                                  outcome: selectedOutcome,
-                                  duration: durationCtrl.text.trim(),
-                                  notes: notesCtrl.text.trim(),
-                                  courseEnrolled: selectedCourse,
-                                  discountAmount: discountVal,
-                                );
-                                followUpsCubit.addFromCallOutcome(
-                                  leadName: leadName,
-                                  collegeInfo: result.collegeInfo,
-                                  outcome: selectedOutcome,
-                                  notes: notesCtrl.text.trim(),
-                                  followUpTimeLabel: selectedFollowUpSlot,
-                                );
-                                if (result.needsDiscountApproval) {
-                                  alertsCubit.addDiscountApprovalAlert(
+                                // Close dialog immediately so the UI is snappy and never freezes (RL-5, RL-6)
+                                if (ctx.mounted) {
+                                  Navigator.pop(ctx);
+                                }
+
+                                try {
+                                  final result = await cubit.recordCallOutcome(
+                                    leadId: leadId,
                                     leadName: leadName,
+                                    outcome: selectedOutcome,
+                                    duration: durationCtrl.text.trim(),
+                                    notes: notesCtrl.text.trim(),
                                     courseEnrolled: selectedCourse,
                                     discountAmount: discountVal,
                                   );
-                                }
-                                if (ctx.mounted) {
-                                  Navigator.pop(ctx);
+                                  followUpsCubit.addFromCallOutcome(
+                                    leadName: leadName,
+                                    collegeInfo: result.collegeInfo,
+                                    outcome: selectedOutcome,
+                                    notes: notesCtrl.text.trim(),
+                                    followUpTimeLabel: selectedFollowUpSlot,
+                                  );
+                                  if (result.needsDiscountApproval) {
+                                    alertsCubit.addDiscountApprovalAlert(
+                                      leadName: leadName,
+                                      courseEnrolled: selectedCourse,
+                                      discountAmount: discountVal,
+                                    );
+                                  }
+                                } catch (e) {
+                                  debugPrint('recordCallOutcome error: $e');
                                 }
                               },
                               style: ElevatedButton.styleFrom(
