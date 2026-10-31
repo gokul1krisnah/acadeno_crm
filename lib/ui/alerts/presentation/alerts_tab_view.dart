@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc';
-
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:acadeno_crm/shared/extensions/build_context_extension.dart';
 import 'package:acadeno_crm/shared/theme/app_images.dart';
 import 'package:acadeno_crm/ui/alerts/application/alerts_cubit.dart';
@@ -35,7 +34,6 @@ class AlertsTabView extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Top White Header with Official Acadeno Logo
                 Container(
                   width: double.infinity,
                   decoration: const BoxDecoration(

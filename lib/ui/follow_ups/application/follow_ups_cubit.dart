@@ -119,6 +119,9 @@ class FollowUpsCubit extends Cubit<FollowUpsState> {
     );
   }
 
+  // FR-4.2: Complete follow-up directly in Firestore
+  Future<void> completeFollowUp(String id) => markCompleted(id);
+
   // FR-4.2: Mark follow-up as done directly in Firestore
   Future<void> markCompleted(String id) async {
     final updated = List<ExecutiveFollowUpItem>.from(state.followUps);
