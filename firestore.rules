@@ -32,6 +32,13 @@ service cloud.firestore {
     }
 
     // -------------------------------------------------------------------------
+    // Lead Assignments Collection (`lead_assignments/{assignmentId}`)
+    // -------------------------------------------------------------------------
+    match /lead_assignments/{assignmentId} {
+      allow read, write: if isSignedIn();
+    }
+
+    // -------------------------------------------------------------------------
     // Assignments Collection (`assignments/{assignmentId}`)
     // -------------------------------------------------------------------------
     match /assignments/{assignmentId} {
@@ -79,8 +86,7 @@ service cloud.firestore {
     // Permanent Call Logs (`call_logs/{logId}`)
     // -------------------------------------------------------------------------
     match /call_logs/{logId} {
-      allow read, create: if isSignedIn();
-      allow update, delete: if false;
+      allow read, write: if isSignedIn();
     }
 
     // -------------------------------------------------------------------------

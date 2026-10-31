@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../core/services/offline_queue_service.dart';
 
-/// Non-intrusive, reactive status bar that notifies users of offline state,
-/// active synchronizations, and successful sync flushes.
+/// Non-intrusive, reactive floating status pill that notifies users of offline state,
+/// active synchronizations, and successful sync flushes without displacing the AppBar.
 class OfflineStatusBar extends StatelessWidget {
   const OfflineStatusBar({super.key});
 
@@ -74,7 +74,7 @@ class OfflineStatusBar extends StatelessWidget {
           );
           title = 'Offline Mode';
           subtitle = pending > 0
-              ? '$pending change${pending > 1 ? "s" : ""} saved locally · Will sync when reconnected'
+              ? '$pending change${pending > 1 ? "s" : ""} saved locally'
               : 'Changes save locally and sync automatically';
           trailingAction = InkWell(
             onTap: () => queueService.syncNow(),
@@ -138,58 +138,62 @@ class OfflineStatusBar extends StatelessWidget {
 
         return SafeArea(
           bottom: false,
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 250),
-            curve: Curves.easeInOut,
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-            decoration: BoxDecoration(
-              color: bgColor,
-              border: Border(bottom: BorderSide(color: borderColor, width: 1.5)),
-              boxShadow: const [
-                BoxShadow(
-                  color: Color(0x22000000),
-                  blurRadius: 6,
-                  offset: Offset(0, 2),
-                ),
-              ],
-            ),
-            child: Row(
-              children: [
-                leadingIcon,
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        title,
-                        style: TextStyle(
-                          color: fgColor,
-                          fontSize: 12.5,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: 0.2,
-                        ),
-                      ),
-                      Text(
-                        subtitle,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: fgColor.withValues(alpha: 0.85),
-                          fontSize: 11.5,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 250),
+              curve: Curves.easeInOut,
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              decoration: BoxDecoration(
+                color: bgColor,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: borderColor, width: 1.2),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Color(0x33000000),
+                    blurRadius: 10,
+                    offset: Offset(0, 4),
                   ),
-                ),
-                if (trailingAction != null) ...[
-                  const SizedBox(width: 8),
-                  trailingAction,
                 ],
-              ],
+              ),
+              child: Row(
+                children: [
+                  leadingIcon,
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          title,
+                          style: TextStyle(
+                            color: fgColor,
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 0.2,
+                          ),
+                        ),
+                        Text(
+                          subtitle,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: fgColor.withValues(alpha: 0.85),
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  if (trailingAction != null) ...[
+                    const SizedBox(width: 8),
+                    trailingAction,
+                  ],
+                ],
+              ),
             ),
           ),
         );

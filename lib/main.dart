@@ -1,17 +1,17 @@
-import 'shared/widgets/offline_status_bar.dart';
-import 'package:flutter/foundation.dart';
-import 'core/services/offline_queue_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:acadeno_crm/shared/theme/app_colors.dart';
-import 'package:acadeno_crm/shared/theme/app_typography.dart';
-import 'package:auto_route/auto_route.dart';
-import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:auto_route/auto_route.dart';
 
 import 'core/injection/injection.dart';
 import 'core/router/app_router.dart';
 import 'core/services/app_notification_service.dart';
 import 'core/services/app_security_service.dart';
+import 'core/services/offline_queue_service.dart';
+import 'shared/theme/app_colors.dart';
+import 'shared/theme/app_typography.dart';
+import 'shared/widgets/offline_status_bar.dart';
 import 'firebase_options.dart';
 import 'ui/auth/data/sources/auth_session_local_ds.dart';
 
@@ -170,7 +170,6 @@ class _AcadenoAppState extends State<AcadenoApp> with WidgetsBindingObserver {
           contentTextStyle: AppTypography.body(
             size: 13,
             weight: FontWeight.w600,
-
             color: AppColors.white,
           ),
         ),
@@ -178,10 +177,15 @@ class _AcadenoAppState extends State<AcadenoApp> with WidgetsBindingObserver {
       builder: (context, child) {
         return Material(
           color: Colors.white,
-          child: Column(
+          child: Stack(
             children: [
-              const OfflineStatusBar(),
-              Expanded(child: child ?? const SizedBox.shrink()),
+              child ?? const SizedBox.shrink(),
+              const Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                child: OfflineStatusBar(),
+              ),
             ],
           ),
         );
