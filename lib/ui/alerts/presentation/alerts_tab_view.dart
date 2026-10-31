@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_bloc/flutter_bloc';
 
 import 'package:acadeno_crm/shared/extensions/build_context_extension.dart';
+import 'package:acadeno_crm/shared/theme/app_images.dart';
 import 'package:acadeno_crm/ui/alerts/application/alerts_cubit.dart';
 import 'package:acadeno_crm/ui/home/application/home_cubit.dart';
 import 'package:acadeno_crm/ui/alerts/application/alerts_state.dart';
@@ -34,7 +35,7 @@ class AlertsTabView extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Top White Header
+                // Top White Header with Official Acadeno Logo
                 Container(
                   width: double.infinity,
                   decoration: const BoxDecoration(
@@ -47,14 +48,26 @@ class AlertsTabView extends StatelessWidget {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text(
-                        'Alerts',
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.w800,
-                          color: Color(0xFF0F172A),
-                          letterSpacing: -0.4,
-                        ),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Image.asset(
+                            AppImages.acadenoALogo,
+                            width: 28,
+                            height: 28,
+                            fit: BoxFit.contain,
+                          ),
+                          const SizedBox(width: 10),
+                          const Text(
+                            'Alerts',
+                            style: TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.w800,
+                              color: Color(0xFF0F172A),
+                              letterSpacing: -0.4,
+                            ),
+                          ),
+                        ],
                       ),
                       InkWell(
                         onTap: cubit.markAllAlertsRead,
@@ -239,8 +252,8 @@ class _AlertCard extends StatelessWidget {
       ),
       AlertIconType.sun => (
         Icons.wb_sunny_outlined,
-        const Color(0xFFFEF6E0),
-        const Color(0xFFB45309),
+        const Color(0xFFEEEDFD),
+        const Color(0xFF4338CA),
       ),
       AlertIconType.warning => (
         Icons.warning_amber_rounded,
@@ -262,7 +275,7 @@ class _AlertCard extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Rounded square icon container
+            // Rounded square container with Acadeno logo for greeting or contextual icon
             Container(
               width: 40,
               height: 40,
@@ -270,7 +283,13 @@ class _AlertCard extends StatelessWidget {
                 color: iconBg,
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Icon(iconData, color: iconFg, size: 20),
+              padding: item.iconType == AlertIconType.sun
+                  ? const EdgeInsets.all(7)
+                  : EdgeInsets.zero,
+              alignment: Alignment.center,
+              child: item.iconType == AlertIconType.sun
+                  ? Image.asset(AppImages.acadenoALogo, fit: BoxFit.contain)
+                  : Icon(iconData, color: iconFg, size: 20),
             ),
             const SizedBox(width: 12),
 

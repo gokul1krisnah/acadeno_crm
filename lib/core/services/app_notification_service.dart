@@ -31,7 +31,8 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
         playSound: true,
         enableVibration: true,
         tag: 'lead_assigned',
-        icon: '@mipmap/ic_launcher',
+        icon: '@drawable/ic_notification',
+        largeIcon: DrawableResourceAndroidBitmap('@mipmap/ic_launcher'),
         color: Color(0xFF4338CA),
       );
       const notificationDetails = NotificationDetails(android: androidDetails);
@@ -79,10 +80,10 @@ class AppNotificationService {
   /// Initializes push notification channels, requests permissions, and captures FCM token.
   Future<void> initialize() async {
     try {
-      // 1. Setup Android high-importance notification channel
+      // 1. Setup Android high-importance notification channel with Acadeno brand icons
       if (!kIsWeb) {
         const androidInit = AndroidInitializationSettings(
-          '@mipmap/ic_launcher',
+          '@drawable/ic_notification',
         );
         const initSettings = InitializationSettings(android: androidInit);
         await _localNotifications.initialize(settings: initSettings);
@@ -179,7 +180,7 @@ class AppNotificationService {
     }
   }
 
-  /// Displays an Android system tray heads-up banner with sound and vibration
+  /// Displays an Android system tray heads-up banner with Acadeno official logo and sound
   Future<void> showNativeNotification({
     required String title,
     required String body,
@@ -197,7 +198,8 @@ class AppNotificationService {
         playSound: true,
         enableVibration: true,
         tag: tag ?? 'lead_assigned',
-        icon: '@mipmap/ic_launcher',
+        icon: '@drawable/ic_notification',
+        largeIcon: const DrawableResourceAndroidBitmap('@mipmap/ic_launcher'),
         color: const Color(0xFF4338CA),
       );
       final details = NotificationDetails(android: androidDetails);
