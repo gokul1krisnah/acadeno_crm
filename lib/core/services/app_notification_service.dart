@@ -1,3 +1,5 @@
+import 'package:hive/hive.dart';
+import '../../ui/auth/data/sources/auth_session_local_ds.dart';
 import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -68,7 +70,24 @@ class AppNotificationService {
 
   Timer? _morningTimer;
   Timer? _morningPeriodicTimer;
-  String? _lastMorningBriefingDate;
+  static const String _morningDatePrefKey = 'last_morning_briefing_date';
+
+  String? _getLastMorningDate() {
+    try {
+      if (Hive.isBoxOpen(AuthSessionLocalDs.boxName)) {
+        return Hive.box<dynamic>(AuthSessionLocalDs.boxName).get(_morningDatePrefKey)?.toString();
+      }
+    } catch (_) {}
+    return null;
+  }
+
+  void _saveLastMorningDate(String date) {
+    try {
+      if (Hive.isBoxOpen(AuthSessionLocalDs.boxName)) {
+        Hive.box<dynamic>(AuthSessionLocalDs.boxName).put(_morningDatePrefKey, date);
+      }
+    } catch (_) {}
+  }
 
   final StreamController<RemoteMessage> _foregroundMessageController =
       StreamController<RemoteMessage>.broadcast();
@@ -221,8 +240,9 @@ class AppNotificationService {
       final todayDate =
           '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
 
-      // 1. If app opened at or after 9:00 AM today and morning briefing hasn't triggered yet
-      if (now.hour >= 9 && _lastMorningBriefingDate != todayDate) {
+      // 1. Check persistent Hive storage: only trigger if NOT already triggered today (never re-trigger on app restarts!)
+      final lastTriggered = _getLastMorningDate();
+      if (now.hour >= 9 && lastTriggered != todayDate) {
         _triggerDailyMorningBriefing(todayDate);
       }
 
@@ -255,8 +275,9 @@ class AppNotificationService {
   }
 
   Future<void> _triggerDailyMorningBriefing(String todayDate) async {
-    if (_lastMorningBriefingDate == todayDate) return;
-    _lastMorningBriefingDate = todayDate;
+    final lastTriggered = _getLastMorningDate();
+    if (lastTriggered == todayDate) return;
+    _saveLastMorningDate(todayDate);
 
     // Show native Android system tray notification with Acadeno logo & sound
     await showNativeNotification(
