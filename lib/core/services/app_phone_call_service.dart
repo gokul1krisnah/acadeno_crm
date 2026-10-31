@@ -6,11 +6,12 @@ import 'package:flutter/services.dart';
 
 import '../../ui/leads/data/model/lead_models.dart';
 import '../../ui/leads/presentation/widgets/lead_call_sheets.dart';
+import '../utils/url_dialer_helper.dart';
 
 /// Telephony & Dialer Service for ACADENO CRM (FR-3.1 - FR-3.5).
 ///
 /// Features:
-/// 1. Native system dialer launch with target lead phone number.
+/// 1. Native system dialer launch with target lead phone number on Android and Web.
 /// 2. Requests call log permissions (`READ_CALL_LOG`) on Android.
 /// 3. Detects when executive finishes call and returns to the app (`AppLifecycleState.resumed`).
 /// 4. Captures exact talk-time call duration in minutes/seconds from Android CallLog.
@@ -64,16 +65,15 @@ class AppPhoneCallService with WidgetsBindingObserver {
       return;
     }
 
-    if (!kIsWeb && Platform.isAndroid) {
-      try {
-        // 1. Verify and request Call Log permissions before dialing
-        final hasPermission =
-            await _channel.invokeMethod<bool>('checkPermission') ?? false;
-        if (!hasPermission) {
-          await _channel.invokeMethod('requestPermissions');
-        }
+    if (kIsWeb) {
+      // 1. Web browser: Trigger system dialer pad via tel: URI
+      await UrlDialerHelper.openDialer(cleanPhone);
+      return;
+    }
 
-        // 2. Launch system phone dialer pad
+    if (Platform.isAndroid) {
+      try {
+        // 2. Android: Immediately launch system phone dialer pad
         await _channel.invokeMethod('launchDialer', {'phone': cleanPhone});
         return;
       } catch (e) {
@@ -81,17 +81,8 @@ class AppPhoneCallService with WidgetsBindingObserver {
       }
     }
 
-    // Direct fallback if native channel unavailable or on non-Android platform
-    if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Dialing ${lead.name} ($cleanPhone)... Return to app after call.',
-          ),
-          duration: const Duration(seconds: 4),
-        ),
-      );
-    }
+    // 3. Fallback for iOS or desktop platforms
+    await UrlDialerHelper.openDialer(cleanPhone);
   }
 
   @override
@@ -174,6 +165,8 @@ class AppPhoneCallService with WidgetsBindingObserver {
         collegeInfo: lead.collegeInfo,
         campaignTag: lead.campaignTag,
         initialDuration: formattedDuration,
+        course: lead.course,
+        fee: lead.fee,
       );
     }
   }

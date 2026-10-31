@@ -191,6 +191,7 @@ class LeadRecord {
   final String phoneNormalized;
   final String email;
   final String course;
+  final String fee;
   final String consent;
   final String collegeBranch;
   final String college;
@@ -225,6 +226,7 @@ class LeadRecord {
     required this.phoneNormalized,
     this.email = '',
     this.course = '',
+    this.fee = '',
     this.consent = '',
     required this.collegeBranch,
     this.college = '',
@@ -386,6 +388,10 @@ class LeadRecord {
         (data['course'] ?? data['workshop'] ?? data['program'] ?? '')
             .toString()
             .trim();
+    final rawFee =
+        (data['fee'] ?? data['courseFee'] ?? data['amount'] ?? '')
+            .toString()
+            .trim();
     final rawConsent =
         (data['consent'] ?? data['consentBasis'] ?? data['consentSource'] ?? '')
             .toString()
@@ -400,6 +406,7 @@ class LeadRecord {
       phoneNormalized: normPhone,
       email: rawEmail,
       course: rawCourse,
+      fee: rawFee,
       consent: rawConsent,
       collegeBranch: collegeBranch,
       college: college,
@@ -448,6 +455,7 @@ class LeadRecord {
       'phoneNormalized': phoneNormalized,
       if (email.isNotEmpty) 'email': email.trim(),
       if (course.isNotEmpty) 'course': course.trim(),
+      if (fee.isNotEmpty) 'fee': fee.trim(),
       if (consent.isNotEmpty) 'consent': consent.trim(),
       'collegeBranch': collegeBranch.trim(),
       'college': college.isNotEmpty ? college : parsed.college,
@@ -482,6 +490,7 @@ class LeadRecord {
     String? phoneNormalized,
     String? email,
     String? course,
+    String? fee,
     String? consent,
     String? collegeBranch,
     String? college,
@@ -516,6 +525,7 @@ class LeadRecord {
       phoneNormalized: phoneNormalized ?? this.phoneNormalized,
       email: email ?? this.email,
       course: course ?? this.course,
+      fee: fee ?? this.fee,
       consent: consent ?? this.consent,
       collegeBranch: collegeBranch ?? this.collegeBranch,
       college: college ?? this.college,
@@ -567,6 +577,8 @@ class LeadRecord {
       lockedMessage: lockedMessage,
       isDone: done,
       talkingPoints: talkingPoints,
+      course: course.isNotEmpty ? course : (assignment?.course ?? ''),
+      fee: fee.isNotEmpty ? fee : (assignment?.fee ?? ''),
       timeline: timeline.isNotEmpty
           ? timeline
           : [
@@ -601,6 +613,8 @@ class LeadAssignmentModel {
   final String collegeBranch;
   final String source;
   final String leadStatus;
+  final String course;
+  final String fee;
 
   const LeadAssignmentModel({
     required this.id,
@@ -624,6 +638,8 @@ class LeadAssignmentModel {
     this.collegeBranch = '',
     this.source = '',
     this.leadStatus = 'Assigned',
+    this.course = '',
+    this.fee = '',
   });
 
   /// Deterministic document ID preventing duplicate assignments for the same lead and date.
@@ -664,6 +680,8 @@ class LeadAssignmentModel {
       collegeBranch: (data['collegeBranch'] ?? '').toString(),
       source: (data['source'] ?? 'Direct visit').toString(),
       leadStatus: (data['leadStatus'] ?? 'Assigned').toString(),
+      course: (data['course'] ?? data['program'] ?? '').toString().trim(),
+      fee: (data['fee'] ?? data['courseFee'] ?? '').toString().trim(),
     );
   }
 
@@ -690,6 +708,8 @@ class LeadAssignmentModel {
       'collegeBranch': collegeBranch,
       'source': source,
       'leadStatus': leadStatus,
+      if (course.isNotEmpty) 'course': course,
+      if (fee.isNotEmpty) 'fee': fee,
     };
   }
 
@@ -712,6 +732,8 @@ class LeadAssignmentModel {
       assignedByName: assignedByName,
       assignedAt: assignedAt,
       isDone: isDone,
+      course: course,
+      fee: fee,
     );
   }
 }
@@ -733,6 +755,8 @@ class ExecutiveLeadItem {
   bool isDone;
   final List<String> talkingPoints;
   final List<String> timeline;
+  final String course;
+  final String fee;
 
   ExecutiveLeadItem({
     required this.id,
@@ -758,6 +782,8 @@ class ExecutiveLeadItem {
       '27 Oct, 9:20 AM · Assigned to Anjali R by Deepak PM',
       '24 Oct · Registered via College Webinar sheet (Consent recorded)',
     ],
+    this.course = '',
+    this.fee = '',
   });
 
   static (Color, Color) statusColorsFor(String status) {

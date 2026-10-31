@@ -70,14 +70,25 @@ class MainActivity : FlutterActivity() {
                 "launchDialer" -> {
                     val phone = call.argument<String>("phone") ?: ""
                     try {
-                        val uri = Uri.parse("tel:" + Uri.encode(phone))
+                        val cleanPhone = phone.trim()
+                        val uri = Uri.fromParts("tel", cleanPhone, null)
                         val intent = Intent(Intent.ACTION_DIAL, uri).apply {
                             flags = Intent.FLAG_ACTIVITY_NEW_TASK
                         }
                         startActivity(intent)
                         result.success(true)
                     } catch (e: Exception) {
-                        result.error("DIALER_ERROR", e.localizedMessage, null)
+                        try {
+                            val cleanPhone = phone.trim()
+                            val fallbackUri = Uri.parse("tel:$cleanPhone")
+                            val intent = Intent(Intent.ACTION_VIEW, fallbackUri).apply {
+                                flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                            }
+                            startActivity(intent)
+                            result.success(true)
+                        } catch (e2: Exception) {
+                            result.error("DIALER_ERROR", e2.localizedMessage, null)
+                        }
                     }
                 }
                 "getLastCallDuration" -> {
