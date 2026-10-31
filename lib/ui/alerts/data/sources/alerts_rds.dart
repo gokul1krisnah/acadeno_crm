@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:intl/intl.dart';
 
 import '../model/alert_models.dart';
 
@@ -9,8 +10,18 @@ class AlertsRds {
   final FirebaseAuth _firebaseAuth;
 
   AlertsRds({FirebaseFirestore? firestore, FirebaseAuth? firebaseAuth})
-      : _firestore = firestore ?? FirebaseFirestore.instance,
-        _firebaseAuth = firebaseAuth ?? FirebaseAuth.instance;
+    : _firestore = firestore ?? FirebaseFirestore.instance,
+      _firebaseAuth = firebaseAuth ?? FirebaseAuth.instance;
+
+  DateTime _parseDateTime(dynamic val) {
+    if (val is Timestamp) return val.toDate();
+    if (val is DateTime) return val;
+    if (val is String) {
+      final parsed = DateTime.tryParse(val);
+      if (parsed != null) return parsed;
+    }
+    return DateTime.now();
+  }
 
   Stream<List<ExecutiveAlertItem>> watchAlerts({String? executiveUid}) async* {
     final authUser = _firebaseAuth.currentUser;
@@ -36,15 +47,20 @@ class AlertsRds {
     final firstName = userName.split(' ').first;
 
     // Stream real live leads and alerts from Firestore
-    yield* _firestore.collection('leads').snapshots().asyncMap((leadSnap) async {
+    yield* _firestore.collection('leads').snapshots().asyncMap((
+      leadSnap,
+    ) async {
       final liveAlerts = <ExecutiveAlertItem>[];
+      final now = DateTime.now();
+      final startOfToday = DateTime(now.year, now.month, now.day);
+      final startOfYesterday = startOfToday.subtract(const Duration(days: 1));
 
       // 1. Fetch real stored alerts (lead assignments, reassignments, admin notices)
       try {
         Query<Map<String, dynamic>> query = _firestore
             .collection('alerts')
             .orderBy('createdAt', descending: true)
-            .limit(30);
+            .limit(50);
 
         final alertDocsSnap = await query.get();
         for (final doc in alertDocsSnap.docs) {
@@ -58,23 +74,46 @@ class AlertsRds {
           final title = (data['title'] ?? 'Notification').toString();
           final subtitle = (data['subtitle'] ?? '').toString();
           final category = (data['category'] ?? '').toString();
-          final dateLabel = (data['dateLabel'] ?? 'Today').toString();
+
+          final createdAt = _parseDateTime(data['createdAt']);
+          final itemDay = DateTime(
+            createdAt.year,
+            createdAt.month,
+            createdAt.day,
+          );
+          final isToday =
+              itemDay.isAtSameMomentAs(startOfToday) ||
+              itemDay.isAfter(startOfToday);
+          final isYesterday = itemDay.isAtSameMomentAs(startOfYesterday);
+
+          final timeStr = DateFormat('hh:mm a').format(createdAt);
+          String timeLabel;
+          if (isToday) {
+            timeLabel = 'Today · $timeStr';
+          } else if (isYesterday) {
+            timeLabel = 'Yesterday · $timeStr';
+          } else {
+            final dateStr = DateFormat('dd MMM').format(createdAt);
+            timeLabel = '$dateStr · $timeStr';
+          }
 
           AlertIconType icon = AlertIconType.list;
           if (category == 'assignment') icon = AlertIconType.list;
           if (category == 'followup') icon = AlertIconType.clock;
           if (category == 'overdue') icon = AlertIconType.warning;
+          if (category == 'greeting') icon = AlertIconType.sun;
 
           liveAlerts.add(
             ExecutiveAlertItem(
               id: doc.id,
               title: title,
               subtitle: subtitle,
-              timeLabel: dateLabel,
+              timeLabel: timeLabel,
               iconType: icon,
-              isToday: true,
+              isToday: isToday,
               isUnread: !isRead,
               targetTabIndex: category == 'followup' ? 1 : 0,
+              createdAt: createdAt,
             ),
           );
         }
@@ -85,17 +124,20 @@ class AlertsRds {
       final myLeads = leads.where((d) {
         final data = d.data();
         final assignedUid = (data['assignedToUid'] ?? '').toString();
-        final assignedName = (data['assignedToName'] ?? data['assignedTo'] ?? '')
-            .toString()
-            .trim()
-            .toLowerCase();
-        final matchesUser = (uid.isNotEmpty && assignedUid == uid) ||
+        final assignedName =
+            (data['assignedToName'] ?? data['assignedTo'] ?? '')
+                .toString()
+                .trim()
+                .toLowerCase();
+        final matchesUser =
+            (uid.isNotEmpty && assignedUid == uid) ||
             (userName.isNotEmpty && assignedName == userName.toLowerCase());
         return uid.isEmpty || matchesUser;
       }).toList();
 
-      final pendingLeads =
-          myLeads.where((d) => (d.data()['isDone'] as bool?) != true).toList();
+      final pendingLeads = myLeads
+          .where((d) => (d.data()['isDone'] as bool?) != true)
+          .toList();
       final pendingCount = pendingLeads.length;
 
       // Real follow-ups
@@ -109,13 +151,16 @@ class AlertsRds {
       // Real overdue leads
       final overdueLeads = myLeads.where((d) {
         final status = (d.data()['status'] ?? '').toString().toLowerCase();
-        final followUpTime =
-            (d.data()['followUpTime'] ?? '').toString().toLowerCase();
+        final followUpTime = (d.data()['followUpTime'] ?? '')
+            .toString()
+            .toLowerCase();
         return status == 'overdue' || followUpTime.contains('yesterday');
       }).toList();
 
       // 3. Dynamic Greeting Card: ONLY shown if there are real assigned tasks or follow-ups
-      if (pendingCount > 0 || followUpLeads.isNotEmpty || overdueLeads.isNotEmpty) {
+      if (pendingCount > 0 ||
+          followUpLeads.isNotEmpty ||
+          overdueLeads.isNotEmpty) {
         final hour = DateTime.now().hour;
         final greeting = hour < 12
             ? 'Good morning'
@@ -130,11 +175,12 @@ class AlertsRds {
             title: '$greeting, $firstName',
             subtitle:
                 '$pendingCount calls assigned · ${followUpLeads.length} follow-ups today · ${overdueLeads.length} overdue',
-            timeLabel: 'Today',
+            timeLabel: 'Today · ${DateFormat('hh:mm a').format(now)}',
             iconType: AlertIconType.sun,
             isToday: true,
             isUnread: true,
             targetTabIndex: 0,
+            createdAt: now,
           ),
         );
       }
@@ -143,19 +189,24 @@ class AlertsRds {
       for (final doc in overdueLeads) {
         final data = doc.data();
         final name = (data['name'] ?? 'Student').toString();
-        final timeLabel =
-            (data['followUpTime'] ?? 'Was due earlier').toString();
+        final timeLabel = (data['followUpTime'] ?? 'Was due earlier')
+            .toString();
+        // Placed in earlier/yesterday
+        final overdueCreatedAt = startOfYesterday.subtract(
+          const Duration(hours: 4),
+        );
         liveAlerts.add(
           ExecutiveAlertItem(
             id: 'al_od_${doc.id}',
             title: 'Overdue follow-up: $name',
             subtitle: '$timeLabel · Requires immediate callback',
-            timeLabel: 'Overdue',
+            timeLabel: 'Overdue · Callback required',
             iconType: AlertIconType.warning,
             isToday: false,
             isUnread: true,
             targetTabIndex: 1,
             targetLeadName: name,
+            createdAt: overdueCreatedAt,
           ),
         );
       }
@@ -173,12 +224,13 @@ class AlertsRds {
             id: 'al_fu_${doc.id}',
             title: 'Follow-up: $name',
             subtitle: '$timeLabel · Call · Follow up regarding $course',
-            timeLabel: 'Today',
+            timeLabel: 'Today · $timeLabel',
             iconType: AlertIconType.clock,
             isToday: true,
             isUnread: true,
             targetTabIndex: 1,
             targetLeadName: name,
+            createdAt: now,
           ),
         );
       }
@@ -207,7 +259,9 @@ class AlertsRds {
   Future<void> markAlertRead(String alertId) async {
     if (alertId.isEmpty) return;
     try {
-      await _firestore.collection('alerts').doc(alertId).update({'isRead': true});
+      await _firestore.collection('alerts').doc(alertId).update({
+        'isRead': true,
+      });
     } catch (_) {}
   }
 

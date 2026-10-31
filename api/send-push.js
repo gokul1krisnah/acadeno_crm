@@ -41,8 +41,7 @@ module.exports = async function handler(req, res) {
   }
 
   // To prevent double notification on Android devices:
-  // We send notification block ONLY on webpush and APNs.
-  // On Android, we provide Android notification with tag and collapseKey
+  // We provide Android notification with tag and collapseKey
   // so the OS displays exactly ONE clean notification and updates if another arrives.
   const notificationTag = String(data?.dateKey || 'lead_assigned');
 
@@ -67,6 +66,8 @@ module.exports = async function handler(req, res) {
       notification: {
         channelId: 'acadeno_crm_high_importance',
         tag: notificationTag,
+        icon: 'ic_launcher',
+        color: '#4338CA',
         sound: 'default',
         priority: 'high',
         defaultSound: true,

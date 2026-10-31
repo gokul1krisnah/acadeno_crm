@@ -18,6 +18,7 @@ class AlertsTabView extends StatelessWidget {
         final cubit = context.read<AlertsCubit>();
         final pad = context.devicePadding;
         final todayList = state.todayAlerts;
+        final yesterdayList = state.yesterdayAlerts;
         final earlierList = state.earlierAlerts;
 
         return RefreshIndicator(
@@ -83,7 +84,9 @@ class AlertsTabView extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      if (todayList.isEmpty && earlierList.isEmpty)
+                      if (todayList.isEmpty &&
+                          yesterdayList.isEmpty &&
+                          earlierList.isEmpty)
                         Container(
                           width: double.infinity,
                           padding: const EdgeInsets.symmetric(
@@ -120,7 +123,7 @@ class AlertsTabView extends StatelessWidget {
                           ),
                         )
                       else ...[
-                        // TODAY Section
+                        // 1. TODAY Section (Strictly today's notifications, newest first)
                         if (todayList.isNotEmpty) ...[
                           const Text(
                             'TODAY',
@@ -144,7 +147,31 @@ class AlertsTabView extends StatelessWidget {
                           const SizedBox(height: 12),
                         ],
 
-                        // EARLIER Section
+                        // 2. YESTERDAY Section (Strictly yesterday's notifications, newest first)
+                        if (yesterdayList.isNotEmpty) ...[
+                          const Text(
+                            'YESTERDAY',
+                            style: TextStyle(
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 0.7,
+                              color: Color(0xFF667085),
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          ...yesterdayList.map(
+                            (item) => Padding(
+                              padding: const EdgeInsets.only(bottom: 10),
+                              child: _AlertCard(
+                                item: item,
+                                onTap: () => _handleAlertTap(context, item),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                        ],
+
+                        // 3. EARLIER Section (Past notifications, newest first)
                         if (earlierList.isNotEmpty) ...[
                           const Text(
                             'EARLIER',

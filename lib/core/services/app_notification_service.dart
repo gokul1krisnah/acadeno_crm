@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 import '../../firebase_options.dart';
@@ -30,6 +31,8 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
         playSound: true,
         enableVibration: true,
         tag: 'lead_assigned',
+        icon: '@mipmap/ic_launcher',
+        color: Color(0xFF4338CA),
       );
       const notificationDetails = NotificationDetails(android: androidDetails);
 
@@ -56,10 +59,15 @@ class AppNotificationService {
   final FirebaseMessaging _fcm = FirebaseMessaging.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  final FlutterLocalNotificationsPlugin _localNotifications = FlutterLocalNotificationsPlugin();
+  final FlutterLocalNotificationsPlugin _localNotifications =
+      FlutterLocalNotificationsPlugin();
 
   String? _fcmToken;
   String? get fcmToken => _fcmToken;
+
+  Timer? _morningTimer;
+  Timer? _morningPeriodicTimer;
+  String? _lastMorningBriefingDate;
 
   final StreamController<RemoteMessage> _foregroundMessageController =
       StreamController<RemoteMessage>.broadcast();
@@ -73,7 +81,9 @@ class AppNotificationService {
     try {
       // 1. Setup Android high-importance notification channel
       if (!kIsWeb) {
-        const androidInit = AndroidInitializationSettings('@mipmap/ic_launcher');
+        const androidInit = AndroidInitializationSettings(
+          '@mipmap/ic_launcher',
+        );
         const initSettings = InitializationSettings(android: androidInit);
         await _localNotifications.initialize(settings: initSettings);
 
@@ -87,7 +97,9 @@ class AppNotificationService {
         );
 
         await _localNotifications
-            .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+            .resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin
+            >()
             ?.createNotificationChannel(androidChannel);
 
         FirebaseMessaging.onBackgroundMessage(
@@ -159,6 +171,9 @@ class AppNotificationService {
 
       // 9. Sync token if user is already signed in
       await syncCurrentUserToken();
+
+      // 10. Start automated 9:00 AM daily morning notification
+      scheduleDailyMorningBriefing();
     } catch (e) {
       debugPrint('AppNotificationService init notice: $e');
     }
@@ -168,10 +183,12 @@ class AppNotificationService {
   Future<void> showNativeNotification({
     required String title,
     required String body,
+    String? tag,
+    int id = 1001,
   }) async {
     if (kIsWeb) return;
     try {
-      const androidDetails = AndroidNotificationDetails(
+      final androidDetails = AndroidNotificationDetails(
         'acadeno_crm_high_importance',
         'Acadeno Lead Notifications',
         channelDescription: 'High priority alerts for assigned student leads',
@@ -179,17 +196,94 @@ class AppNotificationService {
         priority: Priority.high,
         playSound: true,
         enableVibration: true,
-        tag: 'lead_assigned',
+        tag: tag ?? 'lead_assigned',
+        icon: '@mipmap/ic_launcher',
+        color: const Color(0xFF4338CA),
       );
-      const details = NotificationDetails(android: androidDetails);
+      final details = NotificationDetails(android: androidDetails);
       await _localNotifications.show(
-        id: 1001,
+        id: id,
         title: title,
         body: body,
         notificationDetails: details,
       );
     } catch (e) {
       debugPrint('Error showing local notification: $e');
+    }
+  }
+
+  /// Schedules the automated daily 9:00 AM "Good morning!" notification
+  void scheduleDailyMorningBriefing() {
+    try {
+      final now = DateTime.now();
+      final todayDate =
+          '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+
+      // 1. If app opened at or after 9:00 AM today and morning briefing hasn't triggered yet
+      if (now.hour >= 9 && _lastMorningBriefingDate != todayDate) {
+        _triggerDailyMorningBriefing(todayDate);
+      }
+
+      // 2. Calculate delay until next 9:00 AM
+      var nextNineAm = DateTime(now.year, now.month, now.day, 9, 0, 0);
+      if (now.isAfter(nextNineAm)) {
+        nextNineAm = nextNineAm.add(const Duration(days: 1));
+      }
+      final delay = nextNineAm.difference(now);
+
+      _morningTimer?.cancel();
+      _morningTimer = Timer(delay, () {
+        final triggerNow = DateTime.now();
+        final triggerDate =
+            '${triggerNow.year}-${triggerNow.month.toString().padLeft(2, '0')}-${triggerNow.day.toString().padLeft(2, '0')}';
+        _triggerDailyMorningBriefing(triggerDate);
+
+        // Recurring 24-hour interval
+        _morningPeriodicTimer?.cancel();
+        _morningPeriodicTimer = Timer.periodic(const Duration(hours: 24), (_) {
+          final recurringNow = DateTime.now();
+          final recurringDate =
+              '${recurringNow.year}-${recurringNow.month.toString().padLeft(2, '0')}-${recurringNow.day.toString().padLeft(2, '0')}';
+          _triggerDailyMorningBriefing(recurringDate);
+        });
+      });
+    } catch (e) {
+      debugPrint('scheduleDailyMorningBriefing error: $e');
+    }
+  }
+
+  Future<void> _triggerDailyMorningBriefing(String todayDate) async {
+    if (_lastMorningBriefingDate == todayDate) return;
+    _lastMorningBriefingDate = todayDate;
+
+    // Show native Android system tray notification with Acadeno logo & sound
+    await showNativeNotification(
+      title: 'Good morning! ☀️ Acadeno CRM',
+      body:
+          'Your daily schedule and student lead follow-ups are ready. Check today\'s tasks!',
+      tag: 'morning_briefing_$todayDate',
+      id: 9001,
+    );
+
+    // Save alert into Firestore alerts collection for this executive
+    final uid = _auth.currentUser?.uid;
+    if (uid != null && uid.isNotEmpty) {
+      try {
+        final alertDoc = _firestore
+            .collection('alerts')
+            .doc('morning_${uid}_$todayDate');
+        await alertDoc.set({
+          'id': alertDoc.id,
+          'recipientUid': uid,
+          'title': 'Good morning! ☀️',
+          'subtitle':
+              'Your daily schedule and student lead follow-ups are ready.',
+          'category': 'greeting',
+          'isRead': false,
+          'createdAt': FieldValue.serverTimestamp(),
+          'dateLabel': 'Today',
+        }, SetOptions(merge: true));
+      } catch (_) {}
     }
   }
 
@@ -215,7 +309,9 @@ class AppNotificationService {
           'fcmToken': _fcmToken,
           'fcmUpdatedAt': FieldValue.serverTimestamp(),
         }, SetOptions(merge: true));
-        debugPrint('✅ Automatically registered device token to Firestore users/$uid');
+        debugPrint(
+          '✅ Automatically registered device token to Firestore users/$uid',
+        );
       } catch (e) {
         debugPrint('Failed to save FCM token to users/$uid: $e');
       }
@@ -235,6 +331,8 @@ class AppNotificationService {
   }
 
   void dispose() {
+    _morningTimer?.cancel();
+    _morningPeriodicTimer?.cancel();
     _foregroundMessageController.close();
   }
 }

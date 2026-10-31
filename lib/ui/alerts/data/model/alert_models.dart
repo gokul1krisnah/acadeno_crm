@@ -10,6 +10,7 @@ class ExecutiveAlertItem {
   bool isUnread;
   final int? targetTabIndex;
   final String? targetLeadName;
+  final DateTime createdAt;
 
   ExecutiveAlertItem({
     required this.id,
@@ -21,5 +22,6 @@ class ExecutiveAlertItem {
     required this.isUnread,
     this.targetTabIndex,
     this.targetLeadName,
-  });
+    DateTime? createdAt,
+  }) : createdAt = createdAt ?? DateTime.now();
 }
