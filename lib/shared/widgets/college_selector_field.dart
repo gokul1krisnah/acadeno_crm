@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
@@ -56,6 +58,7 @@ class _CollegeSelectorFieldState extends State<CollegeSelectorField> {
   String? _selectedCollege;
   bool _isOther = false;
   final TextEditingController _customCollegeCtrl = TextEditingController();
+  StreamSubscription<QuerySnapshot<Map<String, dynamic>>>? _collegeSub;
 
   @override
   void initState() {
@@ -69,23 +72,33 @@ class _CollegeSelectorFieldState extends State<CollegeSelectorField> {
 
     _determineSelectionFromText(widget.controller.text);
 
-    // Stream real-time colleges from Firestore
-    FirebaseFirestore.instance.collection('colleges').snapshots().listen((snap) {
-      if (!mounted) return;
-      var changed = false;
-      for (final doc in snap.docs) {
-        final name = (doc.data()['name'] ?? doc.id).toString().trim();
-        if (name.isNotEmpty && !_collegeList.contains(name)) {
-          _collegeList.add(name);
-          changed = true;
+    // Stream real-time colleges from Firestore with graceful fallback handling
+    _collegeSub = FirebaseFirestore.instance
+        .collection('colleges')
+        .snapshots()
+        .listen(
+      (snap) {
+        if (!mounted) return;
+        var changed = false;
+        for (final doc in snap.docs) {
+          final name = (doc.data()['name'] ?? doc.id).toString().trim();
+          if (name.isNotEmpty && !_collegeList.contains(name)) {
+            _collegeList.add(name);
+            changed = true;
+          }
         }
-      }
-      if (changed) setState(() {});
-    });
+        if (changed) setState(() {});
+      },
+      onError: (error) {
+        // Fall back gracefully to bundled college list if offline or permission denied
+        debugPrint('Colleges stream notice: $error');
+      },
+    );
   }
 
   @override
   void dispose() {
+    _collegeSub?.cancel();
     _customCollegeCtrl.dispose();
     super.dispose();
   }
@@ -229,4 +242,3 @@ class _CollegeSelectorFieldState extends State<CollegeSelectorField> {
     );
   }
 }
-

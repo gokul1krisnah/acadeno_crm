@@ -7,6 +7,14 @@ service cloud.firestore {
     }
 
     // -------------------------------------------------------------------------
+    // Colleges Auto-Learning Collection (`colleges/{collegeId}`)
+    // -------------------------------------------------------------------------
+    match /colleges/{collegeId} {
+      allow read: if true;
+      allow write: if isSignedIn();
+    }
+
+    // -------------------------------------------------------------------------
     // Users Collection (`users/{userId}`)
     // -------------------------------------------------------------------------
     match /users/{userId} {
