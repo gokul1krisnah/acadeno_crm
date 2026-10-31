@@ -6,6 +6,7 @@ import '../model/visit_models.dart';
 
 /// Remote data source for college visits connected directly to Cloud Firestore.
 /// Guarantees live real-time sync between Admin Dashboard and Executive Home.
+/// 100% Real-time, authentic Firestore college visits stream.
 class VisitsRds {
   final FirebaseFirestore _firestore;
   final FirebaseAuth _firebaseAuth;
@@ -21,15 +22,16 @@ class VisitsRds {
   Stream<List<ExecutiveCollegeVisit>> watchVisits({String? executiveUid}) {
     return _visits.snapshots().map((snap) {
       if (snap.docs.isEmpty) {
-        return fetchVisits();
+        return const <ExecutiveCollegeVisit>[];
       }
       return snap.docs.map((doc) {
         final data = doc.data();
-        final status = (data['status'] ?? data['statusLabel'] ?? 'Planned').toString();
+        final status =
+            (data['status'] ?? data['statusLabel'] ?? 'Planned').toString();
         final rawInitials = data['staffInitials'];
         final List<String> staffInitials = rawInitials is List
             ? rawInitials.map((e) => e.toString()).toList()
-            : const ['AR', 'RM'];
+            : const [];
 
         return ExecutiveCollegeVisit(
           id: doc.id,
@@ -40,10 +42,12 @@ class VisitsRds {
           statusLabel: status,
           purpose: (data['purpose'] ?? '').toString(),
           staffInitials: staffInitials,
-          staffNames: (data['staffNames'] ?? data['assignedStaff'] ?? 'Anjali R, Rahul M').toString(),
+          staffNames: (data['staffNames'] ?? data['assignedStaff'] ?? '')
+              .toString(),
           leadsCollected: (data['leadsCollected'] as num?)?.toInt() ?? 0,
           interestedCount: (data['interestedCount'] as num?)?.toInt() ?? 0,
-          metSummary: (data['metSummary'] ?? data['outcomeNotes'] ?? '').toString(),
+          metSummary:
+              (data['metSummary'] ?? data['outcomeNotes'] ?? '').toString(),
           nextActionSummary: (data['nextActionSummary'] ?? '').toString(),
           isUpcoming: status != 'Completed' && status != 'Cancelled',
         );
@@ -51,43 +55,8 @@ class VisitsRds {
     });
   }
 
-  /// Initial fallback visits if Firestore collection is newly created.
-  List<ExecutiveCollegeVisit> fetchVisits() => [
-        ExecutiveCollegeVisit(
-          id: 'cv1',
-          monthShort: 'OCT',
-          dayNumber: '29',
-          collegeName: 'NIT Calicut',
-          subtitle: 'Thu · 10:00 AM · CSE department',
-          statusLabel: 'Planned',
-          purpose: 'Promote AI & ML workshop · meet placement officer',
-          staffInitials: const ['AR', 'RM'],
-          staffNames: 'Anjali R, Rahul M',
-          isUpcoming: true,
-        ),
-        ExecutiveCollegeVisit(
-          id: 'cv2',
-          monthShort: 'OCT',
-          dayNumber: '22',
-          collegeName: 'GEC Kozhikode',
-          subtitle: 'Industrial visit briefing · ECE',
-          statusLabel: 'Completed',
-          leadsCollected: 46,
-          interestedCount: 9,
-          metSummary: 'HOD ECE, Placement officer',
-          nextActionSummary: 'Send MoU draft by 5 Nov',
-          isUpcoming: false,
-        ),
-        ExecutiveCollegeVisit(
-          id: 'cv3',
-          monthShort: 'OCT',
-          dayNumber: '17',
-          collegeName: 'Farook College',
-          subtitle: 'Rescheduled by college',
-          statusLabel: 'Cancelled',
-          isUpcoming: false,
-        ),
-      ];
+  /// Initial fallback visits: empty list so no fake data is displayed.
+  List<ExecutiveCollegeVisit> fetchVisits() => const <ExecutiveCollegeVisit>[];
 
   /// Plans a new college visit in Firestore.
   Future<void> addCollegeVisit({
@@ -96,7 +65,7 @@ class VisitsRds {
     required String monthShort,
     required String subtitle,
     required String purpose,
-    String assignedStaff = 'Anjali R, Rahul M',
+    String assignedStaff = '',
   }) async {
     final uid = _firebaseAuth.currentUser?.uid;
     await _visits.add({
@@ -113,7 +82,12 @@ class VisitsRds {
           .split(',')
           .map((s) => s.trim())
           .where((s) => s.isNotEmpty)
-          .map((s) => s.split(' ').map((p) => p.isNotEmpty ? p[0].toUpperCase() : '').join())
+          .map(
+            (s) => s
+                .split(' ')
+                .map((p) => p.isNotEmpty ? p[0].toUpperCase() : '')
+                .join(),
+          )
           .toList(),
       'leadsCollected': 0,
       'interestedCount': 0,

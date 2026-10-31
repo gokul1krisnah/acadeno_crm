@@ -46,6 +46,7 @@ class FollowUpsCubit extends Cubit<FollowUpsState> {
     required String outcome,
     required String notes,
     String? followUpTimeLabel,
+    String? maskedPhone,
   }) {
     final updated = List<ExecutiveFollowUpItem>.from(state.followUps);
 
@@ -55,11 +56,13 @@ class FollowUpsCubit extends Cubit<FollowUpsState> {
         ExecutiveFollowUpItem(
           id: 'fu_${DateTime.now().millisecondsSinceEpoch}',
           leadName: leadName,
-          maskedPhone: '98470 •••11',
+          maskedPhone: maskedPhone ?? '—',
           collegeInfo: collegeInfo,
           timeLabel: followUpTimeLabel ?? 'Tomorrow · 10:30 AM',
           channelLabel: 'Call',
-          note: notes.isEmpty ? 'Scheduled follow-up after $outcome call' : notes,
+          note: notes.isEmpty
+              ? 'Scheduled follow-up after $outcome call'
+              : notes,
           bucket: FollowUpBucket.upcoming,
         ),
       );
@@ -69,11 +72,11 @@ class FollowUpsCubit extends Cubit<FollowUpsState> {
         ExecutiveFollowUpItem(
           id: 'fu_${DateTime.now().millisecondsSinceEpoch}',
           leadName: leadName,
-          maskedPhone: '98460 •••22',
+          maskedPhone: maskedPhone ?? '—',
           collegeInfo: collegeInfo,
-          timeLabel: '4:30 PM',
+          timeLabel: 'Auto-retry',
           channelLabel: 'Auto-retry',
-          note: 'Retry – not reachable (1 of 3)',
+          note: 'Retry – not reachable',
           bucket: FollowUpBucket.today,
         ),
       );
@@ -99,38 +102,41 @@ class FollowUpsCubit extends Cubit<FollowUpsState> {
       item.timeLabel = newTimeLabel;
       if (moveToUpcoming) {
         item.bucket = FollowUpBucket.upcoming;
-      } else if (item.bucket == FollowUpBucket.overdue) {
-        item.bucket = FollowUpBucket.today;
       }
-      emit(
-        state.copyWith(
-          followUps: updated,
-          toastMessage: 'Snoozed $name to $newTimeLabel',
-        ),
-      );
     }
+
     await _repository.snoozeFollowUp(
       id,
       newTimeLabel,
       moveToUpcoming: moveToUpcoming,
     );
+
+    emit(
+      state.copyWith(
+        followUps: updated,
+        toastMessage: 'Rescheduled follow-up with $name to $newTimeLabel',
+      ),
+    );
   }
 
-  // FR-4.5: Complete follow-up and persist to Firestore
-  Future<void> completeFollowUp(String id) async {
+  // FR-4.2: Mark follow-up as done directly in Firestore
+  Future<void> markCompleted(String id) async {
     final updated = List<ExecutiveFollowUpItem>.from(state.followUps);
     final idx = updated.indexWhere((f) => f.id == id);
+    String name = 'lead';
     if (idx != -1) {
-      final name = updated[idx].leadName;
-      updated[idx].isCompleted = true;
-      emit(
-        state.copyWith(
-          followUps: updated,
-          toastMessage: 'Marked follow-up for $name as done ✓',
-        ),
-      );
+      name = updated[idx].leadName;
+      updated.removeAt(idx);
     }
+
     await _repository.completeFollowUp(id);
+
+    emit(
+      state.copyWith(
+        followUps: updated,
+        toastMessage: 'Follow-up with $name marked complete',
+      ),
+    );
   }
 
   @override

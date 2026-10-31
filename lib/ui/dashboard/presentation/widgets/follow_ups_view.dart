@@ -230,43 +230,7 @@ class _FollowUpsViewState extends State<FollowUpsView> {
               }
             }
 
-            // Seed fallback if Firestore has no follow-ups yet
-            if (followUps.isEmpty) {
-              followUps.addAll([
-                _FollowUpRow(
-                  id: 'seed-f1',
-                  studentName: 'Fathima Niha',
-                  phone: '98470 55112',
-                  collegeBranch: 'KMCT · CSE · 3rd yr',
-                  note: 'Send Python syllabus on WhatsApp',
-                  dueLabel: 'Overdue · 2 days',
-                  isOverdue: true,
-                  assignedExec: executives.first,
-                ),
-                _FollowUpRow(
-                  id: 'seed-f2',
-                  studentName: 'Sreehari K',
-                  phone: '94471 20934',
-                  collegeBranch: 'GEC Thrissur · ECE · 4th yr',
-                  note: 'Confirm weekend batch fee installment',
-                  dueLabel: 'Overdue · 1 day',
-                  isOverdue: true,
-                  assignedExec: executives.length > 1
-                      ? executives[1]
-                      : executives.first,
-                ),
-                _FollowUpRow(
-                  id: 'seed-f3',
-                  studentName: 'Arun Kumar',
-                  phone: '98470 11111',
-                  collegeBranch: 'NIT Calicut · CSE · 3rd yr',
-                  note: 'Interested in AI & ML Workshop – check group discount',
-                  dueLabel: 'Today · 4:00 PM',
-                  isOverdue: false,
-                  assignedExec: executives.first,
-                ),
-              ]);
-            }
+            
 
             // Filter items
             final filteredItems = followUps.where((item) {

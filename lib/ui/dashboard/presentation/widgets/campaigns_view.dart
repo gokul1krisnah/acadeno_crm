@@ -254,7 +254,7 @@ class _CampaignsViewState extends State<CampaignsView> {
     ),
   ];
 
-  late List<_CampaignLead> _rankedLeads = List.from(_fallbackLeads);
+  late List<_CampaignLead> _rankedLeads = const [];
 
   @override
   void initState() {

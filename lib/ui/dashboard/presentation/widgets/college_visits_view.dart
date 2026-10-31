@@ -292,7 +292,7 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
             );
           }).toList();
         } else {
-          visits = _defaultVisits;
+          visits = const [];
         }
 
         final totalLeads = visits.fold<int>(0, (acc, v) => acc + v.leadsCollected);

@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../data/model/alert_models.dart';
@@ -32,27 +33,25 @@ class AlertsCubit extends Cubit<AlertsState> {
     }
   }
 
-  // FR-5.4: Discount above ₹500 raises an approval request for the manager.
-  void addDiscountApprovalAlert({
+  // FR-5.4: Discount above ₹500 raises a persistent approval request in Firestore
+  Future<void> addDiscountApprovalAlert({
     required String leadName,
     required String? courseEnrolled,
     required int discountAmount,
-  }) {
-    final updated = List<ExecutiveAlertItem>.from(state.alerts)
-      ..insert(
-        0,
-        ExecutiveAlertItem(
-          id: 'al_${DateTime.now().millisecondsSinceEpoch}',
-          title: 'Discount approval requested: $leadName',
-          subtitle:
-              '${courseEnrolled ?? "AI Workshop"} · Discount ₹$discountAmount awaiting manager approval',
-          timeLabel: 'Just now',
-          iconType: AlertIconType.clock,
-          isToday: true,
-          isUnread: true,
-        ),
-      );
-    emit(state.copyWith(alerts: updated));
+  }) async {
+    try {
+      final doc = FirebaseFirestore.instance.collection('alerts').doc();
+      await doc.set({
+        'id': doc.id,
+        'recipientUid': 'all',
+        'title': 'Discount approval requested: $leadName',
+        'subtitle':
+            '${courseEnrolled ?? "AI Workshop"} · Discount ₹$discountAmount awaiting manager approval',
+        'category': 'overdue',
+        'isRead': false,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+    } catch (_) {}
   }
 
   // FR-9.1: Mark all alerts read

@@ -1778,7 +1778,7 @@ class _CollegeVisits extends StatelessWidget {
               return [day, name, desc, status];
             }).toList();
           } else {
-            displayVisits = _defaultVisits;
+            displayVisits = const [];
           }
 
           return Column(
