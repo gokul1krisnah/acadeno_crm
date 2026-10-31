@@ -284,17 +284,26 @@ class AppNotificationService {
     }
   }
 
+  String _getTimeBasedGreeting() {
+    final h = DateTime.now().hour;
+    if (h < 12) return 'Good morning! ☀️';
+    if (h < 17) return 'Good afternoon! 🌤️';
+    return 'Good evening! 🌙';
+  }
+
   Future<void> _triggerDailyMorningBriefing(String todayDate) async {
     final lastTriggered = await _getLastMorningDateAsync();
     if (lastTriggered == todayDate) return;
     await _saveLastMorningDateAsync(todayDate);
 
+    final greeting = _getTimeBasedGreeting();
+
     // Show native Android system tray notification with Acadeno logo & sound
     await showNativeNotification(
-      title: 'Good morning! ☀️ Acadeno CRM',
+      title: '$greeting Acadeno CRM',
       body:
           'Your daily schedule and student lead follow-ups are ready. Check today\'s tasks!',
-      tag: 'morning_briefing_$todayDate',
+      tag: 'daily_greeting_$todayDate',
       id: 9001,
     );
 
@@ -304,11 +313,11 @@ class AppNotificationService {
       try {
         final alertDoc = _firestore
             .collection('alerts')
-            .doc('morning_${uid}_$todayDate');
+            .doc('daily_greeting_${uid}_$todayDate');
         await alertDoc.set({
           'id': alertDoc.id,
           'recipientUid': uid,
-          'title': 'Good morning! ☀️',
+          'title': greeting,
           'subtitle':
               'Your daily schedule and student lead follow-ups are ready.',
           'category': 'greeting',
