@@ -48,9 +48,10 @@ Future<void> main() async {
   AppPhoneCallService.instance.initialize();
 
   // 2. Initialize Firebase Cloud Messaging Push & Notification Service (resilient timeout)
-  await AppNotificationService.instance
-      .initialize()
-      .timeout(const Duration(milliseconds: 1500), onTimeout: () {});
+  await AppNotificationService.instance.initialize().timeout(
+    const Duration(milliseconds: 1500),
+    onTimeout: () {},
+  );
 
   configureDependencies();
 
