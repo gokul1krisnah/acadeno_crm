@@ -29,6 +29,10 @@ Future<({Uint8List bytes, String name})?> pickFileImpl() async {
         if (!completer.isCompleted) {
           completer.complete((bytes: res, name: file.name));
         }
+      } else if (res is ByteBuffer) {
+        if (!completer.isCompleted) {
+          completer.complete((bytes: res.asUint8List(), name: file.name));
+        }
       } else if (res is List<int>) {
         if (!completer.isCompleted) {
           completer.complete((bytes: Uint8List.fromList(res), name: file.name));

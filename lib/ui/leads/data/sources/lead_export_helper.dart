@@ -8,7 +8,7 @@ class LeadExportHelper {
     final buffer = StringBuffer();
     // CSV Header row
     buffer.writeln(
-      'Lead ID,Name,Phone,Email,College & Branch,Campaign / Source,Status,Assigned To,Assignment Slot,Last Contact,Notes,Created Date',
+      'Lead ID,Name,Phone,Email,College & Branch,Course,Campaign / Source,Status,Assigned To,Assignment Slot,Last Contact,Notes,Created Date',
     );
 
     for (final l in leads) {
@@ -17,6 +17,7 @@ class LeadExportHelper {
       final phone = _escape(l.phone);
       final email = _escape(l.email);
       final college = _escape(l.collegeBranch);
+      final course = _escape(l.course);
       final source = _escape(l.source);
       final status = _escape(l.status);
       final assignedTo = _escape(l.assignedToName);
@@ -27,7 +28,7 @@ class LeadExportHelper {
           _escape(l.createdAt?.toIso8601String().split('T').first ?? '—');
 
       buffer.writeln(
-        '$id,$name,$phone,$email,$college,$source,$status,$assignedTo,$assignmentSlot,$lastContact,$notes,$createdAt',
+        '$id,$name,$phone,$email,$college,$course,$source,$status,$assignedTo,$assignmentSlot,$lastContact,$notes,$createdAt',
       );
     }
 

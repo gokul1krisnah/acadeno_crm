@@ -15,17 +15,151 @@ Mohammed R,9847033333,mohammed.r@outlook.com,GEC Thrissur,ME,2nd Year,Robotics &
 
   /// Standard column alias dictionary to auto-map user CSV / Excel headers.
   static const Map<String, List<String>> _headerAliases = {
-    'name': ['name', 'student_name', 'studentname', 'full_name', 'fullname', 'student', 'candidate_name', 'candidate'],
-    'phone': ['phone', 'mobile', 'mobile_number', 'mobilenumber', 'contact', 'phone_number', 'phonenumber', 'contact_number', 'tel'],
-    'email': ['email', 'email_address', 'emailaddress', 'email_id', 'emailid', 'mail'],
-    'college': ['college', 'institution', 'university', 'college_name', 'collegename', 'institute', 'campus'],
-    'branch': ['branch', 'department', 'dept', 'stream', 'specialization'],
-    'year': ['year', 'semester', 'sem', 'batch', 'current_year', 'study_year'],
-    'college_branch': ['college_branch', 'collegebranch', 'collegeinfo', 'college_info'],
-    'course': ['course', 'workshop', 'program', 'topic', 'interested_in', 'course_name'],
-    'source': ['source', 'campaign', 'lead_source', 'event', 'source_event', 'channel'],
-    'notes': ['notes', 'remarks', 'comment', 'comments', 'note', 'message'],
-    'consent': ['consent', 'consent_basis', 'consent_source', 'consent_method', 'dpdp_consent'],
+    'name': [
+      'name',
+      'student_name',
+      'studentname',
+      'full_name',
+      'fullname',
+      'student',
+      'candidate_name',
+      'candidate',
+      'lead_name',
+      'leadname',
+      'client_name',
+      'clientname',
+      'first_name',
+      'firstname',
+      'person_name',
+      'personname',
+      'applicant_name',
+      'applicant',
+      'customer_name',
+      'customername',
+      'contact_name',
+      'contactname',
+      'lead',
+    ],
+    'phone': [
+      'phone',
+      'mobile',
+      'mobile_number',
+      'mobilenumber',
+      'contact',
+      'phone_number',
+      'phonenumber',
+      'contact_number',
+      'contactnumber',
+      'tel',
+      'telephone',
+      'telephone_number',
+      'telephonenumber',
+      'cell',
+      'cellphone',
+      'cell_number',
+      'cellnumber',
+      'mobile_no',
+      'mobileno',
+      'phone_no',
+      'phoneno',
+      'contact_no',
+      'contactno',
+      'whatsapp',
+      'whatsapp_number',
+      'whatsappnumber',
+      'whatsapp_no',
+      'whatsappno',
+      'ph',
+    ],
+    'email': [
+      'email',
+      'email_address',
+      'emailaddress',
+      'email_id',
+      'emailid',
+      'mail',
+      'mail_id',
+      'mailid',
+    ],
+    'college': [
+      'college',
+      'institution',
+      'university',
+      'college_name',
+      'collegename',
+      'institute',
+      'campus',
+      'school',
+    ],
+    'branch': [
+      'branch',
+      'department',
+      'dept',
+      'stream',
+      'specialization',
+      'discipline',
+    ],
+    'year': [
+      'year',
+      'semester',
+      'sem',
+      'batch',
+      'current_year',
+      'study_year',
+      'graduation_year',
+      'passout_year',
+    ],
+    'college_branch': [
+      'college_branch',
+      'collegebranch',
+      'collegeinfo',
+      'college_info',
+      'college_and_branch',
+      'collegeandbranch',
+    ],
+    'course': [
+      'course',
+      'workshop',
+      'program',
+      'topic',
+      'interested_in',
+      'course_name',
+      'coursename',
+      'program_name',
+      'programname',
+      'curriculum',
+    ],
+    'source': [
+      'source',
+      'campaign',
+      'lead_source',
+      'event',
+      'source_event',
+      'channel',
+      'campaign_source',
+      'campaignsource',
+      'campaign_or_source',
+      'campaignorsource',
+      'leadsource',
+      'source_name',
+    ],
+    'notes': [
+      'notes',
+      'remarks',
+      'comment',
+      'comments',
+      'note',
+      'message',
+      'feedback',
+    ],
+    'consent': [
+      'consent',
+      'consent_basis',
+      'consent_source',
+      'consent_method',
+      'dpdp_consent',
+      'consent_type',
+    ],
   };
 
   /// Parses CSV / TSV text into validated [LeadImportItem] records.
@@ -34,18 +168,45 @@ Mohammed R,9847033333,mohammed.r@outlook.com,GEC Thrissur,ME,2nd Year,Robotics &
     String defaultSource = 'AI & Machine Learning Workshop (Nov)',
     String defaultConsent = 'Event registration form',
   }) {
-    final cleanCsv = _stripBom(csvString);
-    final rawRows = _splitCsvLines(cleanCsv);
+    var cleanCsv = _stripBom(csvString);
+    cleanCsv = _stripExcelSepDirective(cleanCsv);
+    final delimiter = _detectDelimiter(cleanCsv);
+    final rawRows = _splitCsvLines(cleanCsv, delimiter: delimiter);
     return _process2dRows(rawRows, defaultSource: defaultSource, defaultConsent: defaultConsent);
   }
 
-  /// Parses raw CSV bytes (UTF-8).
+  /// Parses raw CSV bytes (supports UTF-8 with/without BOM, UTF-16 LE/BE, and ANSI).
   static List<LeadImportItem> parseCsvBytes(
     Uint8List bytes, {
     String defaultSource = 'AI & Machine Learning Workshop (Nov)',
     String defaultConsent = 'Event registration form',
   }) {
-    final str = utf8.decode(bytes, allowMalformed: true);
+    String str;
+    if (bytes.length >= 2 && bytes[0] == 0xFF && bytes[1] == 0xFE) {
+      // UTF-16 LE (common Windows Excel Unicode Text export)
+      str = String.fromCharCodes(
+        Uint16List.view(bytes.buffer, bytes.offsetInBytes + 2, (bytes.length - 2) ~/ 2),
+      );
+    } else if (bytes.length >= 2 && bytes[0] == 0xFE && bytes[1] == 0xFF) {
+      // UTF-16 BE
+      final byteData = ByteData.sublistView(bytes, 2);
+      final charCodes = <int>[];
+      for (int i = 0; i < byteData.lengthInBytes; i += 2) {
+        charCodes.add(byteData.getUint16(i, Endian.big));
+      }
+      str = String.fromCharCodes(charCodes);
+    } else if (bytes.length >= 3 && bytes[0] == 0xEF && bytes[1] == 0xBB && bytes[2] == 0xBF) {
+      // UTF-8 with BOM
+      str = utf8.decode(bytes.sublist(3), allowMalformed: true);
+    } else {
+      try {
+        str = utf8.decode(bytes);
+      } catch (_) {
+        str = utf8.decode(bytes, allowMalformed: true);
+      }
+    }
+
+    str = _stripBom(str);
     return parseCsvString(str, defaultSource: defaultSource, defaultConsent: defaultConsent);
   }
 
@@ -118,21 +279,57 @@ Mohammed R,9847033333,mohammed.r@outlook.com,GEC Thrissur,ME,2nd Year,Robotics &
       throw const FormatException('The file is empty. Please upload a file with data rows.');
     }
 
-    // Find header row (skip leading blank rows)
-    int headerIndex = -1;
-    for (int i = 0; i < rawRows.length; i++) {
-      if (rawRows[i].any((cell) => cell.trim().isNotEmpty)) {
+    int headerIndex = 0;
+    Map<String, int> columnMap = {};
+    int bestScore = -1;
+
+    // Scan up to first 10 non-empty rows to find the most accurate header row
+    final maxScan = rawRows.length < 10 ? rawRows.length : 10;
+    for (int i = 0; i < maxScan; i++) {
+      final row = rawRows[i];
+      if (row.every((c) => c.trim().isEmpty)) continue;
+      final candidateMap = _buildColumnMap(row);
+      int score = candidateMap.length;
+      if (candidateMap.containsKey('name')) score += 5;
+      if (candidateMap.containsKey('phone')) score += 5;
+      if (candidateMap.containsKey('email')) score += 2;
+      if (candidateMap.containsKey('college') || candidateMap.containsKey('college_branch')) score += 2;
+
+      if (score > bestScore) {
+        bestScore = score;
         headerIndex = i;
-        break;
+        columnMap = candidateMap;
+        if (candidateMap.containsKey('name') && candidateMap.containsKey('phone')) {
+          break; // Perfect header row found
+        }
       }
     }
 
-    if (headerIndex == -1) {
-      throw const FormatException('File contains no headers or data.');
+    // Fallback: Infer unmapped columns (e.g. Phone, Name, Email) by inspecting data row patterns
+    if (!columnMap.containsKey('name') || !columnMap.containsKey('phone')) {
+      final inferred = _inferColumnsFromData(rawRows, headerIndex);
+      if (!columnMap.containsKey('phone') && inferred.containsKey('phone')) {
+        columnMap['phone'] = inferred['phone']!;
+      }
+      if (!columnMap.containsKey('name') && inferred.containsKey('name')) {
+        columnMap['name'] = inferred['name']!;
+      }
+      if (!columnMap.containsKey('email') && inferred.containsKey('email')) {
+        columnMap['email'] = inferred['email']!;
+      }
     }
 
-    final headerRow = rawRows[headerIndex];
-    final columnMap = _buildColumnMap(headerRow);
+    // If still missing name, but phone is present, pick first unmapped non-numeric column as Name
+    if (!columnMap.containsKey('name') && columnMap.containsKey('phone')) {
+      final phoneCol = columnMap['phone']!;
+      final headerCols = rawRows[headerIndex].length;
+      for (int c = 0; c < headerCols; c++) {
+        if (c != phoneCol && !columnMap.values.contains(c)) {
+          columnMap['name'] = c;
+          break;
+        }
+      }
+    }
 
     if (!columnMap.containsKey('name') && !columnMap.containsKey('phone')) {
       throw const FormatException(
@@ -263,7 +460,24 @@ Mohammed R,9847033333,mohammed.r@outlook.com,GEC Thrissur,ME,2nd Year,Robotics &
       if (rawHeader.isEmpty) continue;
 
       for (final entry in _headerAliases.entries) {
-        if (!map.containsKey(entry.key) && entry.value.contains(rawHeader)) {
+        if (map.containsKey(entry.key)) continue;
+
+        // Exact match against aliases
+        if (entry.value.contains(rawHeader)) {
+          map[entry.key] = col;
+          break;
+        }
+
+        // Substring / suffix matches for compound names
+        final matched = entry.value.any((alias) =>
+          rawHeader == alias ||
+          rawHeader.startsWith('${alias}_') ||
+          rawHeader.endsWith('_${alias}') ||
+          rawHeader == '${alias}no' ||
+          rawHeader == '${alias}num' ||
+          rawHeader == '${alias}number'
+        );
+        if (matched) {
           map[entry.key] = col;
           break;
         }
@@ -272,28 +486,100 @@ Mohammed R,9847033333,mohammed.r@outlook.com,GEC Thrissur,ME,2nd Year,Robotics &
     return map;
   }
 
+  /// Automatically infers column roles by scanning candidate data rows.
+  static Map<String, int> _inferColumnsFromData(List<List<String>> rawRows, int headerIndex) {
+    final inferred = <String, int>{};
+    final sampleRows = rawRows.skip(headerIndex + 1).take(20).toList();
+    if (sampleRows.isEmpty) return inferred;
+
+    final numCols = sampleRows.map((r) => r.length).fold<int>(0, (max, len) => len > max ? len : max);
+
+    for (int col = 0; col < numCols; col++) {
+      int phoneMatches = 0;
+      int emailMatches = 0;
+      int nameMatches = 0;
+      int totalNonEmpty = 0;
+
+      for (final row in sampleRows) {
+        if (col >= row.length) continue;
+        final cell = row[col].trim();
+        if (cell.isEmpty) continue;
+        totalNonEmpty++;
+
+        final phone10 = LeadPhoneValidator.normalize10Digits(cell);
+        if (phone10.length == 10 && RegExp(r'^[6-9]\d{9}$').hasMatch(phone10)) {
+          phoneMatches++;
+        } else if (cell.contains('@') && cell.contains('.')) {
+          emailMatches++;
+        } else if (RegExp(r'^[a-zA-Z\s\.À-ɏ]{2,50}$').hasMatch(cell) && !cell.contains('http')) {
+          nameMatches++;
+        }
+      }
+
+      if (totalNonEmpty > 0) {
+        if (phoneMatches / totalNonEmpty >= 0.4 && !inferred.containsKey('phone')) {
+          inferred['phone'] = col;
+        } else if (emailMatches / totalNonEmpty >= 0.4 && !inferred.containsKey('email')) {
+          inferred['email'] = col;
+        } else if (nameMatches / totalNonEmpty >= 0.4 && !inferred.containsKey('name')) {
+          inferred['name'] = col;
+        }
+      }
+    }
+
+    return inferred;
+  }
+
   // ---------------------------------------------------------------------------
   // RFC-4180 CSV & TSV Text Parser
   // ---------------------------------------------------------------------------
 
   static String _stripBom(String s) {
-    if (s.startsWith('\uFEFF')) return s.substring(1);
+    return s
+        .replaceAll('\uFEFF', '')
+        .replaceAll('\uFFFE', '')
+        .replaceAll('\x00', '')
+        .trimLeft();
+  }
+
+  static String _stripExcelSepDirective(String s) {
+    if (s.toLowerCase().startsWith('sep=')) {
+      final newlineIdx = s.indexOf(RegExp(r'\r\n|\r|\n'));
+      if (newlineIdx != -1) {
+        return s.substring(newlineIdx).trimLeft();
+      }
+    }
     return s;
   }
 
-  static List<List<String>> _splitCsvLines(String input) {
+  static String _detectDelimiter(String text) {
+    final lines = text.split(RegExp(r'\r\n|\r|\n')).where((l) => l.trim().isNotEmpty).take(5).toList();
+    if (lines.isEmpty) return ',';
+
+    int commas = 0;
+    int semicolons = 0;
+    int tabs = 0;
+    int pipes = 0;
+
+    for (final line in lines) {
+      commas += ','.allMatches(line).length;
+      semicolons += ';'.allMatches(line).length;
+      tabs += '\t'.allMatches(line).length;
+      pipes += '|'.allMatches(line).length;
+    }
+
+    if (semicolons > commas && semicolons > tabs && semicolons > pipes) return ';';
+    if (tabs > commas && tabs > semicolons && tabs > pipes) return '\t';
+    if (pipes > commas && pipes > semicolons && pipes > tabs) return '|';
+    return ',';
+  }
+
+  static List<List<String>> _splitCsvLines(String input, {String delimiter = ','}) {
     final rows = <List<String>>[];
     final currentField = StringBuffer();
     final currentRow = <String>[];
     bool inQuotes = false;
     final length = input.length;
-
-    // Detect delimiter (tab vs comma)
-    String delimiter = ',';
-    final firstLine = input.split('\n').first;
-    if (firstLine.contains('\t') && !firstLine.contains(',')) {
-      delimiter = '\t';
-    }
 
     for (int i = 0; i < length; i++) {
       final char = input[i];

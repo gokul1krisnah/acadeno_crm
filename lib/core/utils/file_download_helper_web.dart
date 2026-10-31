@@ -1,17 +1,15 @@
 // ignore_for_file: avoid_web_libraries_in_flutter
-import 'dart:convert';
 import 'dart:html' as html;
-import 'dart:typed_data';
 
 Future<bool> downloadCsv({
   required String fileName,
   required String content,
 }) async {
   try {
-    // UTF-8 BOM so Excel on Windows properly displays unicode text without garbled characters.
-    // MUST pass as Uint8List so JS Blob receives an ArrayBuffer/Uint8Array, not a comma-separated List.toString()!
-    final bytes = Uint8List.fromList([0xEF, 0xBB, 0xBF, ...utf8.encode(content)]);
-    final blob = html.Blob([bytes], 'text/csv;charset=utf-8');
+    // Prepended UTF-8 BOM string (\uFEFF) ensures Excel natively opens the CSV with proper UTF-8 charset
+    // and eliminates binary Blob array-coercion issues across browsers.
+    final bomContent = '\uFEFF$content';
+    final blob = html.Blob([bomContent], 'text/csv;charset=utf-8');
     final url = html.Url.createObjectUrlFromBlob(blob);
     final anchor = html.AnchorElement(href: url)
       ..setAttribute('download', fileName)
