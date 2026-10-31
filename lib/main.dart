@@ -41,16 +41,16 @@ Future<void> main() async {
     );
   }
 
-  // Initialize Firebase Cloud Messaging Push & In-App Notification Service (resilient timeout)
-  await AppNotificationService.instance
-      .initialize()
-      .timeout(const Duration(milliseconds: 1500), onTimeout: () {});
-
-  // Hive must be ready before the splash screen restores the session.
+  // 1. Hive local storage must be ready before services access persistence
   await AuthSessionLocalDs.init();
   await OfflineQueueService.init();
   OfflineQueueService.instance.initialize();
   AppPhoneCallService.instance.initialize();
+
+  // 2. Initialize Firebase Cloud Messaging Push & Notification Service (resilient timeout)
+  await AppNotificationService.instance
+      .initialize()
+      .timeout(const Duration(milliseconds: 1500), onTimeout: () {});
 
   configureDependencies();
 

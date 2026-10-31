@@ -71,21 +71,31 @@ class AppNotificationService {
   Timer? _morningTimer;
   Timer? _morningPeriodicTimer;
   static const String _morningDatePrefKey = 'last_morning_briefing_date';
+  static String? _inMemoryLastDate;
 
-  String? _getLastMorningDate() {
+  Future<String?> _getLastMorningDateAsync() async {
     try {
-      if (Hive.isBoxOpen(AuthSessionLocalDs.boxName)) {
-        return Hive.box<dynamic>(AuthSessionLocalDs.boxName).get(_morningDatePrefKey)?.toString();
+      if (!Hive.isBoxOpen(AuthSessionLocalDs.boxName)) {
+        await Hive.openBox<dynamic>(AuthSessionLocalDs.boxName);
+      }
+      final box = Hive.box<dynamic>(AuthSessionLocalDs.boxName);
+      final val = box.get(_morningDatePrefKey)?.toString();
+      if (val != null) {
+        _inMemoryLastDate = val;
+        return val;
       }
     } catch (_) {}
-    return null;
+    return _inMemoryLastDate;
   }
 
-  void _saveLastMorningDate(String date) {
+  Future<void> _saveLastMorningDateAsync(String date) async {
+    _inMemoryLastDate = date;
     try {
-      if (Hive.isBoxOpen(AuthSessionLocalDs.boxName)) {
-        Hive.box<dynamic>(AuthSessionLocalDs.boxName).put(_morningDatePrefKey, date);
+      if (!Hive.isBoxOpen(AuthSessionLocalDs.boxName)) {
+        await Hive.openBox<dynamic>(AuthSessionLocalDs.boxName);
       }
+      final box = Hive.box<dynamic>(AuthSessionLocalDs.boxName);
+      await box.put(_morningDatePrefKey, date);
     } catch (_) {}
   }
 
@@ -234,16 +244,16 @@ class AppNotificationService {
   }
 
   /// Schedules the automated daily 9:00 AM "Good morning!" notification
-  void scheduleDailyMorningBriefing() {
+  Future<void> scheduleDailyMorningBriefing() async {
     try {
       final now = DateTime.now();
       final todayDate =
           '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
 
       // 1. Check persistent Hive storage: only trigger if NOT already triggered today (never re-trigger on app restarts!)
-      final lastTriggered = _getLastMorningDate();
+      final lastTriggered = await _getLastMorningDateAsync();
       if (now.hour >= 9 && lastTriggered != todayDate) {
-        _triggerDailyMorningBriefing(todayDate);
+        await _triggerDailyMorningBriefing(todayDate);
       }
 
       // 2. Calculate delay until next 9:00 AM
@@ -254,19 +264,19 @@ class AppNotificationService {
       final delay = nextNineAm.difference(now);
 
       _morningTimer?.cancel();
-      _morningTimer = Timer(delay, () {
+      _morningTimer = Timer(delay, () async {
         final triggerNow = DateTime.now();
         final triggerDate =
             '${triggerNow.year}-${triggerNow.month.toString().padLeft(2, '0')}-${triggerNow.day.toString().padLeft(2, '0')}';
-        _triggerDailyMorningBriefing(triggerDate);
+        await _triggerDailyMorningBriefing(triggerDate);
 
         // Recurring 24-hour interval
         _morningPeriodicTimer?.cancel();
-        _morningPeriodicTimer = Timer.periodic(const Duration(hours: 24), (_) {
+        _morningPeriodicTimer = Timer.periodic(const Duration(hours: 24), (_) async {
           final recurringNow = DateTime.now();
           final recurringDate =
               '${recurringNow.year}-${recurringNow.month.toString().padLeft(2, '0')}-${recurringNow.day.toString().padLeft(2, '0')}';
-          _triggerDailyMorningBriefing(recurringDate);
+          await _triggerDailyMorningBriefing(recurringDate);
         });
       });
     } catch (e) {
@@ -275,9 +285,9 @@ class AppNotificationService {
   }
 
   Future<void> _triggerDailyMorningBriefing(String todayDate) async {
-    final lastTriggered = _getLastMorningDate();
+    final lastTriggered = await _getLastMorningDateAsync();
     if (lastTriggered == todayDate) return;
-    _saveLastMorningDate(todayDate);
+    await _saveLastMorningDateAsync(todayDate);
 
     // Show native Android system tray notification with Acadeno logo & sound
     await showNativeNotification(
