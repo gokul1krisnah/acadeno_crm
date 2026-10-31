@@ -138,7 +138,6 @@ class AppPhoneCallService with WidgetsBindingObserver {
           if (res != null && res >= 0) {
             // EXACT talk-time duration from the Android telephony CallLog!
             durationSeconds = res;
-            foundCallLog = true;
             break;
           } else if (res == -1) {
             permissionDenied = true;
