@@ -109,6 +109,7 @@ class AppPhoneCallService with WidgetsBindingObserver {
 
     int durationSeconds = 0;
     bool permissionDenied = false;
+    bool foundCallLog = false;
 
     // Retry querying Android CallLog up to 4 times (with 700ms intervals)
     // because Android Telecom writes the CallLog entry asynchronously upon hangup
@@ -129,6 +130,7 @@ class AppPhoneCallService with WidgetsBindingObserver {
           if (res != null && res >= 0) {
             // EXACT talk-time duration from the Android telephony CallLog!
             durationSeconds = res;
+            foundCallLog = true;
             break;
           } else if (res == -1) {
             permissionDenied = true;
@@ -140,22 +142,49 @@ class AppPhoneCallService with WidgetsBindingObserver {
       }
     }
 
-    // If permission was denied, notify executive so they can enable it in Android Settings
-    if (permissionDenied && context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Tip: Allow Call Log permission to automatically read call duration.',
-          ),
-          duration: Duration(seconds: 3),
-        ),
-      );
+    // Only open the Call Outcome update alert box if the person was actually called!
+    // If the executive only navigated to the dialer pad and returned without calling, skip dialog.
+    if (!kIsWeb && Platform.isAndroid) {
+      if (!permissionDenied && !foundCallLog) {
+        debugPrint(
+          '[AppPhoneCallService] No outgoing call to $cleanPhone detected in CallLog. Skipping outcome dialog.',
+        );
+        return;
+      }
+
+      if (permissionDenied) {
+        final elapsedMs = DateTime.now().millisecondsSinceEpoch - startMs;
+        if (elapsedMs < 7000) {
+          debugPrint(
+            '[AppPhoneCallService] User returned immediately (<7s) without call. Skipping outcome dialog.',
+          );
+          return;
+        }
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Tip: Allow Call Log permission to automatically read call duration.',
+              ),
+              duration: Duration(seconds: 3),
+            ),
+          );
+        }
+      }
+    } else {
+      final elapsedMs = DateTime.now().millisecondsSinceEpoch - startMs;
+      if (elapsedMs < 7000) {
+        debugPrint(
+          '[AppPhoneCallService] User returned immediately (<7s). Skipping outcome dialog.',
+        );
+        return;
+      }
     }
 
     // Format duration: e.g. "2m 18s" or "45s" or "0s"
     final formattedDuration = _formatDuration(durationSeconds);
 
-    // Automatically open Call Outcome sheet with the real duration pre-filled
+    // Automatically open Call Outcome sheet only when call was made
     if (context.mounted) {
       LeadCallSheets.showCallAndOutcomeSheet(
         context,

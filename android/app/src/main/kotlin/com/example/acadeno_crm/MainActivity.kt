@@ -131,6 +131,7 @@ class MainActivity : FlutterActivity() {
                 val numberIdx = it.getColumnIndex(CallLog.Calls.NUMBER)
                 val durationIdx = it.getColumnIndex(CallLog.Calls.DURATION)
                 val dateIdx = it.getColumnIndex(CallLog.Calls.DATE)
+                val typeIdx = it.getColumnIndex(CallLog.Calls.TYPE)
 
                 var inspectedCount = 0
                 while (it.moveToNext() && inspectedCount < 25) {
@@ -139,10 +140,12 @@ class MainActivity : FlutterActivity() {
                     val cleanNumber = number.replace(Regex("[^0-9]"), "")
                     val numberLast10 = if (cleanNumber.length >= 10) cleanNumber.takeLast(10) else cleanNumber
                     val callDate = if (dateIdx != -1) it.getLong(dateIdx) else 0L
+                    val callType = if (typeIdx != -1) it.getInt(typeIdx) else 0
 
-                    // Call must be recent: either within 2 minutes before dial button tapped or within last 15 minutes
+                    // Only match outgoing calls placed during this dialing session
+                    val isOutgoing = (callType == CallLog.Calls.OUTGOING_TYPE)
                     val isRecent = if (afterTimestamp > 0) {
-                        callDate >= (afterTimestamp - 120000L)
+                        callDate >= (afterTimestamp - 3000L)
                     } else {
                         System.currentTimeMillis() - callDate <= 900000L
                     }
@@ -153,7 +156,7 @@ class MainActivity : FlutterActivity() {
                         cleanTarget.endsWith(numberLast10)
                     )
 
-                    if (isNumberMatch && isRecent) {
+                    if (isNumberMatch && isRecent && isOutgoing) {
                         val duration = if (durationIdx != -1) it.getLong(durationIdx) else 0L
                         // Return actual call talk time in seconds as recorded by the carrier
                         return duration
