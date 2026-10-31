@@ -50,18 +50,9 @@ class MainActivity : FlutterActivity() {
         // 2. Native Phone Call & Call Log Duration Channel
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, phoneCallChannel).setMethodCallHandler { call, result ->
             when (call.method) {
-                "launchDialer" -> {
-                    val phone = call.argument<String>("phone") ?: ""
-                    try {
-                        val uri = Uri.parse("tel:" + Uri.encode(phone))
-                        val intent = Intent(Intent.ACTION_DIAL, uri).apply {
-                            flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                        }
-                        startActivity(intent)
-                        result.success(true)
-                    } catch (e: Exception) {
-                        result.error("DIALER_ERROR", e.localizedMessage, null)
-                    }
+                "checkPermission" -> {
+                    val granted = ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CALL_LOG) == PackageManager.PERMISSION_GRANTED
+                    result.success(granted)
                 }
                 "requestPermissions" -> {
                     val permissions = arrayOf(
@@ -76,6 +67,19 @@ class MainActivity : FlutterActivity() {
                     }
                     result.success(true)
                 }
+                "launchDialer" -> {
+                    val phone = call.argument<String>("phone") ?: ""
+                    try {
+                        val uri = Uri.parse("tel:" + Uri.encode(phone))
+                        val intent = Intent(Intent.ACTION_DIAL, uri).apply {
+                            flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                        }
+                        startActivity(intent)
+                        result.success(true)
+                    } catch (e: Exception) {
+                        result.error("DIALER_ERROR", e.localizedMessage, null)
+                    }
+                }
                 "getLastCallDuration" -> {
                     val phone = call.argument<String>("phone") ?: ""
                     val startTimestamp = call.argument<Long>("startTimestamp") ?: 0L
@@ -89,13 +93,12 @@ class MainActivity : FlutterActivity() {
 
     private fun queryLastCallDuration(targetPhone: String, afterTimestamp: Long): Long {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CALL_LOG) != PackageManager.PERMISSION_GRANTED) {
-            return 0L
+            return -1L // Return -1 if permission not granted
         }
 
         try {
             val cleanTarget = targetPhone.replace(Regex("[^0-9]"), "")
-            // Allow querying up to 10 seconds before dial time to account for clock drift
-            val queryTime = if (afterTimestamp > 0) afterTimestamp - 10000L else System.currentTimeMillis() - 3600000L
+            val targetLast10 = if (cleanTarget.length >= 10) cleanTarget.takeLast(10) else cleanTarget
 
             val projection = arrayOf(
                 CallLog.Calls.NUMBER,
@@ -104,38 +107,51 @@ class MainActivity : FlutterActivity() {
                 CallLog.Calls.TYPE
             )
 
+            // Query the most recent 25 calls on the device, ordered by DATE descending
             val cursor = contentResolver.query(
                 CallLog.Calls.CONTENT_URI,
                 projection,
-                "${CallLog.Calls.DATE} >= ?",
-                arrayOf(queryTime.toString()),
+                null,
+                null,
                 "${CallLog.Calls.DATE} DESC"
             )
 
             cursor?.use {
                 val numberIdx = it.getColumnIndex(CallLog.Calls.NUMBER)
                 val durationIdx = it.getColumnIndex(CallLog.Calls.DURATION)
+                val dateIdx = it.getColumnIndex(CallLog.Calls.DATE)
 
-                while (it.moveToNext()) {
+                var inspectedCount = 0
+                while (it.moveToNext() && inspectedCount < 25) {
+                    inspectedCount++
                     val number = if (numberIdx != -1) it.getString(numberIdx) ?: "" else ""
                     val cleanNumber = number.replace(Regex("[^0-9]"), "")
+                    val numberLast10 = if (cleanNumber.length >= 10) cleanNumber.takeLast(10) else cleanNumber
+                    val callDate = if (dateIdx != -1) it.getLong(dateIdx) else 0L
 
-                    // Match last 10 digits or exact number
-                    val matches = if (cleanTarget.length >= 10 && cleanNumber.length >= 10) {
-                        cleanNumber.takeLast(10) == cleanTarget.takeLast(10)
+                    // Call must be recent: either within 2 minutes before dial button tapped or within last 15 minutes
+                    val isRecent = if (afterTimestamp > 0) {
+                        callDate >= (afterTimestamp - 120000L)
                     } else {
-                        cleanNumber == cleanTarget || cleanNumber.contains(cleanTarget)
+                        System.currentTimeMillis() - callDate <= 900000L
                     }
 
-                    if (matches) {
+                    val isNumberMatch = targetLast10.isNotEmpty() && (
+                        numberLast10 == targetLast10 ||
+                        cleanNumber.endsWith(targetLast10) ||
+                        cleanTarget.endsWith(numberLast10)
+                    )
+
+                    if (isNumberMatch && isRecent) {
                         val duration = if (durationIdx != -1) it.getLong(durationIdx) else 0L
+                        // Return actual call talk time in seconds as recorded by the carrier
                         return duration
                     }
                 }
             }
         } catch (e: Exception) {
-            // Permission or provider query failure
+            // Permission or provider exception
         }
-        return 0L
+        return -2L // Call record not yet committed
     }
 }

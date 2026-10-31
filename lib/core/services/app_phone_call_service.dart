@@ -13,13 +13,14 @@ import '../../ui/leads/presentation/widgets/lead_call_sheets.dart';
 /// 1. Native system dialer launch with target lead phone number.
 /// 2. Requests call log permissions (`READ_CALL_LOG`) on Android.
 /// 3. Detects when executive finishes call and returns to the app (`AppLifecycleState.resumed`).
-/// 4. Captures exact call duration in minutes/seconds from Android CallLog (or elapsed time fallback).
+/// 4. Captures exact talk-time call duration in minutes/seconds from Android CallLog.
 /// 5. Automatically prompts the Call Outcome sheet with the real duration pre-filled.
 class AppPhoneCallService with WidgetsBindingObserver {
   AppPhoneCallService._();
   static final AppPhoneCallService instance = AppPhoneCallService._();
 
-  static const MethodChannel _channel = MethodChannel('com.acadeno.crm/phone_call');
+  static const MethodChannel _channel =
+      MethodChannel('com.acadeno.crm/phone_call');
 
   bool _initialized = false;
   ExecutiveLeadItem? _activeLead;
@@ -50,18 +51,29 @@ class AppPhoneCallService with WidgetsBindingObserver {
     _dialStartTimeMs = DateTime.now().millisecondsSinceEpoch;
     _isWaitingForCallReturn = true;
 
-    final rawPhone = lead.fullPhone.isNotEmpty ? lead.fullPhone : lead.maskedPhone;
+    final rawPhone =
+        lead.fullPhone.isNotEmpty ? lead.fullPhone : lead.maskedPhone;
     final cleanPhone = rawPhone.replaceAll(RegExp(r'[^0-9+]'), '');
 
     if (cleanPhone.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No valid phone number for this lead.')),
-      );
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('No valid phone number for this lead.')),
+        );
+      }
       return;
     }
 
     if (!kIsWeb && Platform.isAndroid) {
       try {
+        // 1. Verify and request Call Log permissions before dialing
+        final hasPermission =
+            await _channel.invokeMethod<bool>('checkPermission') ?? false;
+        if (!hasPermission) {
+          await _channel.invokeMethod('requestPermissions');
+        }
+
+        // 2. Launch system phone dialer pad
         await _channel.invokeMethod('launchDialer', {'phone': cleanPhone});
         return;
       } catch (e) {
@@ -73,7 +85,9 @@ class AppPhoneCallService with WidgetsBindingObserver {
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Dialing ${lead.name} ($cleanPhone)... Return to app after call.'),
+          content: Text(
+            'Dialing ${lead.name} ($cleanPhone)... Return to app after call.',
+          ),
           duration: const Duration(seconds: 4),
         ),
       );
@@ -82,7 +96,9 @@ class AppPhoneCallService with WidgetsBindingObserver {
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed && _isWaitingForCallReturn && _activeLead != null) {
+    if (state == AppLifecycleState.resumed &&
+        _isWaitingForCallReturn &&
+        _activeLead != null) {
       _isWaitingForCallReturn = false;
       _handleCallReturn();
     }
@@ -96,39 +112,60 @@ class AppPhoneCallService with WidgetsBindingObserver {
 
     if (lead == null || context == null || !context.mounted) return;
 
-    // Small delay so Android OS completes writing call record to CallLog
-    await Future.delayed(const Duration(milliseconds: 650));
-    if (!context.mounted) return;
+    final cleanPhone =
+        (lead.fullPhone.isNotEmpty ? lead.fullPhone : lead.maskedPhone)
+            .replaceAll(RegExp(r'[^0-9+]'), '');
 
     int durationSeconds = 0;
+    bool permissionDenied = false;
 
-    // 1. Try querying native Android CallLog for the exact recorded call duration
-    if (!kIsWeb && Platform.isAndroid) {
-      try {
-        final cleanPhone = lead.fullPhone.replaceAll(RegExp(r'[^0-9+]'), '');
-        final nativeDuration = await _channel.invokeMethod<int>('getLastCallDuration', {
-          'phone': cleanPhone,
-          'startTimestamp': startMs,
-        });
-        if (nativeDuration != null && nativeDuration > 0) {
-          durationSeconds = nativeDuration;
+    // Retry querying Android CallLog up to 4 times (with 700ms intervals)
+    // because Android Telecom writes the CallLog entry asynchronously upon hangup
+    for (int attempt = 0; attempt < 4; attempt++) {
+      await Future.delayed(
+        Duration(milliseconds: attempt == 0 ? 800 : 700),
+      );
+      if (!context.mounted) return;
+
+      if (!kIsWeb && Platform.isAndroid) {
+        try {
+          final res =
+              await _channel.invokeMethod<int>('getLastCallDuration', {
+            'phone': cleanPhone,
+            'startTimestamp': startMs,
+          });
+
+          if (res != null && res >= 0) {
+            // EXACT talk-time duration from the Android telephony CallLog!
+            durationSeconds = res;
+            foundCallLog = true;
+            break;
+          } else if (res == -1) {
+            permissionDenied = true;
+            break;
+          }
+        } catch (_) {
+          break;
         }
-      } catch (e) {
-        debugPrint('[AppPhoneCallService] CallLog query notice: $e');
       }
     }
 
-    // 2. Fallback to wall-clock elapsed time if CallLog wasn't accessible
-    if (durationSeconds <= 0 && startMs > 0) {
-      final elapsed = (DateTime.now().millisecondsSinceEpoch - startMs) ~/ 1000;
-      // If elapsed is under 5 seconds, it was likely canceled or misdialed
-      durationSeconds = elapsed > 0 ? elapsed : 0;
+    // If permission was denied, notify executive so they can enable it in Android Settings
+    if (permissionDenied && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Tip: Allow Call Log permission to automatically read call duration.',
+          ),
+          duration: Duration(seconds: 3),
+        ),
+      );
     }
 
-    // Format duration: e.g. "2m 18s" or "45s"
+    // Format duration: e.g. "2m 18s" or "45s" or "0s"
     final formattedDuration = _formatDuration(durationSeconds);
 
-    // 3. Automatically open Call Outcome sheet with the exact duration pre-filled
+    // Automatically open Call Outcome sheet with the real duration pre-filled
     if (context.mounted) {
       LeadCallSheets.showCallAndOutcomeSheet(
         context,
