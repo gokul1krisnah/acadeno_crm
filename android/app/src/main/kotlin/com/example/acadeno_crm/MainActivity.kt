@@ -43,6 +43,40 @@ class MainActivity : FlutterActivity() {
                     val isSecure = (window.attributes.flags and WindowManager.LayoutParams.FLAG_SECURE) != 0
                     result.success(isSecure)
                 }
+                "getDeviceInfo" -> {
+                    try {
+                        val androidId = android.provider.Settings.Secure.getString(
+                            contentResolver,
+                            android.provider.Settings.Secure.ANDROID_ID
+                        ) ?: "unknown_android"
+                        val manufacturer = android.os.Build.MANUFACTURER.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }
+                        val model = android.os.Build.MODEL
+                        val deviceName = "$manufacturer $model"
+                        result.success(mapOf("deviceId" to androidId, "deviceName" to deviceName))
+                    } catch (e: Exception) {
+                        result.success(mapOf("deviceId" to "android_${System.currentTimeMillis()}", "deviceName" to "Android Device"))
+                    }
+                }
+                "checkDeviceIntegrity" -> {
+                    val buildTags = android.os.Build.TAGS
+                    val isTestKeys = buildTags != null && buildTags.contains("test-keys")
+                    val suPaths = arrayOf(
+                        "/system/app/Superuser.apk",
+                        "/sbin/su",
+                        "/system/bin/su",
+                        "/system/xbin/su",
+                        "/data/local/xbin/su",
+                        "/data/local/bin/su",
+                        "/system/sd/xbin/su",
+                        "/system/bin/failsafe/su",
+                        "/data/local/su"
+                    )
+                    val isRooted = isTestKeys || suPaths.any { java.io.File(it).exists() }
+                    val isEmulator = android.os.Build.FINGERPRINT.startsWith("generic") ||
+                                     android.os.Build.MODEL.contains("google_sdk") ||
+                                     android.os.Build.MODEL.contains("Emulator")
+                    result.success(mapOf("isRooted" to isRooted, "isEmulator" to isEmulator))
+                }
                 else -> result.notImplemented()
             }
         }

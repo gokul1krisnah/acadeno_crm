@@ -1,3 +1,4 @@
+import '../../../../core/services/device_security_service.dart';
 import 'dart:async';
 import '../data/sources/auth_session_local_ds.dart';
 import 'package:acadeno_crm/core/router/app_router.dart';
@@ -226,7 +227,26 @@ class LoginCubit extends Cubit<LoginState> {
     } else {
       _resetRole();
       currentRole = role;
+
+      // PR-5.1 & PR-5.4: Enforce single-phone hardware binding and integrity for Sales Executives
+      if (!offline) {
+        final deviceCheckResult = await DeviceSecurityService.verifyDeviceBinding(
+          user: user,
+          userData: data,
+        );
+        if (deviceCheckResult != null) {
+          await _authRepository.signOut();
+          _resetRole();
+          return deviceCheckResult;
+        }
+      }
     }
+
+    // Record session start for PR-5.3 remote deactivation listener
+    SessionSecurityService.instance.recordLoginSession(
+      loginTime: DateTime.now(),
+      initialLogoutToken: data['forceLogoutToken'] as String?,
+    );
 
     return null;
   }

@@ -87,9 +87,12 @@ class DashboardRepository {
     String userName = '',
     String? reassignToExecutive,
   }) async {
+    final nowMs = DateTime.now().millisecondsSinceEpoch.toString();
     await _rds.updateUser(uid, {
       'isActive': isActive,
+      'status': isActive ? 'active' : 'inactive',
       if (!isActive) 'forceLogoutAt': FieldValue.serverTimestamp(),
+      if (!isActive) 'forceLogoutToken': nowMs,
       if (!isActive && reassignToExecutive != null)
         'openWorkReassignedTo': reassignToExecutive,
     });

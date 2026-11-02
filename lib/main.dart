@@ -10,6 +10,8 @@ import 'core/services/app_notification_service.dart';
 import 'core/services/app_phone_call_service.dart';
 import 'core/services/app_security_service.dart';
 import 'core/services/offline_queue_service.dart';
+import 'core/services/session_security_service.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'shared/theme/app_colors.dart';
 import 'shared/theme/app_typography.dart';
 import 'shared/widgets/offline_status_bar.dart';
@@ -74,6 +76,18 @@ class _AcadenoAppState extends State<AcadenoApp> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    // Attach real-time session revocation listener (PR-5.3)
+    SessionSecurityService.instance.attachContext(
+      router: _appRouter,
+      messengerKey: _scaffoldMessengerKey,
+    );
+    FirebaseAuth.instance.authStateChanges().listen((user) {
+      if (user != null) {
+        SessionSecurityService.instance.startListening(user.uid);
+      } else {
+        SessionSecurityService.instance.stopListening();
+      }
+    });
     // Listen for incoming foreground push notifications from Firebase
     AppNotificationService.instance.onForegroundMessage.listen((message) {
       final notif = message.notification;

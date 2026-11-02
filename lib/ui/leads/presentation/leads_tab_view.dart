@@ -292,6 +292,43 @@ class _LeadsTabViewState extends State<LeadsTabView> {
             Expanded(
               child: Stack(
                 children: [
+                  // Faint security watermark overlay (PR-1.3)
+                  Positioned.fill(
+                    child: IgnorePointer(
+                      child: Opacity(
+                        opacity: 0.038,
+                        child: Center(
+                          child: Transform.rotate(
+                            angle: -0.35,
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  '${homeState.user.displayName.toUpperCase()} · ${homeState.user.uid.length < 6 ? homeState.user.uid : homeState.user.uid.substring(0, 6).toUpperCase()}',
+                                  style: const TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w900,
+                                    color: Colors.black,
+                                    letterSpacing: 2.0,
+                                  ),
+                                ),
+                                const SizedBox(height: 6),
+                                const Text(
+                                  'ACADENO LEAD MANAGER · CONFIDENTIAL · PR-1.3',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w800,
+                                    color: Colors.black,
+                                    letterSpacing: 1.5,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
                   RefreshIndicator(
                     color: const Color(0xFF4338CA),
                     backgroundColor: Colors.white,

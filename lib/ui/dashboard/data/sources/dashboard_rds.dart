@@ -153,25 +153,32 @@ class DashboardRds {
   }
 
   Future<void> resetUserDevice(String uid, String userName) async {
+    final nowMs = DateTime.now().millisecondsSinceEpoch.toString();
     await _users.doc(uid).update({
       'deviceBound': false,
+      'deviceId': null,
+      'registeredDeviceId': null,
       'deviceName': 'Pending new phone binding',
       'deviceResetAt': FieldValue.serverTimestamp(),
       'forceLogoutAt': FieldValue.serverTimestamp(),
+      'forceLogoutToken': nowMs,
     });
     await appendAuditLog(
-      action: 'Approved new phone binding & signed out old device',
+      action: 'Approved new phone binding & signed out old device (PR-5.1)',
       target: userName,
       category: 'device_reset',
     );
   }
 
   Future<void> forceSignOutUser(String uid, String userName) async {
+    final nowMs = DateTime.now().millisecondsSinceEpoch.toString();
     await _users.doc(uid).update({
       'forceLogoutAt': FieldValue.serverTimestamp(),
+      'forceLogoutToken': nowMs,
+      'lastForceLogoutBy': userName,
     });
     await appendAuditLog(
-      action: 'Remotely signed out active sessions',
+      action: 'Remotely signed out active sessions (PR-5.3)',
       target: userName,
       category: 'remote_signout',
     );

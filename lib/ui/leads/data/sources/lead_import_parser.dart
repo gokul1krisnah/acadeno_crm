@@ -170,6 +170,8 @@ Mohammed R,9847033333,mohammed.r@outlook.com,GEC Thrissur,ME,2nd Year,Robotics &
   }) {
     var cleanCsv = _stripBom(csvString);
     cleanCsv = _stripExcelSepDirective(cleanCsv);
+    cleanCsv = _recoverByteEncodedCsv(cleanCsv);
+    cleanCsv = _stripBom(cleanCsv);
     final delimiter = _detectDelimiter(cleanCsv);
     final rawRows = _splitCsvLines(cleanCsv, delimiter: delimiter);
     return _process2dRows(rawRows, defaultSource: defaultSource, defaultConsent: defaultConsent);
@@ -181,18 +183,23 @@ Mohammed R,9847033333,mohammed.r@outlook.com,GEC Thrissur,ME,2nd Year,Robotics &
     String defaultSource = 'AI & Machine Learning Workshop (Nov)',
     String defaultConsent = 'Event registration form',
   }) {
+    if (bytes.isEmpty) {
+      throw const FormatException('Uploaded file is empty (0 bytes).');
+    }
+
     String str;
     if (bytes.length >= 2 && bytes[0] == 0xFF && bytes[1] == 0xFE) {
       // UTF-16 LE (common Windows Excel Unicode Text export)
-      str = String.fromCharCodes(
-        Uint16List.view(bytes.buffer, bytes.offsetInBytes + 2, (bytes.length - 2) ~/ 2),
-      );
+      final charCodes = <int>[];
+      for (int i = 2; i + 1 < bytes.length; i += 2) {
+        charCodes.add(bytes[i] | (bytes[i + 1] << 8));
+      }
+      str = String.fromCharCodes(charCodes);
     } else if (bytes.length >= 2 && bytes[0] == 0xFE && bytes[1] == 0xFF) {
       // UTF-16 BE
-      final byteData = ByteData.sublistView(bytes, 2);
       final charCodes = <int>[];
-      for (int i = 0; i < byteData.lengthInBytes; i += 2) {
-        charCodes.add(byteData.getUint16(i, Endian.big));
+      for (int i = 2; i + 1 < bytes.length; i += 2) {
+        charCodes.add((bytes[i] << 8) | bytes[i + 1]);
       }
       str = String.fromCharCodes(charCodes);
     } else if (bytes.length >= 3 && bytes[0] == 0xEF && bytes[1] == 0xBB && bytes[2] == 0xBF) {
@@ -202,12 +209,58 @@ Mohammed R,9847033333,mohammed.r@outlook.com,GEC Thrissur,ME,2nd Year,Robotics &
       try {
         str = utf8.decode(bytes);
       } catch (_) {
-        str = utf8.decode(bytes, allowMalformed: true);
+        try {
+          // Fallback to Latin-1 (Windows-1252 ANSI) for files saved by desktop Excel
+          str = latin1.decode(bytes);
+        } catch (_) {
+          str = utf8.decode(bytes, allowMalformed: true);
+        }
       }
     }
 
     str = _stripBom(str);
+    str = _recoverByteEncodedCsv(str);
     return parseCsvString(str, defaultSource: defaultSource, defaultConsent: defaultConsent);
+  }
+
+  /// Recovers CSV text if the uploaded file was saved as comma-separated byte numbers
+  /// (e.g. "239,187,191,76,101,97,100,32,73,68...").
+  static String _recoverByteEncodedCsv(String input) {
+    final trimmed = input.trim();
+    if (trimmed.isEmpty) return input;
+
+    final firstComma = trimmed.indexOf(',');
+    if (firstComma != -1 && firstComma <= 5) {
+      final firstToken = trimmed.substring(0, firstComma).trim();
+      final firstNum = int.tryParse(firstToken);
+      if (firstNum != null && firstNum >= 0 && firstNum <= 255) {
+        final sampleTokens = trimmed.split(RegExp(r'[,\r\n\s]+')).take(25).toList();
+        if (sampleTokens.length >= 8 &&
+            sampleTokens.every((t) {
+              final n = int.tryParse(t);
+              return n != null && n >= 0 && n <= 255;
+            })) {
+          try {
+            final allMatches = RegExp(r'\b\d+\b').allMatches(trimmed);
+            final byteList = <int>[];
+            for (final m in allMatches) {
+              final v = int.tryParse(m.group(0)!);
+              if (v != null && v >= 0 && v <= 255) {
+                byteList.add(v);
+              }
+            }
+            if (byteList.length >= 10) {
+              final u8 = Uint8List.fromList(byteList);
+              if (u8.length >= 3 && u8[0] == 0xEF && u8[1] == 0xBB && u8[2] == 0xBF) {
+                return utf8.decode(u8.sublist(3), allowMalformed: true);
+              }
+              return utf8.decode(u8, allowMalformed: true);
+            }
+          } catch (_) {}
+        }
+      }
+    }
+    return input;
   }
 
   /// Parses Excel (.xlsx) file bytes into validated [LeadImportItem] records.
@@ -319,9 +372,31 @@ Mohammed R,9847033333,mohammed.r@outlook.com,GEC Thrissur,ME,2nd Year,Robotics &
       }
     }
 
-    // If still missing name, but phone is present, pick first unmapped non-numeric column as Name
-    if (!columnMap.containsKey('name') && columnMap.containsKey('phone')) {
-      final phoneCol = columnMap['phone']!;
+    // If phone is still missing, scan sample rows to locate any column containing valid phone numbers
+    if (!columnMap.containsKey('phone')) {
+      final sampleRows = rawRows.skip(headerIndex + 1).take(20).toList();
+      final maxCols = sampleRows.fold<int>(0, (m, r) => r.length > m ? r.length : m);
+      for (int c = 0; c < maxCols; c++) {
+        if (columnMap.values.contains(c)) continue;
+        int matchCount = 0;
+        for (final r in sampleRows) {
+          if (c < r.length) {
+            final norm = LeadPhoneValidator.normalize10Digits(r[c]);
+            if (norm.length == 10 && RegExp(r'^[6-9]\d{9}$').hasMatch(norm)) {
+              matchCount++;
+            }
+          }
+        }
+        if (matchCount > 0) {
+          columnMap['phone'] = c;
+          break;
+        }
+      }
+    }
+
+    // If still missing name, assign the first unmapped non-numeric column
+    if (!columnMap.containsKey('name')) {
+      final phoneCol = columnMap['phone'];
       final headerCols = rawRows[headerIndex].length;
       for (int c = 0; c < headerCols; c++) {
         if (c != phoneCol && !columnMap.values.contains(c)) {
@@ -331,9 +406,14 @@ Mohammed R,9847033333,mohammed.r@outlook.com,GEC Thrissur,ME,2nd Year,Robotics &
       }
     }
 
-    if (!columnMap.containsKey('name') && !columnMap.containsKey('phone')) {
+    if (!columnMap.containsKey('phone') && !columnMap.containsKey('name')) {
       throw const FormatException(
         'Could not find required columns ("Name" and "Phone") in the header row. Please check the column headers.',
+      );
+    }
+    if (!columnMap.containsKey('phone')) {
+      throw const FormatException(
+        'Could not find a valid "Phone" column in the uploaded file. Please ensure at least one column contains 10-digit phone numbers.',
       );
     }
 
@@ -355,7 +435,10 @@ Mohammed R,9847033333,mohammed.r@outlook.com,GEC Thrissur,ME,2nd Year,Robotics &
         return '';
       }
 
-      final name = getCol('name');
+      var name = getCol('name');
+      if (name.isEmpty) {
+        name = 'Lead #$rowNumber';
+      }
       final rawPhone = getCol('phone');
       final email = getCol('email');
       var college = getCol('college');

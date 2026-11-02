@@ -27,6 +27,92 @@ class _UserManagementViewState extends State<UserManagementView> {
   static const _borderColor = Color(0xFFE2E8F0);
   static const _bgLight = Color(0xFFF8FAFC);
 
+  void _confirmResetDevice(
+    BuildContext context,
+    DashboardCubit cubit,
+    DashboardUserModel user,
+  ) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Row(
+          children: [
+            Icon(Icons.phonelink_erase_rounded, color: Color(0xFFD97706)),
+            SizedBox(width: 8),
+            Text('Reset Phone Binding (PR-5.1)', style: TextStyle(fontSize: 16)),
+          ],
+        ),
+        content: Text(
+          'Reset registered phone for ${user.name}?\n\nThis will remotely sign out their existing phone session and permit them to register a new phone on their next sign-in (PR-5.1).',
+          style: const TextStyle(fontSize: 13.5, color: Color(0xFF334155)),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFD97706),
+              foregroundColor: Colors.white,
+              elevation: 0,
+            ),
+            onPressed: () {
+              Navigator.pop(ctx);
+              cubit.resetUserDevice(user.uid, user.name);
+              SnackBarAlert.showToast(
+                context: context,
+                message: 'Phone binding reset for ${user.name}. They may now register a new phone.',
+              );
+            },
+            child: const Text('Approve & Reset Phone'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _confirmForceSignOut(
+    BuildContext context,
+    DashboardCubit cubit,
+    DashboardUserModel user,
+  ) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text('Force Sign Out ${user.name}?'),
+        content: Text(
+          'This will immediately revoke ${user.name}’s active login sessions across all devices (PR-5.3).\n\nTheir app will terminate and return to the login screen.',
+          style: const TextStyle(fontSize: 13.5, color: Color(0xFF334155)),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton.icon(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFDC2626),
+              foregroundColor: Colors.white,
+              elevation: 0,
+            ),
+            onPressed: () {
+              Navigator.pop(ctx);
+              cubit.forceSignOutUser(user.uid, user.name);
+              SnackBarAlert.showToast(
+                context: context,
+                message: 'Remote sign out sent for ${user.name}. Their session will terminate immediately.',
+              );
+            },
+            icon: const Icon(Icons.logout_rounded, size: 16),
+            label: const Text('Force Sign Out'),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _openAddUserDialog({required bool byUid}) {
     final cubit = context.read<DashboardCubit>();
     final formKey = GlobalKey<FormState>();
@@ -930,8 +1016,9 @@ class _UserManagementViewState extends State<UserManagementView> {
           child: const Row(
             children: [
               Expanded(flex: 3, child: Text('USER', style: _tblHdr)),
-              Expanded(flex: 4, child: Text('EMAIL & UID', style: _tblHdr)),
-              Expanded(flex: 3, child: Text('ROLE', style: _tblHdr)),
+              Expanded(flex: 3, child: Text('EMAIL & UID', style: _tblHdr)),
+              Expanded(flex: 2, child: Text('ROLE', style: _tblHdr)),
+              Expanded(flex: 3, child: Text('DEVICE SECURITY (PR-5.1)', style: _tblHdr)),
               Expanded(flex: 1, child: Text('ACTIVE', style: _tblHdr)),
               SizedBox(width: 100, child: Text('ACTIONS', style: _tblHdr, textAlign: TextAlign.right)),
             ],
@@ -1023,7 +1110,7 @@ class _UserManagementViewState extends State<UserManagementView> {
 
                     // EMAIL & UID
                     Expanded(
-                      flex: 4,
+                      flex: 3,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -1069,7 +1156,7 @@ class _UserManagementViewState extends State<UserManagementView> {
 
                     // ROLE
                     Expanded(
-                      flex: 3,
+                      flex: 2,
                       child: Container(
                         height: 32,
                         padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -1125,6 +1212,65 @@ class _UserManagementViewState extends State<UserManagementView> {
 
 
 
+                    // DEVICE SECURITY (PR-5.1)
+                    Expanded(
+                      flex: 3,
+                      child: Row(
+                        children: [
+                          Icon(
+                            user.deviceBound
+                                ? Icons.phone_android_rounded
+                                : Icons.phonelink_setup_rounded,
+                            size: 15,
+                            color: user.deviceBound
+                                ? const Color(0xFF16A34A)
+                                : const Color(0xFFD97706),
+                          ),
+                          const SizedBox(width: 6),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  user.deviceName.isNotEmpty
+                                      ? user.deviceName
+                                      : 'No phone bound',
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: user.deviceBound
+                                        ? _textDark
+                                        : const Color(0xFFB45309),
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                Text(
+                                  user.deviceBound ? 'Registered Phone' : 'Pending Binding',
+                                  style: TextStyle(
+                                    fontSize: 10.5,
+                                    color: user.deviceBound
+                                        ? const Color(0xFF15803D)
+                                        : const Color(0xFFD97706),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          IconButton(
+                            icon: const Icon(
+                              Icons.phonelink_erase_rounded,
+                              size: 16,
+                              color: Color(0xFF64748B),
+                            ),
+                            tooltip: 'Reset Phone Binding (PR-5.1)',
+                            onPressed: () => _confirmResetDevice(context, cubit, user),
+                          ),
+                        ],
+                      ),
+                    ),
+
                     // ACTIVE
                     Expanded(
                       flex: 1,
@@ -1162,7 +1308,7 @@ class _UserManagementViewState extends State<UserManagementView> {
                           IconButton(
                             icon: const Icon(Icons.logout_rounded, size: 16),
                             tooltip: 'Remote sign out session',
-                            onPressed: () => cubit.forceSignOutUser(user.uid, user.name),
+                            onPressed: () => _confirmForceSignOut(context, cubit, user),
                           ),
                           if (isMe)
                             IconButton(
@@ -1384,6 +1530,46 @@ class _UserManagementViewState extends State<UserManagementView> {
                       ],
                     ),
                     const SizedBox(height: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF8FAFC),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: const Color(0xFFE2E8F0)),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            user.deviceBound
+                                ? Icons.phone_android_rounded
+                                : Icons.phonelink_setup_rounded,
+                            size: 14,
+                            color: user.deviceBound
+                                ? const Color(0xFF16A34A)
+                                : const Color(0xFFD97706),
+                          ),
+                          const SizedBox(width: 6),
+                          Expanded(
+                            child: Text(
+                              'Device: ${user.deviceName} (${user.deviceBound ? "Registered" : "Pending"})',
+                              style: const TextStyle(fontSize: 11.5, color: _textDark, fontWeight: FontWeight.w500),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          TextButton.icon(
+                            style: TextButton.styleFrom(
+                              visualDensity: VisualDensity.compact,
+                              padding: const EdgeInsets.symmetric(horizontal: 6),
+                            ),
+                            onPressed: () => _confirmResetDevice(context, cubit, user),
+                            icon: const Icon(Icons.phonelink_erase_rounded, size: 14),
+                            label: const Text('Reset', style: TextStyle(fontSize: 11)),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 8),
                     Wrap(
                       spacing: 8,
                       runSpacing: 4,
@@ -1393,6 +1579,11 @@ class _UserManagementViewState extends State<UserManagementView> {
                         Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
+                            IconButton(
+                              icon: const Icon(Icons.logout_rounded, size: 18),
+                              tooltip: 'Remote sign out session (PR-5.3)',
+                              onPressed: () => _confirmForceSignOut(context, cubit, user),
+                            ),
                             if (isMe)
                               IconButton(
                                 icon: const Icon(
