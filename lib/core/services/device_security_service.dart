@@ -1,4 +1,3 @@
-import 'dart:io' show Platform;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
@@ -22,7 +21,7 @@ class DeviceSecurityService {
       return (deviceId: id, deviceName: 'Web Browser');
     }
 
-    if (Platform.isAndroid) {
+    if (defaultTargetPlatform == TargetPlatform.android) {
       try {
         final res = await _securityChannel
             .invokeMapMethod<String, String>('getDeviceInfo');
@@ -40,12 +39,12 @@ class DeviceSecurityService {
       id = 'dev_${DateTime.now().millisecondsSinceEpoch}';
       await box.put('device_id', id);
     }
-    return (deviceId: id, deviceName: '${Platform.operatingSystem} Device');
+    return (deviceId: id, deviceName: 'Registered Device');
   }
 
   /// Verifies hardware integrity (root, emulator, modified builds - PR-5.4).
   static Future<bool> isDeviceCompromised() async {
-    if (kIsWeb || !Platform.isAndroid) return false;
+    if (kIsWeb || defaultTargetPlatform != TargetPlatform.android) return false;
     try {
       final res = await _securityChannel
           .invokeMapMethod<String, bool>('checkDeviceIntegrity');
