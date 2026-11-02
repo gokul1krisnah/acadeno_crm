@@ -1,3 +1,4 @@
+import 'package:acadeno_crm/core/utils/url_dialer_helper.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
 import 'package:acadeno_crm/shared/utilities/link_launcher.dart';
@@ -81,6 +82,14 @@ class _DashboardView extends StatefulWidget {
 class _DashboardViewState extends State<_DashboardView> {
   final _scaffoldKey = GlobalKey<ScaffoldState>();
   bool _hasAutoHealedRole = false;
+  final _searchCtrl = TextEditingController();
+  String _searchQuery = '';
+
+  @override
+  void dispose() {
+    _searchCtrl.dispose();
+    super.dispose();
+  }
 
   static const _primaryNav = [
     _NavItem(
@@ -322,6 +331,25 @@ class _DashboardViewState extends State<_DashboardView> {
                                                 showMenuButton: !showSidebar,
                                               ),
                                               const SizedBox(height: 20),
+                                              if (_searchQuery
+                                                  .trim()
+                                                  .isNotEmpty) ...[
+                                                _buildLiveSearchResults(
+                                                  query: _searchQuery.trim(),
+                                                  leads: rawLeads,
+                                                  users: allUsers,
+                                                  onClear: () {
+                                                    setState(() {
+                                                      _searchCtrl.clear();
+                                                      _searchQuery = '';
+                                                    });
+                                                    context
+                                                        .read<AdminLeadsCubit>()
+                                                        .setSearchQuery('');
+                                                  },
+                                                ),
+                                                const SizedBox(height: 20),
+                                              ],
                                               _stats(rawLeads, activeUsers),
                                               const SizedBox(height: 24),
                                               if (wide)
@@ -829,9 +857,16 @@ class _DashboardViewState extends State<_DashboardView> {
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: const Color(0xFFE2E8E5), width: 1),
       ),
-      child: const TextField(
+      child: TextField(
+        controller: _searchCtrl,
         textAlignVertical: TextAlignVertical.center,
-        style: TextStyle(
+        onChanged: (val) {
+          setState(() {
+            _searchQuery = val.trim();
+          });
+          context.read<AdminLeadsCubit>().setSearchQuery(val.trim());
+        },
+        style: const TextStyle(
           fontSize: 14.5,
           color: _text,
           fontWeight: FontWeight.w500,
@@ -842,8 +877,11 @@ class _DashboardViewState extends State<_DashboardView> {
           border: InputBorder.none,
           enabledBorder: InputBorder.none,
           focusedBorder: InputBorder.none,
-          contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-          prefixIcon: Padding(
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 16,
+          ),
+          prefixIcon: const Padding(
             padding: EdgeInsets.only(left: 14, right: 10),
             child: Icon(
               Icons.search_rounded,
@@ -851,14 +889,540 @@ class _DashboardViewState extends State<_DashboardView> {
               color: Color(0xFF94A3B8),
             ),
           ),
-          prefixIconConstraints: BoxConstraints(minWidth: 44, minHeight: 21),
-          hintText: 'Search',
-          hintStyle: TextStyle(
+          prefixIconConstraints: const BoxConstraints(
+            minWidth: 44,
+            minHeight: 21,
+          ),
+          suffixIcon: _searchQuery.isNotEmpty
+              ? IconButton(
+                  icon: const Icon(
+                    Icons.clear_rounded,
+                    size: 18,
+                    color: _muted,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      _searchCtrl.clear();
+                      _searchQuery = '';
+                    });
+                    context.read<AdminLeadsCubit>().setSearchQuery('');
+                  },
+                )
+              : null,
+          hintText: 'Search leads, staff, colleges...',
+          hintStyle: const TextStyle(
             fontSize: 14.5,
             color: Color(0xFF94A3B8),
             fontWeight: FontWeight.w400,
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildLiveSearchResults({
+    required String query,
+    required List<Map<String, dynamic>> leads,
+    required List<DashboardUserModel> users,
+    required VoidCallback onClear,
+  }) {
+    final q = query.toLowerCase();
+
+    // 1. Matched Leads
+    final matchedLeads = leads.where((l) {
+      final name = (l['name'] ?? l['studentName'] ?? l['candidateName'] ?? '')
+          .toString()
+          .toLowerCase();
+      final phone = (l['phone'] ?? l['phoneNumber'] ?? '')
+          .toString()
+          .toLowerCase();
+      final college = (l['college'] ?? l['collegeName'] ?? '')
+          .toString()
+          .toLowerCase();
+      final course = (l['course'] ?? l['program'] ?? '')
+          .toString()
+          .toLowerCase();
+      final assigned = (l['assignedName'] ?? l['assignedTo'] ?? '')
+          .toString()
+          .toLowerCase();
+      final status = (l['status'] ?? '').toString().toLowerCase();
+      return name.contains(q) ||
+          phone.contains(q) ||
+          college.contains(q) ||
+          course.contains(q) ||
+          assigned.contains(q) ||
+          status.contains(q);
+    }).toList();
+
+    // 2. Matched Team Members
+    final matchedUsers = users.where((u) {
+      final name = u.name.toLowerCase();
+      final email = u.email.toLowerCase();
+      final role = u.role.toLowerCase();
+      return name.contains(q) || email.contains(q) || role.contains(q);
+    }).toList();
+
+    // 3. Matched College Visits
+    final matchedVisits = _CollegeVisits._figmaVisits.where((v) {
+      final name = (v['collegeName'] ?? '').toString().toLowerCase();
+      final purpose = (v['purpose'] ?? '').toString().toLowerCase();
+      return name.contains(q) || purpose.contains(q);
+    }).toList();
+
+    final totalMatches =
+        matchedLeads.length + matchedUsers.length + matchedVisits.length;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x08000000),
+            blurRadius: 16,
+            offset: Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFF4ED),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(
+                  Icons.search_rounded,
+                  color: _orangeAccent,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Flexible(
+                          child: Text(
+                            'Search results for "$query"',
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              color: _text,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFEEF2FF),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            '$totalMatches ${totalMatches == 1 ? 'match' : 'matches'}',
+                            style: const TextStyle(
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.w700,
+                              color: _primary,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 2),
+                    const Text(
+                      'Live lookup across Leads, Team Directory, and Campus Visits',
+                      style: TextStyle(fontSize: 12, color: _muted),
+                    ),
+                  ],
+                ),
+              ),
+              TextButton.icon(
+                onPressed: onClear,
+                icon: const Icon(Icons.clear_rounded, size: 16),
+                label: const Text('Clear'),
+                style: TextButton.styleFrom(
+                  foregroundColor: _muted,
+                  visualDensity: VisualDensity.compact,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          if (totalMatches == 0)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 24),
+              child: Center(
+                child: Column(
+                  children: [
+                    const Icon(
+                      Icons.search_off_rounded,
+                      size: 40,
+                      color: Color(0xFFCBD5E1),
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      'No results found matching "$query"',
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF64748B),
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    const Text(
+                      'Try searching by student name, mobile number, college, or team member name.',
+                      style: TextStyle(fontSize: 12, color: Color(0xFF94A3B8)),
+                    ),
+                  ],
+                ),
+              ),
+            )
+          else ...[
+            // LEADS SECTION
+            if (matchedLeads.isNotEmpty) ...[
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'LEADS (${matchedLeads.length})',
+                    style: const TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF94A3B8),
+                      letterSpacing: 0.8,
+                    ),
+                  ),
+                  InkWell(
+                    onTap: () {
+                      context.read<AdminLeadsCubit>().setSearchQuery(query);
+                      context.read<DashboardCubit>().selectNav(1);
+                    },
+                    child: const Text(
+                      'View all in Leads & Assign →',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: _primary,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              ...matchedLeads.take(5).map((l) {
+                final name = (l['name'] ?? l['studentName'] ?? 'Lead')
+                    .toString();
+                final phone = (l['phone'] ?? l['phoneNumber'] ?? '').toString();
+                final college = (l['college'] ?? l['collegeName'] ?? 'Campus')
+                    .toString();
+                final course = (l['course'] ?? l['program'] ?? '').toString();
+                final assigned =
+                    (l['assignedName'] ?? l['assignedTo'] ?? 'Unassigned')
+                        .toString();
+                final status = (l['status'] ?? 'New').toString();
+
+                Color badgeBg = const Color(0xFFEEF2FF);
+                Color badgeFg = _primary;
+                if (status.toLowerCase().contains('convert')) {
+                  badgeBg = const Color(0xFFDCFCE7);
+                  badgeFg = const Color(0xFF15803D);
+                } else if (status.toLowerCase().contains('interest')) {
+                  badgeBg = const Color(0xFFEFF6FF);
+                  badgeFg = const Color(0xFF2563EB);
+                } else if (status.toLowerCase().contains('overdue')) {
+                  badgeBg = const Color(0xFFFEE2E2);
+                  badgeFg = const Color(0xFFB91C1C);
+                }
+
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 10,
+                  ),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF8FAFC),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: const Color(0xFFF1F5F9)),
+                  ),
+                  child: Row(
+                    children: [
+                      CircleAvatar(
+                        radius: 18,
+                        backgroundColor: const Color(0xFFE2E8F0),
+                        child: Text(
+                          name.isNotEmpty ? name[0].toUpperCase() : 'L',
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFF334155),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Flexible(
+                                  child: Text(
+                                    name,
+                                    style: const TextStyle(
+                                      fontSize: 13.5,
+                                      fontWeight: FontWeight.w700,
+                                      color: _text,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 7,
+                                    vertical: 2,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: badgeBg,
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: Text(
+                                    status,
+                                    style: TextStyle(
+                                      fontSize: 10.5,
+                                      fontWeight: FontWeight.w700,
+                                      color: badgeFg,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              '$college${course.isNotEmpty ? ' · $course' : ''} · Assigned: $assigned',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: _muted,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      if (phone.isNotEmpty)
+                        IconButton(
+                          tooltip: 'Call $name',
+                          icon: const Icon(
+                            Icons.phone_outlined,
+                            size: 18,
+                            color: Color(0xFF16A34A),
+                          ),
+                          onPressed: () => UrlDialerHelper.openDialer(phone),
+                        ),
+                      OutlinedButton(
+                        onPressed: () {
+                          context.read<AdminLeadsCubit>().setSearchQuery(name);
+                          context.read<DashboardCubit>().selectNav(1);
+                        },
+                        style: OutlinedButton.styleFrom(
+                          visualDensity: VisualDensity.compact,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 4,
+                          ),
+                          side: const BorderSide(color: Color(0xFFCBD5E1)),
+                        ),
+                        child: const Text(
+                          'Open',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }),
+            ],
+
+            // TEAM SECTION
+            if (matchedUsers.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              Text(
+                'TEAM MEMBERS (${matchedUsers.length})',
+                style: const TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF94A3B8),
+                  letterSpacing: 0.8,
+                ),
+              ),
+              const SizedBox(height: 8),
+              ...matchedUsers.take(3).map((u) {
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 10,
+                  ),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF8FAFC),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: const Color(0xFFF1F5F9)),
+                  ),
+                  child: Row(
+                    children: [
+                      CircleAvatar(
+                        radius: 16,
+                        backgroundColor: const Color(0xFFDBEAFE),
+                        child: Text(
+                          u.name.isNotEmpty ? u.name[0].toUpperCase() : 'U',
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFF1D4ED8),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              u.name,
+                              style: const TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                                color: _text,
+                              ),
+                            ),
+                            Text(
+                              '${u.email} · ${u.role}',
+                              style: const TextStyle(
+                                fontSize: 11.5,
+                                color: _muted,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      OutlinedButton(
+                        onPressed: () =>
+                            context.read<DashboardCubit>().selectNav(7),
+                        style: OutlinedButton.styleFrom(
+                          visualDensity: VisualDensity.compact,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 4,
+                          ),
+                          side: const BorderSide(color: Color(0xFFCBD5E1)),
+                        ),
+                        child: const Text(
+                          'View User',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }),
+            ],
+
+            // COLLEGE VISITS SECTION
+            if (matchedVisits.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              Text(
+                'CAMPUS VISITS (${matchedVisits.length})',
+                style: const TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF94A3B8),
+                  letterSpacing: 0.8,
+                ),
+              ),
+              const SizedBox(height: 8),
+              ...matchedVisits.map((v) {
+                final name = (v['collegeName'] ?? 'College').toString();
+                final purpose = (v['purpose'] ?? '').toString();
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 10,
+                  ),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF8FAFC),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: const Color(0xFFF1F5F9)),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Icons.school_outlined,
+                        size: 20,
+                        color: _primary,
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              name,
+                              style: const TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                                color: _text,
+                              ),
+                            ),
+                            Text(
+                              purpose,
+                              style: const TextStyle(
+                                fontSize: 11.5,
+                                color: _muted,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      OutlinedButton.icon(
+                        onPressed: () =>
+                            LinkLauncher.launchCollegeMapsDirections(name),
+                        icon: const Icon(Icons.directions_outlined, size: 14),
+                        label: const Text('Directions'),
+                        style: OutlinedButton.styleFrom(
+                          visualDensity: VisualDensity.compact,
+                          side: const BorderSide(color: Color(0xFFCBD5E1)),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }),
+            ],
+          ],
+        ],
       ),
     );
   }
