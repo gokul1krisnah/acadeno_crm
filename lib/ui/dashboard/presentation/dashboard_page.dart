@@ -143,9 +143,41 @@ class _DashboardViewState extends State<_DashboardView> {
     ),
   ];
 
+  DateTime? _selectedDashboardDate;
+
   String get _today {
-    final n = DateTime.now();
+    final n = _selectedDashboardDate ?? DateTime.now();
     return DateFormat('EEEE, d MMMM').format(n);
+  }
+
+  Future<void> _pickDashboardDate() async {
+    final now = DateTime.now();
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _selectedDashboardDate ?? now,
+      firstDate: DateTime(2024),
+      lastDate: DateTime(2030),
+      builder: (ctx, child) {
+        return Theme(
+          data: Theme.of(ctx).copyWith(
+            colorScheme: const ColorScheme.light(
+              primary: _orangeAccent,
+              onPrimary: Colors.white,
+              onSurface: Color(0xFF0F172A),
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+    if (picked != null) {
+      setState(() {
+        _selectedDashboardDate = picked;
+      });
+      if (mounted) {
+        context.read<AdminLeadsCubit>().selectCustomAssignmentDate(picked);
+      }
+    }
   }
 
   void _toast(String msg, {bool error = false}) {
@@ -746,9 +778,28 @@ class _DashboardViewState extends State<_DashboardView> {
                       ),
                     ),
                     const SizedBox(height: 2),
-                    Text(
-                      '$_today ·',
-                      style: const TextStyle(color: _muted, fontSize: 12.5),
+                    InkWell(
+                      onTap: _pickDashboardDate,
+                      borderRadius: BorderRadius.circular(6),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            '$_today ·',
+                            style: const TextStyle(
+                              color: _muted,
+                              fontSize: 12.5,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          const Icon(
+                            Icons.calendar_today_rounded,
+                            size: 13,
+                            color: _orangeAccent,
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
@@ -805,9 +856,28 @@ class _DashboardViewState extends State<_DashboardView> {
                 ),
               ),
               const SizedBox(height: 2),
-              Text(
-                '$_today ·',
-                style: const TextStyle(color: _muted, fontSize: 13),
+              InkWell(
+                onTap: _pickDashboardDate,
+                borderRadius: BorderRadius.circular(6),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      '$_today ·',
+                      style: const TextStyle(
+                        color: _muted,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    const Icon(
+                      Icons.calendar_today_rounded,
+                      size: 14,
+                      color: _orangeAccent,
+                    ),
+                  ],
+                ),
               ),
             ],
           ),

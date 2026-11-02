@@ -107,8 +107,39 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
 
                 TextField(
                   controller: dateCtrl,
-
-                  decoration: const InputDecoration(labelText: 'Visit Date'),
+                  readOnly: true,
+                  onTap: () async {
+                    final now = DateTime.now();
+                    final picked = await showDatePicker(
+                      context: ctx,
+                      initialDate: now,
+                      firstDate: DateTime(2024),
+                      lastDate: DateTime(2030),
+                      builder: (context, child) {
+                        return Theme(
+                          data: Theme.of(context).copyWith(
+                            colorScheme: const ColorScheme.light(
+                              primary: Color(0xFF4338CA),
+                              onPrimary: Colors.white,
+                              onSurface: Color(0xFF0F172A),
+                            ),
+                          ),
+                          child: child!,
+                        );
+                      },
+                    );
+                    if (picked != null) {
+                      dateCtrl.text = DateFormat('dd MMM yyyy').format(picked);
+                    }
+                  },
+                  decoration: const InputDecoration(
+                    labelText: 'Visit Date',
+                    suffixIcon: Icon(
+                      Icons.calendar_today_rounded,
+                      size: 18,
+                      color: Color(0xFF4338CA),
+                    ),
+                  ),
                 ),
 
                 const SizedBox(height: 12),

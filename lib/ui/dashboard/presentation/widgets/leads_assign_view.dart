@@ -356,7 +356,12 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                     CollegeSelectorField(
                       controller: collegeC,
                       additionalColleges: state.allLeads
-                          .map((l) => l.collegeBranch.split(RegExp(r'[·\-]')).first.trim())
+                          .map(
+                            (l) => l.collegeBranch
+                                .split(RegExp(r'[·\-]'))
+                                .first
+                                .trim(),
+                          )
                           .where((s) => s.isNotEmpty)
                           .toList(),
                     ),
@@ -411,7 +416,9 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                       if (!formKey.currentState!.validate()) return;
                       setD(() => saving = true);
                       try {
-                        await CollegeSelectorField.saveCollegeIfNew(collegeC.text);
+                        await CollegeSelectorField.saveCollegeIfNew(
+                          collegeC.text,
+                        );
                         final created = await cubit.createLead(
                           name: nameC.text.trim(),
                           phone: phoneC.text.trim(),
@@ -616,7 +623,12 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                     CollegeSelectorField(
                       controller: collegeC,
                       additionalColleges: state.allLeads
-                          .map((l) => l.collegeBranch.split(RegExp(r'[·\-]')).first.trim())
+                          .map(
+                            (l) => l.collegeBranch
+                                .split(RegExp(r'[·\-]'))
+                                .first
+                                .trim(),
+                          )
                           .where((s) => s.isNotEmpty)
                           .toList(),
                     ),
@@ -744,7 +756,9 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                       if (!formKey.currentState!.validate()) return;
                       setD(() => saving = true);
                       try {
-                        await CollegeSelectorField.saveCollegeIfNew(collegeC.text);
+                        await CollegeSelectorField.saveCollegeIfNew(
+                          collegeC.text,
+                        );
                         await cubit.updateLead(
                           leadId: lead.id,
                           name: nameC.text.trim(),
@@ -963,7 +977,8 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                           if (leadsToExport.isEmpty) {
                             SnackBarAlert.showToast(
                               context: context,
-                              message: 'No leads found to export with the current filters.',
+                              message:
+                                  'No leads found to export with the current filters.',
                               isWarning: true,
                             );
                             return;
@@ -1264,34 +1279,79 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                       ),
                       Container(
                         height: 38,
-                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        padding: const EdgeInsets.symmetric(horizontal: 10),
                         decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: _border),
                         ),
-                        child: DropdownButtonHideUnderline(
-                          child: DropdownButton<String>(
-                            value: state.selectedDateKey,
-                            isDense: true,
-                            style: const TextStyle(
-                              color: _text,
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            DropdownButtonHideUnderline(
+                              child: DropdownButton<String>(
+                                value: state.selectedDateKey,
+                                isDense: true,
+                                style: const TextStyle(
+                                  color: _text,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                                items: state.dateOptions
+                                    .map(
+                                      (d) => DropdownMenuItem<String>(
+                                        value: d.dateKey,
+                                        child: Text(d.label),
+                                      ),
+                                    )
+                                    .toList(),
+                                onChanged: (key) {
+                                  if (key != null) {
+                                    cubit.selectAssignmentDate(key);
+                                  }
+                                },
+                              ),
                             ),
-                            items: state.dateOptions
-                                .map(
-                                  (d) => DropdownMenuItem<String>(
-                                    value: d.dateKey,
-                                    child: Text(d.label),
-                                  ),
-                                )
-                                .toList(),
-                            onChanged: (key) {
-                              if (key != null) {
-                                cubit.selectAssignmentDate(key);
-                              }
-                            },
-                          ),
+                            const SizedBox(width: 4),
+                            InkWell(
+                              onTap: () async {
+                                final now = DateTime.now();
+                                final parsed =
+                                    DateTime.tryParse(state.selectedDateKey) ??
+                                    now;
+                                final picked = await showDatePicker(
+                                  context: context,
+                                  initialDate: parsed,
+                                  firstDate: DateTime(2024),
+                                  lastDate: DateTime(2030),
+                                  builder: (ctx, child) {
+                                    return Theme(
+                                      data: Theme.of(ctx).copyWith(
+                                        colorScheme: const ColorScheme.light(
+                                          primary: Color(0xFF4338CA),
+                                          onPrimary: Colors.white,
+                                          onSurface: Color(0xFF0F172A),
+                                        ),
+                                      ),
+                                      child: child!,
+                                    );
+                                  },
+                                );
+                                if (picked != null) {
+                                  cubit.selectCustomAssignmentDate(picked);
+                                }
+                              },
+                              borderRadius: BorderRadius.circular(4),
+                              child: const Padding(
+                                padding: EdgeInsets.all(4.0),
+                                child: Icon(
+                                  Icons.calendar_month_rounded,
+                                  size: 18,
+                                  color: Color(0xFF4338CA),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                       SizedBox(

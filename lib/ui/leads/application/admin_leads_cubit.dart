@@ -1,3 +1,4 @@
+import 'package:intl/intl.dart';
 import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -208,6 +209,25 @@ class AdminLeadsCubit extends Cubit<AdminLeadsState> {
       ),
     );
     _subscribeAssignmentsForDate(dateKey);
+  }
+
+  void selectCustomAssignmentDate(DateTime date) {
+    final key = DateFormat('yyyy-MM-dd').format(date);
+    final label = DateFormat('EEE, d MMM').format(date);
+    final exists = state.dateOptions.any((d) => d.dateKey == key);
+    final updatedOptions = exists
+        ? state.dateOptions
+        : [...state.dateOptions, (dateKey: key, label: label)];
+
+    emit(
+      state.copyWith(
+        dateOptions: updatedOptions,
+        selectedDateKey: key,
+        selectedDateLabel: label,
+        clearToast: true,
+      ),
+    );
+    _subscribeAssignmentsForDate(key);
   }
 
   // ---------------------------------------------------------------------------
