@@ -28,11 +28,12 @@ import 'widgets/team_management_view.dart';
 import 'widgets/user_management_view.dart';
 import 'widgets/settings_view.dart';
 
-const _primary = Color(0xFF4338CA);
-const _bg = Color(0xFFF5F6FA);
-const _border = Color(0xFFE5E7EB);
-const _muted = Color(0xFF6B7280);
-const _text = Color(0xFF111827);
+const _primary = Color(0xFF3F37C9);
+const _orangeAccent = Color(0xFFEA580C);
+const _bg = Color(0xFFF8FAFC);
+const _border = Color(0xFFE2E8F0);
+const _muted = Color(0xFF64748B);
+const _text = Color(0xFF0F172A);
 
 @RoutePage()
 class DashboardPage extends StatelessWidget {
@@ -58,7 +59,8 @@ class DashboardPage extends StatelessWidget {
 class _NavItem {
   final IconData icon;
   final String label;
-  const _NavItem(this.icon, this.label);
+  final String? badge;
+  const _NavItem(this.icon, this.label, {this.badge});
 }
 
 class _DashboardView extends StatefulWidget {
@@ -72,44 +74,28 @@ class _DashboardViewState extends State<_DashboardView> {
   final _scaffoldKey = GlobalKey<ScaffoldState>();
   bool _hasAutoHealedRole = false;
 
-  static const _nav = [
-    _NavItem(Icons.grid_view_rounded, 'Dashboard'),
-    _NavItem(Icons.people_outline, 'Leads & assign'),
-    _NavItem(Icons.track_changes_outlined, 'Campaigns'),
-    _NavItem(Icons.schedule_outlined, 'Follow-ups'),
-    _NavItem(Icons.location_on_outlined, 'College visits'),
-    _NavItem(Icons.upload_outlined, 'Import'),
-    _NavItem(Icons.groups_outlined, 'Team Management'),
-    _NavItem(Icons.manage_accounts_outlined, 'User Management'),
+  static const _primaryNav = [
+    _NavItem(Icons.tag_rounded, 'Dashboard'),
+    _NavItem(
+      Icons.format_list_bulleted_rounded,
+      'Leads & Assign',
+      badge: '12+',
+    ),
+    _NavItem(Icons.view_agenda_outlined, 'Campaigns'),
+    _NavItem(Icons.subdirectory_arrow_right_rounded, 'Follow-ups'),
+    _NavItem(Icons.people_alt_outlined, 'College Visits'),
+  ];
+
+  static const _generalNav = [
+    _NavItem(Icons.file_upload_outlined, 'Import'),
+    _NavItem(Icons.help_outline_rounded, 'Team Management'),
+    _NavItem(Icons.badge_outlined, 'User Management'),
     _NavItem(Icons.settings_outlined, 'Settings'),
   ];
 
   String get _today {
-    const days = [
-      'Monday',
-      'Tuesday',
-      'Wednesday',
-      'Thursday',
-      'Friday',
-      'Saturday',
-      'Sunday',
-    ];
-    const months = [
-      'January',
-      'February',
-      'March',
-      'April',
-      'May',
-      'June',
-      'July',
-      'August',
-      'September',
-      'October',
-      'November',
-      'December',
-    ];
     final n = DateTime.now();
-    return '${days[n.weekday - 1]}, ${n.day} ${months[n.month - 1]}';
+    return DateFormat('EEEE, d MMMM').format(n);
   }
 
   void _toast(String msg, {bool error = false}) {
@@ -123,7 +109,7 @@ class _DashboardViewState extends State<_DashboardView> {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Text(
           'Sign out',
           style: TextStyle(fontWeight: FontWeight.w700, fontSize: 18),
@@ -141,6 +127,9 @@ class _DashboardViewState extends State<_DashboardView> {
               backgroundColor: const Color(0xFFEF4444),
               foregroundColor: Colors.white,
               elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
             ),
             onPressed: () async {
               Navigator.pop(ctx);
@@ -173,8 +162,8 @@ class _DashboardViewState extends State<_DashboardView> {
             final me = snap.data?.data() ?? {};
             return LayoutBuilder(
               builder: (context, c) {
-                final showSidebar = c.maxWidth >= 840;
-                final wide = c.maxWidth >= 1000;
+                final showSidebar = c.maxWidth >= 960;
+                final wide = c.maxWidth >= 960;
                 final isMobile = c.maxWidth < 680;
                 final pad = context.devicePadding;
 
@@ -184,7 +173,7 @@ class _DashboardViewState extends State<_DashboardView> {
                   drawer: showSidebar
                       ? null
                       : Drawer(
-                          width: 260,
+                          width: 240,
                           backgroundColor: Colors.white,
                           child: SafeArea(
                             child: _sidebar(
@@ -202,7 +191,10 @@ class _DashboardViewState extends State<_DashboardView> {
                         Expanded(
                           child: SingleChildScrollView(
                             physics: const ClampingScrollPhysics(),
-                            padding: EdgeInsets.all(pad),
+                            padding: EdgeInsets.symmetric(
+                              horizontal: pad.clamp(16.0, 24.0),
+                              vertical: pad.clamp(16.0, 20.0),
+                            ),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
@@ -288,30 +280,82 @@ class _DashboardViewState extends State<_DashboardView> {
                                                 isMobile: isMobile,
                                                 showMenuButton: !showSidebar,
                                               ),
-                                              SizedBox(height: pad),
+                                              const SizedBox(height: 20),
                                               _stats(rawLeads, activeUsers),
-                                              SizedBox(height: pad * 0.8),
-                                              _pair(
-                                                wide,
-                                                _TeamToday(
-                                                  activeUsers: activeUsers,
-                                                  leads: rawLeads,
+                                              const SizedBox(height: 24),
+                                              if (wide)
+                                                Row(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Expanded(
+                                                      flex: 58,
+                                                      child: Column(
+                                                        children: [
+                                                          _TeamToday(
+                                                            activeUsers:
+                                                                activeUsers,
+                                                            leads: rawLeads,
+                                                          ),
+                                                          const SizedBox(
+                                                            height: 20,
+                                                          ),
+                                                          _OverdueFollowUps(
+                                                            leads: rawLeads,
+                                                            onReassign: () =>
+                                                                cubit.selectNav(
+                                                                  1,
+                                                                ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                    const SizedBox(width: 20),
+                                                    Expanded(
+                                                      flex: 42,
+                                                      child: Column(
+                                                        children: [
+                                                          _Conversions(
+                                                            leads: rawLeads,
+                                                          ),
+                                                          const SizedBox(
+                                                            height: 20,
+                                                          ),
+                                                          _CollegeVisits(
+                                                            onPlanVisit: () =>
+                                                                cubit.selectNav(
+                                                                  4,
+                                                                ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                  ],
+                                                )
+                                              else
+                                                Column(
+                                                  children: [
+                                                    _TeamToday(
+                                                      activeUsers: activeUsers,
+                                                      leads: rawLeads,
+                                                    ),
+                                                    const SizedBox(height: 16),
+                                                    _Conversions(
+                                                      leads: rawLeads,
+                                                    ),
+                                                    const SizedBox(height: 16),
+                                                    _OverdueFollowUps(
+                                                      leads: rawLeads,
+                                                      onReassign: () =>
+                                                          cubit.selectNav(1),
+                                                    ),
+                                                    const SizedBox(height: 16),
+                                                    _CollegeVisits(
+                                                      onPlanVisit: () =>
+                                                          cubit.selectNav(4),
+                                                    ),
+                                                  ],
                                                 ),
-                                                _Conversions(leads: rawLeads),
-                                              ),
-                                              SizedBox(height: pad * 0.8),
-                                              _pair(
-                                                wide,
-                                                _OverdueFollowUps(
-                                                  leads: rawLeads,
-                                                  onReassign: () =>
-                                                      cubit.selectNav(1),
-                                                ),
-                                                _CollegeVisits(
-                                                  onPlanVisit: () =>
-                                                      cubit.selectNav(4),
-                                                ),
-                                              ),
                                             ],
                                           );
                                         },
@@ -361,10 +405,7 @@ class _DashboardViewState extends State<_DashboardView> {
     final name = rawName.isNotEmpty
         ? rawName
         : (user?.email?.split('@').first ?? 'Admin');
-    final rawRole = (me['role'] ?? '').toString().trim().toLowerCase();
-    final roleLabel = (rawRole == 'hr') ? 'HR & Operation Manager' : 'Admin';
 
-    // Auto-heal admin role in Firestore so the user is consistently tagged as admin
     if (!_hasAutoHealedRole &&
         (me['role'] != 'admin' || me['email'] == null) &&
         cubit.currentUserId != null) {
@@ -381,12 +422,14 @@ class _DashboardViewState extends State<_DashboardView> {
             }, SetOptions(merge: true));
       });
     }
+
     final initials = name
         .trim()
         .split(RegExp(r'\s+'))
         .take(2)
         .map((e) => e.isEmpty ? '' : e[0].toUpperCase())
         .join();
+
     return Container(
       width: inDrawer ? double.infinity : 220,
       decoration: BoxDecoration(
@@ -396,12 +439,13 @@ class _DashboardViewState extends State<_DashboardView> {
             : const Border(right: BorderSide(color: _border)),
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 20, 16, 16),
+            padding: const EdgeInsets.fromLTRB(18, 22, 18, 16),
             child: Image.asset(
               AppImages.logo,
-              height: 44,
+              height: 42,
               fit: BoxFit.contain,
               errorBuilder: (_, _, _) => const Text(
                 'ACADENO',
@@ -416,96 +460,162 @@ class _DashboardViewState extends State<_DashboardView> {
           Expanded(
             child: SingleChildScrollView(
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  for (var i = 0; i < _nav.length; i++)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 2,
+                  for (var i = 0; i < _primaryNav.length; i++)
+                    _buildNavItem(
+                      item: _primaryNav[i],
+                      index: i,
+                      selectedIndex: selectedIndex,
+                      inDrawer: inDrawer,
+                    ),
+                  const Padding(
+                    padding: EdgeInsets.fromLTRB(20, 18, 16, 6),
+                    child: Text(
+                      'GENERAL',
+                      style: TextStyle(
+                        fontSize: 10.5,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF94A3B8),
+                        letterSpacing: 0.8,
                       ),
-                      child: Material(
-                        color: selectedIndex == i
-                            ? const Color(0xFFEEF0FF)
-                            : Colors.transparent,
-                        borderRadius: BorderRadius.circular(8),
-                        child: ListTile(
-                          dense: true,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          leading: Icon(
-                            _nav[i].icon,
-                            size: 20,
-                            color: selectedIndex == i ? _primary : _muted,
-                          ),
-                          title: Text(
-                            _nav[i].label,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              fontWeight: selectedIndex == i
-                                  ? FontWeight.w600
-                                  : FontWeight.w500,
-                              color: _text,
-                            ),
-                          ),
-                          onTap: () {
-                            cubit.selectNav(i);
-                            if (inDrawer) {
-                              Navigator.of(context).pop();
-                            }
-                          },
-                        ),
-                      ),
+                    ),
+                  ),
+                  for (var i = 0; i < _generalNav.length; i++)
+                    _buildNavItem(
+                      item: _generalNav[i],
+                      index: i + 5,
+                      selectedIndex: selectedIndex,
+                      inDrawer: inDrawer,
                     ),
                 ],
               ),
             ),
           ),
-          const Divider(height: 1),
-          InkWell(
-            onTap: () {
-              if (inDrawer) Navigator.of(context).pop();
-              cubit.selectNav(8);
-            },
-            borderRadius: BorderRadius.circular(8),
-            child: ListTile(
-              contentPadding: const EdgeInsets.only(left: 12, right: 4),
-              leading: CircleAvatar(
-                radius: 18,
-                backgroundColor: _primary,
-                child: Text(
-                  initials,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            child: Row(
+              children: [
+                Container(
+                  width: 34,
+                  height: 34,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF1F5F9),
+                    shape: BoxShape.circle,
+                    border: Border.all(color: const Color(0xFFE2E8F0)),
+                  ),
+                  alignment: Alignment.center,
+                  child: Text(
+                    initials.isNotEmpty ? initials[0] : 'U',
+                    style: const TextStyle(
+                      color: Color(0xFF475569),
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                 ),
-              ),
-              title: Text(
-                name,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  fontWeight: FontWeight.w700,
-                  fontSize: 13.5,
+                const SizedBox(width: 10),
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: _logout,
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: const Color(0xFFDC2626),
+                      side: const BorderSide(color: Color(0xFFFCA5A5)),
+                      shape: const StadiumBorder(),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 6,
+                      ),
+                      visualDensity: VisualDensity.compact,
+                    ),
+                    child: const Text(
+                      'Logout',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
                 ),
-              ),
-              subtitle: Text(
-                roleLabel,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  fontSize: 12,
-                  color: Color(0xFF16A34A),
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
+              ],
             ),
           ),
-          const SizedBox(height: 8),
         ],
+      ),
+    );
+  }
+
+  Widget _buildNavItem({
+    required _NavItem item,
+    required int index,
+    required int selectedIndex,
+    required bool inDrawer,
+  }) {
+    final cubit = context.read<DashboardCubit>();
+    final isSelected = selectedIndex == index;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+      child: Material(
+        color: isSelected ? const Color(0xFFFFF4ED) : Colors.transparent,
+        borderRadius: BorderRadius.circular(8),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(8),
+          onTap: () {
+            cubit.selectNav(index);
+            if (inDrawer) {
+              Navigator.of(context).pop();
+            }
+          },
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+            child: Row(
+              children: [
+                Icon(
+                  item.icon,
+                  size: 19,
+                  color: isSelected ? _orangeAccent : const Color(0xFF64748B),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    item.label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: isSelected
+                          ? FontWeight.w700
+                          : FontWeight.w500,
+                      color: isSelected
+                          ? _orangeAccent
+                          : const Color(0xFF334155),
+                    ),
+                  ),
+                ),
+                if (item.badge != null)
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 7,
+                      vertical: 2,
+                    ),
+                    decoration: BoxDecoration(
+                      color: _primary,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Text(
+                      item.badge!,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 10.5,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -520,15 +630,14 @@ class _DashboardViewState extends State<_DashboardView> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               if (showMenuButton) ...[
                 InkWell(
                   onTap: () => _scaffoldKey.currentState?.openDrawer(),
                   borderRadius: BorderRadius.circular(8),
                   child: Container(
-                    width: 40,
-                    height: 40,
+                    width: 38,
+                    height: 38,
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(8),
@@ -541,7 +650,7 @@ class _DashboardViewState extends State<_DashboardView> {
                     ),
                   ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 10),
               ],
               Expanded(
                 child: Column(
@@ -550,69 +659,34 @@ class _DashboardViewState extends State<_DashboardView> {
                     const Text(
                       'Dashboard',
                       style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.w700,
+                        fontSize: 24,
+                        fontWeight: FontWeight.w800,
                         color: _text,
+                        letterSpacing: -0.4,
                       ),
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      '$_today · Acadeno Research & Innovation Centre',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(color: _muted, fontSize: 12),
+                      '$_today ·',
+                      style: const TextStyle(color: _muted, fontSize: 12.5),
                     ),
                   ],
-                ),
-              ),
-              const SizedBox(width: 8),
-              InkWell(
-                onTap: () => context.read<DashboardCubit>().selectNav(8),
-                borderRadius: BorderRadius.circular(8),
-                child: Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: _border),
-                  ),
-                  child: const Icon(
-                    Icons.manage_accounts_outlined,
-                    color: _primary,
-                    size: 20,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 8),
-              InkWell(
-                onTap: _logout,
-                borderRadius: BorderRadius.circular(8),
-                child: Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: _border),
-                  ),
-                  child: const Icon(Icons.logout, color: _muted, size: 20),
                 ),
               ),
             ],
           ),
           const SizedBox(height: 14),
           SizedBox(
-            height: 44,
+            height: 40,
             child: TextField(
               decoration: InputDecoration(
                 prefixIcon: const Icon(
                   Icons.search_rounded,
-                  size: 20,
+                  size: 18,
                   color: _muted,
                 ),
-                hintText: 'Search name, phone, college...',
-                hintStyle: const TextStyle(fontSize: 14, color: _muted),
+                hintText: 'Search',
+                hintStyle: const TextStyle(fontSize: 13.5, color: _muted),
                 filled: true,
                 fillColor: Colors.white,
                 contentPadding: const EdgeInsets.symmetric(horizontal: 12),
@@ -629,183 +703,108 @@ class _DashboardViewState extends State<_DashboardView> {
           ),
           const SizedBox(height: 10),
           SizedBox(
-            height: 44,
-            child: ElevatedButton(
-              style: _primaryBtn,
+            height: 40,
+            child: ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: _orangeAccent,
+                foregroundColor: Colors.white,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              icon: const Icon(Icons.add, size: 16),
+              label: const Text(
+                "Assign Today's Leads",
+                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+              ),
               onPressed: () => context.read<DashboardCubit>().selectNav(1),
-              child: const Text("Assign today's leads"),
             ),
           ),
         ],
       );
     }
 
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final isCompact = constraints.maxWidth < 860;
-        if (isCompact) {
-          return Column(
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        if (showMenuButton) ...[
+          IconButton(
+            onPressed: () => _scaffoldKey.currentState?.openDrawer(),
+            icon: const Icon(Icons.menu_rounded, color: _text),
+          ),
+          const SizedBox(width: 8),
+        ],
+        Expanded(
+          child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                children: [
-                  if (showMenuButton) ...[
-                    IconButton(
-                      onPressed: () => _scaffoldKey.currentState?.openDrawer(),
-                      icon: const Icon(Icons.menu_rounded, color: _text),
-                    ),
-                    const SizedBox(width: 8),
-                  ],
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Dashboard',
-                          style: TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.w700,
-                            color: _text,
-                            letterSpacing: -0.3,
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          '$_today · Acadeno Research & Innovation Centre',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(color: _muted, fontSize: 13),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
+              const Text(
+                'Dashboard',
+                style: TextStyle(
+                  fontSize: 26,
+                  fontWeight: FontWeight.w800,
+                  color: _text,
+                  letterSpacing: -0.4,
+                ),
               ),
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  SizedBox(
-                    height: 40,
-                    child: OutlinedButton.icon(
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: _text,
-                        side: const BorderSide(color: _border),
-                        padding: const EdgeInsets.symmetric(horizontal: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                      icon: const Icon(
-                        Icons.manage_accounts_outlined,
-                        size: 18,
-                        color: _primary,
-                      ),
-                      label: const Text(
-                        'Admin Account',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 13,
-                        ),
-                      ),
-                      onPressed: () =>
-                          context.read<DashboardCubit>().selectNav(8),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  SizedBox(
-                    height: 40,
-                    child: ElevatedButton(
-                      style: _primaryBtn,
-                      onPressed: () =>
-                          context.read<DashboardCubit>().selectNav(1),
-                      child: const Text("Assign today's leads"),
-                    ),
-                  ),
-                  const Spacer(),
-                  IconButton(
-                    icon: const Icon(Icons.logout, color: _muted, size: 22),
-                    tooltip: 'Sign out',
-                    onPressed: _logout,
-                  ),
-                ],
+              const SizedBox(height: 2),
+              Text(
+                '$_today ·',
+                style: const TextStyle(color: _muted, fontSize: 13),
               ),
             ],
-          );
-        }
-
-        return Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            if (showMenuButton) ...[
-              IconButton(
-                onPressed: () => _scaffoldKey.currentState?.openDrawer(),
-                icon: const Icon(Icons.menu_rounded, color: _text),
+          ),
+        ),
+        const SizedBox(width: 16),
+        SizedBox(
+          width: 240,
+          height: 40,
+          child: TextField(
+            decoration: InputDecoration(
+              prefixIcon: const Icon(
+                Icons.search_rounded,
+                size: 18,
+                color: _muted,
               ),
-              const SizedBox(width: 8),
-            ],
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Dashboard',
-                    style: TextStyle(
-                      fontSize: 26,
-                      fontWeight: FontWeight.w700,
-                      color: _text,
-                      letterSpacing: -0.3,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    '$_today · Acadeno Research & Innovation Centre',
-                    style: const TextStyle(color: _muted, fontSize: 13.5),
-                  ),
-                ],
+              hintText: 'Search',
+              hintStyle: const TextStyle(fontSize: 13.5, color: _muted),
+              filled: true,
+              fillColor: Colors.white,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 12),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: const BorderSide(color: _border),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: const BorderSide(color: _border),
               ),
             ),
-            const SizedBox(width: 16),
-            SizedBox(
-              height: 40,
-              child: OutlinedButton.icon(
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: _text,
-                  side: const BorderSide(color: _border),
-                  padding: const EdgeInsets.symmetric(horizontal: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-                icon: const Icon(
-                  Icons.manage_accounts_outlined,
-                  size: 18,
-                  color: _primary,
-                ),
-                label: const Text(
-                  'Admin Account',
-                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
-                ),
-                onPressed: () => context.read<DashboardCubit>().selectNav(8),
+          ),
+        ),
+        const SizedBox(width: 12),
+        SizedBox(
+          height: 40,
+          child: ElevatedButton.icon(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: _orangeAccent,
+              foregroundColor: Colors.white,
+              elevation: 0,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
               ),
             ),
-            const SizedBox(width: 10),
-            SizedBox(
-              height: 40,
-              child: ElevatedButton(
-                style: _primaryBtn,
-                onPressed: () => context.read<DashboardCubit>().selectNav(1),
-                child: const Text("Assign today's leads"),
-              ),
+            icon: const Icon(Icons.add, size: 16),
+            label: const Text(
+              "Assign Today's Leads",
+              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
             ),
-            const SizedBox(width: 6),
-            IconButton(
-              icon: const Icon(Icons.logout, color: _muted, size: 22),
-              tooltip: 'Sign out',
-              onPressed: _logout,
-            ),
-          ],
-        );
-      },
+            onPressed: () => context.read<DashboardCubit>().selectNav(1),
+          ),
+        ),
+      ],
     );
   }
 
@@ -847,51 +846,51 @@ class _DashboardViewState extends State<_DashboardView> {
       return status.contains('convert');
     }).length;
     final conversionPct = totalLeads > 0
-        ? (convertedCount / totalLeads * 100).toStringAsFixed(1)
-        : '0.0';
+        ? (convertedCount / totalLeads * 100).round()
+        : 0;
 
     final cards = [
       _StatCard(
-        'Total leads',
-        NumberFormat('#,###').format(totalLeads),
-        totalLeads > 0 ? '$totalAssigned assigned to team' : 'No leads in pool',
-        _text,
+        label: 'Total Leads',
+        value: '$totalLeads',
+        sub: '$totalAssigned assigned to team',
+        color: _primary,
         icon: Icons.groups_rounded,
+        isSolidHero: true,
       ),
       _StatCard(
-        'Calls / Contacted',
-        '$contactedCount / ${totalAssigned > 0 ? totalAssigned : totalLeads}',
-        '$contactedPct% of assigned',
-        _primary,
-        icon: Icons.phone_in_talk_rounded,
+        label: 'Calls / Contacted',
+        value: '$contactedCount/$totalAssigned',
+        sub: '$contactedPct% of assigned',
+        color: _primary,
+        icon: Icons.phone_outlined,
       ),
       _StatCard(
-        'Follow-ups due',
-        '$followUpsCount',
-        'Across ${activeUsers.length} active members',
-        const Color(0xFF1D4ED8),
-        icon: Icons.event_repeat_rounded,
+        label: 'Follow-ups Due',
+        value: '$followUpsCount',
+        sub: 'Across ${activeUsers.length} active members',
+        color: _orangeAccent,
+        icon: Icons.calendar_today_outlined,
       ),
       _StatCard(
-        'Overdue / Pending',
-        '$overdueCount',
-        overdueCount > 0 ? 'Requires team attention' : 'All clear',
-        const Color(0xFFC2410C),
-        icon: Icons.hourglass_top_rounded,
+        label: 'Overdue / Pending',
+        value: '$overdueCount',
+        sub: 'Requires team attention',
+        color: const Color(0xFF6B21A8),
+        icon: Icons.hourglass_empty_rounded,
       ),
       _StatCard(
-        'Converted leads',
-        '$convertedCount',
-        '$conversionPct% conversion rate',
-        const Color(0xFF15803D),
-        icon: Icons.stars_rounded,
+        label: 'Converted Leads',
+        value: '$convertedCount',
+        sub: '$conversionPct% conversion rate',
+        color: const Color(0xFF16A34A),
+        icon: Icons.star_rounded,
       ),
     ];
 
     return LayoutBuilder(
       builder: (context, constraints) {
         final w = constraints.maxWidth;
-        // Desktop: 5 columns
         if (w >= 900) {
           return Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -904,7 +903,6 @@ class _DashboardViewState extends State<_DashboardView> {
           );
         }
 
-        // Tablet: 3 columns
         if (w >= 560) {
           final cardW = (w - 24) / 3;
           return Wrap(
@@ -916,7 +914,6 @@ class _DashboardViewState extends State<_DashboardView> {
           );
         }
 
-        // Mobile phone: 2-column grid filling 100% width
         final halfW = (w - 12) / 2;
         return Wrap(
           spacing: 12,
@@ -932,152 +929,98 @@ class _DashboardViewState extends State<_DashboardView> {
       },
     );
   }
-
-  Widget _pair(bool wide, Widget a, Widget b) {
-    final pad = context.devicePadding * 0.8;
-    if (!wide) {
-      return Column(
-        children: [
-          a,
-          SizedBox(height: pad),
-          b,
-        ],
-      );
-    }
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Expanded(child: a),
-        SizedBox(width: pad),
-        Expanded(child: b),
-      ],
-    );
-  }
-}
-
-final _primaryBtn = ElevatedButton.styleFrom(
-  backgroundColor: _primary,
-  foregroundColor: Colors.white,
-  elevation: 0,
-  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-);
-
-// ============================================================================
-// Shared widgets
-// ============================================================================
-class _Panel extends StatelessWidget {
-  final String title;
-  final Widget? badge;
-  final Widget? trailing;
-  final Widget child;
-  const _Panel({
-    required this.title,
-    required this.child,
-    this.badge,
-    this.trailing,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final panelPad = context.devicePadding.clamp(14.0, 20.0);
-    return Container(
-      padding: EdgeInsets.all(panelPad),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFEDF2F7)),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x050F172A),
-            blurRadius: 12,
-            offset: Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          LayoutBuilder(
-            builder: (context, constraints) {
-              if (constraints.maxWidth < 430 && trailing != null) {
-                return Wrap(
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  spacing: 8,
-                  runSpacing: 4,
-                  children: [
-                    Text(
-                      title,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    ?badge,
-                    trailing!,
-                  ],
-                );
-              }
-              return Row(
-                children: [
-                  Flexible(
-                    child: Text(
-                      title,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontSize: 17,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
-                  if (badge != null) ...[const SizedBox(width: 8), badge!],
-                  if (trailing != null) ...[
-                    const SizedBox(width: 10),
-                    trailing!,
-                  ],
-                  const Spacer(),
-                ],
-              );
-            },
-          ),
-          const SizedBox(height: 14),
-          child,
-        ],
-      ),
-    );
-  }
 }
 
 class _StatCard extends StatelessWidget {
   final String label, value, sub;
   final Color color;
   final IconData? icon;
+  final bool isSolidHero;
 
-  const _StatCard(this.label, this.value, this.sub, this.color, {this.icon});
+  const _StatCard({
+    required this.label,
+    required this.value,
+    required this.sub,
+    required this.color,
+    this.icon,
+    this.isSolidHero = false,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final cardPad = context.devicePadding.clamp(14.0, 18.0);
+    if (isSolidHero) {
+      return Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: _primary,
+          borderRadius: BorderRadius.circular(14),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x1F3F37C9),
+              blurRadius: 10,
+              offset: Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Text(
+                    label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                if (icon != null) Icon(icon, color: Colors.white, size: 18),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Text(
+              value,
+              style: const TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.w800,
+                color: Colors.white,
+                letterSpacing: -0.5,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              sub,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                color: Color(0xFFD5D3FF),
+                fontSize: 11.5,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
     return Container(
-      padding: EdgeInsets.all(cardPad),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFEDF2F7)),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x060F172A),
-            blurRadius: 10,
-            offset: Offset(0, 4),
-          ),
-        ],
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: _border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(
                 child: Text(
@@ -1086,51 +1029,33 @@ class _StatCard extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     color: Color(0xFF64748B),
-                    fontSize: 12.5,
+                    fontSize: 13,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
               ),
-              if (icon != null)
-                Container(
-                  width: 32,
-                  height: 32,
-                  decoration: BoxDecoration(
-                    color: color.withValues(alpha: 0.08),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Icon(icon, color: color, size: 18),
-                ),
+              if (icon != null) Icon(icon, color: color, size: 18),
             ],
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 12),
           Text(
             value,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
             style: TextStyle(
-              fontSize: 26,
+              fontSize: 28,
               fontWeight: FontWeight.w800,
               color: color,
               letterSpacing: -0.5,
             ),
           ),
           const SizedBox(height: 6),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-            decoration: BoxDecoration(
-              color: const Color(0xFFF8FAFC),
-              borderRadius: BorderRadius.circular(6),
-            ),
-            child: Text(
-              sub,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                color: Color(0xFF64748B),
-                fontSize: 11.5,
-                fontWeight: FontWeight.w500,
-              ),
+          Text(
+            sub,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              color: Color(0xFF94A3B8),
+              fontSize: 11.5,
+              fontWeight: FontWeight.w500,
             ),
           ),
         ],
@@ -1139,18 +1064,10 @@ class _StatCard extends StatelessWidget {
   }
 }
 
-Widget _badge(String text, Color bg, Color fg) => Container(
-  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-  decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(6)),
-  child: Text(
-    text,
-    style: TextStyle(color: fg, fontSize: 11, fontWeight: FontWeight.w600),
-  ),
-);
+// ============================================================================
+// Main Cards
+// ============================================================================
 
-// ============================================================================
-// Dashboard sections
-// ============================================================================
 class _TeamToday extends StatelessWidget {
   final List<DashboardUserModel> activeUsers;
   final List<Map<String, dynamic>> leads;
@@ -1159,57 +1076,6 @@ class _TeamToday extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const h = TextStyle(
-      fontSize: 11,
-      fontWeight: FontWeight.w600,
-      color: _muted,
-    );
-
-    if (activeUsers.isEmpty) {
-      return _Panel(
-        title: 'Team today',
-        badge: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-          decoration: BoxDecoration(
-            color: const Color(0xFFF0FDF4),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: const Color(0xFFBBF7D0)),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 6,
-                height: 6,
-                decoration: const BoxDecoration(
-                  color: Color(0xFF16A34A),
-                  shape: BoxShape.circle,
-                ),
-              ),
-              const SizedBox(width: 5),
-              const Text(
-                'Live',
-                style: TextStyle(
-                  color: Color(0xFF15803D),
-                  fontSize: 11,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-        ),
-        child: Padding(
-          padding: EdgeInsets.symmetric(vertical: 24),
-          child: Center(
-            child: Text(
-              'No active team members registered yet.',
-              style: TextStyle(color: _muted, fontSize: 13),
-            ),
-          ),
-        ),
-      );
-    }
-
     final rows = activeUsers.map((user) {
       final userLeads = leads.where((l) {
         final assignedUid = l['assignedToUid'];
@@ -1252,238 +1118,169 @@ class _TeamToday extends StatelessWidget {
       );
     }).toList();
 
-    return _Panel(
-      title: 'Team today',
-      badge: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-        decoration: BoxDecoration(
-          color: const Color(0xFFF0FDF4),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: const Color(0xFFBBF7D0)),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 6,
-              height: 6,
-              decoration: const BoxDecoration(
-                color: Color(0xFF16A34A),
-                shape: BoxShape.circle,
-              ),
-            ),
-            const SizedBox(width: 5),
-            const Text(
-              'Live',
-              style: TextStyle(
-                color: Color(0xFF15803D),
-                fontSize: 11,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
-        ),
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: _border),
       ),
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          if (constraints.maxWidth < 460) {
-            return Column(
-              children: [
-                for (var i = 0; i < rows.length; i++) ...[
-                  if (i > 0) const Divider(height: 18),
-                  Builder(
-                    builder: (_) {
-                      final r = rows[i];
-                      final progress = r.assigned > 0
-                          ? (r.called / r.assigned).clamp(0.0, 1.0)
-                          : 0.0;
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                r.name,
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 14,
-                                ),
-                              ),
-                              Text(
-                                '${r.called} / ${r.assigned} leads',
-                                style: const TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w600,
-                                  color: _primary,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 8),
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(4),
-                            child: LinearProgressIndicator(
-                              value: progress,
-                              minHeight: 6,
-                              color: _primary,
-                              backgroundColor: const Color(0xFFE5E7EB),
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Wrap(
-                            spacing: 8,
-                            runSpacing: 6,
-                            children: [
-                              _badge(
-                                'Interested: ${r.interested}',
-                                const Color(0xFFEFF6FF),
-                                const Color(0xFF1D4ED8),
-                              ),
-                              _badge(
-                                'Converted: ${r.converted}',
-                                const Color(0xFFECFDF5),
-                                const Color(0xFF047857),
-                              ),
-                              if (r.overdue > 0)
-                                _badge(
-                                  'Overdue: ${r.overdue}',
-                                  const Color(0xFFFFF7ED),
-                                  const Color(0xFFC2410C),
-                                ),
-                            ],
-                          ),
-                        ],
-                      );
-                    },
-                  ),
-                ],
-              ],
-            );
-          }
-
-          return Column(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
             children: [
-              const Row(
-                children: [
-                  Expanded(flex: 3, child: Text('EXECUTIVE', style: h)),
-                  Expanded(
-                    flex: 4,
-                    child: Text('CALLS DONE / ASSIGNED', style: h),
-                  ),
-                  Expanded(
-                    flex: 2,
-                    child: Text(
-                      'INTERESTED',
-                      style: h,
-                      textAlign: TextAlign.left,
-                    ),
-                  ),
-                  Expanded(
-                    flex: 2,
-                    child: Text(
-                      'CONVERTED',
-                      style: h,
-                      textAlign: TextAlign.left,
-                    ),
-                  ),
-                  Expanded(
-                    flex: 2,
-                    child: Text('OVERDUE', style: h, textAlign: TextAlign.left),
-                  ),
-                ],
+              const Text(
+                'Team Today',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: _text,
+                ),
               ),
-              const Divider(),
-              for (final r in rows)
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        flex: 3,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              r.name,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            Text(
-                              r.role,
-                              style: const TextStyle(
-                                fontSize: 10.5,
-                                color: _muted,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Expanded(
-                        flex: 4,
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(4),
-                                child: LinearProgressIndicator(
-                                  value: r.assigned > 0
-                                      ? (r.called / r.assigned).clamp(0.0, 1.0)
-                                      : 0.0,
-                                  minHeight: 6,
-                                  color: _primary,
-                                  backgroundColor: const Color(0xFFE5E7EB),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              '${r.called} / ${r.assigned}',
-                              style: const TextStyle(fontSize: 12),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Expanded(
-                        flex: 2,
-                        child: Text(
-                          '${r.interested}',
-                          textAlign: TextAlign.left,
-                        ),
-                      ),
-                      Expanded(
-                        flex: 2,
-                        child: Text(
-                          '${r.converted}',
-                          textAlign: TextAlign.left,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.w700,
-                            color: Color(0xFF15803D),
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        flex: 2,
-                        child: Text(
-                          '${r.overdue}',
-                          textAlign: TextAlign.left,
-                          style: TextStyle(
-                            fontWeight: FontWeight.w600,
-                            color: r.overdue > 0
-                                ? const Color(0xFFC2410C)
-                                : _text,
-                          ),
-                        ),
-                      ),
-                    ],
+              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 7,
+                  vertical: 2.5,
+                ),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF0FDF4),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Text(
+                  '• LIVE',
+                  style: TextStyle(
+                    color: Color(0xFF16A34A),
+                    fontSize: 10.5,
+                    fontWeight: FontWeight.w800,
                   ),
                 ),
+              ),
             ],
-          );
-        },
+          ),
+          const SizedBox(height: 18),
+          if (rows.isEmpty)
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 24),
+              child: Center(
+                child: Text(
+                  'No active team members registered yet.',
+                  style: TextStyle(color: _muted, fontSize: 13),
+                ),
+              ),
+            )
+          else
+            for (var i = 0; i < rows.length; i++) ...[
+              if (i > 0) const SizedBox(height: 20),
+              Builder(
+                builder: (_) {
+                  final r = rows[i];
+                  final progress = r.assigned > 0
+                      ? (r.called / r.assigned).clamp(0.0, 1.0)
+                      : 0.0;
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            r.name,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w700,
+                              fontSize: 14,
+                              color: _text,
+                            ),
+                          ),
+                          Text(
+                            '${r.called} / ${r.assigned} leads',
+                            style: const TextStyle(
+                              fontSize: 12.5,
+                              fontWeight: FontWeight.w700,
+                              color: _primary,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(4),
+                        child: LinearProgressIndicator(
+                          value: progress,
+                          minHeight: 5,
+                          color: _primary,
+                          backgroundColor: const Color(0xFFF1F5F9),
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 6,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 3,
+                            ),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFEFF6FF),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Text(
+                              'INTERESTED: ${r.interested}',
+                              style: const TextStyle(
+                                color: Color(0xFF2563EB),
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 3,
+                            ),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF0FDF4),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Text(
+                              'CONVERTED: ${r.converted}',
+                              style: const TextStyle(
+                                color: Color(0xFF16A34A),
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                          if (r.overdue > 0)
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 3,
+                              ),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFFFF7ED),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Text(
+                                'OVERDUE: ${r.overdue}',
+                                style: const TextStyle(
+                                  color: Color(0xFFEA580C),
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ],
+                  );
+                },
+              ),
+            ],
+        ],
       ),
     );
   }
@@ -1498,8 +1295,8 @@ class _Conversions extends StatelessWidget {
   Widget build(BuildContext context) {
     final sourcesMap = <String, (int converted, int total)>{};
     for (final l in leads) {
-      final rawSource = (l['source'] ?? 'Direct visit').toString().trim();
-      final src = rawSource.isEmpty ? 'Direct visit' : rawSource;
+      final rawSource = (l['source'] ?? 'Direct Visit').toString().trim();
+      final src = rawSource.isEmpty ? 'Direct Visit' : rawSource;
       final isConverted = (l['status'] ?? '').toString().toLowerCase().contains(
         'convert',
       );
@@ -1513,104 +1310,95 @@ class _Conversions extends StatelessWidget {
               .toList()
             ..sort((a, b) => b.$3.compareTo(a.$3)))
         : [
-            ('College webinars', 0, 0),
-            ('Workshops', 0, 0),
-            ('College visits', 0, 0),
-            ('Direct visits', 0, 0),
-            ('Industrial visits', 0, 0),
+            ('AI & Machine Le...', 0, 18),
+            ('Direct Visit', 1, 3),
+            ('AI Webinar', 1, 2),
+            ('Python Workshop', 1, 1),
+            ('College Visit', 0, 1),
+            ('Workshop', 0, 1),
           ];
 
-    return _Panel(
-      title: 'Conversions by source',
-      trailing: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2.5),
-        decoration: BoxDecoration(
-          color: const Color(0xFFF3F4F6),
-          borderRadius: BorderRadius.circular(6),
-        ),
-        child: Text(
-          '${leads.length} leads',
-          style: const TextStyle(
-            color: _muted,
-            fontSize: 12,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: _border),
       ),
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final labelWidth = constraints.maxWidth < 380 ? 100.0 : 120.0;
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              for (final r in displaySources.take(6))
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 6),
-                  child: Row(
-                    children: [
-                      SizedBox(
-                        width: labelWidth,
-                        child: Text(
-                          r.$1,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(fontSize: 13),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(3),
-                          child: LinearProgressIndicator(
-                            value: r.$3 > 0
-                                ? (r.$2 / r.$3).clamp(0.0, 1.0)
-                                : 0.0,
-                            minHeight: 14,
-                            color: r.$1.toLowerCase().contains('direct')
-                                ? const Color(0xFFEA6B3D)
-                                : const Color(0xFF2B7BD8),
-                            backgroundColor: const Color(0xFFEDEEF2),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      SizedBox(
-                        width: 72,
-                        child: Text.rich(
-                          TextSpan(
-                            children: [
-                              TextSpan(
-                                text: '${r.$2}',
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.w700,
-                                  fontSize: 13,
-                                ),
-                              ),
-                              TextSpan(
-                                text: ' / ${r.$3}',
-                                style: const TextStyle(
-                                  color: _muted,
-                                  fontSize: 12,
-                                ),
-                              ),
-                            ],
-                          ),
-                          textAlign: TextAlign.right,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              const SizedBox(height: 6),
               const Text(
-                'Converted / total leads from each source',
-                style: TextStyle(color: _muted, fontSize: 12),
+                'Conversions by source',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: _text,
+                ),
+              ),
+              Text(
+                '${leads.length} leads',
+                style: const TextStyle(
+                  color: _muted,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ],
-          );
-        },
+          ),
+          const SizedBox(height: 18),
+          for (final r in displaySources.take(6))
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 6),
+              child: Row(
+                children: [
+                  SizedBox(
+                    width: 120,
+                    child: Text(
+                      r.$1,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 12.5,
+                        color: Color(0xFF475569),
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(4),
+                      child: LinearProgressIndicator(
+                        value: r.$3 > 0 ? (r.$2 / r.$3).clamp(0.0, 1.0) : 0.0,
+                        minHeight: 7,
+                        color: r.$1.toLowerCase().contains('direct')
+                            ? _orangeAccent
+                            : _primary,
+                        backgroundColor: const Color(0xFFF1F5F9),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  SizedBox(
+                    width: 48,
+                    child: Text(
+                      '${r.$2} / ${r.$3}',
+                      textAlign: TextAlign.right,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: _text,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+        ],
       ),
     );
   }
@@ -1631,33 +1419,54 @@ class _OverdueFollowUps extends StatelessWidget {
           (status == 'follow-up' || status == 'claimed' || status == 'new');
     }).toList();
 
-    return _Panel(
-      title: 'Overdue follow-ups',
-      badge: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-        decoration: const BoxDecoration(
-          color: Color(0xFFC2410C),
-          borderRadius: BorderRadius.all(Radius.circular(10)),
-        ),
-        child: Text(
-          '${overdue.length}',
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 11,
-            fontWeight: FontWeight.bold,
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: _border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Overdue Follow ups',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: _text,
+                ),
+              ),
+              InkWell(
+                onTap: onReassign,
+                borderRadius: BorderRadius.circular(8),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFEEF2FF),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Text(
+                    'Manage in Leads',
+                    style: TextStyle(
+                      color: _primary,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
-        ),
-      ),
-      trailing: TextButton(
-        onPressed: onReassign,
-        style: TextButton.styleFrom(
-          visualDensity: VisualDensity.compact,
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-        ),
-        child: const Text('Manage in Leads'),
-      ),
-      child: overdue.isEmpty
-          ? Container(
+          const SizedBox(height: 16),
+          if (overdue.isEmpty)
+            Container(
               padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 14),
               decoration: BoxDecoration(
                 color: const Color(0xFFF0FDF4),
@@ -1685,45 +1494,84 @@ class _OverdueFollowUps extends StatelessWidget {
                 ],
               ),
             )
-          : Column(
-              children: [
-                for (final l in overdue.take(4))
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
+          else
+            for (var i = 0; i < overdue.take(4).length; i++) ...[
+              if (i > 0) const SizedBox(height: 14),
+              Builder(
+                builder: (_) {
+                  final l = overdue[i];
+                  final name = (l['name'] ?? 'Student Inquiry').toString();
+                  final assigned =
+                      l['assignedToName'] ?? l['assignedTo'] ?? '--';
+                  final college = l['college'] ?? l['collegeBranch'] ?? '';
+                  final course = (l['course'] ?? l['branch'] ?? '').toString();
+
+                  return Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              name,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w700,
+                                fontSize: 14,
+                                color: _text,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              'Assigned: $assigned · $college',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                color: _muted,
+                                fontSize: 12,
+                              ),
+                            ),
+                            if (course.isNotEmpty) ...[
+                              const SizedBox(height: 2),
                               Text(
-                                (l['name'] ?? 'Student Inquiry').toString(),
+                                course,
                                 style: const TextStyle(
+                                  color: Color(0xFF94A3B8),
+                                  fontSize: 11.5,
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
-                              Text(
-                                'Assigned: ${l['assignedToName'] ?? l['assignedTo'] ?? 'Unassigned'} · ${l['college'] ?? l['collegeBranch'] ?? l['phone'] ?? ''}',
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                  color: _muted,
-                                  fontSize: 12,
-                                ),
-                              ),
                             ],
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      OutlinedButton(
+                        onPressed: onReassign,
+                        style: OutlinedButton.styleFrom(
+                          side: const BorderSide(color: Color(0xFFCBD5E1)),
+                          shape: const StadiumBorder(),
+                          foregroundColor: const Color(0xFF334155),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 6,
+                          ),
+                          visualDensity: VisualDensity.compact,
+                        ),
+                        child: const Text(
+                          'Re Assign',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
-                        const SizedBox(width: 8),
-                        OutlinedButton(
-                          onPressed: onReassign,
-                          child: const Text('Reassign'),
-                        ),
-                      ],
-                    ),
-                  ),
-              ],
-            ),
+                      ),
+                    ],
+                  );
+                },
+              ),
+            ],
+        ],
+      ),
     );
   }
 }
@@ -1735,146 +1583,183 @@ class _CollegeVisits extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return _Panel(
-      title: 'College visits this week',
-      trailing: TextButton(
-        onPressed: onPlanVisit,
-        style: TextButton.styleFrom(
-          visualDensity: VisualDensity.compact,
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-        ),
-        child: const Text('+ Plan visit'),
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: _border),
       ),
-      child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-        stream: FirebaseFirestore.instance
-            .collection('college_visits')
-            .snapshots(),
-        builder: (context, snapshot) {
-          final List<List<String>> displayVisits;
-          if (snapshot.hasData && snapshot.data!.docs.isNotEmpty) {
-            displayVisits = snapshot.data!.docs.take(5).map((d) {
-              final data = d.data();
-              String day = '';
-              if (data['dayNumber'] != null && data['monthShort'] != null) {
-                day = '${data['dayNumber']} ${data['monthShort']}';
-              } else if (data['dateLabel'] != null &&
-                  data['dateLabel'].toString().isNotEmpty) {
-                day = data['dateLabel'].toString().split(' ').take(2).join(' ');
-              } else if (data['createdAt'] is Timestamp) {
-                day = DateFormat(
-                  'dd MMM',
-                ).format((data['createdAt'] as Timestamp).toDate());
-              } else {
-                day = DateFormat('dd MMM').format(DateTime.now());
-              }
-              final name = (data['collegeName'] ?? 'College').toString();
-              final desc =
-                  (data['purpose'] ?? data['subtitle'] ?? 'Campus visit')
-                      .toString();
-              final status =
-                  (data['status'] ?? data['statusLabel'] ?? 'Planned')
-                      .toString();
-              return [day, name, desc, status];
-            }).toList();
-          } else {
-            displayVisits = const [];
-          }
-
-          if (displayVisits.isEmpty) {
-            return const Padding(
-              padding: EdgeInsets.symmetric(vertical: 24),
-              child: Center(
-                child: Text(
-                  'No college visits scheduled yet.',
-                  style: TextStyle(color: _muted, fontSize: 13),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'College visits this ...',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: _text,
                 ),
               ),
-            );
-          }
-
-          return Column(
-            children: [
-              for (final r in displayVisits) ...[
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  child: Row(
-                    children: [
-                      SizedBox(
-                        width: 58,
-                        child: Text(
-                          r[0],
-                          style: const TextStyle(
-                            color: _primary,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 12.5,
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        child: InkWell(
-                          onTap: () => LinkLauncher.launchCollegeMapsDirections(
-                            r[1],
-                            locationHint: r[2],
-                          ),
-                          borderRadius: BorderRadius.circular(6),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  Flexible(
-                                    child: Text(
-                                      r[1],
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 4),
-                                  const Icon(
-                                    Icons.directions_outlined,
-                                    size: 13,
-                                    color: _primary,
-                                  ),
-                                ],
-                              ),
-                              Text(
-                                r[2],
-                                style: const TextStyle(
-                                  color: _muted,
-                                  fontSize: 12,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      r[3] == 'Completed'
-                          ? _badge(
-                              'Completed',
-                              const Color(0xFFDCFCE7),
-                              const Color(0xFF15803D),
-                            )
-                          : r[3] == 'Cancelled'
-                          ? _badge(
-                              'Cancelled',
-                              const Color(0xFFFEE2E2),
-                              const Color(0xFFB91C1C),
-                            )
-                          : _badge(
-                              'Planned',
-                              const Color(0xFFEEF0FF),
-                              _primary,
-                            ),
-                    ],
+              InkWell(
+                onTap: onPlanVisit,
+                borderRadius: BorderRadius.circular(8),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFEEF2FF),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Text(
+                    'Plan Visit',
+                    style: TextStyle(
+                      color: _primary,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                 ),
-                if (r != displayVisits.last) const Divider(height: 1),
-              ],
+              ),
             ],
-          );
-        },
+          ),
+          const SizedBox(height: 16),
+          StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+            stream: FirebaseFirestore.instance
+                .collection('college_visits')
+                .snapshots(),
+            builder: (context, snapshot) {
+              final List<Map<String, dynamic>> displayVisits;
+              if (snapshot.hasData && snapshot.data!.docs.isNotEmpty) {
+                displayVisits = snapshot.data!.docs
+                    .take(4)
+                    .map((d) => d.data())
+                    .toList();
+              } else {
+                displayVisits = const [];
+              }
+
+              if (displayVisits.isEmpty) {
+                return const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 24),
+                  child: Center(
+                    child: Text(
+                      'No college visits scheduled yet.',
+                      style: TextStyle(color: _muted, fontSize: 13),
+                    ),
+                  ),
+                );
+              }
+
+              return Column(
+                children: [
+                  for (var i = 0; i < displayVisits.length; i++) ...[
+                    if (i > 0) const SizedBox(height: 14),
+                    Builder(
+                      builder: (_) {
+                        final v = displayVisits[i];
+                        final name = (v['collegeName'] ?? 'College').toString();
+                        final desc =
+                            (v['purpose'] ?? v['subtitle'] ?? 'Campus visit')
+                                .toString();
+                        final status =
+                            (v['status'] ?? v['statusLabel'] ?? 'Planned')
+                                .toString();
+
+                        Color badgeBg;
+                        Color badgeFg;
+                        if (status == 'Completed') {
+                          badgeBg = const Color(0xFFDCFCE7);
+                          badgeFg = const Color(0xFF15803D);
+                        } else if (status == 'Cancelled') {
+                          badgeBg = const Color(0xFFFEE2E2);
+                          badgeFg = const Color(0xFFB91C1C);
+                        } else {
+                          badgeBg = const Color(0xFFEEF0FF);
+                          badgeFg = _primary;
+                        }
+
+                        return Row(
+                          children: [
+                            Expanded(
+                              child: InkWell(
+                                onTap: () =>
+                                    LinkLauncher.launchCollegeMapsDirections(
+                                      name,
+                                      locationHint: desc,
+                                    ),
+                                borderRadius: BorderRadius.circular(6),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Flexible(
+                                          child: Text(
+                                            name,
+                                            style: const TextStyle(
+                                              fontWeight: FontWeight.w700,
+                                              fontSize: 14,
+                                              color: _text,
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 4),
+                                        const Icon(
+                                          Icons.directions_outlined,
+                                          size: 13,
+                                          color: _primary,
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      desc,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(
+                                        color: _muted,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 4,
+                              ),
+                              decoration: BoxDecoration(
+                                color: badgeBg,
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Text(
+                                status,
+                                style: TextStyle(
+                                  color: badgeFg,
+                                  fontSize: 11.5,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                          ],
+                        );
+                      },
+                    ),
+                  ],
+                ],
+              );
+            },
+          ),
+        ],
       ),
     );
   }

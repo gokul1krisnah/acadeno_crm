@@ -20,8 +20,7 @@ class SplashPage extends StatefulWidget {
   State<SplashPage> createState() => _SplashPageState();
 }
 
-class _SplashPageState extends State<SplashPage>
-    with TickerProviderStateMixin {
+class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
   late final AnimationController _introController;
   late final AnimationController _pulseController;
 
@@ -61,15 +60,16 @@ class _SplashPageState extends State<SplashPage>
       curve: const Interval(0.0, 0.45, curve: Curves.easeOutQuart),
     );
 
-    _topBarGlowOpacity = TweenSequence<double>([
-      TweenSequenceItem(tween: Tween(begin: 0.0, end: 1.0), weight: 40),
-      TweenSequenceItem(tween: Tween(begin: 1.0, end: 0.25), weight: 60),
-    ]).animate(
-      CurvedAnimation(
-        parent: _introController,
-        curve: const Interval(0.0, 0.55, curve: Curves.easeInOut),
-      ),
-    );
+    _topBarGlowOpacity =
+        TweenSequence<double>([
+          TweenSequenceItem(tween: Tween(begin: 0.0, end: 1.0), weight: 40),
+          TweenSequenceItem(tween: Tween(begin: 1.0, end: 0.25), weight: 60),
+        ]).animate(
+          CurvedAnimation(
+            parent: _introController,
+            curve: const Interval(0.0, 0.55, curve: Curves.easeInOut),
+          ),
+        );
 
     // Logo entrance (200ms -> 1250ms)
     _logoScale = Tween<double>(begin: 0.72, end: 1.0).animate(
@@ -84,15 +84,13 @@ class _SplashPageState extends State<SplashPage>
       curve: const Interval(0.10, 0.42, curve: Curves.easeOut),
     );
 
-    _logoSlide = Tween<Offset>(
-      begin: const Offset(0, 0.18),
-      end: Offset.zero,
-    ).animate(
-      CurvedAnimation(
-        parent: _introController,
-        curve: const Interval(0.10, 0.55, curve: Curves.easeOutCubic),
-      ),
-    );
+    _logoSlide = Tween<Offset>(begin: const Offset(0, 0.18), end: Offset.zero)
+        .animate(
+          CurvedAnimation(
+            parent: _introController,
+            curve: const Interval(0.10, 0.55, curve: Curves.easeOutCubic),
+          ),
+        );
 
     // Diagonal light shimmer across the logo (900ms -> 1950ms)
     _shimmerProgress = Tween<double>(begin: -1.2, end: 2.2).animate(
@@ -108,15 +106,13 @@ class _SplashPageState extends State<SplashPage>
       curve: const Interval(0.34, 0.68, curve: Curves.easeOut),
     );
 
-    _titleSlide = Tween<Offset>(
-      begin: const Offset(0, 0.30),
-      end: Offset.zero,
-    ).animate(
-      CurvedAnimation(
-        parent: _introController,
-        curve: const Interval(0.34, 0.70, curve: Curves.easeOutCubic),
-      ),
-    );
+    _titleSlide = Tween<Offset>(begin: const Offset(0, 0.30), end: Offset.zero)
+        .animate(
+          CurvedAnimation(
+            parent: _introController,
+            curve: const Interval(0.34, 0.70, curve: Curves.easeOutCubic),
+          ),
+        );
 
     _subtitleSpacing = Tween<double>(begin: 0.4, end: 2.4).animate(
       CurvedAnimation(
@@ -153,16 +149,17 @@ class _SplashPageState extends State<SplashPage>
     bool isAdmin = false;
 
     try {
-      final results = await Future.wait<Object?>([
-        cubit.restoreSession().timeout(
-          const Duration(milliseconds: 2000),
-          onTimeout: () => false,
-        ),
-        Future<Object?>.delayed(const Duration(milliseconds: 2200)),
-      ]).timeout(
-        const Duration(milliseconds: 2600),
-        onTimeout: () => [false, null],
-      );
+      final results =
+          await Future.wait<Object?>([
+            cubit.restoreSession().timeout(
+              const Duration(milliseconds: 2000),
+              onTimeout: () => false,
+            ),
+            Future<Object?>.delayed(const Duration(milliseconds: 2200)),
+          ]).timeout(
+            const Duration(milliseconds: 2600),
+            onTimeout: () => [false, null],
+          );
 
       restored = (results.first as bool?) ?? false;
       isAdmin = cubit.isAdmin;
@@ -172,18 +169,26 @@ class _SplashPageState extends State<SplashPage>
       if (!restored) {
         final saved = cubit.savedSession;
         final currentUser = FirebaseAuth.instance.currentUser;
-        if (saved != null && currentUser != null && saved.uid == currentUser.uid) {
+        if (saved != null &&
+            currentUser != null &&
+            saved.uid == currentUser.uid) {
           restored = true;
-          isAdmin = saved.isAdmin ||
+          isAdmin =
+              saved.isAdmin ||
               currentUser.uid == 'aOt6zw43GPTebTKWAP4d0hQHYEz2' ||
-              const ['admin', 'super_admin'].contains(saved.role?.toLowerCase());
+              const [
+                'admin',
+                'super_admin',
+              ].contains(saved.role?.toLowerCase());
         }
       }
     } catch (e) {
       debugPrint('Splash restore fallback notice: $e');
       final saved = cubit.savedSession;
       final currentUser = FirebaseAuth.instance.currentUser;
-      if (saved != null && currentUser != null && saved.uid == currentUser.uid) {
+      if (saved != null &&
+          currentUser != null &&
+          saved.uid == currentUser.uid) {
         restored = true;
         isAdmin = saved.isAdmin;
       }
@@ -266,9 +271,13 @@ class _SplashPageState extends State<SplashPage>
                                   decoration: BoxDecoration(
                                     gradient: LinearGradient(
                                       colors: [
-                                        AppColors.indigo.withValues(alpha: 0.35),
+                                        AppColors.indigo.withValues(
+                                          alpha: 0.35,
+                                        ),
                                         AppColors.blue.withValues(alpha: 0.35),
-                                        AppColors.orange.withValues(alpha: 0.35),
+                                        AppColors.orange.withValues(
+                                          alpha: 0.35,
+                                        ),
                                         AppColors.amber.withValues(alpha: 0.35),
                                       ],
                                     ),
@@ -305,8 +314,10 @@ class _SplashPageState extends State<SplashPage>
                                 Transform.scale(
                                   scale: 0.92 + (_pulseController.value * 0.14),
                                   child: Opacity(
-                                    opacity: _logoOpacity.value *
-                                        (0.18 - (_pulseController.value * 0.08)),
+                                    opacity:
+                                        _logoOpacity.value *
+                                        (0.18 -
+                                            (_pulseController.value * 0.08)),
                                     child: Container(
                                       width: 220,
                                       height: 120,
@@ -325,65 +336,38 @@ class _SplashPageState extends State<SplashPage>
                                   ),
                                 ),
 
-                                // Crisp elevated glass card behind logo
+                                // Clean floating logo without white card box
                                 SlideTransition(
                                   position: _logoSlide,
                                   child: Transform.scale(
                                     scale: _logoScale.value,
                                     child: Opacity(
                                       opacity: _logoOpacity.value,
-                                      child: Container(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 28,
-                                          vertical: 20,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          color: Colors.white,
-                                          borderRadius:
-                                              BorderRadius.circular(28),
-                                          border: Border.all(
-                                            color: const Color(0xFFEEF2FF),
-                                            width: 1.5,
-                                          ),
-                                          boxShadow: [
-                                            BoxShadow(
-                                              color: const Color(0xFF4338CA)
-                                                  .withValues(alpha: 0.08),
-                                              blurRadius: 32,
-                                              offset: const Offset(0, 14),
-                                            ),
-                                            BoxShadow(
-                                              color: const Color(0xFFF97316)
-                                                  .withValues(alpha: 0.06),
-                                              blurRadius: 24,
-                                              offset: const Offset(0, 6),
-                                            ),
-                                          ],
-                                        ),
-                                        // Shimmer sweep across the Acadeno logo
-                                        child: ShaderMask(
-                                          blendMode: BlendMode.srcATop,
-                                          shaderCallback: (bounds) {
-                                            final p = _shimmerProgress.value;
-                                            return LinearGradient(
-                                              begin: Alignment(p - 0.4, -0.3),
-                                              end: Alignment(p + 0.4, 0.3),
-                                              colors: [
-                                                Colors.white
-                                                    .withValues(alpha: 0.0),
-                                                Colors.white
-                                                    .withValues(alpha: 0.55),
-                                                Colors.white
-                                                    .withValues(alpha: 0.0),
-                                              ],
-                                              stops: const [0.0, 0.5, 1.0],
-                                            ).createShader(bounds);
-                                          },
-                                          child: Image.asset(
-                                            AppImages.logo,
-                                            height: 82,
-                                            fit: BoxFit.contain,
-                                          ),
+                                      child: ShaderMask(
+                                        blendMode: BlendMode.srcATop,
+                                        shaderCallback: (bounds) {
+                                          final p = _shimmerProgress.value;
+                                          return LinearGradient(
+                                            begin: Alignment(p - 0.4, -0.3),
+                                            end: Alignment(p + 0.4, 0.3),
+                                            colors: [
+                                              Colors.white.withValues(
+                                                alpha: 0.0,
+                                              ),
+                                              Colors.white.withValues(
+                                                alpha: 0.55,
+                                              ),
+                                              Colors.white.withValues(
+                                                alpha: 0.0,
+                                              ),
+                                            ],
+                                            stops: const [0.0, 0.5, 1.0],
+                                          ).createShader(bounds);
+                                        },
+                                        child: Image.asset(
+                                          AppImages.logo,
+                                          height: 90,
+                                          fit: BoxFit.contain,
                                         ),
                                       ),
                                     ),
@@ -392,36 +376,24 @@ class _SplashPageState extends State<SplashPage>
                               ],
                             ),
                           ),
-                          const SizedBox(height: 22),
+                          const SizedBox(height: 24),
 
-                          // Staggered Title & Expanding Letter-Spacing Subtitle
+                          // Expanding Letter-Spacing Subtitle without 'Lead Manager' text
                           SlideTransition(
                             position: _titleSlide,
                             child: Opacity(
                               opacity: _titleOpacity.value,
-                              child: Column(
-                                children: [
-                                  Text(
-                                    'Lead Manager',
-                                    style: AppTypography.heading(
-                                      24,
-                                      weight: FontWeight.w800,
-                                      color: const Color(0xFF0F172A),
-                                    ).copyWith(letterSpacing: -0.5),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    'ACADENO RESEARCH & INNOVATION CENTRE',
-                                    textAlign: TextAlign.center,
-                                    style: AppTypography.body(
-                                      size: 11,
+                              child: Text(
+                                'ACADENO RESEARCH & INNOVATION CENTRE',
+                                textAlign: TextAlign.center,
+                                style:
+                                    AppTypography.body(
+                                      size: 11.5,
                                       weight: FontWeight.w700,
                                       color: AppColors.secondary,
                                     ).copyWith(
                                       letterSpacing: _subtitleSpacing.value,
                                     ),
-                                  ),
-                                ],
                               ),
                             ),
                           ),
@@ -446,7 +418,8 @@ class _SplashPageState extends State<SplashPage>
                                           color: const Color(0xFFEAECF0),
                                         ),
                                         FractionallySizedBox(
-                                          widthFactor: 0.35 +
+                                          widthFactor:
+                                              0.35 +
                                               0.65 *
                                                   (0.5 +
                                                       0.5 *

@@ -16,15 +16,21 @@ class OfflineStatusBar extends StatelessWidget {
         queueService.isSyncingNotifier,
         queueService.pendingCountNotifier,
         queueService.justSyncedNotifier,
+        queueService.justReconnectedNotifier,
       ]),
       builder: (context, _) {
         final isOnline = queueService.isOnline;
         final isSyncing = queueService.isSyncing;
         final pending = queueService.pendingCount;
         final justSynced = queueService.justSynced;
+        final justReconnected = queueService.justReconnected;
 
-        // If online, not syncing, nothing pending, and not flashing success: hide completely
-        if (isOnline && !isSyncing && pending == 0 && !justSynced) {
+        // If online, not syncing, nothing pending, and not flashing success/reconnect: hide completely
+        if (isOnline &&
+            !isSyncing &&
+            pending == 0 &&
+            !justSynced &&
+            !justReconnected) {
           return const SizedBox.shrink();
         }
 
@@ -36,7 +42,18 @@ class OfflineStatusBar extends StatelessWidget {
         String subtitle;
         Widget? trailingAction;
 
-        if (justSynced) {
+        if (justReconnected) {
+          bgColor = const Color(0xFF065F46); // Emerald 800
+          fgColor = Colors.white;
+          borderColor = const Color(0xFF10B981);
+          leadingIcon = const Icon(
+            Icons.wifi_rounded,
+            color: Color(0xFF6EE7B7),
+            size: 18,
+          );
+          title = 'Back online';
+          subtitle = 'Internet connection restored';
+        } else if (justSynced) {
           bgColor = const Color(0xFF065F46); // Emerald 800
           fgColor = Colors.white;
           borderColor = const Color(0xFF10B981);
@@ -89,7 +106,11 @@ class OfflineStatusBar extends StatelessWidget {
               child: const Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.refresh_rounded, color: Color(0xFFFDE68A), size: 14),
+                  Icon(
+                    Icons.refresh_rounded,
+                    color: Color(0xFFFDE68A),
+                    size: 14,
+                  ),
                   SizedBox(width: 4),
                   Text(
                     'Retry',

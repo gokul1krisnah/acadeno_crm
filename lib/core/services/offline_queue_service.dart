@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -40,22 +39,23 @@ class QueuedCallOutcome {
   });
 
   Map<String, dynamic> toMap() => {
-        'type': 'call_outcome',
-        'clientId': clientId,
-        'leadId': leadId,
-        'leadName': leadName,
-        'outcome': outcome,
-        'duration': duration,
-        'notes': notes,
-        'courseEnrolled': courseEnrolled,
-        'discountAmount': discountAmount,
-        'recordedAt': recordedAt.toIso8601String(),
-        'retryCount': retryCount,
-        'executiveUid': executiveUid,
-        'executiveName': executiveName,
-      };
+    'type': 'call_outcome',
+    'clientId': clientId,
+    'leadId': leadId,
+    'leadName': leadName,
+    'outcome': outcome,
+    'duration': duration,
+    'notes': notes,
+    'courseEnrolled': courseEnrolled,
+    'discountAmount': discountAmount,
+    'recordedAt': recordedAt.toIso8601String(),
+    'retryCount': retryCount,
+    'executiveUid': executiveUid,
+    'executiveName': executiveName,
+  };
 
-  factory QueuedCallOutcome.fromMap(Map<String, dynamic> map) => QueuedCallOutcome(
+  factory QueuedCallOutcome.fromMap(Map<String, dynamic> map) =>
+      QueuedCallOutcome(
         clientId: map['clientId'] as String,
         leadId: map['leadId'] as String,
         leadName: map['leadName'] as String,
@@ -65,7 +65,8 @@ class QueuedCallOutcome {
         courseEnrolled: map['courseEnrolled'] as String?,
         discountAmount: (map['discountAmount'] as num?)?.toInt(),
         recordedAt:
-            DateTime.tryParse(map['recordedAt'] as String? ?? '') ?? DateTime.now(),
+            DateTime.tryParse(map['recordedAt'] as String? ?? '') ??
+            DateTime.now(),
         retryCount: (map['retryCount'] as num?)?.toInt() ?? 0,
         executiveUid: map['executiveUid'] as String?,
         executiveName: map['executiveName'] as String?,
@@ -97,17 +98,17 @@ class QueuedVisitOutcome {
   });
 
   Map<String, dynamic> toMap() => {
-        'type': 'visit_outcome',
-        'clientId': clientId,
-        'visitId': visitId,
-        'metPeople': metPeople,
-        'nextAction': nextAction,
-        'leadsCollected': leadsCollected,
-        'interestedCount': interestedCount,
-        'recordedAt': recordedAt.toIso8601String(),
-        'retryCount': retryCount,
-        'executiveUid': executiveUid,
-      };
+    'type': 'visit_outcome',
+    'clientId': clientId,
+    'visitId': visitId,
+    'metPeople': metPeople,
+    'nextAction': nextAction,
+    'leadsCollected': leadsCollected,
+    'interestedCount': interestedCount,
+    'recordedAt': recordedAt.toIso8601String(),
+    'retryCount': retryCount,
+    'executiveUid': executiveUid,
+  };
 
   factory QueuedVisitOutcome.fromMap(Map<String, dynamic> map) =>
       QueuedVisitOutcome(
@@ -118,7 +119,8 @@ class QueuedVisitOutcome {
         leadsCollected: (map['leadsCollected'] as num?)?.toInt() ?? 0,
         interestedCount: (map['interestedCount'] as num?)?.toInt() ?? 0,
         recordedAt:
-            DateTime.tryParse(map['recordedAt'] as String? ?? '') ?? DateTime.now(),
+            DateTime.tryParse(map['recordedAt'] as String? ?? '') ??
+            DateTime.now(),
         retryCount: (map['retryCount'] as num?)?.toInt() ?? 0,
         executiveUid: map['executiveUid'] as String?,
       );
@@ -143,11 +145,15 @@ class OfflineQueueService {
   final ValueNotifier<int> pendingCountNotifier = ValueNotifier<int>(0);
   final ValueNotifier<bool> isSyncingNotifier = ValueNotifier<bool>(false);
   final ValueNotifier<bool> justSyncedNotifier = ValueNotifier<bool>(false);
+  final ValueNotifier<bool> justReconnectedNotifier = ValueNotifier<bool>(
+    false,
+  );
 
   bool get isOnline => isOnlineNotifier.value;
   int get pendingCount => pendingCountNotifier.value;
   bool get isSyncing => isSyncingNotifier.value;
   bool get justSynced => justSyncedNotifier.value;
+  bool get justReconnected => justReconnectedNotifier.value;
 
   final StreamController<int> _pendingCountController =
       StreamController<int>.broadcast();
@@ -155,7 +161,8 @@ class OfflineQueueService {
 
   StreamSubscription<List<ConnectivityResult>>? _connectivitySub;
   Timer? _justSyncedTimer;
-  Timer? _heartbeatTimer;
+  Timer? _offlineDebounceTimer;
+  Timer? _reconnectBannerTimer;
 
   /// Initializes the local Hive boxes with automatic legacy migration.
   static Future<void> init() async {
@@ -191,67 +198,78 @@ class OfflineQueueService {
     _box = Hive.isBoxOpen(boxName) ? Hive.box<String>(boxName) : null;
     _updateCounts();
 
-    // Check initial connectivity
-    _checkRealConnection();
+    // Check initial connectivity once gently without false negatives
+    _checkInitialConnectivity();
 
-    // Listen to network transitions
+    // Listen to network transitions with debounce to prevent micro-disconnection popups
     _connectivitySub?.cancel();
     _connectivitySub = Connectivity().onConnectivityChanged.listen((results) {
-      final hasLocalInterface = results.any((r) => r != ConnectivityResult.none);
-      if (!hasLocalInterface) {
-        isOnlineNotifier.value = false;
+      final hasInterface = results.any((r) => r != ConnectivityResult.none);
+      if (!hasInterface) {
+        // Debounce: Wait 3.0 seconds before asserting offline.
+        // If Wi-Fi is switching networks or cellular handoff occurs, it will cancel this timer.
+        _offlineDebounceTimer?.cancel();
+        _offlineDebounceTimer = Timer(
+          const Duration(milliseconds: 3000),
+          () async {
+            final recheck = await Connectivity().checkConnectivity();
+            if (recheck.every((r) => r == ConnectivityResult.none)) {
+              if (isOnlineNotifier.value) {
+                isOnlineNotifier.value = false;
+                debugPrint(
+                  '📴 Internet connection lost. Entering offline mode.',
+                );
+              }
+            }
+          },
+        );
       } else {
-        _checkRealConnection();
+        // Active interface detected! Cancel offline debounce timer immediately.
+        _offlineDebounceTimer?.cancel();
+        _handleNetworkRestored();
       }
     });
 
-    // Periodic heartbeat to detect reconnects behind silent captive portals or cellular recovery
-    _heartbeatTimer?.cancel();
-    _heartbeatTimer = Timer.periodic(const Duration(seconds: 25), (_) {
-      _checkRealConnection();
-    });
-
-    // Attempt initial sync if items pending
-    if (pendingCountNotifier.value > 0) {
+    // Attempt initial sync if items pending and online
+    if (pendingCountNotifier.value > 0 && isOnlineNotifier.value) {
       syncPendingQueue();
     }
   }
 
-  /// Verifies true end-to-end internet connectivity (not just Wi-Fi link).
-  Future<bool> _checkRealConnection() async {
+  Future<void> _checkInitialConnectivity() async {
     try {
       final results = await Connectivity().checkConnectivity();
       if (results.every((r) => r == ConnectivityResult.none)) {
         isOnlineNotifier.value = false;
-        return false;
-      }
-
-      if (kIsWeb) {
+      } else {
         isOnlineNotifier.value = true;
-        if (pendingCountNotifier.value > 0 && !isSyncingNotifier.value) {
-          syncPendingQueue();
-        }
-        return true;
       }
-
-      final lookup = await InternetAddress.lookup('firestore.googleapis.com')
-          .timeout(const Duration(seconds: 4));
-      final connected = lookup.isNotEmpty && lookup[0].rawAddress.isNotEmpty;
-
-      final previousOnline = isOnlineNotifier.value;
-      isOnlineNotifier.value = connected;
-
-      // Reconnection detected!
-      if (!previousOnline && connected) {
-        debugPrint('🌐 Internet restored. Triggering offline sync queue drain...');
-        if (pendingCountNotifier.value > 0) {
-          syncPendingQueue();
-        }
-      }
-      return connected;
     } catch (_) {
-      isOnlineNotifier.value = false;
-      return false;
+      isOnlineNotifier.value = true;
+    }
+  }
+
+  Future<void> _handleNetworkRestored() async {
+    final wasOffline = !isOnlineNotifier.value;
+
+    if (wasOffline) {
+      isOnlineNotifier.value = true;
+      debugPrint('🌐 Internet connection restored.');
+
+      if (pendingCountNotifier.value > 0) {
+        // Drain queued items
+        syncPendingQueue();
+      } else {
+        // Show brief "Back online" reassurance banner for 2 seconds then auto-dismiss
+        justReconnectedNotifier.value = true;
+        _reconnectBannerTimer?.cancel();
+        _reconnectBannerTimer = Timer(const Duration(milliseconds: 2000), () {
+          justReconnectedNotifier.value = false;
+        });
+      }
+    } else {
+      // Was already online: stay online quietly without popping up
+      isOnlineNotifier.value = true;
     }
   }
 
@@ -293,7 +311,8 @@ class OfflineQueueService {
     String? executiveName,
   }) async {
     final uid = executiveUid ?? FirebaseAuth.instance.currentUser?.uid;
-    final name = executiveName ?? FirebaseAuth.instance.currentUser?.displayName;
+    final name =
+        executiveName ?? FirebaseAuth.instance.currentUser?.displayName;
     final clientId =
         'call_${leadId}_${DateTime.now().millisecondsSinceEpoch}_${leadId.hashCode.abs()}';
 
@@ -314,7 +333,8 @@ class OfflineQueueService {
     await _box?.put(clientId, jsonEncode(queued.toMap()));
     _updateCounts();
     debugPrint(
-        '💾 Queued call outcome locally (client_id: $clientId). Queue count: ${pendingCountNotifier.value}');
+      '💾 Queued call outcome locally (client_id: $clientId). Queue count: ${pendingCountNotifier.value}',
+    );
 
     // If online, trigger sync immediately
     if (isOnlineNotifier.value) {
@@ -349,7 +369,8 @@ class OfflineQueueService {
     await _box?.put(clientId, jsonEncode(queued.toMap()));
     _updateCounts();
     debugPrint(
-        '💾 Queued visit outcome locally (client_id: $clientId). Queue count: ${pendingCountNotifier.value}');
+      '💾 Queued visit outcome locally (client_id: $clientId). Queue count: ${pendingCountNotifier.value}',
+    );
 
     if (isOnlineNotifier.value) {
       syncPendingQueue();
@@ -358,7 +379,12 @@ class OfflineQueueService {
 
   /// Public trigger to manually force a sync.
   Future<void> syncNow() async {
-    await _checkRealConnection();
+    try {
+      final results = await Connectivity().checkConnectivity();
+      if (results.any((r) => r != ConnectivityResult.none)) {
+        isOnlineNotifier.value = true;
+      }
+    } catch (_) {}
     await syncPendingQueue();
   }
 
@@ -366,7 +392,10 @@ class OfflineQueueService {
   /// Uses idempotent document `.set(..., SetOptions(merge: true))` to ensure
   /// ZERO duplicate writes even under repetitive network reconnects.
   Future<void> syncPendingQueue() async {
-    if (isSyncingNotifier.value || _box == null || pendingCountNotifier.value == 0) return;
+    if (isSyncingNotifier.value ||
+        _box == null ||
+        pendingCountNotifier.value == 0)
+      return;
     isSyncingNotifier.value = true;
 
     final initialItemsCount = pendingCountNotifier.value;
@@ -408,7 +437,9 @@ class OfflineQueueService {
       _updateCounts();
 
       // If we synced items successfully, flash the green success state
-      if (initialItemsCount > 0 && syncedSuccessCount > 0 && pendingCountNotifier.value == 0) {
+      if (initialItemsCount > 0 &&
+          syncedSuccessCount > 0 &&
+          pendingCountNotifier.value == 0) {
         justSyncedNotifier.value = true;
         _justSyncedTimer?.cancel();
         _justSyncedTimer = Timer(const Duration(milliseconds: 2800), () {
@@ -432,7 +463,8 @@ class OfflineQueueService {
 
       // 1. Determine status update rules
       String nextStatus = item.outcome;
-      final isFollowUpPending = item.outcome == 'Follow-up' ||
+      final isFollowUpPending =
+          item.outcome == 'Follow-up' ||
           item.outcome == 'Callback' ||
           item.outcome == 'Interested' ||
           item.outcome == 'No answer';
@@ -519,7 +551,8 @@ class OfflineQueueService {
 
   void dispose() {
     _connectivitySub?.cancel();
-    _heartbeatTimer?.cancel();
+    _offlineDebounceTimer?.cancel();
+    _reconnectBannerTimer?.cancel();
     _justSyncedTimer?.cancel();
     _pendingCountController.close();
   }
