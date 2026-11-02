@@ -283,7 +283,7 @@ class _UserManagementViewState extends State<UserManagementView> {
                     ],
                     const SizedBox(height: 12),
                     DropdownButtonFormField<String>(
-                      value: selectedRole,
+                      initialValue: selectedRole,
                       isExpanded: true,
                       decoration: inputDeco(
                         'Role & Access *',
@@ -678,8 +678,16 @@ class _UserManagementViewState extends State<UserManagementView> {
                             TextField(
                               onChanged: (v) =>
                                   setState(() => _searchQuery = v),
+                              style: const TextStyle(
+                                fontSize: 13.5,
+                                color: _textDark,
+                              ),
                               decoration: InputDecoration(
                                 hintText: 'Search by name, email, or UID...',
+                                hintStyle: const TextStyle(
+                                  fontSize: 13,
+                                  color: _textMuted,
+                                ),
                                 prefixIcon: const Icon(
                                   Icons.search,
                                   size: 20,
@@ -698,13 +706,27 @@ class _UserManagementViewState extends State<UserManagementView> {
                                     color: _borderColor,
                                   ),
                                 ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: const BorderSide(
+                                    color: _borderColor,
+                                  ),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: const BorderSide(
+                                    color: _primaryColor,
+                                    width: 1.5,
+                                  ),
+                                ),
                                 isDense: true,
                                 contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
                                   vertical: 10,
                                 ),
                               ),
                             ),
-                            const SizedBox(height: 12),
+                            const SizedBox(height: 10),
                             Row(
                               children: [
                                 Expanded(child: _buildRoleFilterDropdown()),
@@ -714,15 +736,24 @@ class _UserManagementViewState extends State<UserManagementView> {
                             ),
                           ] else ...[
                             Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
                                 Expanded(
                                   flex: 5,
                                   child: TextField(
                                     onChanged: (v) =>
                                         setState(() => _searchQuery = v),
+                                    style: const TextStyle(
+                                      fontSize: 13.5,
+                                      color: _textDark,
+                                    ),
                                     decoration: InputDecoration(
                                       hintText:
                                           'Search by name, email, or UID...',
+                                      hintStyle: const TextStyle(
+                                        fontSize: 13,
+                                        color: _textMuted,
+                                      ),
                                       prefixIcon: const Icon(
                                         Icons.search,
                                         size: 20,
@@ -745,9 +776,23 @@ class _UserManagementViewState extends State<UserManagementView> {
                                           color: _borderColor,
                                         ),
                                       ),
+                                      enabledBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                        borderSide: const BorderSide(
+                                          color: _borderColor,
+                                        ),
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                        borderSide: const BorderSide(
+                                          color: _primaryColor,
+                                          width: 1.5,
+                                        ),
+                                      ),
                                       isDense: true,
                                       contentPadding:
                                           const EdgeInsets.symmetric(
+                                            horizontal: 12,
                                             vertical: 10,
                                           ),
                                     ),
@@ -893,11 +938,21 @@ class _UserManagementViewState extends State<UserManagementView> {
                       builder: (context, constraints) {
                         final isDesktop = constraints.maxWidth >= 780;
                         if (isDesktop) {
-                          return _buildDesktopTable(
-                            cubit,
-                            filteredUsers,
-                            allUsers,
-                            myUid,
+                          return SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: ConstrainedBox(
+                              constraints: BoxConstraints(
+                                minWidth: constraints.maxWidth > 980
+                                    ? constraints.maxWidth
+                                    : 980,
+                              ),
+                              child: _buildDesktopTable(
+                                cubit,
+                                filteredUsers,
+                                allUsers,
+                                myUid,
+                              ),
+                            ),
                           );
                         } else {
                           return _buildMobileCardList(
@@ -920,8 +975,15 @@ class _UserManagementViewState extends State<UserManagementView> {
 
   Widget _buildRoleFilterDropdown() {
     return AcadenoDropdown<String>(
-      label: 'Role',
       value: _roleFilter,
+      borderRadius: 8,
+      borderColor: _borderColor,
+      prefixIcon: const Icon(
+        Icons.admin_panel_settings_outlined,
+        size: 18,
+        color: _textMuted,
+      ),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
       items: const [
         AcadenoDropdownItem(value: 'all', label: 'All Roles'),
         AcadenoDropdownItem(value: 'admin', label: 'Admin'),
@@ -932,43 +994,20 @@ class _UserManagementViewState extends State<UserManagementView> {
   }
 
   Widget _buildStatusFilterDropdown() {
-    return DropdownButtonFormField<String>(
+    return AcadenoDropdown<String>(
       value: _statusFilter,
-      isExpanded: true,
-      decoration: InputDecoration(
-        labelText: 'Status',
-        isDense: true,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: _borderColor),
-        ),
+      borderRadius: 8,
+      borderColor: _borderColor,
+      prefixIcon: const Icon(
+        Icons.tune_rounded,
+        size: 18,
+        color: _textMuted,
       ),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
       items: const [
-        DropdownMenuItem(
-          value: 'all',
-          child: Text(
-            'All Statuses',
-            overflow: TextOverflow.ellipsis,
-            maxLines: 1,
-          ),
-        ),
-        DropdownMenuItem(
-          value: 'active',
-          child: Text(
-            'Active Only',
-            overflow: TextOverflow.ellipsis,
-            maxLines: 1,
-          ),
-        ),
-        DropdownMenuItem(
-          value: 'inactive',
-          child: Text(
-            'Inactive Only',
-            overflow: TextOverflow.ellipsis,
-            maxLines: 1,
-          ),
-        ),
+        AcadenoDropdownItem(value: 'all', label: 'All Statuses'),
+        AcadenoDropdownItem(value: 'active', label: 'Active Only'),
+        AcadenoDropdownItem(value: 'inactive', label: 'Inactive Only'),
       ],
       onChanged: (v) => setState(() => _statusFilter = v ?? 'all'),
     );
@@ -1008,19 +1047,52 @@ class _UserManagementViewState extends State<UserManagementView> {
     return Column(
       children: [
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
           decoration: const BoxDecoration(
             color: Color(0xFFF8FAFC),
             border: Border(bottom: BorderSide(color: _borderColor)),
           ),
           child: const Row(
             children: [
-              Expanded(flex: 3, child: Text('USER', style: _tblHdr)),
-              Expanded(flex: 3, child: Text('EMAIL & UID', style: _tblHdr)),
-              Expanded(flex: 2, child: Text('ROLE', style: _tblHdr)),
-              Expanded(flex: 3, child: Text('DEVICE SECURITY (PR-5.1)', style: _tblHdr)),
-              Expanded(flex: 1, child: Text('ACTIVE', style: _tblHdr)),
-              SizedBox(width: 100, child: Text('ACTIONS', style: _tblHdr, textAlign: TextAlign.right)),
+              Expanded(
+                flex: 3,
+                child: Padding(
+                  padding: EdgeInsets.only(right: 14),
+                  child: Text('USER', style: _tblHdr),
+                ),
+              ),
+              Expanded(
+                flex: 3,
+                child: Padding(
+                  padding: EdgeInsets.only(right: 14),
+                  child: Text('EMAIL & UID', style: _tblHdr),
+                ),
+              ),
+              Expanded(
+                flex: 2,
+                child: Padding(
+                  padding: EdgeInsets.only(right: 14),
+                  child: Text('ROLE', style: _tblHdr),
+                ),
+              ),
+              Expanded(
+                flex: 3,
+                child: Padding(
+                  padding: EdgeInsets.only(right: 14),
+                  child: Text('DEVICE SECURITY (PR-5.1)', style: _tblHdr),
+                ),
+              ),
+              Expanded(
+                flex: 1,
+                child: Padding(
+                  padding: EdgeInsets.only(right: 8),
+                  child: Text('ACTIVE', style: _tblHdr),
+                ),
+              ),
+              SizedBox(
+                width: 90,
+                child: Text('ACTIONS', style: _tblHdr, textAlign: TextAlign.right),
+              ),
             ],
           ),
         ),
@@ -1030,7 +1102,7 @@ class _UserManagementViewState extends State<UserManagementView> {
               final isMe = user.uid == myUid;
               return Container(
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
+                  horizontal: 14,
                   vertical: 12,
                 ),
                 decoration: const BoxDecoration(
@@ -1041,290 +1113,352 @@ class _UserManagementViewState extends State<UserManagementView> {
                     // USER (Avatar + Name)
                     Expanded(
                       flex: 3,
-                      child: Row(
-                        children: [
-                          CircleAvatar(
-                            radius: 16,
-                            backgroundColor: const Color(0xFFEEF0FF),
-                            child: Text(
-                              user.name.isNotEmpty
-                                  ? user.name[0].toUpperCase()
-                                  : 'U',
-                              style: const TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w700,
-                                color: _primaryColor,
+                      child: Padding(
+                        padding: const EdgeInsets.only(right: 14),
+                        child: Row(
+                          children: [
+                            CircleAvatar(
+                              radius: 16,
+                              backgroundColor: const Color(0xFFEEF0FF),
+                              child: Text(
+                                user.name.isNotEmpty
+                                    ? user.name[0].toUpperCase()
+                                    : 'U',
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w700,
+                                  color: _primaryColor,
+                                ),
                               ),
                             ),
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  children: [
-                                    Flexible(
-                                      child: Text(
-                                        user.name,
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: const TextStyle(
-                                          fontWeight: FontWeight.w700,
-                                          fontSize: 13.5,
-                                          color: _textDark,
-                                        ),
-                                      ),
-                                    ),
-                                    if (isMe) ...[
-                                      const SizedBox(width: 6),
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 5,
-                                          vertical: 1,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          color: const Color(0xFFEEF0FF),
-                                          borderRadius: BorderRadius.circular(
-                                            4,
-                                          ),
-                                        ),
-                                        child: const Text(
-                                          'you',
-                                          style: TextStyle(
-                                            fontSize: 10,
-                                            fontWeight: FontWeight.w600,
-                                            color: _primaryColor,
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Flexible(
+                                        child: Text(
+                                          user.name,
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.w700,
+                                            fontSize: 13.5,
+                                            color: _textDark,
                                           ),
                                         ),
                                       ),
+                                      if (isMe) ...[
+                                        const SizedBox(width: 6),
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 5,
+                                            vertical: 1,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: const Color(0xFFEEF0FF),
+                                            borderRadius: BorderRadius.circular(
+                                              4,
+                                            ),
+                                          ),
+                                          child: const Text(
+                                            'you',
+                                            style: TextStyle(
+                                              fontSize: 10,
+                                              fontWeight: FontWeight.w600,
+                                              color: _primaryColor,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
                                     ],
-                                  ],
-                                ),
-                              ],
+                                  ),
+                                ],
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
 
                     // EMAIL & UID
                     Expanded(
                       flex: 3,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            user.email,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              fontSize: 12.5,
-                              color: _textDark,
+                      child: Padding(
+                        padding: const EdgeInsets.only(right: 14),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              user.email,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontSize: 12.5,
+                                color: _textDark,
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 2),
-                          InkWell(
-                            onTap: () => _copyToClipboard(user.uid, 'UID'),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Flexible(
-                                  child: Text(
-                                    user.uid,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: const TextStyle(
-                                      fontFamily: 'monospace',
-                                      fontSize: 11,
-                                      color: _textMuted,
+                            const SizedBox(height: 2),
+                            InkWell(
+                              onTap: () => _copyToClipboard(user.uid, 'UID'),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Flexible(
+                                    child: Text(
+                                      user.uid,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(
+                                        fontFamily: 'monospace',
+                                        fontSize: 11,
+                                        color: _textMuted,
+                                      ),
                                     ),
                                   ),
-                                ),
-                                const SizedBox(width: 4),
-                                const Icon(
-                                  Icons.copy_rounded,
-                                  size: 12,
-                                  color: _textMuted,
-                                ),
-                              ],
+                                  const SizedBox(width: 4),
+                                  const Icon(
+                                    Icons.copy_rounded,
+                                    size: 12,
+                                    color: _textMuted,
+                                  ),
+                                ],
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
 
                     // ROLE
                     Expanded(
                       flex: 2,
-                      child: Container(
-                        height: 32,
-                        padding: const EdgeInsets.symmetric(horizontal: 8),
-                        decoration: BoxDecoration(
-                          color: _bgLight,
-                          borderRadius: BorderRadius.circular(6),
-                          border: Border.all(color: _borderColor),
-                        ),
-                        child: DropdownButtonHideUnderline(
-                          child: DropdownButton<String>(
-                            value: DashboardUserModel.normalizeRole(user.role),
-                            isDense: true,
-                            isExpanded: true,
-                            style: const TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                              color: _textDark,
+                      child: Padding(
+                        padding: const EdgeInsets.only(right: 14),
+                        child: Container(
+                          height: 34,
+                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                          decoration: BoxDecoration(
+                            color: _bgLight,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: _borderColor),
+                          ),
+                          child: DropdownButtonHideUnderline(
+                            child: DropdownButton<String>(
+                              value: DashboardUserModel.normalizeRole(user.role),
+                              isDense: true,
+                              isExpanded: true,
+                              style: const TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: _textDark,
+                              ),
+                              items: const [
+                                DropdownMenuItem(
+                                  value: 'admin',
+                                  child: Text(
+                                    'Admin',
+                                    overflow: TextOverflow.ellipsis,
+                                    maxLines: 1,
+                                  ),
+                                ),
+                                DropdownMenuItem(
+                                  value: 'hr',
+                                  child: Text(
+                                    'HR & Operation Manager',
+                                    overflow: TextOverflow.ellipsis,
+                                    maxLines: 1,
+                                  ),
+                                ),
+                              ],
+                              onChanged: isMe
+                                  ? null
+                                  : (newRole) {
+                                      if (newRole != null &&
+                                          newRole != user.role) {
+                                        cubit.updateUserRole(
+                                          user.uid,
+                                          newRole,
+                                          userName: user.name,
+                                        );
+                                      }
+                                    },
                             ),
-                            items: const [
-                              DropdownMenuItem(
-                                value: 'admin',
-                                child: Text(
-                                  'Admin',
-                                  overflow: TextOverflow.ellipsis,
-                                  maxLines: 1,
-                                ),
-                              ),
-                              DropdownMenuItem(
-                                value: 'hr',
-                                child: Text(
-                                  'HR & Operation Manager',
-                                  overflow: TextOverflow.ellipsis,
-                                  maxLines: 1,
-                                ),
-                              ),
-                            ],
-                            onChanged: isMe
-                                ? null
-                                : (newRole) {
-                                    if (newRole != null &&
-                                        newRole != user.role) {
-                                      cubit.updateUserRole(
-                                        user.uid,
-                                        newRole,
-                                        userName: user.name,
-                                      );
-                                    }
-                                  },
                           ),
                         ),
                       ),
                     ),
 
-
-
                     // DEVICE SECURITY (PR-5.1)
                     Expanded(
                       flex: 3,
-                      child: Row(
-                        children: [
-                          Icon(
-                            user.deviceBound
-                                ? Icons.phone_android_rounded
-                                : Icons.phonelink_setup_rounded,
-                            size: 15,
-                            color: user.deviceBound
-                                ? const Color(0xFF16A34A)
-                                : const Color(0xFFD97706),
-                          ),
-                          const SizedBox(width: 6),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  user.deviceName.isNotEmpty
-                                      ? user.deviceName
-                                      : 'No phone bound',
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: user.deviceBound
-                                        ? _textDark
-                                        : const Color(0xFFB45309),
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                                Text(
-                                  user.deviceBound ? 'Registered Phone' : 'Pending Binding',
-                                  style: TextStyle(
-                                    fontSize: 10.5,
-                                    color: user.deviceBound
-                                        ? const Color(0xFF15803D)
-                                        : const Color(0xFFD97706),
-                                  ),
-                                ),
-                              ],
+                      child: Padding(
+                        padding: const EdgeInsets.only(right: 14),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 28,
+                              height: 28,
+                              decoration: BoxDecoration(
+                                color: user.deviceBound
+                                    ? const Color(0xFFDCFCE7)
+                                    : const Color(0xFFFEF3C7),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Icon(
+                                user.deviceBound
+                                    ? Icons.phone_android_rounded
+                                    : Icons.phonelink_setup_rounded,
+                                size: 15,
+                                color: user.deviceBound
+                                    ? const Color(0xFF16A34A)
+                                    : const Color(0xFFD97706),
+                              ),
                             ),
-                          ),
-                          const SizedBox(width: 4),
-                          IconButton(
-                            icon: const Icon(
-                              Icons.phonelink_erase_rounded,
-                              size: 16,
-                              color: Color(0xFF64748B),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    user.deviceName.isNotEmpty
+                                        ? user.deviceName
+                                        : 'Pending new phone',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: user.deviceBound
+                                          ? _textDark
+                                          : const Color(0xFFB45309),
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 1),
+                                  Text(
+                                    user.deviceBound
+                                        ? 'Registered Phone'
+                                        : 'Pending Binding',
+                                    style: TextStyle(
+                                      fontSize: 10.5,
+                                      color: user.deviceBound
+                                          ? const Color(0xFF15803D)
+                                          : const Color(0xFFD97706),
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
-                            tooltip: 'Reset Phone Binding (PR-5.1)',
-                            onPressed: () => _confirmResetDevice(context, cubit, user),
-                          ),
-                        ],
+                            const SizedBox(width: 4),
+                            IconButton(
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(
+                                minWidth: 28,
+                                minHeight: 28,
+                              ),
+                              icon: const Icon(
+                                Icons.phonelink_erase_rounded,
+                                size: 16,
+                                color: Color(0xFF64748B),
+                              ),
+                              tooltip: 'Reset Phone Binding (PR-5.1)',
+                              onPressed: () => _confirmResetDevice(
+                                context,
+                                cubit,
+                                user,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
 
                     // ACTIVE
                     Expanded(
                       flex: 1,
-                      child: Align(
-                        alignment: Alignment.centerLeft,
-                        child: Switch(
-                          value: user.isActive,
-                          activeThumbColor: _primaryColor,
-                          onChanged: isMe
-                              ? null
-                              : (val) {
-                                  if (!val) {
-                                    _showDeactivateAndReassignDialog(
-                                      user,
-                                      allUsers,
-                                    );
-                                  } else {
-                                    cubit.updateUserActive(
-                                      user.uid,
-                                      true,
-                                      userName: user.name,
-                                    );
-                                  }
-                                },
+                      child: Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: Transform.scale(
+                            scale: 0.85,
+                            child: Switch(
+                              value: user.isActive,
+                              activeThumbColor: _primaryColor,
+                              onChanged: isMe
+                                  ? null
+                                  : (val) {
+                                      if (!val) {
+                                        _showDeactivateAndReassignDialog(
+                                          user,
+                                          allUsers,
+                                        );
+                                      } else {
+                                        cubit.updateUserActive(
+                                          user.uid,
+                                          true,
+                                          userName: user.name,
+                                        );
+                                      }
+                                    },
+                            ),
+                          ),
                         ),
                       ),
                     ),
 
                     // ACTIONS
                     SizedBox(
-                      width: 100,
+                      width: 90,
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
                           IconButton(
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(
+                              minWidth: 32,
+                              minHeight: 32,
+                            ),
                             icon: const Icon(Icons.logout_rounded, size: 16),
                             tooltip: 'Remote sign out session',
-                            onPressed: () => _confirmForceSignOut(context, cubit, user),
+                            onPressed: () => _confirmForceSignOut(
+                              context,
+                              cubit,
+                              user,
+                            ),
                           ),
                           if (isMe)
                             IconButton(
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(
+                                minWidth: 32,
+                                minHeight: 32,
+                              ),
                               icon: const Icon(
                                 Icons.manage_accounts_outlined,
-                                size: 20,
+                                size: 18,
                                 color: _primaryColor,
                               ),
                               tooltip: 'Admin Account & Password',
                               onPressed: () => showAdminAccountDialog(
                                 context,
-                                {'name': user.name, 'email': user.email, 'role': user.role},
+                                {
+                                  'name': user.name,
+                                  'email': user.email,
+                                  'role': user.role,
+                                },
                               ),
                             )
                           else
                             IconButton(
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(
+                                minWidth: 32,
+                                minHeight: 32,
+                              ),
                               icon: const Icon(
                                 Icons.delete_outline,
                                 size: 18,
