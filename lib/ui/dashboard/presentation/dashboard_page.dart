@@ -676,47 +676,23 @@ class _DashboardViewState extends State<_DashboardView> {
             ],
           ),
           const SizedBox(height: 14),
-          SizedBox(
-            height: 40,
-            child: TextField(
-              decoration: InputDecoration(
-                prefixIcon: const Icon(
-                  Icons.search_rounded,
-                  size: 18,
-                  color: _muted,
-                ),
-                hintText: 'Search',
-                hintStyle: const TextStyle(fontSize: 13.5, color: _muted),
-                filled: true,
-                fillColor: Colors.white,
-                contentPadding: const EdgeInsets.symmetric(horizontal: 12),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: const BorderSide(color: _border),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: const BorderSide(color: _border),
-                ),
-              ),
-            ),
-          ),
+          _buildFigmaSearchBar(width: double.infinity),
           const SizedBox(height: 10),
           SizedBox(
-            height: 40,
+            height: 50,
             child: ElevatedButton.icon(
               style: ElevatedButton.styleFrom(
                 backgroundColor: _orangeAccent,
                 foregroundColor: Colors.white,
                 elevation: 0,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              icon: const Icon(Icons.add, size: 16),
+              icon: const Icon(Icons.add, size: 18),
               label: const Text(
                 "Assign Today's Leads",
-                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
               ),
               onPressed: () => context.read<DashboardCubit>().selectNav(1),
             ),
@@ -757,54 +733,81 @@ class _DashboardViewState extends State<_DashboardView> {
           ),
         ),
         const SizedBox(width: 16),
-        SizedBox(
-          width: 240,
-          height: 40,
-          child: TextField(
-            decoration: InputDecoration(
-              prefixIcon: const Icon(
-                Icons.search_rounded,
-                size: 18,
-                color: _muted,
-              ),
-              hintText: 'Search',
-              hintStyle: const TextStyle(fontSize: 13.5, color: _muted),
-              filled: true,
-              fillColor: Colors.white,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 12),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: const BorderSide(color: _border),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: const BorderSide(color: _border),
-              ),
-            ),
+        Transform.translate(
+          offset: const Offset(0, -1.5),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 460),
+            child: _buildFigmaSearchBar(width: 460),
           ),
         ),
-        const SizedBox(width: 12),
-        SizedBox(
-          height: 40,
-          child: ElevatedButton.icon(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: _orangeAccent,
-              foregroundColor: Colors.white,
-              elevation: 0,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
+        const SizedBox(width: 14),
+        Transform.translate(
+          offset: const Offset(0, -1.5),
+          child: SizedBox(
+            height: 55,
+            child: ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: _orangeAccent,
+                foregroundColor: Colors.white,
+                elevation: 0,
+                padding: const EdgeInsets.symmetric(horizontal: 22),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
+              icon: const Icon(Icons.add, size: 18),
+              label: const Text(
+                "Assign Today's Leads",
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+              ),
+              onPressed: () => context.read<DashboardCubit>().selectNav(1),
             ),
-            icon: const Icon(Icons.add, size: 16),
-            label: const Text(
-              "Assign Today's Leads",
-              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
-            ),
-            onPressed: () => context.read<DashboardCubit>().selectNav(1),
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildFigmaSearchBar({double? width}) {
+    return Container(
+      width: width,
+      height: 55,
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFFFFF),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFE2E8E5), width: 1),
+      ),
+      child: const TextField(
+        textAlignVertical: TextAlignVertical.center,
+        style: TextStyle(
+          fontSize: 14.5,
+          color: _text,
+          fontWeight: FontWeight.w500,
+        ),
+        decoration: InputDecoration(
+          isDense: true,
+          filled: false,
+          border: InputBorder.none,
+          enabledBorder: InputBorder.none,
+          focusedBorder: InputBorder.none,
+          contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          prefixIcon: Padding(
+            padding: EdgeInsets.only(left: 14, right: 10),
+            child: Icon(
+              Icons.search_rounded,
+              size: 21,
+              color: Color(0xFF94A3B8),
+            ),
+          ),
+          prefixIconConstraints: BoxConstraints(minWidth: 44, minHeight: 21),
+          hintText: 'Search',
+          hintStyle: TextStyle(
+            fontSize: 14.5,
+            color: Color(0xFF94A3B8),
+            fontWeight: FontWeight.w400,
+          ),
+        ),
+      ),
     );
   }
 
