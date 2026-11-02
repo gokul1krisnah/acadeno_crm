@@ -941,15 +941,18 @@ class _UserManagementViewState extends State<UserManagementView> {
                           final tableWidth = constraints.maxWidth > 980
                               ? constraints.maxWidth
                               : 980.0;
-                          return SingleChildScrollView(
-                            scrollDirection: Axis.horizontal,
-                            child: SizedBox(
-                              width: tableWidth,
-                              child: _buildDesktopTable(
-                                cubit,
-                                filteredUsers,
-                                allUsers,
-                                myUid,
+                          return SizedBox(
+                            width: double.infinity,
+                            child: SingleChildScrollView(
+                              scrollDirection: Axis.horizontal,
+                              child: SizedBox(
+                                width: tableWidth,
+                                child: _buildDesktopTable(
+                                  cubit,
+                                  filteredUsers,
+                                  allUsers,
+                                  myUid,
+                                ),
                               ),
                             ),
                           );
@@ -1044,8 +1047,10 @@ class _UserManagementViewState extends State<UserManagementView> {
     String? myUid,
   ) {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Container(
+          width: double.infinity,
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
           decoration: const BoxDecoration(
             color: Color(0xFFF8FAFC),
@@ -1100,6 +1105,7 @@ class _UserManagementViewState extends State<UserManagementView> {
             builder: (_) {
               final isMe = user.uid == myUid;
               return Container(
+                width: double.infinity,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 14,
                   vertical: 12,
