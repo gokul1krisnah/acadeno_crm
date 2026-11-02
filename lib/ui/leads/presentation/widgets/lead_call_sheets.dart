@@ -34,15 +34,31 @@ class LeadCallSheets {
     for (final prog in acadenoPrograms) {
       if (prog.toLowerCase() == lower) return prog;
     }
-    if (lower.contains('flutter') || lower.contains('mobile')) return 'Flutter Mobile App';
-    if (lower.contains('mern') || lower.contains('react') || lower.contains('node')) return 'MERN Stack Development';
+    if (lower.contains('flutter') || lower.contains('mobile'))
+      return 'Flutter Mobile App';
+    if (lower.contains('mern') ||
+        lower.contains('react') ||
+        lower.contains('node'))
+      return 'MERN Stack Development';
     if (lower.contains('data science')) return 'Data Science & AI';
-    if (lower.contains('data analytic') || lower.contains('analytics')) return 'Data Analytics';
-    if (lower.contains('robot') || lower.contains('iot')) return 'Robotics & IoT';
-    if (lower.contains('cyber') || lower.contains('security') || lower.contains('ethical')) return 'Cyber Security';
-    if (lower.contains('digital market') || lower.contains('marketing')) return 'Digital Marketing';
-    if (lower.contains('machine learning') || lower.contains('ai') || lower.contains('ml')) return 'Python AI & Machine Learning';
-    if (lower.contains('python') || lower.contains('full stack') || lower.contains('fullstack')) return 'Python Full Stack';
+    if (lower.contains('data analytic') || lower.contains('analytics'))
+      return 'Data Analytics';
+    if (lower.contains('robot') || lower.contains('iot'))
+      return 'Robotics & IoT';
+    if (lower.contains('cyber') ||
+        lower.contains('security') ||
+        lower.contains('ethical'))
+      return 'Cyber Security';
+    if (lower.contains('digital market') || lower.contains('marketing'))
+      return 'Digital Marketing';
+    if (lower.contains('machine learning') ||
+        lower.contains('ai') ||
+        lower.contains('ml'))
+      return 'Python AI & Machine Learning';
+    if (lower.contains('python') ||
+        lower.contains('full stack') ||
+        lower.contains('fullstack'))
+      return 'Python Full Stack';
     return acadenoPrograms.first;
   }
 
@@ -77,9 +93,13 @@ class LeadCallSheets {
     String selectedProgram = initialProgram;
     final cleanFee = (fee ?? '').trim();
     final bool hasFeeInDocument = cleanFee.isNotEmpty && cleanFee != '0';
-    final feeCtrl = TextEditingController(text: hasFeeInDocument ? cleanFee : '');
+    final feeCtrl = TextEditingController(
+      text: hasFeeInDocument ? cleanFee : '',
+    );
     final discountCtrl = TextEditingController(text: '0');
-    final paidCtrl = TextEditingController(text: hasFeeInDocument ? cleanFee : '');
+    final paidCtrl = TextEditingController(
+      text: hasFeeInDocument ? cleanFee : '',
+    );
     String paymentMode = 'UPI';
 
     const outcomes = [
@@ -329,15 +349,19 @@ class LeadCallSheets {
                             final now = DateTime.now();
                             final slotToday = 'Today · 5:30 PM';
                             final slotTomorrow = 'Tomorrow · 10:30 AM';
-                            final slotDay2 = '${DateFormat('EEE, d MMM').format(now.add(const Duration(days: 2)))} · 11:00 AM';
-                            final slotDay3 = '${DateFormat('EEE, d MMM').format(now.add(const Duration(days: 3)))} · 4:00 PM';
+                            final slotDay2 =
+                                '${DateFormat('EEE, d MMM').format(now.add(const Duration(days: 2)))} · 11:00 AM';
+                            final slotDay3 =
+                                '${DateFormat('EEE, d MMM').format(now.add(const Duration(days: 3)))} · 4:00 PM';
                             final dynamicSlots = [
                               slotToday,
                               slotTomorrow,
                               slotDay2,
                               slotDay3,
                             ];
-                            final isCustomSelected = !dynamicSlots.contains(selectedFollowUpSlot);
+                            final isCustomSelected = !dynamicSlots.contains(
+                              selectedFollowUpSlot,
+                            );
 
                             return Wrap(
                               spacing: 8,
@@ -383,14 +407,21 @@ class LeadCallSheets {
                                   onTap: () async {
                                     final pickedDate = await showDatePicker(
                                       context: ctx,
-                                      initialDate: now.add(const Duration(days: 1)),
+                                      initialDate: now.add(
+                                        const Duration(days: 1),
+                                      ),
                                       firstDate: now,
-                                      lastDate: now.add(const Duration(days: 90)),
+                                      lastDate: now.add(
+                                        const Duration(days: 90),
+                                      ),
                                     );
                                     if (pickedDate != null && ctx.mounted) {
                                       final pickedTime = await showTimePicker(
                                         context: ctx,
-                                        initialTime: const TimeOfDay(hour: 10, minute: 30),
+                                        initialTime: const TimeOfDay(
+                                          hour: 10,
+                                          minute: 30,
+                                        ),
                                       );
                                       if (pickedTime != null && ctx.mounted) {
                                         final dt = DateTime(
@@ -400,8 +431,13 @@ class LeadCallSheets {
                                           pickedTime.hour,
                                           pickedTime.minute,
                                         );
-                                        final customLabel = DateFormat('EEE, d MMM · h:mm a').format(dt);
-                                        setSheetState(() => selectedFollowUpSlot = customLabel);
+                                        final customLabel = DateFormat(
+                                          'EEE, d MMM · h:mm a',
+                                        ).format(dt);
+                                        setSheetState(
+                                          () => selectedFollowUpSlot =
+                                              customLabel,
+                                        );
                                       }
                                     }
                                   },
@@ -638,7 +674,9 @@ class LeadCallSheets {
                                     duration: durationCtrl.text.trim(),
                                     notes: notesCtrl.text.trim(),
                                     courseEnrolled: selectedProgram,
-                                    discountAmount: hasFeeInDocument ? discountVal : null,
+                                    discountAmount: hasFeeInDocument
+                                        ? discountVal
+                                        : null,
                                     followUpTime: selectedFollowUpSlot,
                                   );
                                   followUpsCubit.addFromCallOutcome(
@@ -697,7 +735,6 @@ class LeadCallSheets {
     required ExecutiveLeadItem lead,
   }) {
     final cubit = context.read<LeadsCubit>();
-    final user = context.read<HomeCubit>().state.user;
     const templates = [
       (
         'Brochure & Syllabus',
@@ -735,26 +772,13 @@ class LeadCallSheets {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Top watermark notice (PR-1.3 & PR-2.4)
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          'WATERMARK: ${user.displayName.toUpperCase()} · ${user.uid.isEmpty ? 'EMP' : user.uid.substring(0, user.uid.length < 6 ? user.uid.length : 6).toUpperCase()} · NO COPY/SHARE (PR-2.4)',
-                          style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w700,
-                            color: Color(0xFF98A2B3),
-                            letterSpacing: 0.4,
-                          ),
-                        ),
-                      ),
-                      IconButton(
-                        onPressed: () => Navigator.pop(ctx),
-                        icon: const Icon(Icons.close, size: 20),
-                        visualDensity: VisualDensity.compact,
-                      ),
-                    ],
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: IconButton(
+                      onPressed: () => Navigator.pop(ctx),
+                      icon: const Icon(Icons.close, size: 20),
+                      visualDensity: VisualDensity.compact,
+                    ),
                   ),
                   Row(
                     children: [
@@ -802,7 +826,10 @@ class LeadCallSheets {
                         ElevatedButton.icon(
                           onPressed: () {
                             Navigator.pop(ctx);
-                            AppPhoneCallService.instance.dialLead(context, lead);
+                            AppPhoneCallService.instance.dialLead(
+                              context,
+                              lead,
+                            );
                           },
                           icon: const Icon(Icons.phone_outlined, size: 16),
                           label: const Text('Call'),
@@ -1231,11 +1258,18 @@ class LeadCallSheets {
                   const SizedBox(height: 8),
                   if (state.callRecords.isEmpty)
                     Container(
-                      padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 24,
+                        horizontal: 16,
+                      ),
                       alignment: Alignment.center,
                       child: Column(
                         children: [
-                          Icon(Icons.call_end_outlined, size: 36, color: Colors.grey.shade400),
+                          Icon(
+                            Icons.call_end_outlined,
+                            size: 36,
+                            color: Colors.grey.shade400,
+                          ),
                           const SizedBox(height: 8),
                           Text(
                             'No call records logged yet',
@@ -1249,59 +1283,63 @@ class LeadCallSheets {
                           Text(
                             'Calls you make will be recorded here with duration and outcome.',
                             textAlign: TextAlign.center,
-                            style: TextStyle(fontSize: 11.5, color: Colors.grey.shade500),
+                            style: TextStyle(
+                              fontSize: 11.5,
+                              color: Colors.grey.shade500,
+                            ),
                           ),
                         ],
                       ),
                     )
                   else
-                  ...state.callRecords.map((rec) => Container(
-                          margin: const EdgeInsets.only(bottom: 8),
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFF8FAFC),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: const Color(0xFFE2E8F0)),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: Text(
-                                      '${rec.leadName} · ${rec.outcome}',
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: const TextStyle(
-                                        fontSize: 13.5,
-                                        fontWeight: FontWeight.w700,
-                                        color: Color(0xFF0F172A),
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    '${rec.duration} · ${rec.timestamp}',
+                    ...state.callRecords.map(
+                      (rec) => Container(
+                        margin: const EdgeInsets.only(bottom: 8),
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF8FAFC),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: const Color(0xFFE2E8F0)),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    '${rec.leadName} · ${rec.outcome}',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
                                     style: const TextStyle(
-                                      fontSize: 11.5,
-                                      color: Color(0xFF667085),
+                                      fontSize: 13.5,
+                                      fontWeight: FontWeight.w700,
+                                      color: Color(0xFF0F172A),
                                     ),
                                   ),
-                                ],
-                              ),
-                              const SizedBox(height: 3),
-                              Text(
-                                rec.notes,
-                                style: const TextStyle(
-                                  fontSize: 12,
-                                  color: Color(0xFF475467),
                                 ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  '${rec.duration} · ${rec.timestamp}',
+                                  style: const TextStyle(
+                                    fontSize: 11.5,
+                                    color: Color(0xFF667085),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 3),
+                            Text(
+                              rec.notes,
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: Color(0xFF475467),
                               ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
                       ),
+                    ),
                 ],
               ),
             ),

@@ -136,16 +136,25 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                           if (pending == 0) return const SizedBox.shrink();
                           return Container(
                             margin: const EdgeInsets.only(right: 8),
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
                             decoration: BoxDecoration(
                               color: const Color(0xFFFFFBEB),
                               borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: const Color(0xFFFDE68A)),
+                              border: Border.all(
+                                color: const Color(0xFFFDE68A),
+                              ),
                             ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                const Icon(Icons.cloud_upload_outlined, size: 14, color: Color(0xFFD97706)),
+                                const Icon(
+                                  Icons.cloud_upload_outlined,
+                                  size: 14,
+                                  color: Color(0xFFD97706),
+                                ),
                                 const SizedBox(width: 4),
                                 Text(
                                   '$pending syncing',
@@ -292,43 +301,6 @@ class _LeadsTabViewState extends State<LeadsTabView> {
             Expanded(
               child: Stack(
                 children: [
-                  // Faint security watermark overlay (PR-1.3)
-                  Positioned.fill(
-                    child: IgnorePointer(
-                      child: Opacity(
-                        opacity: 0.038,
-                        child: Center(
-                          child: Transform.rotate(
-                            angle: -0.35,
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                  '${homeState.user.displayName.toUpperCase()} · ${homeState.user.uid.length < 6 ? homeState.user.uid : homeState.user.uid.substring(0, 6).toUpperCase()}',
-                                  style: const TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w900,
-                                    color: Colors.black,
-                                    letterSpacing: 2.0,
-                                  ),
-                                ),
-                                const SizedBox(height: 6),
-                                const Text(
-                                  'ACADENO LEAD MANAGER · CONFIDENTIAL · PR-1.3',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w800,
-                                    color: Colors.black,
-                                    letterSpacing: 1.5,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
                   RefreshIndicator(
                     color: const Color(0xFF4338CA),
                     backgroundColor: Colors.white,
@@ -363,7 +335,8 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                 builder: (_) {
                                   final due = state.dueNowLead!;
                                   return InkWell(
-                                    onTap: () => AppPhoneCallService.instance.dialLead(context, due),
+                                    onTap: () => AppPhoneCallService.instance
+                                        .dialLead(context, due),
                                     borderRadius: BorderRadius.circular(16),
                                     child: Container(
                                       padding: const EdgeInsets.symmetric(
@@ -672,7 +645,9 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                           context,
                                           lead: item,
                                         ),
-                                    onTapCall: () => AppPhoneCallService.instance.dialLead(context, item),
+                                    onTapCall: () => AppPhoneCallService
+                                        .instance
+                                        .dialLead(context, item),
                                   );
                                 },
                               ),
@@ -798,9 +773,7 @@ class _LeadsTabViewState extends State<LeadsTabView> {
       context: context,
       builder: (ctx) => Dialog(
         backgroundColor: Colors.white,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 400),
           child: Padding(
@@ -808,56 +781,56 @@ class _LeadsTabViewState extends State<LeadsTabView> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-            ListTile(
-              leading: const Icon(
-                Icons.bar_chart_rounded,
-                color: Color(0xFF4338CA),
-              ),
-              title: const Text(
-                'My Record & Performance (FR-6.2)',
-                style: TextStyle(fontWeight: FontWeight.w600),
-              ),
-              onTap: () {
-                Navigator.pop(ctx);
-                LeadCallSheets.showMyRecordSheet(context);
-              },
-            ),
-            ListTile(
-              leading: const Icon(
-                Icons.person_search_outlined,
-                color: Color(0xFF4338CA),
-              ),
-              title: const Text(
-                '10-Digit Phone Lookup & Walk-in Lead (FR-1.4 / PR-2.2)',
-                style: TextStyle(fontWeight: FontWeight.w600),
-              ),
-              onTap: () {
-                Navigator.pop(ctx);
-                LeadCallSheets.showPhoneLookupAndWalkInSheet(context);
-              },
-            ),
-            ListTile(
-              leading: const Icon(
-                Icons.logout_rounded,
-                color: Color(0xFFB42318),
-              ),
-              title: const Text(
-                'Sign out',
-                style: TextStyle(
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFFB42318),
+                ListTile(
+                  leading: const Icon(
+                    Icons.bar_chart_rounded,
+                    color: Color(0xFF4338CA),
+                  ),
+                  title: const Text(
+                    'My Record & Performance (FR-6.2)',
+                    style: TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    LeadCallSheets.showMyRecordSheet(context);
+                  },
                 ),
-              ),
-              onTap: () {
-                Navigator.pop(ctx);
-                widget.onLogout();
-              },
+                ListTile(
+                  leading: const Icon(
+                    Icons.person_search_outlined,
+                    color: Color(0xFF4338CA),
+                  ),
+                  title: const Text(
+                    '10-Digit Phone Lookup & Walk-in Lead (FR-1.4 / PR-2.2)',
+                    style: TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    LeadCallSheets.showPhoneLookupAndWalkInSheet(context);
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(
+                    Icons.logout_rounded,
+                    color: Color(0xFFB42318),
+                  ),
+                  title: const Text(
+                    'Sign out',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFFB42318),
+                    ),
+                  ),
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    widget.onLogout();
+                  },
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
-    ),
-    ),
     );
   }
 }
