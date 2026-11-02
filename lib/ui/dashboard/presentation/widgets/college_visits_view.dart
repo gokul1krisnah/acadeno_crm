@@ -253,6 +253,7 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
     final leadsCtrl = TextEditingController(
       text: visit.leadsCollected > 0 ? '${visit.leadsCollected}' : '0',
     );
+    bool isCancelled = visit.status == 'Cancelled';
     bool isSaving = false;
 
     showDialog(
@@ -272,26 +273,85 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
               padding: EdgeInsets.all(ctx.devicePadding),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // Tick option for Cancelled / Not Completed
+                  Container(
+                    decoration: BoxDecoration(
+                      color: isCancelled
+                          ? const Color(0xFFFEF2F2)
+                          : const Color(0xFFF0FDF4),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color: isCancelled
+                            ? const Color(0xFFFECACA)
+                            : const Color(0xFFBBF7D0),
+                      ),
+                    ),
+                    child: CheckboxListTile(
+                      dense: true,
+                      value: isCancelled,
+                      activeColor: const Color(0xFFDC2626),
+                      checkColor: Colors.white,
+                      title: Text(
+                        isCancelled
+                            ? 'Not Completed · Cancelled'
+                            : 'Visit Completed Successfully',
+                        style: TextStyle(
+                          fontSize: 13.5,
+                          fontWeight: FontWeight.w700,
+                          color: isCancelled
+                              ? const Color(0xFF991B1B)
+                              : const Color(0xFF166534),
+                        ),
+                      ),
+                      subtitle: Text(
+                        isCancelled
+                            ? 'Tick to log this visit as not completed / cancelled'
+                            : 'Tick if this visit was cancelled or could not be conducted',
+                        style: TextStyle(
+                          fontSize: 11.5,
+                          color: isCancelled
+                              ? const Color(0xFFB91C1C)
+                              : const Color(0xFF15803D),
+                        ),
+                      ),
+                      controlAffinity: ListTileControlAffinity.leading,
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 8),
+                      onChanged: isSaving
+                          ? null
+                          : (val) {
+                              setDialogState(() {
+                                isCancelled = val ?? false;
+                              });
+                            },
+                    ),
+                  ),
+                  const SizedBox(height: 16),
                   TextField(
                     controller: notesCtrl,
                     maxLines: 3,
-                    decoration: const InputDecoration(
-                      labelText: 'People met, agreements & notes',
-                      hintText:
-                          'e.g. Met placement coordinator, agreed to workshop',
-                      border: OutlineInputBorder(),
+                    decoration: InputDecoration(
+                      labelText: isCancelled
+                          ? 'Cancellation reason & notes'
+                          : 'People met, agreements & notes',
+                      hintText: isCancelled
+                          ? 'e.g. Principal unavailable, postponed due to exams'
+                          : 'e.g. Met placement coordinator, agreed to workshop',
+                      border: const OutlineInputBorder(),
                     ),
                   ),
-                  const SizedBox(height: 12),
-                  TextField(
-                    controller: leadsCtrl,
-                    keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(
-                      labelText: 'Student leads collected from visit',
-                      border: OutlineInputBorder(),
+                  if (!isCancelled) ...[
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: leadsCtrl,
+                      keyboardType: TextInputType.number,
+                      decoration: const InputDecoration(
+                        labelText: 'Student leads collected from visit',
+                        border: OutlineInputBorder(),
+                      ),
                     ),
-                  ),
+                  ],
                 ],
               ),
             ),
@@ -299,86 +359,69 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
           actions: [
             TextButton(
               onPressed: isSaving ? null : () => Navigator.pop(ctx),
-              child: const Text('Close'),
-            ),
-            OutlinedButton(
-              style: OutlinedButton.styleFrom(
-                foregroundColor: const Color(0xFFDC2626),
-                side: const BorderSide(color: Color(0xFFDC2626)),
-              ),
-              onPressed: isSaving
-                  ? null
-                  : () async {
-                      setDialogState(() => isSaving = true);
-                      final newNotes = notesCtrl.text.trim();
-                      try {
-                        await _visitsCollection.doc(visit.id).set({
-                          'status': 'Cancelled',
-                          'statusLabel': 'Cancelled',
-                          'outcomeNotes': newNotes.isNotEmpty
-                              ? newNotes
-                              : 'Visit cancelled by staff',
-                          'cancelReason': newNotes,
-                          'updatedAt': FieldValue.serverTimestamp(),
-                        }, SetOptions(merge: true));
-
-                        if (ctx.mounted) {
-                          Navigator.pop(ctx);
-                          messenger.showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                'Visit to ${visit.collegeName} cancelled.',
-                              ),
-                              backgroundColor: const Color(0xFFDC2626),
-                            ),
-                          );
-                        }
-                      } catch (e) {
-                        setDialogState(() => isSaving = false);
-                        if (ctx.mounted) {
-                          messenger.showSnackBar(
-                            SnackBar(
-                              content: Text('Failed to cancel visit: $e'),
-                              backgroundColor: Colors.red,
-                            ),
-                          );
-                        }
-                      }
-                    },
-              child: const Text('Cancel Visit'),
+              child: const Text('Cancel'),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF15803D),
+                backgroundColor: isCancelled
+                    ? const Color(0xFFDC2626)
+                    : const Color(0xFF15803D),
                 foregroundColor: Colors.white,
               ),
               onPressed: isSaving
                   ? null
                   : () async {
                       setDialogState(() => isSaving = true);
-                      final newLeads = int.tryParse(leadsCtrl.text.trim()) ?? 0;
                       final newNotes = notesCtrl.text.trim();
+                      final newLeads = isCancelled
+                          ? 0
+                          : (int.tryParse(leadsCtrl.text.trim()) ?? 0);
 
                       try {
-                        await _visitsCollection.doc(visit.id).set({
-                          'status': 'Completed',
-                          'statusLabel': 'Completed',
-                          'outcomeNotes': newNotes,
-                          'metSummary': newNotes,
-                          'leadsCollected': newLeads,
-                          'updatedAt': FieldValue.serverTimestamp(),
-                        }, SetOptions(merge: true));
+                        if (isCancelled) {
+                          await _visitsCollection.doc(visit.id).set({
+                            'status': 'Cancelled',
+                            'statusLabel': 'Cancelled',
+                            'outcomeNotes': newNotes.isNotEmpty
+                                ? newNotes
+                                : 'Visit cancelled',
+                            'cancelReason': newNotes,
+                            'leadsCollected': 0,
+                            'updatedAt': FieldValue.serverTimestamp(),
+                          }, SetOptions(merge: true));
 
-                        if (ctx.mounted) {
-                          Navigator.pop(ctx);
-                          messenger.showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                'Visit to ${visit.collegeName} marked as Completed!',
+                          if (ctx.mounted) {
+                            Navigator.pop(ctx);
+                            messenger.showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  'Visit to ${visit.collegeName} saved as Cancelled.',
+                                ),
+                                backgroundColor: const Color(0xFFDC2626),
                               ),
-                              backgroundColor: const Color(0xFF15803D),
-                            ),
-                          );
+                            );
+                          }
+                        } else {
+                          await _visitsCollection.doc(visit.id).set({
+                            'status': 'Completed',
+                            'statusLabel': 'Completed',
+                            'outcomeNotes': newNotes,
+                            'metSummary': newNotes,
+                            'leadsCollected': newLeads,
+                            'updatedAt': FieldValue.serverTimestamp(),
+                          }, SetOptions(merge: true));
+
+                          if (ctx.mounted) {
+                            Navigator.pop(ctx);
+                            messenger.showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  'Visit to ${visit.collegeName} marked as Completed!',
+                                ),
+                                backgroundColor: const Color(0xFF15803D),
+                              ),
+                            );
+                          }
                         }
                       } catch (e) {
                         setDialogState(() => isSaving = false);
@@ -401,7 +444,7 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
                         color: Colors.white,
                       ),
                     )
-                  : const Text('Mark Completed'),
+                  : Text(isCancelled ? 'Save as Cancelled' : 'Mark Completed'),
             ),
           ],
         ),
