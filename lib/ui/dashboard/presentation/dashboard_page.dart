@@ -1666,7 +1666,7 @@ class _CollegeVisits extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               const Text(
-                'College visits this ...',
+                'College visits this week',
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
