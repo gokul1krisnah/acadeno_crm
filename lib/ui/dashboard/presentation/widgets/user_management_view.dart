@@ -1,1760 +1,1816 @@
-import 'package:acadeno_crm/shared/widgets/acadeno_dropdown.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-
-import '../../../../shared/snackbar_alerts/snack_alert.dart';
-import '../../application/dashboard_cubit.dart';
-import '../../data/model/dashboard_user_model.dart';
-import 'admin_account_dialog.dart';
-
-class UserManagementView extends StatefulWidget {
-  const UserManagementView({super.key});
-
-  @override
-  State<UserManagementView> createState() => _UserManagementViewState();
-}
-
-class _UserManagementViewState extends State<UserManagementView> {
-  String _searchQuery = '';
-  String _roleFilter = 'all';
-  String _statusFilter = 'all';
-
-  static const _primaryColor = Color(0xFF4338CA);
-  static const _textDark = Color(0xFF0F172A);
-  static const _textMuted = Color(0xFF64748B);
-  static const _borderColor = Color(0xFFE2E8F0);
-  static const _bgLight = Color(0xFFF8FAFC);
-
-  void _confirmResetDevice(
-    BuildContext context,
-    DashboardCubit cubit,
-    DashboardUserModel user,
-  ) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Row(
-          children: [
-            Icon(Icons.phonelink_erase_rounded, color: Color(0xFFD97706)),
-            SizedBox(width: 8),
-            Text('Reset Phone Binding (PR-5.1)', style: TextStyle(fontSize: 16)),
-          ],
-        ),
-        content: Text(
-          'Reset registered phone for ${user.name}?\n\nThis will remotely sign out their existing phone session and permit them to register a new phone on their next sign-in (PR-5.1).',
-          style: const TextStyle(fontSize: 13.5, color: Color(0xFF334155)),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFD97706),
-              foregroundColor: Colors.white,
-              elevation: 0,
-            ),
-            onPressed: () {
-              Navigator.pop(ctx);
-              cubit.resetUserDevice(user.uid, user.name);
-              SnackBarAlert.showToast(
-                context: context,
-                message: 'Phone binding reset for ${user.name}. They may now register a new phone.',
-              );
-            },
-            child: const Text('Approve & Reset Phone'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _confirmForceSignOut(
-    BuildContext context,
-    DashboardCubit cubit,
-    DashboardUserModel user,
-  ) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text('Force Sign Out ${user.name}?'),
-        content: Text(
-          'This will immediately revoke ${user.name}’s active login sessions across all devices (PR-5.3).\n\nTheir app will terminate and return to the login screen.',
-          style: const TextStyle(fontSize: 13.5, color: Color(0xFF334155)),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton.icon(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFDC2626),
-              foregroundColor: Colors.white,
-              elevation: 0,
-            ),
-            onPressed: () {
-              Navigator.pop(ctx);
-              cubit.forceSignOutUser(user.uid, user.name);
-              SnackBarAlert.showToast(
-                context: context,
-                message: 'Remote sign out sent for ${user.name}. Their session will terminate immediately.',
-              );
-            },
-            icon: const Icon(Icons.logout_rounded, size: 16),
-            label: const Text('Force Sign Out'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _openAddUserDialog({required bool byUid}) {
-    final cubit = context.read<DashboardCubit>();
-    final formKey = GlobalKey<FormState>();
-    final uidCtrl = TextEditingController();
-    final nameCtrl = TextEditingController();
-    final emailCtrl = TextEditingController();
-    final passCtrl = TextEditingController();
-    String selectedRole = 'hr';
-    bool obscurePassword = true;
-    bool isSubmitting = false;
-
-    InputDecoration inputDeco(String label, IconData icon, {Widget? suffix}) {
-      return InputDecoration(
-        labelText: label,
-        labelStyle: const TextStyle(fontSize: 13, color: _textMuted),
-        prefixIcon: Icon(icon, size: 18, color: _textMuted),
-        suffixIcon: suffix,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: _borderColor),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: _borderColor),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: _primaryColor, width: 1.5),
-        ),
-        filled: true,
-        fillColor: _bgLight,
-        isDense: true,
-      );
-    }
-
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (dialogCtx) {
-        final mq = MediaQuery.of(dialogCtx);
-        final screenWidth = mq.size.width;
-        final screenHeight = mq.size.height;
-        final dialogWidth = (screenWidth - 48).clamp(280.0, 460.0);
-
-        return StatefulBuilder(
-          builder: (dialogCtx, setDState) => AlertDialog(
-            scrollable: true,
-            backgroundColor: Colors.white,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            insetPadding: EdgeInsets.symmetric(
-              horizontal:
-                  (screenWidth > 520 ? (screenWidth - dialogWidth) / 2 : 16)
-                      .clamp(16.0, 500.0)
-                      .toDouble(),
-              vertical: (screenHeight * 0.04).clamp(12.0, 24.0).toDouble(),
-            ),
-            title: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFEEF0FF),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Icon(
-                    byUid ? Icons.key_rounded : Icons.person_add_rounded,
-                    color: _primaryColor,
-                    size: 20,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    byUid
-                        ? 'Add Existing User by UID'
-                        : 'Create New Team Account',
-                    style: const TextStyle(
-                      fontSize: 17,
-                      fontWeight: FontWeight.w700,
-                      color: _textDark,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            content: SizedBox(
-              width: dialogWidth,
-              child: Form(
-                key: formKey,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      byUid
-                          ? 'Link a pre-existing Firebase Authentication UID to Firestore with user details and permissions.'
-                          : 'Provision login credentials in Firebase Auth and assign role permissions in Firestore.',
-                      style: const TextStyle(fontSize: 12.5, color: _textMuted),
-                    ),
-                    const SizedBox(height: 16),
-                    if (byUid) ...[
-                      TextFormField(
-                        controller: uidCtrl,
-                        decoration: inputDeco(
-                          'Firebase Auth UID *',
-                          Icons.vpn_key_outlined,
-                        ),
-                        validator: (v) => (v == null || v.trim().isEmpty)
-                            ? 'UID is required'
-                            : null,
-                      ),
-                      const SizedBox(height: 12),
-                    ],
-                    TextFormField(
-                      controller: nameCtrl,
-                      decoration: inputDeco(
-                        'Full Name *',
-                        Icons.person_outline_rounded,
-                      ),
-                      validator: (v) => (v == null || v.trim().isEmpty)
-                          ? 'Full name is required'
-                          : null,
-                    ),
-                    const SizedBox(height: 12),
-                    TextFormField(
-                      controller: emailCtrl,
-                      keyboardType: TextInputType.emailAddress,
-                      decoration: inputDeco(
-                        'Work Email *',
-                        Icons.email_outlined,
-                      ),
-                      validator: (v) {
-                        if (v == null || v.trim().isEmpty) {
-                          return 'Work email is required';
-                        }
-                        if (!RegExp(r'^\S+@\S+\.\S+$').hasMatch(v.trim())) {
-                          return 'Enter a valid email address';
-                        }
-                        return null;
-                      },
-                    ),
-                    if (!byUid) ...[
-                      const SizedBox(height: 12),
-                      TextFormField(
-                        controller: passCtrl,
-                        obscureText: obscurePassword,
-                        decoration: inputDeco(
-                          'Temporary Password *',
-                          Icons.lock_outline_rounded,
-                          suffix: IconButton(
-                            icon: Icon(
-                              obscurePassword
-                                  ? Icons.visibility_off_outlined
-                                  : Icons.visibility_outlined,
-                              size: 18,
-                              color: _textMuted,
-                            ),
-                            onPressed: () => setDState(
-                              () => obscurePassword = !obscurePassword,
-                            ),
-                          ),
-                        ),
-                        validator: (v) => (v == null || v.length < 6)
-                            ? 'Password must be at least 6 characters'
-                            : null,
-                      ),
-                    ],
-                    const SizedBox(height: 12),
-                    DropdownButtonFormField<String>(
-                      initialValue: selectedRole,
-                      isExpanded: true,
-                      decoration: inputDeco(
-                        'Role & Access *',
-                        Icons.badge_outlined,
-                      ),
-                      selectedItemBuilder: (context) => const [
-                        Text(
-                          'Admin',
-                          overflow: TextOverflow.ellipsis,
-                          maxLines: 1,
-                        ),
-                        Text(
-                          'HR & Operation Manager',
-                          overflow: TextOverflow.ellipsis,
-                          maxLines: 1,
-                        ),
-                      ],
-                      items: const [
-                        DropdownMenuItem(
-                          value: 'admin',
-                          child: Text(
-                            'Admin (Assign Leads, Full Control)',
-                            overflow: TextOverflow.ellipsis,
-                            maxLines: 1,
-                          ),
-                        ),
-                        DropdownMenuItem(
-                          value: 'hr',
-                          child: Text(
-                            'HR & Operation Manager (Actual User)',
-                            overflow: TextOverflow.ellipsis,
-                            maxLines: 1,
-                          ),
-                        ),
-                      ],
-                      onChanged: (v) =>
-                          setDState(() => selectedRole = v ?? selectedRole),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: isSubmitting ? null : () => Navigator.pop(dialogCtx),
-                child: const Text(
-                  'Cancel',
-                  style: TextStyle(color: _textMuted),
-                ),
-              ),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: _primaryColor,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 18,
-                    vertical: 12,
-                  ),
-                ),
-                onPressed: isSubmitting
-                    ? null
-                    : () async {
-                        if (!formKey.currentState!.validate()) return;
-                        setDState(() => isSubmitting = true);
-                        final ok = await cubit.createUser(
-                          CreateUserRequestModel(
-                            uid: uidCtrl.text.trim(),
-                            name: nameCtrl.text.trim(),
-                            email: emailCtrl.text.trim(),
-                            password: passCtrl.text,
-                            role: selectedRole,
-                            byUid: byUid,
-                          ),
-                        );
-                        if (ok) {
-                          if (dialogCtx.mounted) Navigator.pop(dialogCtx);
-                        } else {
-                          setDState(() => isSubmitting = false);
-                        }
-                      },
-                child: isSubmitting
-                    ? const SizedBox(
-                        width: 18,
-                        height: 18,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.white,
-                        ),
-                      )
-                    : Text(byUid ? 'Save User to Database' : 'Create Account'),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  void _showDeactivateAndReassignDialog(
-    DashboardUserModel user,
-    List<DashboardUserModel> allUsers,
-  ) {
-    final activeExecs = allUsers
-        .where(
-          (u) => u.uid != user.uid && u.isActive && u.name.trim().isNotEmpty,
-        )
-        .map((u) => u.name)
-        .toList();
-    final fallbackExecs = activeExecs.isNotEmpty
-        ? activeExecs
-        : ['Anjali R', 'Rahul M', 'Shilpa K', 'Ajmal P', 'Neethu S'];
-    String reassignTarget = fallbackExecs.first;
-
-    showDialog(
-      context: context,
-      builder: (ctx) {
-        final mq = MediaQuery.of(ctx);
-        final screenWidth = mq.size.width;
-        final screenHeight = mq.size.height;
-        final dialogWidth = (screenWidth - 48).clamp(280.0, 460.0);
-
-        return StatefulBuilder(
-          builder: (ctx, setDialogState) => AlertDialog(
-            scrollable: true,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            insetPadding: EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: (screenHeight * 0.04).clamp(12.0, 24.0).toDouble(),
-            ),
-            title: Text(
-              'Deactivate ${user.name} (RL-4)',
-              style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
-            ),
-            content: SizedBox(
-              width: dialogWidth,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Deactivating a team member revokes access within 1 minute and requires reassigning all open leads and follow-ups so no student inquiry is orphaned.',
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: Color(0xFF475467),
-                      height: 1.4,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  const Text(
-                    'Reassign open leads & follow-ups to:',
-                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
-                  ),
-                  const SizedBox(height: 8),
-                  DropdownButtonFormField<String>(
-                    initialValue: reassignTarget,
-                    isExpanded: true,
-                    decoration: const InputDecoration(
-                      border: OutlineInputBorder(),
-                      isDense: true,
-                    ),
-                    items: fallbackExecs
-                        .map(
-                          (e) => DropdownMenuItem(
-                            value: e,
-                            child: Text(e, overflow: TextOverflow.ellipsis),
-                          ),
-                        )
-                        .toList(),
-                    onChanged: (v) {
-                      if (v != null) setDialogState(() => reassignTarget = v);
-                    },
-                  ),
-                ],
-              ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(ctx),
-                child: const Text('Cancel'),
-              ),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFB42318),
-                  foregroundColor: Colors.white,
-                ),
-                onPressed: () {
-                  context.read<DashboardCubit>().updateUserActive(
-                    user.uid,
-                    false,
-                    userName: user.name,
-                    reassignToExecutive: reassignTarget,
-                  );
-                  Navigator.pop(ctx);
-                },
-                child: const Text('Deactivate & Reassign Work'),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Future<void> _confirmDelete(
-    BuildContext context,
-    String uid,
-    String name,
-  ) async {
-    final cubit = context.read<DashboardCubit>();
-    final ok = await showDialog<bool>(
-      context: context,
-      builder: (c) {
-        final screenWidth = MediaQuery.of(c).size.width;
-        final dialogWidth = (screenWidth - 48).clamp(280.0, 440.0);
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          insetPadding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 24,
-          ),
-          title: const Text(
-            'Remove User Account',
-            style: TextStyle(fontWeight: FontWeight.w700),
-          ),
-          content: SizedBox(
-            width: dialogWidth,
-            child: Text(
-              'Are you sure you want to remove "$name" from the database? This cannot be undone.',
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(c, false),
-              child: const Text('Cancel', style: TextStyle(color: _textMuted)),
-            ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFDC2626),
-                foregroundColor: Colors.white,
-              ),
-              onPressed: () => Navigator.pop(c, true),
-              child: const Text('Remove User'),
-            ),
-          ],
-        );
-      },
-    );
-    if (ok == true) {
-      await cubit.deleteUser(uid, name);
-    }
-  }
-
-  void _copyToClipboard(String text, String label) {
-    Clipboard.setData(ClipboardData(text: text));
-    SnackBarAlert.showToast(
-      context: context,
-      message: 'Copied $label to clipboard',
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final cubit = context.read<DashboardCubit>();
-    final myUid = cubit.currentUserId;
-
-    return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-      stream: cubit.watchAllUsers(),
-      builder: (context, snapshot) {
-        final allUsers = cubit.mapAndSortUsers(snapshot.data);
-
-        // Filter users
-        final filteredUsers = allUsers.where((u) {
-          final q = _searchQuery.toLowerCase().trim();
-          final matchesSearch =
-              q.isEmpty ||
-              u.name.toLowerCase().contains(q) ||
-              u.email.toLowerCase().contains(q) ||
-              u.uid.toLowerCase().contains(q);
-
-          final matchesRole =
-              _roleFilter == 'all' ||
-              DashboardUserModel.normalizeRole(u.role) == _roleFilter;
-
-          final matchesStatus =
-              _statusFilter == 'all' ||
-              (_statusFilter == 'active' && u.isActive) ||
-              (_statusFilter == 'inactive' && !u.isActive);
-
-          return matchesSearch && matchesRole && matchesStatus;
-        }).toList();
-
-        final activeCount = allUsers.where((u) => u.isActive).length;
-        final inactiveCount = allUsers.length - activeCount;
-
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Top Header & Action Buttons
-            Wrap(
-              spacing: 16,
-              runSpacing: 12,
-              alignment: WrapAlignment.spaceBetween,
-              crossAxisAlignment: WrapCrossAlignment.center,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'User Management',
-                      style: TextStyle(
-                        fontSize: 26,
-                        fontWeight: FontWeight.w800,
-                        color: _textDark,
-                        letterSpacing: -0.5,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Add new team accounts, assign roles, and manage system access',
-                      style: const TextStyle(fontSize: 13, color: _textMuted),
-                    ),
-                  ],
-                ),
-                Wrap(
-                  spacing: 10,
-                  runSpacing: 8,
-                  children: [
-                    OutlinedButton.icon(
-                      onPressed: () => _openAddUserDialog(byUid: true),
-                      icon: const Icon(Icons.key_outlined, size: 16),
-                      label: const Text('Add by UID'),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: _textDark,
-                        side: const BorderSide(color: Color(0xFFD0D5DD)),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 14,
-                          vertical: 10,
-                        ),
-                      ),
-                    ),
-                    ElevatedButton.icon(
-                      onPressed: () => _openAddUserDialog(byUid: false),
-                      icon: const Icon(
-                        Icons.person_add_alt_1_rounded,
-                        size: 16,
-                      ),
-                      label: const Text('Add User'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: _primaryColor,
-                        foregroundColor: Colors.white,
-                        elevation: 0,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 10,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-
-            // Search & Filter Toolbar
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: const Color(0xFFE8EAF0)),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  LayoutBuilder(
-                    builder: (context, c) {
-                      final isNarrow = c.maxWidth < 720;
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          if (isNarrow) ...[
-                            TextField(
-                              onChanged: (v) =>
-                                  setState(() => _searchQuery = v),
-                              style: const TextStyle(
-                                fontSize: 13.5,
-                                color: _textDark,
-                              ),
-                              decoration: InputDecoration(
-                                hintText: 'Search by name, email, or UID...',
-                                hintStyle: const TextStyle(
-                                  fontSize: 13,
-                                  color: _textMuted,
-                                ),
-                                prefixIcon: const Icon(
-                                  Icons.search,
-                                  size: 20,
-                                  color: _textMuted,
-                                ),
-                                suffixIcon: _searchQuery.isNotEmpty
-                                    ? IconButton(
-                                        icon: const Icon(Icons.clear, size: 18),
-                                        onPressed: () =>
-                                            setState(() => _searchQuery = ''),
-                                      )
-                                    : null,
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                  borderSide: const BorderSide(
-                                    color: _borderColor,
-                                  ),
-                                ),
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                  borderSide: const BorderSide(
-                                    color: _borderColor,
-                                  ),
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                  borderSide: const BorderSide(
-                                    color: _primaryColor,
-                                    width: 1.5,
-                                  ),
-                                ),
-                                isDense: true,
-                                contentPadding: const EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                  vertical: 10,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 10),
-                            Row(
-                              children: [
-                                Expanded(child: _buildRoleFilterDropdown()),
-                                const SizedBox(width: 10),
-                                Expanded(child: _buildStatusFilterDropdown()),
-                              ],
-                            ),
-                          ] else ...[
-                            Row(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                Expanded(
-                                  flex: 5,
-                                  child: TextField(
-                                    onChanged: (v) =>
-                                        setState(() => _searchQuery = v),
-                                    style: const TextStyle(
-                                      fontSize: 13.5,
-                                      color: _textDark,
-                                    ),
-                                    decoration: InputDecoration(
-                                      hintText:
-                                          'Search by name, email, or UID...',
-                                      hintStyle: const TextStyle(
-                                        fontSize: 13,
-                                        color: _textMuted,
-                                      ),
-                                      prefixIcon: const Icon(
-                                        Icons.search,
-                                        size: 20,
-                                        color: _textMuted,
-                                      ),
-                                      suffixIcon: _searchQuery.isNotEmpty
-                                          ? IconButton(
-                                              icon: const Icon(
-                                                Icons.clear,
-                                                size: 18,
-                                              ),
-                                              onPressed: () => setState(
-                                                () => _searchQuery = '',
-                                              ),
-                                            )
-                                          : null,
-                                      border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8),
-                                        borderSide: const BorderSide(
-                                          color: _borderColor,
-                                        ),
-                                      ),
-                                      enabledBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8),
-                                        borderSide: const BorderSide(
-                                          color: _borderColor,
-                                        ),
-                                      ),
-                                      focusedBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8),
-                                        borderSide: const BorderSide(
-                                          color: _primaryColor,
-                                          width: 1.5,
-                                        ),
-                                      ),
-                                      isDense: true,
-                                      contentPadding:
-                                          const EdgeInsets.symmetric(
-                                            horizontal: 12,
-                                            vertical: 10,
-                                          ),
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  flex: 3,
-                                  child: _buildRoleFilterDropdown(),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  flex: 2,
-                                  child: _buildStatusFilterDropdown(),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ],
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 12),
-                  // Badges
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 6,
-                    children: [
-                      _badge(
-                        'Total: ${allUsers.length}',
-                        const Color(0xFFEEF0FF),
-                        _primaryColor,
-                      ),
-                      _badge(
-                        'Active: $activeCount',
-                        const Color(0xFFDCFCE7),
-                        const Color(0xFF15803D),
-                      ),
-                      _badge(
-                        'Inactive: $inactiveCount',
-                        const Color(0xFFFEE2E2),
-                        const Color(0xFFB91C1C),
-                      ),
-                      if (_searchQuery.isNotEmpty ||
-                          _roleFilter != 'all' ||
-                          _statusFilter != 'all')
-                        _badge(
-                          'Showing: ${filteredUsers.length}',
-                          const Color(0xFFFEF3C7),
-                          const Color(0xFFB45309),
-                        ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 18),
-
-            // User List / Table Card
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: const Color(0xFFE8EAF0)),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        'Team Directory',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                          color: _textDark,
-                        ),
-                      ),
-                      Text(
-                        '${filteredUsers.length} user${filteredUsers.length == 1 ? '' : 's'}',
-                        style: const TextStyle(fontSize: 12, color: _textMuted),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  if (snapshot.connectionState == ConnectionState.waiting)
-                    const Center(
-                      child: Padding(
-                        padding: EdgeInsets.all(32),
-                        child: CircularProgressIndicator(),
-                      ),
-                    )
-                  else if (snapshot.hasError)
-                    Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Text(
-                        'Error loading users: ${snapshot.error}',
-                        style: const TextStyle(color: Colors.red),
-                      ),
-                    )
-                  else if (filteredUsers.isEmpty)
-                    Center(
-                      child: Padding(
-                        padding: const EdgeInsets.all(36),
-                        child: Column(
-                          children: [
-                            const Icon(
-                              Icons.people_outline,
-                              size: 48,
-                              color: Color(0xFFCBD5E1),
-                            ),
-                            const SizedBox(height: 12),
-                            Text(
-                              allUsers.isEmpty
-                                  ? 'No team users in database yet.'
-                                  : 'No users match your search/filter.',
-                              style: const TextStyle(
-                                color: _textMuted,
-                                fontSize: 14,
-                              ),
-                            ),
-                            const SizedBox(height: 12),
-                            if (allUsers.isEmpty)
-                              ElevatedButton.icon(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: _primaryColor,
-                                  foregroundColor: Colors.white,
-                                ),
-                                onPressed: () =>
-                                    _openAddUserDialog(byUid: false),
-                                icon: const Icon(Icons.person_add, size: 16),
-                                label: const Text('Add First User'),
-                              ),
-                          ],
-                        ),
-                      ),
-                    )
-                  else
-                    LayoutBuilder(
-                      builder: (context, constraints) {
-                        final isDesktop = constraints.maxWidth >= 780;
-                        if (isDesktop) {
-                          return SingleChildScrollView(
-                            scrollDirection: Axis.horizontal,
-                            child: ConstrainedBox(
-                              constraints: BoxConstraints(
-                                minWidth: constraints.maxWidth > 980
-                                    ? constraints.maxWidth
-                                    : 980,
-                              ),
-                              child: _buildDesktopTable(
-                                cubit,
-                                filteredUsers,
-                                allUsers,
-                                myUid,
-                              ),
-                            ),
-                          );
-                        } else {
-                          return _buildMobileCardList(
-                            cubit,
-                            filteredUsers,
-                            allUsers,
-                            myUid,
-                          );
-                        }
-                      },
-                    ),
-                ],
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  Widget _buildRoleFilterDropdown() {
-    return AcadenoDropdown<String>(
-      value: _roleFilter,
-      borderRadius: 8,
-      borderColor: _borderColor,
-      prefixIcon: const Icon(
-        Icons.admin_panel_settings_outlined,
-        size: 18,
-        color: _textMuted,
-      ),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-      items: const [
-        AcadenoDropdownItem(value: 'all', label: 'All Roles'),
-        AcadenoDropdownItem(value: 'admin', label: 'Admin'),
-        AcadenoDropdownItem(value: 'hr', label: 'HR & Operation Manager'),
-      ],
-      onChanged: (v) => setState(() => _roleFilter = v ?? 'all'),
-    );
-  }
-
-  Widget _buildStatusFilterDropdown() {
-    return AcadenoDropdown<String>(
-      value: _statusFilter,
-      borderRadius: 8,
-      borderColor: _borderColor,
-      prefixIcon: const Icon(
-        Icons.tune_rounded,
-        size: 18,
-        color: _textMuted,
-      ),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-      items: const [
-        AcadenoDropdownItem(value: 'all', label: 'All Statuses'),
-        AcadenoDropdownItem(value: 'active', label: 'Active Only'),
-        AcadenoDropdownItem(value: 'inactive', label: 'Inactive Only'),
-      ],
-      onChanged: (v) => setState(() => _statusFilter = v ?? 'all'),
-    );
-  }
-
-  Widget _badge(String text, Color bg, Color fg) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(
-        color: bg,
-        borderRadius: BorderRadius.circular(6),
-      ),
-      child: Text(
-        text,
-        style: TextStyle(
-          fontSize: 11.5,
-          fontWeight: FontWeight.w700,
-          color: fg,
-        ),
-      ),
-    );
-  }
-
-  static const _tblHdr = TextStyle(
-    fontSize: 11,
-    fontWeight: FontWeight.w700,
-    color: _textMuted,
-    letterSpacing: 0.5,
-  );
-
-  Widget _buildDesktopTable(
-    DashboardCubit cubit,
-    List<DashboardUserModel> users,
-    List<DashboardUserModel> allUsers,
-    String? myUid,
-  ) {
-    return Column(
-      children: [
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
-          decoration: const BoxDecoration(
-            color: Color(0xFFF8FAFC),
-            border: Border(bottom: BorderSide(color: _borderColor)),
-          ),
-          child: const Row(
-            children: [
-              Expanded(
-                flex: 3,
-                child: Padding(
-                  padding: EdgeInsets.only(right: 14),
-                  child: Text('USER', style: _tblHdr),
-                ),
-              ),
-              Expanded(
-                flex: 3,
-                child: Padding(
-                  padding: EdgeInsets.only(right: 14),
-                  child: Text('EMAIL & UID', style: _tblHdr),
-                ),
-              ),
-              Expanded(
-                flex: 2,
-                child: Padding(
-                  padding: EdgeInsets.only(right: 14),
-                  child: Text('ROLE', style: _tblHdr),
-                ),
-              ),
-              Expanded(
-                flex: 3,
-                child: Padding(
-                  padding: EdgeInsets.only(right: 14),
-                  child: Text('DEVICE SECURITY (PR-5.1)', style: _tblHdr),
-                ),
-              ),
-              Expanded(
-                flex: 1,
-                child: Padding(
-                  padding: EdgeInsets.only(right: 8),
-                  child: Text('ACTIVE', style: _tblHdr),
-                ),
-              ),
-              SizedBox(
-                width: 90,
-                child: Text('ACTIONS', style: _tblHdr, textAlign: TextAlign.right),
-              ),
-            ],
-          ),
-        ),
-        for (final user in users)
-          Builder(
-            builder: (_) {
-              final isMe = user.uid == myUid;
-              return Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 14,
-                  vertical: 12,
-                ),
-                decoration: const BoxDecoration(
-                  border: Border(bottom: BorderSide(color: Color(0xFFF1F5F9))),
-                ),
-                child: Row(
-                  children: [
-                    // USER (Avatar + Name)
-                    Expanded(
-                      flex: 3,
-                      child: Padding(
-                        padding: const EdgeInsets.only(right: 14),
-                        child: Row(
-                          children: [
-                            CircleAvatar(
-                              radius: 16,
-                              backgroundColor: const Color(0xFFEEF0FF),
-                              child: Text(
-                                user.name.isNotEmpty
-                                    ? user.name[0].toUpperCase()
-                                    : 'U',
-                                style: const TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w700,
-                                  color: _primaryColor,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    children: [
-                                      Flexible(
-                                        child: Text(
-                                          user.name,
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: const TextStyle(
-                                            fontWeight: FontWeight.w700,
-                                            fontSize: 13.5,
-                                            color: _textDark,
-                                          ),
-                                        ),
-                                      ),
-                                      if (isMe) ...[
-                                        const SizedBox(width: 6),
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 5,
-                                            vertical: 1,
-                                          ),
-                                          decoration: BoxDecoration(
-                                            color: const Color(0xFFEEF0FF),
-                                            borderRadius: BorderRadius.circular(
-                                              4,
-                                            ),
-                                          ),
-                                          child: const Text(
-                                            'you',
-                                            style: TextStyle(
-                                              fontSize: 10,
-                                              fontWeight: FontWeight.w600,
-                                              color: _primaryColor,
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-
-                    // EMAIL & UID
-                    Expanded(
-                      flex: 3,
-                      child: Padding(
-                        padding: const EdgeInsets.only(right: 14),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              user.email,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                fontSize: 12.5,
-                                color: _textDark,
-                              ),
-                            ),
-                            const SizedBox(height: 2),
-                            InkWell(
-                              onTap: () => _copyToClipboard(user.uid, 'UID'),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Flexible(
-                                    child: Text(
-                                      user.uid,
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: const TextStyle(
-                                        fontFamily: 'monospace',
-                                        fontSize: 11,
-                                        color: _textMuted,
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 4),
-                                  const Icon(
-                                    Icons.copy_rounded,
-                                    size: 12,
-                                    color: _textMuted,
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-
-                    // ROLE
-                    Expanded(
-                      flex: 2,
-                      child: Padding(
-                        padding: const EdgeInsets.only(right: 14),
-                        child: Container(
-                          height: 34,
-                          padding: const EdgeInsets.symmetric(horizontal: 8),
-                          decoration: BoxDecoration(
-                            color: _bgLight,
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: _borderColor),
-                          ),
-                          child: DropdownButtonHideUnderline(
-                            child: DropdownButton<String>(
-                              value: DashboardUserModel.normalizeRole(user.role),
-                              isDense: true,
-                              isExpanded: true,
-                              style: const TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w600,
-                                color: _textDark,
-                              ),
-                              items: const [
-                                DropdownMenuItem(
-                                  value: 'admin',
-                                  child: Text(
-                                    'Admin',
-                                    overflow: TextOverflow.ellipsis,
-                                    maxLines: 1,
-                                  ),
-                                ),
-                                DropdownMenuItem(
-                                  value: 'hr',
-                                  child: Text(
-                                    'HR & Operation Manager',
-                                    overflow: TextOverflow.ellipsis,
-                                    maxLines: 1,
-                                  ),
-                                ),
-                              ],
-                              onChanged: isMe
-                                  ? null
-                                  : (newRole) {
-                                      if (newRole != null &&
-                                          newRole != user.role) {
-                                        cubit.updateUserRole(
-                                          user.uid,
-                                          newRole,
-                                          userName: user.name,
-                                        );
-                                      }
-                                    },
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-
-                    // DEVICE SECURITY (PR-5.1)
-                    Expanded(
-                      flex: 3,
-                      child: Padding(
-                        padding: const EdgeInsets.only(right: 14),
-                        child: Row(
-                          children: [
-                            Container(
-                              width: 28,
-                              height: 28,
-                              decoration: BoxDecoration(
-                                color: user.deviceBound
-                                    ? const Color(0xFFDCFCE7)
-                                    : const Color(0xFFFEF3C7),
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                              child: Icon(
-                                user.deviceBound
-                                    ? Icons.phone_android_rounded
-                                    : Icons.phonelink_setup_rounded,
-                                size: 15,
-                                color: user.deviceBound
-                                    ? const Color(0xFF16A34A)
-                                    : const Color(0xFFD97706),
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Text(
-                                    user.deviceName.isNotEmpty
-                                        ? user.deviceName
-                                        : 'Pending new phone',
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: user.deviceBound
-                                          ? _textDark
-                                          : const Color(0xFFB45309),
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 1),
-                                  Text(
-                                    user.deviceBound
-                                        ? 'Registered Phone'
-                                        : 'Pending Binding',
-                                    style: TextStyle(
-                                      fontSize: 10.5,
-                                      color: user.deviceBound
-                                          ? const Color(0xFF15803D)
-                                          : const Color(0xFFD97706),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(width: 4),
-                            IconButton(
-                              padding: EdgeInsets.zero,
-                              constraints: const BoxConstraints(
-                                minWidth: 28,
-                                minHeight: 28,
-                              ),
-                              icon: const Icon(
-                                Icons.phonelink_erase_rounded,
-                                size: 16,
-                                color: Color(0xFF64748B),
-                              ),
-                              tooltip: 'Reset Phone Binding (PR-5.1)',
-                              onPressed: () => _confirmResetDevice(
-                                context,
-                                cubit,
-                                user,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-
-                    // ACTIVE
-                    Expanded(
-                      flex: 1,
-                      child: Padding(
-                        padding: const EdgeInsets.only(right: 8),
-                        child: Align(
-                          alignment: Alignment.centerLeft,
-                          child: Transform.scale(
-                            scale: 0.85,
-                            child: Switch(
-                              value: user.isActive,
-                              activeThumbColor: _primaryColor,
-                              onChanged: isMe
-                                  ? null
-                                  : (val) {
-                                      if (!val) {
-                                        _showDeactivateAndReassignDialog(
-                                          user,
-                                          allUsers,
-                                        );
-                                      } else {
-                                        cubit.updateUserActive(
-                                          user.uid,
-                                          true,
-                                          userName: user.name,
-                                        );
-                                      }
-                                    },
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-
-                    // ACTIONS
-                    SizedBox(
-                      width: 90,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          IconButton(
-                            padding: EdgeInsets.zero,
-                            constraints: const BoxConstraints(
-                              minWidth: 32,
-                              minHeight: 32,
-                            ),
-                            icon: const Icon(Icons.logout_rounded, size: 16),
-                            tooltip: 'Remote sign out session',
-                            onPressed: () => _confirmForceSignOut(
-                              context,
-                              cubit,
-                              user,
-                            ),
-                          ),
-                          if (isMe)
-                            IconButton(
-                              padding: EdgeInsets.zero,
-                              constraints: const BoxConstraints(
-                                minWidth: 32,
-                                minHeight: 32,
-                              ),
-                              icon: const Icon(
-                                Icons.manage_accounts_outlined,
-                                size: 18,
-                                color: _primaryColor,
-                              ),
-                              tooltip: 'Admin Account & Password',
-                              onPressed: () => showAdminAccountDialog(
-                                context,
-                                {
-                                  'name': user.name,
-                                  'email': user.email,
-                                  'role': user.role,
-                                },
-                              ),
-                            )
-                          else
-                            IconButton(
-                              padding: EdgeInsets.zero,
-                              constraints: const BoxConstraints(
-                                minWidth: 32,
-                                minHeight: 32,
-                              ),
-                              icon: const Icon(
-                                Icons.delete_outline,
-                                size: 18,
-                                color: Color(0xFFDC2626),
-                              ),
-                              tooltip: 'Remove user',
-                              onPressed: () => _confirmDelete(
-                                context,
-                                user.uid,
-                                user.name,
-                              ),
-                            ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            },
-          ),
-      ],
-    );
-  }
-
-  Widget _buildMobileCardList(
-    DashboardCubit cubit,
-    List<DashboardUserModel> users,
-    List<DashboardUserModel> allUsers,
-    String? myUid,
-  ) {
-    return Column(
-      children: [
-        for (var i = 0; i < users.length; i++) ...[
-          if (i > 0) const SizedBox(height: 12),
-          Builder(
-            builder: (_) {
-              final user = users[i];
-              final isMe = user.uid == myUid;
-              return Container(
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  color: _bgLight,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: _borderColor),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        CircleAvatar(
-                          radius: 16,
-                          backgroundColor: const Color(0xFFEEF0FF),
-                          child: Text(
-                            user.name.isNotEmpty
-                                ? user.name[0].toUpperCase()
-                                : 'U',
-                            style: const TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w700,
-                              color: _primaryColor,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                isMe ? '${user.name} (you)' : user.name,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.w700,
-                                  fontSize: 14,
-                                ),
-                              ),
-                              Text(
-                                user.email,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                  fontSize: 12,
-                                  color: _textMuted,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Switch(
-                          value: user.isActive,
-                          activeThumbColor: _primaryColor,
-                          onChanged: isMe
-                              ? null
-                              : (val) {
-                                  if (!val) {
-                                    _showDeactivateAndReassignDialog(
-                                      user,
-                                      allUsers,
-                                    );
-                                  } else {
-                                    cubit.updateUserActive(
-                                      user.uid,
-                                      true,
-                                      userName: user.name,
-                                    );
-                                  }
-                                },
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    InkWell(
-                      onTap: () => _copyToClipboard(user.uid, 'UID'),
-                      child: Row(
-                        children: [
-                          const Text(
-                            'UID: ',
-                            style: TextStyle(fontSize: 11, color: _textMuted),
-                          ),
-                          Flexible(
-                            child: Text(
-                              user.uid,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                fontFamily: 'monospace',
-                                fontSize: 11,
-                                color: _textMuted,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 4),
-                          const Icon(
-                            Icons.copy_rounded,
-                            size: 12,
-                            color: _textMuted,
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    Row(
-                      children: [
-                        const Text(
-                          'Role:',
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            color: _textMuted,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Container(
-                            height: 32,
-                            padding: const EdgeInsets.symmetric(horizontal: 8),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(6),
-                              border: Border.all(color: _borderColor),
-                            ),
-                            child: DropdownButtonHideUnderline(
-                              child: DropdownButton<String>(
-                                value: DashboardUserModel.normalizeRole(
-                                  user.role,
-                                ),
-                                isDense: true,
-                                isExpanded: true,
-                                items: const [
-                                  DropdownMenuItem(
-                                    value: 'admin',
-                                    child: Text(
-                                      'Admin',
-                                      style: TextStyle(fontSize: 12),
-                                    ),
-                                  ),
-                                  DropdownMenuItem(
-                                    value: 'hr',
-                                    child: Text(
-                                      'HR & Operation Manager',
-                                      style: TextStyle(fontSize: 12),
-                                    ),
-                                  ),
-                                ],
-                                onChanged: isMe
-                                    ? null
-                                    : (newRole) {
-                                        if (newRole != null &&
-                                            newRole != user.role) {
-                                          cubit.updateUserRole(
-                                            user.uid,
-                                            newRole,
-                                            userName: user.name,
-                                          );
-                                        }
-                                      },
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF8FAFC),
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: const Color(0xFFE2E8F0)),
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(
-                            user.deviceBound
-                                ? Icons.phone_android_rounded
-                                : Icons.phonelink_setup_rounded,
-                            size: 14,
-                            color: user.deviceBound
-                                ? const Color(0xFF16A34A)
-                                : const Color(0xFFD97706),
-                          ),
-                          const SizedBox(width: 6),
-                          Expanded(
-                            child: Text(
-                              'Device: ${user.deviceName} (${user.deviceBound ? "Registered" : "Pending"})',
-                              style: const TextStyle(fontSize: 11.5, color: _textDark, fontWeight: FontWeight.w500),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                          TextButton.icon(
-                            style: TextButton.styleFrom(
-                              visualDensity: VisualDensity.compact,
-                              padding: const EdgeInsets.symmetric(horizontal: 6),
-                            ),
-                            onPressed: () => _confirmResetDevice(context, cubit, user),
-                            icon: const Icon(Icons.phonelink_erase_rounded, size: 14),
-                            label: const Text('Reset', style: TextStyle(fontSize: 11)),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 4,
-                      alignment: WrapAlignment.spaceBetween,
-                      crossAxisAlignment: WrapCrossAlignment.center,
-                      children: [
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            IconButton(
-                              icon: const Icon(Icons.logout_rounded, size: 18),
-                              tooltip: 'Remote sign out session (PR-5.3)',
-                              onPressed: () => _confirmForceSignOut(context, cubit, user),
-                            ),
-                            if (isMe)
-                              IconButton(
-                                icon: const Icon(
-                                  Icons.manage_accounts_outlined,
-                                  size: 20,
-                                  color: _primaryColor,
-                                ),
-                                tooltip: 'Admin Account & Password',
-                                onPressed: () => showAdminAccountDialog(
-                                  context,
-                                  {'name': user.name, 'email': user.email, 'role': user.role},
-                                ),
-                              )
-                            else
-                              IconButton(
-                                icon: const Icon(
-                                  Icons.delete_outline,
-                                  size: 18,
-                                  color: Color(0xFFDC2626),
-                                ),
-                                onPressed: () => _confirmDelete(
-                                  context,
-                                  user.uid,
-                                  user.name,
-                                ),
-                              ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              );
-            },
-          ),
-        ],
-      ],
-    );
-  }
-}
+import 'package:acadeno_crm/shared/widgets/acadeno_dropdown.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+import '../../../../shared/snackbar_alerts/snack_alert.dart';
+import '../../application/dashboard_cubit.dart';
+import '../../data/model/dashboard_user_model.dart';
+import 'admin_account_dialog.dart';
+
+class UserManagementView extends StatefulWidget {
+  const UserManagementView({super.key});
+
+  @override
+  State<UserManagementView> createState() => _UserManagementViewState();
+}
+
+class _UserManagementViewState extends State<UserManagementView> {
+  String _searchQuery = '';
+  String _roleFilter = 'all';
+  String _statusFilter = 'all';
+
+  Stream<QuerySnapshot<Map<String, dynamic>>>? _usersStream;
+  QuerySnapshot<Map<String, dynamic>>? _initialUsersSnapshot;
+  bool _isLoadingInitial = true;
+  String? _loadError;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchUsers();
+  }
+
+  void _fetchUsers() {
+    final cubit = context.read<DashboardCubit>();
+    _usersStream = cubit.watchAllUsers();
+
+    FirebaseFirestore.instance.collection('users').get().then((snap) {
+      if (mounted) {
+        setState(() {
+          _initialUsersSnapshot = snap;
+          _isLoadingInitial = false;
+        });
+      }
+    }).catchError((err) {
+      if (mounted) {
+        setState(() {
+          _loadError = err.toString();
+          _isLoadingInitial = false;
+        });
+      }
+    });
+  }
+
+  static const _primaryColor = Color(0xFF4338CA);
+  static const _textDark = Color(0xFF0F172A);
+  static const _textMuted = Color(0xFF64748B);
+  static const _borderColor = Color(0xFFE2E8F0);
+  static const _bgLight = Color(0xFFF8FAFC);
+
+  void _confirmResetDevice(
+    BuildContext context,
+    DashboardCubit cubit,
+    DashboardUserModel user,
+  ) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Row(
+          children: [
+            Icon(Icons.phonelink_erase_rounded, color: Color(0xFFD97706)),
+            SizedBox(width: 8),
+            Text('Reset Phone Binding (PR-5.1)', style: TextStyle(fontSize: 16)),
+          ],
+        ),
+        content: Text(
+          'Reset registered phone for ${user.name}?\n\nThis will remotely sign out their existing phone session and permit them to register a new phone on their next sign-in (PR-5.1).',
+          style: const TextStyle(fontSize: 13.5, color: Color(0xFF334155)),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFD97706),
+              foregroundColor: Colors.white,
+              elevation: 0,
+            ),
+            onPressed: () {
+              Navigator.pop(ctx);
+              cubit.resetUserDevice(user.uid, user.name);
+              SnackBarAlert.showToast(
+                context: context,
+                message: 'Phone binding reset for ${user.name}. They may now register a new phone.',
+              );
+            },
+            child: const Text('Approve & Reset Phone'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _confirmForceSignOut(
+    BuildContext context,
+    DashboardCubit cubit,
+    DashboardUserModel user,
+  ) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text('Force Sign Out ${user.name}?'),
+        content: Text(
+          'This will immediately revoke ${user.name}’s active login sessions across all devices (PR-5.3).\n\nTheir app will terminate and return to the login screen.',
+          style: const TextStyle(fontSize: 13.5, color: Color(0xFF334155)),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton.icon(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFDC2626),
+              foregroundColor: Colors.white,
+              elevation: 0,
+            ),
+            onPressed: () {
+              Navigator.pop(ctx);
+              cubit.forceSignOutUser(user.uid, user.name);
+              SnackBarAlert.showToast(
+                context: context,
+                message: 'Remote sign out sent for ${user.name}. Their session will terminate immediately.',
+              );
+            },
+            icon: const Icon(Icons.logout_rounded, size: 16),
+            label: const Text('Force Sign Out'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _openAddUserDialog({required bool byUid}) {
+    final cubit = context.read<DashboardCubit>();
+    final formKey = GlobalKey<FormState>();
+    final uidCtrl = TextEditingController();
+    final nameCtrl = TextEditingController();
+    final emailCtrl = TextEditingController();
+    final passCtrl = TextEditingController();
+    String selectedRole = 'hr';
+    bool obscurePassword = true;
+    bool isSubmitting = false;
+
+    InputDecoration inputDeco(String label, IconData icon, {Widget? suffix}) {
+      return InputDecoration(
+        labelText: label,
+        labelStyle: const TextStyle(fontSize: 13, color: _textMuted),
+        prefixIcon: Icon(icon, size: 18, color: _textMuted),
+        suffixIcon: suffix,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: _borderColor),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: _borderColor),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: _primaryColor, width: 1.5),
+        ),
+        filled: true,
+        fillColor: _bgLight,
+        isDense: true,
+      );
+    }
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogCtx) {
+        final mq = MediaQuery.of(dialogCtx);
+        final screenWidth = mq.size.width;
+        final screenHeight = mq.size.height;
+        final dialogWidth = (screenWidth - 48).clamp(280.0, 460.0);
+
+        return StatefulBuilder(
+          builder: (dialogCtx, setDState) => AlertDialog(
+            scrollable: true,
+            backgroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            insetPadding: EdgeInsets.symmetric(
+              horizontal:
+                  (screenWidth > 520 ? (screenWidth - dialogWidth) / 2 : 16)
+                      .clamp(16.0, 500.0)
+                      .toDouble(),
+              vertical: (screenHeight * 0.04).clamp(12.0, 24.0).toDouble(),
+            ),
+            title: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFEEF0FF),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(
+                    byUid ? Icons.key_rounded : Icons.person_add_rounded,
+                    color: _primaryColor,
+                    size: 20,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    byUid
+                        ? 'Add Existing User by UID'
+                        : 'Create New Team Account',
+                    style: const TextStyle(
+                      fontSize: 17,
+                      fontWeight: FontWeight.w700,
+                      color: _textDark,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            content: SizedBox(
+              width: dialogWidth,
+              child: Form(
+                key: formKey,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      byUid
+                          ? 'Link a pre-existing Firebase Authentication UID to Firestore with user details and permissions.'
+                          : 'Provision login credentials in Firebase Auth and assign role permissions in Firestore.',
+                      style: const TextStyle(fontSize: 12.5, color: _textMuted),
+                    ),
+                    const SizedBox(height: 16),
+                    if (byUid) ...[
+                      TextFormField(
+                        controller: uidCtrl,
+                        decoration: inputDeco(
+                          'Firebase Auth UID *',
+                          Icons.vpn_key_outlined,
+                        ),
+                        validator: (v) => (v == null || v.trim().isEmpty)
+                            ? 'UID is required'
+                            : null,
+                      ),
+                      const SizedBox(height: 12),
+                    ],
+                    TextFormField(
+                      controller: nameCtrl,
+                      decoration: inputDeco(
+                        'Full Name *',
+                        Icons.person_outline_rounded,
+                      ),
+                      validator: (v) => (v == null || v.trim().isEmpty)
+                          ? 'Full name is required'
+                          : null,
+                    ),
+                    const SizedBox(height: 12),
+                    TextFormField(
+                      controller: emailCtrl,
+                      keyboardType: TextInputType.emailAddress,
+                      decoration: inputDeco(
+                        'Work Email *',
+                        Icons.email_outlined,
+                      ),
+                      validator: (v) {
+                        if (v == null || v.trim().isEmpty) {
+                          return 'Work email is required';
+                        }
+                        if (!RegExp(r'^\S+@\S+\.\S+$').hasMatch(v.trim())) {
+                          return 'Enter a valid email address';
+                        }
+                        return null;
+                      },
+                    ),
+                    if (!byUid) ...[
+                      const SizedBox(height: 12),
+                      TextFormField(
+                        controller: passCtrl,
+                        obscureText: obscurePassword,
+                        decoration: inputDeco(
+                          'Temporary Password *',
+                          Icons.lock_outline_rounded,
+                          suffix: IconButton(
+                            icon: Icon(
+                              obscurePassword
+                                  ? Icons.visibility_off_outlined
+                                  : Icons.visibility_outlined,
+                              size: 18,
+                              color: _textMuted,
+                            ),
+                            onPressed: () => setDState(
+                              () => obscurePassword = !obscurePassword,
+                            ),
+                          ),
+                        ),
+                        validator: (v) => (v == null || v.length < 6)
+                            ? 'Password must be at least 6 characters'
+                            : null,
+                      ),
+                    ],
+                    const SizedBox(height: 12),
+                    DropdownButtonFormField<String>(
+                      initialValue: selectedRole,
+                      isExpanded: true,
+                      decoration: inputDeco(
+                        'Role & Access *',
+                        Icons.badge_outlined,
+                      ),
+                      selectedItemBuilder: (context) => const [
+                        Text(
+                          'Admin',
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                        ),
+                        Text(
+                          'HR & Operation Manager',
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                        ),
+                      ],
+                      items: const [
+                        DropdownMenuItem(
+                          value: 'admin',
+                          child: Text(
+                            'Admin (Assign Leads, Full Control)',
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
+                          ),
+                        ),
+                        DropdownMenuItem(
+                          value: 'hr',
+                          child: Text(
+                            'HR & Operation Manager (Actual User)',
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
+                          ),
+                        ),
+                      ],
+                      onChanged: (v) =>
+                          setDState(() => selectedRole = v ?? selectedRole),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: isSubmitting ? null : () => Navigator.pop(dialogCtx),
+                child: const Text(
+                  'Cancel',
+                  style: TextStyle(color: _textMuted),
+                ),
+              ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: _primaryColor,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 18,
+                    vertical: 12,
+                  ),
+                ),
+                onPressed: isSubmitting
+                    ? null
+                    : () async {
+                        if (!formKey.currentState!.validate()) return;
+                        setDState(() => isSubmitting = true);
+                        final ok = await cubit.createUser(
+                          CreateUserRequestModel(
+                            uid: uidCtrl.text.trim(),
+                            name: nameCtrl.text.trim(),
+                            email: emailCtrl.text.trim(),
+                            password: passCtrl.text,
+                            role: selectedRole,
+                            byUid: byUid,
+                          ),
+                        );
+                        if (ok) {
+                          if (dialogCtx.mounted) Navigator.pop(dialogCtx);
+                        } else {
+                          setDState(() => isSubmitting = false);
+                        }
+                      },
+                child: isSubmitting
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : Text(byUid ? 'Save User to Database' : 'Create Account'),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _showDeactivateAndReassignDialog(
+    DashboardUserModel user,
+    List<DashboardUserModel> allUsers,
+  ) {
+    final activeExecs = allUsers
+        .where(
+          (u) => u.uid != user.uid && u.isActive && u.name.trim().isNotEmpty,
+        )
+        .map((u) => u.name)
+        .toList();
+    final fallbackExecs = activeExecs.isNotEmpty
+        ? activeExecs
+        : ['Anjali R', 'Rahul M', 'Shilpa K', 'Ajmal P', 'Neethu S'];
+    String reassignTarget = fallbackExecs.first;
+
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        final mq = MediaQuery.of(ctx);
+        final screenWidth = mq.size.width;
+        final screenHeight = mq.size.height;
+        final dialogWidth = (screenWidth - 48).clamp(280.0, 460.0);
+
+        return StatefulBuilder(
+          builder: (ctx, setDialogState) => AlertDialog(
+            scrollable: true,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            insetPadding: EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: (screenHeight * 0.04).clamp(12.0, 24.0).toDouble(),
+            ),
+            title: Text(
+              'Deactivate ${user.name} (RL-4)',
+              style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
+            ),
+            content: SizedBox(
+              width: dialogWidth,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Deactivating a team member revokes access within 1 minute and requires reassigning all open leads and follow-ups so no student inquiry is orphaned.',
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: Color(0xFF475467),
+                      height: 1.4,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'Reassign open leads & follow-ups to:',
+                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+                  ),
+                  const SizedBox(height: 8),
+                  DropdownButtonFormField<String>(
+                    initialValue: reassignTarget,
+                    isExpanded: true,
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                      isDense: true,
+                    ),
+                    items: fallbackExecs
+                        .map(
+                          (e) => DropdownMenuItem(
+                            value: e,
+                            child: Text(e, overflow: TextOverflow.ellipsis),
+                          ),
+                        )
+                        .toList(),
+                    onChanged: (v) {
+                      if (v != null) setDialogState(() => reassignTarget = v);
+                    },
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text('Cancel'),
+              ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFB42318),
+                  foregroundColor: Colors.white,
+                ),
+                onPressed: () {
+                  context.read<DashboardCubit>().updateUserActive(
+                    user.uid,
+                    false,
+                    userName: user.name,
+                    reassignToExecutive: reassignTarget,
+                  );
+                  Navigator.pop(ctx);
+                },
+                child: const Text('Deactivate & Reassign Work'),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _confirmDelete(
+    BuildContext context,
+    String uid,
+    String name,
+  ) async {
+    final cubit = context.read<DashboardCubit>();
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (c) {
+        final screenWidth = MediaQuery.of(c).size.width;
+        final dialogWidth = (screenWidth - 48).clamp(280.0, 440.0);
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          insetPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 24,
+          ),
+          title: const Text(
+            'Remove User Account',
+            style: TextStyle(fontWeight: FontWeight.w700),
+          ),
+          content: SizedBox(
+            width: dialogWidth,
+            child: Text(
+              'Are you sure you want to remove "$name" from the database? This cannot be undone.',
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(c, false),
+              child: const Text('Cancel', style: TextStyle(color: _textMuted)),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFDC2626),
+                foregroundColor: Colors.white,
+              ),
+              onPressed: () => Navigator.pop(c, true),
+              child: const Text('Remove User'),
+            ),
+          ],
+        );
+      },
+    );
+    if (ok == true) {
+      await cubit.deleteUser(uid, name);
+    }
+  }
+
+  void _copyToClipboard(String text, String label) {
+    Clipboard.setData(ClipboardData(text: text));
+    SnackBarAlert.showToast(
+      context: context,
+      message: 'Copied $label to clipboard',
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final cubit = context.read<DashboardCubit>();
+    final myUid = cubit.currentUserId;
+
+    return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+      stream: _usersStream ??= cubit.watchAllUsers(),
+      initialData: _initialUsersSnapshot,
+      builder: (context, snapshot) {
+        final currentSnap = snapshot.data ?? _initialUsersSnapshot;
+        final allUsers = cubit.mapAndSortUsers(currentSnap);
+
+        // Filter users
+        final filteredUsers = allUsers.where((u) {
+          final q = _searchQuery.toLowerCase().trim();
+          final matchesSearch =
+              q.isEmpty ||
+              u.name.toLowerCase().contains(q) ||
+              u.email.toLowerCase().contains(q) ||
+              u.uid.toLowerCase().contains(q);
+
+          final matchesRole =
+              _roleFilter == 'all' ||
+              DashboardUserModel.normalizeRole(u.role) == _roleFilter;
+
+          final matchesStatus =
+              _statusFilter == 'all' ||
+              (_statusFilter == 'active' && u.isActive) ||
+              (_statusFilter == 'inactive' && !u.isActive);
+
+          return matchesSearch && matchesRole && matchesStatus;
+        }).toList();
+
+        final activeCount = allUsers.where((u) => u.isActive).length;
+        final inactiveCount = allUsers.length - activeCount;
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Top Header & Action Buttons
+            Wrap(
+              spacing: 16,
+              runSpacing: 12,
+              alignment: WrapAlignment.spaceBetween,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'User Management',
+                      style: TextStyle(
+                        fontSize: 26,
+                        fontWeight: FontWeight.w800,
+                        color: _textDark,
+                        letterSpacing: -0.5,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Add new team accounts, assign roles, and manage system access',
+                      style: const TextStyle(fontSize: 13, color: _textMuted),
+                    ),
+                  ],
+                ),
+                Wrap(
+                  spacing: 10,
+                  runSpacing: 8,
+                  children: [
+                    OutlinedButton.icon(
+                      onPressed: () => _openAddUserDialog(byUid: true),
+                      icon: const Icon(Icons.key_outlined, size: 16),
+                      label: const Text('Add by UID'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: _textDark,
+                        side: const BorderSide(color: Color(0xFFD0D5DD)),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 10,
+                        ),
+                      ),
+                    ),
+                    ElevatedButton.icon(
+                      onPressed: () => _openAddUserDialog(byUid: false),
+                      icon: const Icon(
+                        Icons.person_add_alt_1_rounded,
+                        size: 16,
+                      ),
+                      label: const Text('Add User'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: _primaryColor,
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 10,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+
+            // Search & Filter Toolbar
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: const Color(0xFFE8EAF0)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  LayoutBuilder(
+                    builder: (context, c) {
+                      final isNarrow = c.maxWidth < 720;
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (isNarrow) ...[
+                            TextField(
+                              onChanged: (v) =>
+                                  setState(() => _searchQuery = v),
+                              style: const TextStyle(
+                                fontSize: 13.5,
+                                color: _textDark,
+                              ),
+                              decoration: InputDecoration(
+                                hintText: 'Search by name, email, or UID...',
+                                hintStyle: const TextStyle(
+                                  fontSize: 13,
+                                  color: _textMuted,
+                                ),
+                                prefixIcon: const Icon(
+                                  Icons.search,
+                                  size: 20,
+                                  color: _textMuted,
+                                ),
+                                suffixIcon: _searchQuery.isNotEmpty
+                                    ? IconButton(
+                                        icon: const Icon(Icons.clear, size: 18),
+                                        onPressed: () =>
+                                            setState(() => _searchQuery = ''),
+                                      )
+                                    : null,
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: const BorderSide(
+                                    color: _borderColor,
+                                  ),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: const BorderSide(
+                                    color: _borderColor,
+                                  ),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: const BorderSide(
+                                    color: _primaryColor,
+                                    width: 1.5,
+                                  ),
+                                ),
+                                isDense: true,
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 10,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            Row(
+                              children: [
+                                Expanded(child: _buildRoleFilterDropdown()),
+                                const SizedBox(width: 10),
+                                Expanded(child: _buildStatusFilterDropdown()),
+                              ],
+                            ),
+                          ] else ...[
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Expanded(
+                                  flex: 5,
+                                  child: TextField(
+                                    onChanged: (v) =>
+                                        setState(() => _searchQuery = v),
+                                    style: const TextStyle(
+                                      fontSize: 13.5,
+                                      color: _textDark,
+                                    ),
+                                    decoration: InputDecoration(
+                                      hintText:
+                                          'Search by name, email, or UID...',
+                                      hintStyle: const TextStyle(
+                                        fontSize: 13,
+                                        color: _textMuted,
+                                      ),
+                                      prefixIcon: const Icon(
+                                        Icons.search,
+                                        size: 20,
+                                        color: _textMuted,
+                                      ),
+                                      suffixIcon: _searchQuery.isNotEmpty
+                                          ? IconButton(
+                                              icon: const Icon(
+                                                Icons.clear,
+                                                size: 18,
+                                              ),
+                                              onPressed: () => setState(
+                                                () => _searchQuery = '',
+                                              ),
+                                            )
+                                          : null,
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                        borderSide: const BorderSide(
+                                          color: _borderColor,
+                                        ),
+                                      ),
+                                      enabledBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                        borderSide: const BorderSide(
+                                          color: _borderColor,
+                                        ),
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                        borderSide: const BorderSide(
+                                          color: _primaryColor,
+                                          width: 1.5,
+                                        ),
+                                      ),
+                                      isDense: true,
+                                      contentPadding:
+                                          const EdgeInsets.symmetric(
+                                            horizontal: 12,
+                                            vertical: 10,
+                                          ),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  flex: 3,
+                                  child: _buildRoleFilterDropdown(),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  flex: 2,
+                                  child: _buildStatusFilterDropdown(),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ],
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 12),
+                  // Badges
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 6,
+                    children: [
+                      _badge(
+                        'Total: ${allUsers.length}',
+                        const Color(0xFFEEF0FF),
+                        _primaryColor,
+                      ),
+                      _badge(
+                        'Active: $activeCount',
+                        const Color(0xFFDCFCE7),
+                        const Color(0xFF15803D),
+                      ),
+                      _badge(
+                        'Inactive: $inactiveCount',
+                        const Color(0xFFFEE2E2),
+                        const Color(0xFFB91C1C),
+                      ),
+                      if (_searchQuery.isNotEmpty ||
+                          _roleFilter != 'all' ||
+                          _statusFilter != 'all')
+                        _badge(
+                          'Showing: ${filteredUsers.length}',
+                          const Color(0xFFFEF3C7),
+                          const Color(0xFFB45309),
+                        ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 18),
+
+            // User List / Table Card
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: const Color(0xFFE8EAF0)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Team Directory',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          color: _textDark,
+                        ),
+                      ),
+                      Text(
+                        '${filteredUsers.length} user${filteredUsers.length == 1 ? '' : 's'}',
+                        style: const TextStyle(fontSize: 12, color: _textMuted),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  final hasError = snapshot.hasError || _loadError != null;
+                  final isLoading = (currentSnap == null || currentSnap.docs.isEmpty) &&
+                      _isLoadingInitial &&
+                      snapshot.connectionState == ConnectionState.waiting;
+
+                  if (hasError && (currentSnap == null || currentSnap.docs.isEmpty))
+                    Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        children: [
+                          Text(
+                            'Error loading users: ',
+                            style: const TextStyle(color: Colors.red),
+                          ),
+                          const SizedBox(height: 10),
+                          OutlinedButton.icon(
+                            onPressed: () {
+                              setState(() {
+                                _isLoadingInitial = true;
+                                _loadError = null;
+                                _fetchUsers();
+                              });
+                            },
+                            icon: const Icon(Icons.refresh, size: 16),
+                            label: const Text('Retry Loading Users'),
+                          ),
+                        ],
+                      ),
+                    )
+                  else if (isLoading)
+                    const Center(
+                      child: Padding(
+                        padding: EdgeInsets.all(32),
+                        child: CircularProgressIndicator(),
+                      ),
+                    )
+                  else if (filteredUsers.isEmpty)
+                    Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(36),
+                        child: Column(
+                          children: [
+                            const Icon(
+                              Icons.people_outline,
+                              size: 48,
+                              color: Color(0xFFCBD5E1),
+                            ),
+                            const SizedBox(height: 12),
+                            Text(
+                              allUsers.isEmpty
+                                  ? 'No team users in database yet.'
+                                  : 'No users match your search/filter.',
+                              style: const TextStyle(
+                                color: _textMuted,
+                                fontSize: 14,
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            if (allUsers.isEmpty)
+                              ElevatedButton.icon(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: _primaryColor,
+                                  foregroundColor: Colors.white,
+                                ),
+                                onPressed: () =>
+                                    _openAddUserDialog(byUid: false),
+                                icon: const Icon(Icons.person_add, size: 16),
+                                label: const Text('Add First User'),
+                              ),
+                          ],
+                        ),
+                      ),
+                    )
+                  else
+                    LayoutBuilder(
+                      builder: (context, constraints) {
+                        final isDesktop = constraints.maxWidth >= 780;
+                        if (isDesktop) {
+                          final tableWidth = constraints.maxWidth > 980
+                              ? constraints.maxWidth
+                              : 980.0;
+                          return SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: SizedBox(
+                              width: tableWidth,
+                              child: _buildDesktopTable(
+                                cubit,
+                                filteredUsers,
+                                allUsers,
+                                myUid,
+                              ),
+                            ),
+                          );
+                        } else {
+                          return _buildMobileCardList(
+                            cubit,
+                            filteredUsers,
+                            allUsers,
+                            myUid,
+                          );
+                        }
+                      },
+                    ),
+                      },
+                    ),
+                ],
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildRoleFilterDropdown() {
+    return AcadenoDropdown<String>(
+      value: _roleFilter,
+      borderRadius: 8,
+      borderColor: _borderColor,
+      prefixIcon: const Icon(
+        Icons.admin_panel_settings_outlined,
+        size: 18,
+        color: _textMuted,
+      ),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      items: const [
+        AcadenoDropdownItem(value: 'all', label: 'All Roles'),
+        AcadenoDropdownItem(value: 'admin', label: 'Admin'),
+        AcadenoDropdownItem(value: 'hr', label: 'HR & Operation Manager'),
+      ],
+      onChanged: (v) => setState(() => _roleFilter = v ?? 'all'),
+    );
+  }
+
+  Widget _buildStatusFilterDropdown() {
+    return AcadenoDropdown<String>(
+      value: _statusFilter,
+      borderRadius: 8,
+      borderColor: _borderColor,
+      prefixIcon: const Icon(
+        Icons.tune_rounded,
+        size: 18,
+        color: _textMuted,
+      ),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      items: const [
+        AcadenoDropdownItem(value: 'all', label: 'All Statuses'),
+        AcadenoDropdownItem(value: 'active', label: 'Active Only'),
+        AcadenoDropdownItem(value: 'inactive', label: 'Inactive Only'),
+      ],
+      onChanged: (v) => setState(() => _statusFilter = v ?? 'all'),
+    );
+  }
+
+  Widget _badge(String text, Color bg, Color fg) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Text(
+        text,
+        style: TextStyle(
+          fontSize: 11.5,
+          fontWeight: FontWeight.w700,
+          color: fg,
+        ),
+      ),
+    );
+  }
+
+  static const _tblHdr = TextStyle(
+    fontSize: 11,
+    fontWeight: FontWeight.w700,
+    color: _textMuted,
+    letterSpacing: 0.5,
+  );
+
+  Widget _buildDesktopTable(
+    DashboardCubit cubit,
+    List<DashboardUserModel> users,
+    List<DashboardUserModel> allUsers,
+    String? myUid,
+  ) {
+    return Column(
+      children: [
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+          decoration: const BoxDecoration(
+            color: Color(0xFFF8FAFC),
+            border: Border(bottom: BorderSide(color: _borderColor)),
+          ),
+          child: const Row(
+            children: [
+              Expanded(
+                flex: 3,
+                child: Padding(
+                  padding: EdgeInsets.only(right: 14),
+                  child: Text('USER', style: _tblHdr),
+                ),
+              ),
+              Expanded(
+                flex: 3,
+                child: Padding(
+                  padding: EdgeInsets.only(right: 14),
+                  child: Text('EMAIL & UID', style: _tblHdr),
+                ),
+              ),
+              Expanded(
+                flex: 2,
+                child: Padding(
+                  padding: EdgeInsets.only(right: 14),
+                  child: Text('ROLE', style: _tblHdr),
+                ),
+              ),
+              Expanded(
+                flex: 3,
+                child: Padding(
+                  padding: EdgeInsets.only(right: 14),
+                  child: Text('DEVICE SECURITY (PR-5.1)', style: _tblHdr),
+                ),
+              ),
+              Expanded(
+                flex: 1,
+                child: Padding(
+                  padding: EdgeInsets.only(right: 8),
+                  child: Text('ACTIVE', style: _tblHdr),
+                ),
+              ),
+              SizedBox(
+                width: 90,
+                child: Text('ACTIONS', style: _tblHdr, textAlign: TextAlign.right),
+              ),
+            ],
+          ),
+        ),
+        for (final user in users)
+          Builder(
+            builder: (_) {
+              final isMe = user.uid == myUid;
+              return Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 12,
+                ),
+                decoration: const BoxDecoration(
+                  border: Border(bottom: BorderSide(color: Color(0xFFF1F5F9))),
+                ),
+                child: Row(
+                  children: [
+                    // USER (Avatar + Name)
+                    Expanded(
+                      flex: 3,
+                      child: Padding(
+                        padding: const EdgeInsets.only(right: 14),
+                        child: Row(
+                          children: [
+                            CircleAvatar(
+                              radius: 16,
+                              backgroundColor: const Color(0xFFEEF0FF),
+                              child: Text(
+                                user.name.isNotEmpty
+                                    ? user.name[0].toUpperCase()
+                                    : 'U',
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w700,
+                                  color: _primaryColor,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Flexible(
+                                        child: Text(
+                                          user.name,
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.w700,
+                                            fontSize: 13.5,
+                                            color: _textDark,
+                                          ),
+                                        ),
+                                      ),
+                                      if (isMe) ...[
+                                        const SizedBox(width: 6),
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 5,
+                                            vertical: 1,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: const Color(0xFFEEF0FF),
+                                            borderRadius: BorderRadius.circular(
+                                              4,
+                                            ),
+                                          ),
+                                          child: const Text(
+                                            'you',
+                                            style: TextStyle(
+                                              fontSize: 10,
+                                              fontWeight: FontWeight.w600,
+                                              color: _primaryColor,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                    // EMAIL & UID
+                    Expanded(
+                      flex: 3,
+                      child: Padding(
+                        padding: const EdgeInsets.only(right: 14),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              user.email,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontSize: 12.5,
+                                color: _textDark,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            InkWell(
+                              onTap: () => _copyToClipboard(user.uid, 'UID'),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Flexible(
+                                    child: Text(
+                                      user.uid,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(
+                                        fontFamily: 'monospace',
+                                        fontSize: 11,
+                                        color: _textMuted,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 4),
+                                  const Icon(
+                                    Icons.copy_rounded,
+                                    size: 12,
+                                    color: _textMuted,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                    // ROLE
+                    Expanded(
+                      flex: 2,
+                      child: Padding(
+                        padding: const EdgeInsets.only(right: 14),
+                        child: Container(
+                          height: 34,
+                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                          decoration: BoxDecoration(
+                            color: _bgLight,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: _borderColor),
+                          ),
+                          child: DropdownButtonHideUnderline(
+                            child: DropdownButton<String>(
+                              value: DashboardUserModel.normalizeRole(user.role),
+                              isDense: true,
+                              isExpanded: true,
+                              style: const TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: _textDark,
+                              ),
+                              items: const [
+                                DropdownMenuItem(
+                                  value: 'admin',
+                                  child: Text(
+                                    'Admin',
+                                    overflow: TextOverflow.ellipsis,
+                                    maxLines: 1,
+                                  ),
+                                ),
+                                DropdownMenuItem(
+                                  value: 'hr',
+                                  child: Text(
+                                    'HR & Operation Manager',
+                                    overflow: TextOverflow.ellipsis,
+                                    maxLines: 1,
+                                  ),
+                                ),
+                              ],
+                              onChanged: isMe
+                                  ? null
+                                  : (newRole) {
+                                      if (newRole != null &&
+                                          newRole != user.role) {
+                                        cubit.updateUserRole(
+                                          user.uid,
+                                          newRole,
+                                          userName: user.name,
+                                        );
+                                      }
+                                    },
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    // DEVICE SECURITY (PR-5.1)
+                    Expanded(
+                      flex: 3,
+                      child: Padding(
+                        padding: const EdgeInsets.only(right: 14),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 28,
+                              height: 28,
+                              decoration: BoxDecoration(
+                                color: user.deviceBound
+                                    ? const Color(0xFFDCFCE7)
+                                    : const Color(0xFFFEF3C7),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Icon(
+                                user.deviceBound
+                                    ? Icons.phone_android_rounded
+                                    : Icons.phonelink_setup_rounded,
+                                size: 15,
+                                color: user.deviceBound
+                                    ? const Color(0xFF16A34A)
+                                    : const Color(0xFFD97706),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    user.deviceName.isNotEmpty
+                                        ? user.deviceName
+                                        : 'Pending new phone',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: user.deviceBound
+                                          ? _textDark
+                                          : const Color(0xFFB45309),
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 1),
+                                  Text(
+                                    user.deviceBound
+                                        ? 'Registered Phone'
+                                        : 'Pending Binding',
+                                    style: TextStyle(
+                                      fontSize: 10.5,
+                                      color: user.deviceBound
+                                          ? const Color(0xFF15803D)
+                                          : const Color(0xFFD97706),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            IconButton(
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(
+                                minWidth: 28,
+                                minHeight: 28,
+                              ),
+                              icon: const Icon(
+                                Icons.phonelink_erase_rounded,
+                                size: 16,
+                                color: Color(0xFF64748B),
+                              ),
+                              tooltip: 'Reset Phone Binding (PR-5.1)',
+                              onPressed: () => _confirmResetDevice(
+                                context,
+                                cubit,
+                                user,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                    // ACTIVE
+                    Expanded(
+                      flex: 1,
+                      child: Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: Transform.scale(
+                            scale: 0.85,
+                            child: Switch(
+                              value: user.isActive,
+                              activeThumbColor: _primaryColor,
+                              onChanged: isMe
+                                  ? null
+                                  : (val) {
+                                      if (!val) {
+                                        _showDeactivateAndReassignDialog(
+                                          user,
+                                          allUsers,
+                                        );
+                                      } else {
+                                        cubit.updateUserActive(
+                                          user.uid,
+                                          true,
+                                          userName: user.name,
+                                        );
+                                      }
+                                    },
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    // ACTIONS
+                    SizedBox(
+                      width: 90,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          IconButton(
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(
+                              minWidth: 32,
+                              minHeight: 32,
+                            ),
+                            icon: const Icon(Icons.logout_rounded, size: 16),
+                            tooltip: 'Remote sign out session',
+                            onPressed: () => _confirmForceSignOut(
+                              context,
+                              cubit,
+                              user,
+                            ),
+                          ),
+                          if (isMe)
+                            IconButton(
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(
+                                minWidth: 32,
+                                minHeight: 32,
+                              ),
+                              icon: const Icon(
+                                Icons.manage_accounts_outlined,
+                                size: 18,
+                                color: _primaryColor,
+                              ),
+                              tooltip: 'Admin Account & Password',
+                              onPressed: () => showAdminAccountDialog(
+                                context,
+                                {
+                                  'name': user.name,
+                                  'email': user.email,
+                                  'role': user.role,
+                                },
+                              ),
+                            )
+                          else
+                            IconButton(
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(
+                                minWidth: 32,
+                                minHeight: 32,
+                              ),
+                              icon: const Icon(
+                                Icons.delete_outline,
+                                size: 18,
+                                color: Color(0xFFDC2626),
+                              ),
+                              tooltip: 'Remove user',
+                              onPressed: () => _confirmDelete(
+                                context,
+                                user.uid,
+                                user.name,
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+      ],
+    );
+  }
+
+  Widget _buildMobileCardList(
+    DashboardCubit cubit,
+    List<DashboardUserModel> users,
+    List<DashboardUserModel> allUsers,
+    String? myUid,
+  ) {
+    return Column(
+      children: [
+        for (var i = 0; i < users.length; i++) ...[
+          if (i > 0) const SizedBox(height: 12),
+          Builder(
+            builder: (_) {
+              final user = users[i];
+              final isMe = user.uid == myUid;
+              return Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: _bgLight,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: _borderColor),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        CircleAvatar(
+                          radius: 16,
+                          backgroundColor: const Color(0xFFEEF0FF),
+                          child: Text(
+                            user.name.isNotEmpty
+                                ? user.name[0].toUpperCase()
+                                : 'U',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                              color: _primaryColor,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                isMe ? '${user.name} (you)' : user.name,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 14,
+                                ),
+                              ),
+                              Text(
+                                user.email,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: _textMuted,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Switch(
+                          value: user.isActive,
+                          activeThumbColor: _primaryColor,
+                          onChanged: isMe
+                              ? null
+                              : (val) {
+                                  if (!val) {
+                                    _showDeactivateAndReassignDialog(
+                                      user,
+                                      allUsers,
+                                    );
+                                  } else {
+                                    cubit.updateUserActive(
+                                      user.uid,
+                                      true,
+                                      userName: user.name,
+                                    );
+                                  }
+                                },
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    InkWell(
+                      onTap: () => _copyToClipboard(user.uid, 'UID'),
+                      child: Row(
+                        children: [
+                          const Text(
+                            'UID: ',
+                            style: TextStyle(fontSize: 11, color: _textMuted),
+                          ),
+                          Flexible(
+                            child: Text(
+                              user.uid,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontFamily: 'monospace',
+                                fontSize: 11,
+                                color: _textMuted,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          const Icon(
+                            Icons.copy_rounded,
+                            size: 12,
+                            color: _textMuted,
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Row(
+                      children: [
+                        const Text(
+                          'Role:',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: _textMuted,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Container(
+                            height: 32,
+                            padding: const EdgeInsets.symmetric(horizontal: 8),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(6),
+                              border: Border.all(color: _borderColor),
+                            ),
+                            child: DropdownButtonHideUnderline(
+                              child: DropdownButton<String>(
+                                value: DashboardUserModel.normalizeRole(
+                                  user.role,
+                                ),
+                                isDense: true,
+                                isExpanded: true,
+                                items: const [
+                                  DropdownMenuItem(
+                                    value: 'admin',
+                                    child: Text(
+                                      'Admin',
+                                      style: TextStyle(fontSize: 12),
+                                    ),
+                                  ),
+                                  DropdownMenuItem(
+                                    value: 'hr',
+                                    child: Text(
+                                      'HR & Operation Manager',
+                                      style: TextStyle(fontSize: 12),
+                                    ),
+                                  ),
+                                ],
+                                onChanged: isMe
+                                    ? null
+                                    : (newRole) {
+                                        if (newRole != null &&
+                                            newRole != user.role) {
+                                          cubit.updateUserRole(
+                                            user.uid,
+                                            newRole,
+                                            userName: user.name,
+                                          );
+                                        }
+                                      },
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF8FAFC),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: const Color(0xFFE2E8F0)),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            user.deviceBound
+                                ? Icons.phone_android_rounded
+                                : Icons.phonelink_setup_rounded,
+                            size: 14,
+                            color: user.deviceBound
+                                ? const Color(0xFF16A34A)
+                                : const Color(0xFFD97706),
+                          ),
+                          const SizedBox(width: 6),
+                          Expanded(
+                            child: Text(
+                              'Device: ${user.deviceName} (${user.deviceBound ? "Registered" : "Pending"})',
+                              style: const TextStyle(fontSize: 11.5, color: _textDark, fontWeight: FontWeight.w500),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          TextButton.icon(
+                            style: TextButton.styleFrom(
+                              visualDensity: VisualDensity.compact,
+                              padding: const EdgeInsets.symmetric(horizontal: 6),
+                            ),
+                            onPressed: () => _confirmResetDevice(context, cubit, user),
+                            icon: const Icon(Icons.phonelink_erase_rounded, size: 14),
+                            label: const Text('Reset', style: TextStyle(fontSize: 11)),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 4,
+                      alignment: WrapAlignment.spaceBetween,
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      children: [
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.logout_rounded, size: 18),
+                              tooltip: 'Remote sign out session (PR-5.3)',
+                              onPressed: () => _confirmForceSignOut(context, cubit, user),
+                            ),
+                            if (isMe)
+                              IconButton(
+                                icon: const Icon(
+                                  Icons.manage_accounts_outlined,
+                                  size: 20,
+                                  color: _primaryColor,
+                                ),
+                                tooltip: 'Admin Account & Password',
+                                onPressed: () => showAdminAccountDialog(
+                                  context,
+                                  {'name': user.name, 'email': user.email, 'role': user.role},
+                                ),
+                              )
+                            else
+                              IconButton(
+                                icon: const Icon(
+                                  Icons.delete_outline,
+                                  size: 18,
+                                  color: Color(0xFFDC2626),
+                                ),
+                                onPressed: () => _confirmDelete(
+                                  context,
+                                  user.uid,
+                                  user.name,
+                                ),
+                              ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        ],
+      ],
+    );
+  }
+}

@@ -69,6 +69,7 @@ class _DashboardView extends StatefulWidget {
 
 class _DashboardViewState extends State<_DashboardView> {
   final _scaffoldKey = GlobalKey<ScaffoldState>();
+  bool _hasAutoHealedRole = false;
 
   static const _nav = [
     _NavItem(Icons.grid_view_rounded, 'Dashboard'),
@@ -363,17 +364,21 @@ class _DashboardViewState extends State<_DashboardView> {
     final roleLabel = (rawRole == 'hr') ? 'HR & Operation Manager' : 'Admin';
 
     // Auto-heal admin role in Firestore so the user is consistently tagged as admin
-    if ((me['role'] != 'admin' || me['email'] == null) &&
+    if (!_hasAutoHealedRole &&
+        (me['role'] != 'admin' || me['email'] == null) &&
         cubit.currentUserId != null) {
-      FirebaseFirestore.instance
-          .collection('users')
-          .doc(cubit.currentUserId)
-          .set({
-            'role': 'admin',
-            'name': name,
-            if (user?.email != null) 'email': user!.email,
-            'isActive': true,
-          }, SetOptions(merge: true));
+      _hasAutoHealedRole = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        FirebaseFirestore.instance
+            .collection('users')
+            .doc(cubit.currentUserId)
+            .set({
+              'role': 'admin',
+              'name': name,
+              if (user?.email != null) 'email': user!.email,
+              'isActive': true,
+            }, SetOptions(merge: true));
+      });
     }
     final initials = name
         .trim()

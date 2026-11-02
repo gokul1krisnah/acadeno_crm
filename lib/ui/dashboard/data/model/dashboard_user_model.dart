@@ -57,23 +57,33 @@ class DashboardUserModel {
   factory DashboardUserModel.fromFirestore(
     DocumentSnapshot<Map<String, dynamic>> doc,
   ) {
-    final data = doc.data() ?? {};
-    final rawRole = data['role'] as String?;
-    final createdAtField = data['createdAt'];
-    return DashboardUserModel(
-      uid: doc.id,
-      name: (data['name'] ?? '—').toString(),
-      email: (data['email'] ?? '—').toString(),
-      role: normalizeRole(rawRole),
-      isActive: data['isActive'] != false,
-      phone: (data['phone'] ?? '').toString(),
-      deviceName: (data['deviceName'] ?? 'Android · Bound').toString(),
-      deviceBound: data['deviceBound'] != false,
-      callsToday: (data['callsToday'] as num?)?.toInt() ?? 18,
-      assignedToday: (data['assignedToday'] as num?)?.toInt() ?? 30,
-      conversionsMonth: (data['conversionsMonth'] as num?)?.toInt() ?? 4,
-      createdAt: createdAtField is Timestamp ? createdAtField.toDate() : null,
-    );
+    try {
+      final data = doc.data() ?? {};
+      final rawRole = data['role']?.toString();
+      final createdAtField = data['createdAt'];
+      return DashboardUserModel(
+        uid: doc.id,
+        name: (data['name'] ?? '—').toString(),
+        email: (data['email'] ?? '—').toString(),
+        role: normalizeRole(rawRole),
+        isActive: data['isActive'] != false,
+        phone: (data['phone'] ?? '').toString(),
+        deviceName: (data['deviceName'] ?? (data['boundDeviceModel'] ?? 'Registered Android')).toString(),
+        deviceBound: data['deviceBound'] != false,
+        callsToday: (data['callsToday'] as num?)?.toInt() ?? 0,
+        assignedToday: (data['assignedToday'] as num?)?.toInt() ?? 0,
+        conversionsMonth: (data['conversionsMonth'] as num?)?.toInt() ?? 0,
+        createdAt: createdAtField is Timestamp ? createdAtField.toDate() : null,
+      );
+    } catch (_) {
+      return DashboardUserModel(
+        uid: doc.id,
+        name: doc.id.length > 5 ? 'User (' + doc.id.substring(0, 5) + ')' : 'User (' + doc.id + ')',
+        email: '—',
+        role: 'hr',
+        isActive: true,
+      );
+    }
   }
 }
 
