@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../shared/extensions/build_context_extension.dart';
+import '../../../../shared/utilities/link_launcher.dart';
 
 class _CollegeVisit {
   final String id;
@@ -624,23 +625,52 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
                           ],
                         ),
 
-                        OutlinedButton(
-                          onPressed: () => _showLogOutcomeDialog(visit),
-
-                          style: OutlinedButton.styleFrom(
-                            visualDensity: VisualDensity.compact,
-
-                            side: const BorderSide(color: Color(0xFFD0D5DD)),
-                          ),
-
-                          child: Text(
-                            isCompleted ? 'Update outcome' : 'Log outcome',
-
-                            style: const TextStyle(
-                              fontSize: 12.5,
-                              fontWeight: FontWeight.w600,
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            OutlinedButton.icon(
+                              onPressed: () =>
+                                  LinkLauncher.launchCollegeMapsDirections(
+                                visit.collegeName,
+                              ),
+                              icon: const Icon(
+                                Icons.directions_outlined,
+                                size: 15,
+                                color: Color(0xFF4338CA),
+                              ),
+                              label: const Text(
+                                'Directions',
+                                style: TextStyle(
+                                  fontSize: 12.5,
+                                  fontWeight: FontWeight.w600,
+                                  color: Color(0xFF4338CA),
+                                ),
+                              ),
+                              style: OutlinedButton.styleFrom(
+                                visualDensity: VisualDensity.compact,
+                                side: const BorderSide(
+                                  color: Color(0xFFD0D5DD),
+                                ),
+                              ),
                             ),
-                          ),
+                            const SizedBox(width: 8),
+                            OutlinedButton(
+                              onPressed: () => _showLogOutcomeDialog(visit),
+                              style: OutlinedButton.styleFrom(
+                                visualDensity: VisualDensity.compact,
+                                side: const BorderSide(
+                                  color: Color(0xFFD0D5DD),
+                                ),
+                              ),
+                              child: Text(
+                                isCompleted ? 'Update outcome' : 'Log outcome',
+                                style: const TextStyle(
+                                  fontSize: 12.5,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),

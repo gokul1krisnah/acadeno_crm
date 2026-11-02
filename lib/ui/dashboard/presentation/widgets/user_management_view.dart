@@ -985,7 +985,7 @@ class _UserManagementViewState extends State<UserManagementView> {
         size: 18,
         color: _textMuted,
       ),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       items: const [
         AcadenoDropdownItem(value: 'all', label: 'All Roles'),
         AcadenoDropdownItem(value: 'admin', label: 'Admin'),
@@ -1005,7 +1005,7 @@ class _UserManagementViewState extends State<UserManagementView> {
         size: 18,
         color: _textMuted,
       ),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       items: const [
         AcadenoDropdownItem(value: 'all', label: 'All Statuses'),
         AcadenoDropdownItem(value: 'active', label: 'Active Only'),

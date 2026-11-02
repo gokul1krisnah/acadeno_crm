@@ -1,3 +1,4 @@
+import 'package:acadeno_crm/shared/utilities/link_launcher.dart';
 import 'package:acadeno_crm/shared/widgets/college_selector_field.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -103,7 +104,7 @@ class VisitsTabView extends StatelessWidget {
                           child: _UpcomingVisitCard(
                             visit: visit,
                             onDirections: () =>
-                                _showDirectionsSheet(context, visit),
+                                _handleDirections(context, visit),
                             onRecordOutcome: () =>
                                 _showRecordOutcomeSheet(context, visit),
                           ),
@@ -139,6 +140,51 @@ class VisitsTabView extends StatelessWidget {
     );
   }
 
+  Future<void> _handleDirections(
+    BuildContext context,
+    ExecutiveCollegeVisit visit,
+  ) async {
+    final college = visit.collegeName;
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const Icon(
+              Icons.navigation_rounded,
+              color: Colors.white,
+              size: 18,
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                'Opening Google Maps navigation for $college...',
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: const Color(0xFF1E293B),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        duration: const Duration(seconds: 2),
+      ),
+    );
+
+    final launched = await LinkLauncher.launchCollegeMapsDirections(
+      college,
+      locationHint: visit.subtitle,
+    );
+
+    if (!launched && context.mounted) {
+      _showDirectionsSheet(context, visit);
+    }
+  }
+
   void _showDirectionsSheet(BuildContext context, ExecutiveCollegeVisit visit) {
     showDialog(
       context: context,
@@ -172,7 +218,7 @@ class VisitsTabView extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Directions to ${visit.collegeName}',
+                            visit.collegeName,
                             style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w800,
@@ -191,30 +237,132 @@ class VisitsTabView extends StatelessWidget {
                     ),
                   ],
                 ),
-                const SizedBox(height: 14),
-                const Text(
-                  '• Route: Kozhikode – Mukkam Road (22 km · ~42 mins)\n• Reporting point: Main Placement Cell & CSE Seminar Hall\n• Assigned team: Field Executives',
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: Color(0xFF344054),
-                    height: 1.5,
+                const SizedBox(height: 16),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF8FAFC),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: const Color(0xFFEAECF0)),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Icon(
+                            Icons.location_on_rounded,
+                            size: 16,
+                            color: Color(0xFF4338CA),
+                          ),
+                          const SizedBox(width: 6),
+                          Expanded(
+                            child: Text(
+                              'Destination: ${visit.collegeName}',
+                              style: const TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: Color(0xFF1E293B),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      if (visit.purpose.isNotEmpty) ...[
+                        const SizedBox(height: 6),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Icon(
+                              Icons.flag_outlined,
+                              size: 16,
+                              color: Color(0xFF64748B),
+                            ),
+                            const SizedBox(width: 6),
+                            Expanded(
+                              child: Text(
+                                'Purpose: ${visit.purpose}',
+                                style: const TextStyle(
+                                  fontSize: 12.5,
+                                  color: Color(0xFF475467),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                      const SizedBox(height: 6),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Icon(
+                            Icons.people_alt_outlined,
+                            size: 16,
+                            color: Color(0xFF64748B),
+                          ),
+                          const SizedBox(width: 6),
+                          Expanded(
+                            child: Text(
+                              'Assigned: ${visit.staffNames}',
+                              style: const TextStyle(
+                                fontSize: 12.5,
+                                color: Color(0xFF475467),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(height: 16),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () => Navigator.pop(ctx),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF4338CA),
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                const SizedBox(height: 18),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () => Navigator.pop(ctx),
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          side: const BorderSide(color: Color(0xFFD0D5DD)),
+                        ),
+                        child: const Text(
+                          'Close',
+                          style: TextStyle(
+                            color: Color(0xFF344054),
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                       ),
                     ),
-                    child: const Text('Got it'),
-                  ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      flex: 2,
+                      child: ElevatedButton.icon(
+                        onPressed: () {
+                          Navigator.pop(ctx);
+                          LinkLauncher.launchCollegeMapsDirections(
+                            visit.collegeName,
+                            locationHint: visit.subtitle,
+                          );
+                        },
+                        icon: const Icon(Icons.navigation_rounded, size: 17),
+                        label: const Text('Start Navigation'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF4338CA),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -815,24 +963,59 @@ class _RecentVisitCard extends StatelessWidget {
               ),
               const SizedBox(width: 8),
 
-              // Status Badge
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 4,
-                ),
-                decoration: BoxDecoration(
-                  color: dateBg,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  visit.statusLabel,
-                  style: TextStyle(
-                    fontSize: 11.5,
-                    fontWeight: FontWeight.w700,
-                    color: dateFg,
+              // Status Badge & Directions
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: dateBg,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      visit.statusLabel,
+                      style: TextStyle(
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.w700,
+                        color: dateFg,
+                      ),
+                    ),
                   ),
-                ),
+                  const SizedBox(height: 6),
+                  InkWell(
+                    onTap: () => LinkLauncher.launchCollegeMapsDirections(
+                      visit.collegeName,
+                      locationHint: visit.subtitle,
+                    ),
+                    borderRadius: BorderRadius.circular(6),
+                    child: const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.directions_outlined,
+                            size: 14,
+                            color: Color(0xFF4338CA),
+                          ),
+                          SizedBox(width: 3),
+                          Text(
+                            'Directions',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFF4338CA),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),

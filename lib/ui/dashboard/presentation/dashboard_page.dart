@@ -1,4 +1,5 @@
 import 'package:intl/intl.dart';
+import 'package:acadeno_crm/shared/utilities/link_launcher.dart';
 import 'package:acadeno_crm/core/router/app_router.dart';
 import 'package:acadeno_crm/shared/extensions/build_context_extension.dart';
 import 'package:acadeno_crm/shared/snackbar_alerts/snack_alert.dart';
@@ -1804,23 +1805,42 @@ class _CollegeVisits extends StatelessWidget {
                         ),
                       ),
                       Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              r[1],
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w600,
+                        child: InkWell(
+                          onTap: () => LinkLauncher.launchCollegeMapsDirections(
+                            r[1],
+                            locationHint: r[2],
+                          ),
+                          borderRadius: BorderRadius.circular(6),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Flexible(
+                                    child: Text(
+                                      r[1],
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 4),
+                                  const Icon(
+                                    Icons.directions_outlined,
+                                    size: 13,
+                                    color: _primary,
+                                  ),
+                                ],
                               ),
-                            ),
-                            Text(
-                              r[2],
-                              style: const TextStyle(
-                                color: _muted,
-                                fontSize: 12,
+                              Text(
+                                r[2],
+                                style: const TextStyle(
+                                  color: _muted,
+                                  fontSize: 12,
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
                       const SizedBox(width: 8),
