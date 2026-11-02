@@ -1,3 +1,4 @@
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
 import 'package:acadeno_crm/shared/utilities/link_launcher.dart';
 import 'package:acadeno_crm/core/router/app_router.dart';
@@ -57,10 +58,17 @@ class DashboardPage extends StatelessWidget {
 }
 
 class _NavItem {
-  final IconData icon;
+  final String svgAsset;
+  final IconData fallbackIcon;
   final String label;
   final String? badge;
-  const _NavItem(this.icon, this.label, {this.badge});
+
+  const _NavItem({
+    required this.svgAsset,
+    required this.fallbackIcon,
+    required this.label,
+    this.badge,
+  });
 }
 
 class _DashboardView extends StatefulWidget {
@@ -75,22 +83,55 @@ class _DashboardViewState extends State<_DashboardView> {
   bool _hasAutoHealedRole = false;
 
   static const _primaryNav = [
-    _NavItem(Icons.tag_rounded, 'Dashboard'),
     _NavItem(
-      Icons.format_list_bulleted_rounded,
-      'Leads & Assign',
+      svgAsset: 'assets/svgs/dashboard.svg',
+      fallbackIcon: Icons.tag_rounded,
+      label: 'Dashboard',
+    ),
+    _NavItem(
+      svgAsset: 'assets/svgs/leads.svg',
+      fallbackIcon: Icons.format_list_bulleted_rounded,
+      label: 'Leads & Assign',
       badge: '12+',
     ),
-    _NavItem(Icons.view_agenda_outlined, 'Campaigns'),
-    _NavItem(Icons.subdirectory_arrow_right_rounded, 'Follow-ups'),
-    _NavItem(Icons.people_alt_outlined, 'College Visits'),
+    _NavItem(
+      svgAsset: 'assets/svgs/campaigns.svg',
+      fallbackIcon: Icons.view_agenda_outlined,
+      label: 'Campaigns',
+    ),
+    _NavItem(
+      svgAsset: 'assets/svgs/followups.svg',
+      fallbackIcon: Icons.subdirectory_arrow_right_rounded,
+      label: 'Follow-ups',
+    ),
+    _NavItem(
+      svgAsset: 'assets/svgs/collegevisits.svg',
+      fallbackIcon: Icons.people_alt_outlined,
+      label: 'College Visits',
+    ),
   ];
 
   static const _generalNav = [
-    _NavItem(Icons.file_upload_outlined, 'Import'),
-    _NavItem(Icons.help_outline_rounded, 'Team Management'),
-    _NavItem(Icons.badge_outlined, 'User Management'),
-    _NavItem(Icons.settings_outlined, 'Settings'),
+    _NavItem(
+      svgAsset: 'assets/svgs/import.svg',
+      fallbackIcon: Icons.file_upload_outlined,
+      label: 'Import',
+    ),
+    _NavItem(
+      svgAsset: 'assets/svgs/teammanagement.svg',
+      fallbackIcon: Icons.help_outline_rounded,
+      label: 'Team Management',
+    ),
+    _NavItem(
+      svgAsset: 'assets/svgs/usermanagement.svg',
+      fallbackIcon: Icons.badge_outlined,
+      label: 'User Management',
+    ),
+    _NavItem(
+      svgAsset: 'assets/svgs/settings.svg',
+      fallbackIcon: Icons.settings_outlined,
+      label: 'Settings',
+    ),
   ];
 
   String get _today {
@@ -571,10 +612,21 @@ class _DashboardViewState extends State<_DashboardView> {
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
             child: Row(
               children: [
-                Icon(
-                  item.icon,
-                  size: 19,
-                  color: isSelected ? _orangeAccent : const Color(0xFF64748B),
+                SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: Center(
+                    child: SvgPicture.asset(
+                      item.svgAsset,
+                      width: 18,
+                      height: 18,
+                      fit: BoxFit.contain,
+                      colorFilter: ColorFilter.mode(
+                        isSelected ? _orangeAccent : const Color(0xFF64748B),
+                        BlendMode.srcIn,
+                      ),
+                    ),
+                  ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
