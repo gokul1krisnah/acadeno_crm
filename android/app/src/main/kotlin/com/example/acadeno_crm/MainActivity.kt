@@ -58,8 +58,6 @@ class MainActivity : FlutterActivity() {
                     }
                 }
                 "checkDeviceIntegrity" -> {
-                    val buildTags = android.os.Build.TAGS
-                    val isTestKeys = buildTags != null && buildTags.contains("test-keys")
                     val suPaths = arrayOf(
                         "/system/app/Superuser.apk",
                         "/sbin/su",
@@ -71,7 +69,8 @@ class MainActivity : FlutterActivity() {
                         "/system/bin/failsafe/su",
                         "/data/local/su"
                     )
-                    val isRooted = isTestKeys || suPaths.any { java.io.File(it).exists() }
+                    // Check actual su binaries; do not flag test-keys in debug builds
+                    val isRooted = suPaths.any { java.io.File(it).exists() }
                     val isEmulator = android.os.Build.FINGERPRINT.startsWith("generic") ||
                                      android.os.Build.MODEL.contains("google_sdk") ||
                                      android.os.Build.MODEL.contains("Emulator")

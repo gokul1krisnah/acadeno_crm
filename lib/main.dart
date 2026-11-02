@@ -82,9 +82,7 @@ class _AcadenoAppState extends State<AcadenoApp> with WidgetsBindingObserver {
       messengerKey: _scaffoldMessengerKey,
     );
     FirebaseAuth.instance.authStateChanges().listen((user) {
-      if (user != null) {
-        SessionSecurityService.instance.startListening(user.uid);
-      } else {
+      if (user == null) {
         SessionSecurityService.instance.stopListening();
       }
     });

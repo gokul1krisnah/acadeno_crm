@@ -15,8 +15,8 @@ class SessionSecurityService {
 
   StreamSubscription<DocumentSnapshot<Map<String, dynamic>>>? _userDocSub;
   String? _monitoredUid;
-  String? _knownLogoutToken;
-  DateTime? _sessionStartedAt;
+  String? _initialLogoutToken;
+  Timestamp? _initialLogoutAt;
   bool _isTerminating = false;
 
   AppRouter? _router;
@@ -31,21 +31,19 @@ class SessionSecurityService {
     _messengerKey = messengerKey;
   }
 
-  /// Marks the current login session timestamp.
-  void recordLoginSession({DateTime? loginTime, String? initialLogoutToken}) {
-    _sessionStartedAt = loginTime ?? DateTime.now();
-    _knownLogoutToken = initialLogoutToken;
-    _isTerminating = false;
-  }
-
   /// Starts listening to real-time `users/{uid}` updates for remote revocation.
-  void startListening(String uid) {
+  void startListening(
+    String uid, {
+    String? initialLogoutToken,
+    Timestamp? initialLogoutAt,
+  }) {
     if (_monitoredUid == uid && _userDocSub != null) return;
     _monitoredUid = uid;
     _isTerminating = false;
-    _userDocSub?.cancel();
+    _initialLogoutToken = initialLogoutToken;
+    _initialLogoutAt = initialLogoutAt;
 
-    _sessionStartedAt ??= DateTime.now();
+    _userDocSub?.cancel();
 
     _userDocSub = FirebaseFirestore.instance
         .collection('users')
@@ -54,7 +52,8 @@ class SessionSecurityService {
         .listen(
           (doc) => _handleUserDocUpdate(doc),
           onError: (err) {
-            debugPrint('[SessionSecurityService] Snapshot error: $err');
+            // Silently suppress permission-denied / network cancellation during logout
+            debugPrint('[SessionSecurityService] Listener stream closed: $err');
           },
         );
   }
@@ -65,7 +64,10 @@ class SessionSecurityService {
   ) async {
     if (_isTerminating) return;
     final currentAuthUser = FirebaseAuth.instance.currentUser;
-    if (currentAuthUser == null || currentAuthUser.uid != doc.id) return;
+    if (currentAuthUser == null || currentAuthUser.uid != doc.id) {
+      await stopListening();
+      return;
+    }
 
     if (!doc.exists) {
       await terminateSession('Your account is no longer registered. Session terminated.');
@@ -82,36 +84,34 @@ class SessionSecurityService {
       return;
     }
 
-    // 2. Remote Force Sign Out Token Check
+    // 2. Initial state initialization: Capture the existing tokens present on first snapshot
     final serverLogoutToken = data['forceLogoutToken'] as String?;
-    if (serverLogoutToken != null && serverLogoutToken.isNotEmpty) {
-      if (_knownLogoutToken == null) {
-        // Initial token recorded upon listener start
-        _knownLogoutToken = serverLogoutToken;
-      } else if (serverLogoutToken != _knownLogoutToken) {
-        _knownLogoutToken = serverLogoutToken;
-        final isDeviceReset = (data['deviceBound'] as bool? ?? true) == false;
-        final msg = isDeviceReset
-            ? 'Your phone binding was reset by Super Admin (PR-5.1). Please sign in again on your new phone.'
-            : 'Your session was remotely terminated by Super Admin (PR-5.3).';
-        await terminateSession(msg);
-        return;
-      }
+    final serverLogoutAt = data['forceLogoutAt'] as Timestamp?;
+
+    if (_initialLogoutToken == null && _initialLogoutAt == null) {
+      _initialLogoutToken = serverLogoutToken;
+      _initialLogoutAt = serverLogoutAt;
+      return;
     }
 
-    // 3. Force Logout Timestamp Check (backup check against session start)
-    final forceLogoutAtRaw = data['forceLogoutAt'];
-    if (forceLogoutAtRaw is Timestamp) {
-      final forceLogoutDate = forceLogoutAtRaw.toDate();
-      if (_sessionStartedAt != null &&
-          forceLogoutDate.isAfter(_sessionStartedAt!.add(const Duration(seconds: 1)))) {
-        final isDeviceReset = (data['deviceBound'] as bool? ?? true) == false;
-        final msg = isDeviceReset
-            ? 'Your phone binding was reset by Super Admin (PR-5.1). Please sign in again on your new phone.'
-            : 'Your session was remotely terminated by Super Admin (PR-5.3).';
-        await terminateSession(msg);
-        return;
-      }
+    // 3. Detect if a NEW force-logout has been triggered since login
+    final hasNewToken = serverLogoutToken != null &&
+        serverLogoutToken.isNotEmpty &&
+        serverLogoutToken != _initialLogoutToken;
+
+    final hasNewTimestamp = serverLogoutAt != null &&
+        (_initialLogoutAt == null || serverLogoutAt.compareTo(_initialLogoutAt!) > 0);
+
+    if (hasNewToken || hasNewTimestamp) {
+      _initialLogoutToken = serverLogoutToken;
+      _initialLogoutAt = serverLogoutAt;
+
+      final isDeviceReset = (data['deviceBound'] as bool? ?? true) == false;
+      final msg = isDeviceReset
+          ? 'Your phone binding was reset by Super Admin (PR-5.1). Please sign in again on your new phone.'
+          : 'Your session was remotely terminated by Super Admin (PR-5.3).';
+      await terminateSession(msg);
+      return;
     }
   }
 
@@ -161,10 +161,13 @@ class SessionSecurityService {
     }
   }
 
-  /// Cancels live listener.
+  /// Cancels live listener cleanly.
   Future<void> stopListening() async {
-    await _userDocSub?.cancel();
+    final sub = _userDocSub;
     _userDocSub = null;
     _monitoredUid = null;
+    try {
+      await sub?.cancel();
+    } catch (_) {}
   }
 }

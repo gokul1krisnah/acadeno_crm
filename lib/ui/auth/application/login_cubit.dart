@@ -243,10 +243,11 @@ class LoginCubit extends Cubit<LoginState> {
       }
     }
 
-    // Record session start for PR-5.3 remote deactivation listener
-    SessionSecurityService.instance.recordLoginSession(
-      loginTime: DateTime.now(),
+    // Start real-time session security listener for PR-5.3 remote deactivation
+    SessionSecurityService.instance.startListening(
+      user.uid,
       initialLogoutToken: data['forceLogoutToken'] as String?,
+      initialLogoutAt: data['forceLogoutAt'] as Timestamp?,
     );
 
     return null;
