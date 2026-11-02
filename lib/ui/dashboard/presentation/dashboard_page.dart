@@ -1581,6 +1581,20 @@ class _CollegeVisits extends StatelessWidget {
 
   const _CollegeVisits({required this.onPlanVisit});
 
+  static const _figmaVisits = [
+    {'collegeName': 'Devagiri', 'purpose': 'AI ML', 'status': 'Completed'},
+    {
+      'collegeName': 'Don Bosco',
+      'purpose': 'Promote Python & Data Science workshop · meet HOD',
+      'status': 'Completed',
+    },
+    {
+      'collegeName': 'GEC Kozhikode',
+      'purpose': 'Industrial Visit registration drive',
+      'status': 'Completed',
+    },
+  ];
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -1641,19 +1655,7 @@ class _CollegeVisits extends StatelessWidget {
                     .map((d) => d.data())
                     .toList();
               } else {
-                displayVisits = const [];
-              }
-
-              if (displayVisits.isEmpty) {
-                return const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 24),
-                  child: Center(
-                    child: Text(
-                      'No college visits scheduled yet.',
-                      style: TextStyle(color: _muted, fontSize: 13),
-                    ),
-                  ),
-                );
+                displayVisits = _figmaVisits;
               }
 
               return Column(

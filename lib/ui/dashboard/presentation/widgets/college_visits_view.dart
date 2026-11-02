@@ -60,97 +60,16 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
     'college_visits',
   );
 
-  static final List<_CollegeVisit> _defaultVisits = [
-    _CollegeVisit(
-      id: 'cv_default_1',
-
-      collegeName: 'NIT Calicut · CSE & ECE Dept',
-
-      dateLabel: '24 Oct 2026',
-
-      purpose: 'AI & ML Workshop seminar + HOD placement pitch',
-
-      assignedStaff: 'Anjali R, Rahul M',
-
-      status: 'Completed',
-
-      outcomeNotes:
-          'Met Dr. Suresh (CSE HOD). Approved 2-day workshop slot for 14 Nov.',
-
-      leadsCollected: 312,
-
-      conversions: 19,
-    ),
-
-    _CollegeVisit(
-      id: 'cv_default_2',
-
-      collegeName: 'GEC Kozhikode',
-
-      dateLabel: '26 Oct 2026',
-
-      purpose: 'Industrial Visit registration drive',
-
-      assignedStaff: 'Shilpa K, Ajmal P',
-
-      status: 'Completed',
-
-      outcomeNotes: 'Met placement coordinator & IEEE student branch leads.',
-
-      leadsCollected: 218,
-
-      conversions: 12,
-    ),
-
-    _CollegeVisit(
-      id: 'cv_default_3',
-
-      collegeName: 'MES College of Engineering, Kuttippuram',
-
-      dateLabel: DateFormat('d MMM yyyy').format(DateTime.now()),
-
-      purpose: 'Python & Full Stack orientation for 3rd yr CSE/IT',
-
-      assignedStaff: 'Anjali R, Neethu S',
-
-      status: 'Planned',
-
-      outcomeNotes: 'Seminar hall booked at 10:30 AM.',
-
-      leadsCollected: 0,
-
-      conversions: 0,
-    ),
-
-    _CollegeVisit(
-      id: 'cv_default_4',
-
-      collegeName: 'KMCT College of Engineering',
-
-      dateLabel: '03 Nov 2026',
-
-      purpose: 'Add-on course MOU follow-up',
-
-      assignedStaff: 'Rahul M',
-
-      status: 'Planned',
-
-      outcomeNotes: 'Awaiting Principal confirmation for final-year batch.',
-
-      leadsCollected: 0,
-
-      conversions: 0,
-    ),
-  ];
-
   void _showPlanVisitDialog() {
     final collegeCtrl = TextEditingController();
 
-    final dateCtrl = TextEditingController(text: '06 Nov 2026');
+    final dateCtrl = TextEditingController(
+      text: DateFormat('dd MMM yyyy').format(DateTime.now()),
+    );
 
     final purposeCtrl = TextEditingController();
 
-    final staffCtrl = TextEditingController(text: 'Anjali R, Rahul M');
+    final staffCtrl = TextEditingController();
 
     showDialog(
       context: context,
@@ -304,7 +223,7 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
             borderRadius: BorderRadius.circular(16),
           ),
           title: Text(
-            'Log Visit Outcome · ',
+            'Log Visit Outcome · ${visit.collegeName}',
             style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
           ),
           content: ConstrainedBox(
@@ -434,7 +353,9 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
                             Navigator.pop(ctx);
                             messenger.showSnackBar(
                               SnackBar(
-                                content: Text('Visit to \ saved as Cancelled.'),
+                                content: Text(
+                                  'Visit to ${visit.collegeName} saved as Cancelled.',
+                                ),
                                 backgroundColor: const Color(0xFFDC2626),
                               ),
                             );
@@ -454,7 +375,7 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
                             messenger.showSnackBar(
                               SnackBar(
                                 content: Text(
-                                  'Visit to \ marked as Completed!',
+                                  'Visit to ${visit.collegeName} marked as Completed!',
                                 ),
                                 backgroundColor: const Color(0xFF15803D),
                               ),
@@ -466,7 +387,7 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
                         if (ctx.mounted) {
                           messenger.showSnackBar(
                             SnackBar(
-                              content: Text('Failed to update visit: '),
+                              content: Text('Failed to update visit: $e'),
                               backgroundColor: Colors.red,
                             ),
                           );
