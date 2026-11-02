@@ -93,6 +93,37 @@ class VisitsCubit extends Cubit<VisitsState> {
     }
   }
 
+  // Cancel college visit
+  Future<void> cancelCollegeVisit({
+    required String visitId,
+    String reason = '',
+  }) async {
+    try {
+      await _repository.cancelCollegeVisit(visitId: visitId, reason: reason);
+      if (!isClosed) {
+        emit(state.copyWith(toastMessage: 'Visit cancelled ✓'));
+      }
+    } catch (_) {
+      if (!isClosed) {
+        emit(state.copyWith(toastMessage: 'Error cancelling visit'));
+      }
+    }
+  }
+
+  // Delete college visit
+  Future<void> deleteCollegeVisit(String visitId) async {
+    try {
+      await _repository.deleteCollegeVisit(visitId);
+      if (!isClosed) {
+        emit(state.copyWith(toastMessage: 'Visit deleted ✓'));
+      }
+    } catch (_) {
+      if (!isClosed) {
+        emit(state.copyWith(toastMessage: 'Error deleting visit'));
+      }
+    }
+  }
+
   @override
   Future<void> close() {
     _visitsSub?.cancel();

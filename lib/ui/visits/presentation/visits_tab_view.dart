@@ -1,3 +1,4 @@
+import 'package:intl/intl.dart';
 import 'package:acadeno_crm/shared/utilities/link_launcher.dart';
 import 'package:acadeno_crm/shared/widgets/college_selector_field.dart';
 import 'package:flutter/material.dart';
@@ -150,11 +151,7 @@ class VisitsTabView extends StatelessWidget {
       SnackBar(
         content: Row(
           children: [
-            const Icon(
-              Icons.navigation_rounded,
-              color: Colors.white,
-              size: 18,
-            ),
+            const Icon(Icons.navigation_rounded, color: Colors.white, size: 18),
             const SizedBox(width: 10),
             Expanded(
               child: Text(
@@ -377,12 +374,14 @@ class VisitsTabView extends StatelessWidget {
     ExecutiveCollegeVisit visit,
   ) {
     final cubit = context.read<VisitsCubit>();
-    final metCtrl = TextEditingController(text: 'HOD CSE, Placement officer');
-    final nextCtrl = TextEditingController(
-      text: 'Share workshop registration QR by Friday',
+    final metCtrl = TextEditingController(text: visit.metSummary);
+    final nextCtrl = TextEditingController(text: visit.nextActionSummary);
+    final leadsCtrl = TextEditingController(
+      text: visit.leadsCollected > 0 ? '${visit.leadsCollected}' : '',
     );
-    final leadsCtrl = TextEditingController(text: '54');
-    final interestedCtrl = TextEditingController(text: '14');
+    final interestedCtrl = TextEditingController(
+      text: visit.interestedCount > 0 ? '${visit.interestedCount}' : '',
+    );
 
     showDialog(
       context: context,
@@ -403,7 +402,7 @@ class VisitsTabView extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Record Visit Outcome · ${visit.collegeName} (FR-8.2)',
+                    'Record Visit Outcome · ${visit.collegeName}',
                     style: const TextStyle(
                       fontSize: 17,
                       fontWeight: FontWeight.w800,
@@ -416,6 +415,7 @@ class VisitsTabView extends StatelessWidget {
                     decoration: const InputDecoration(
                       labelText:
                           'People met (HOD / Placement officer / Faculty)',
+                      hintText: 'e.g. Met HOD CSE, agreed to 2-day workshop',
                       border: OutlineInputBorder(),
                       isDense: true,
                     ),
@@ -428,7 +428,8 @@ class VisitsTabView extends StatelessWidget {
                           controller: leadsCtrl,
                           keyboardType: TextInputType.number,
                           decoration: const InputDecoration(
-                            labelText: 'Leads collected (FR-8.3)',
+                            labelText: 'Leads collected',
+                            hintText: '0',
                             border: OutlineInputBorder(),
                             isDense: true,
                           ),
@@ -440,7 +441,8 @@ class VisitsTabView extends StatelessWidget {
                           controller: interestedCtrl,
                           keyboardType: TextInputType.number,
                           decoration: const InputDecoration(
-                            labelText: 'Interested so far',
+                            labelText: 'Interested students',
+                            hintText: '0',
                             border: OutlineInputBorder(),
                             isDense: true,
                           ),
@@ -452,40 +454,68 @@ class VisitsTabView extends StatelessWidget {
                   TextField(
                     controller: nextCtrl,
                     decoration: const InputDecoration(
-                      labelText: 'Next action & follow-up date',
+                      labelText: 'Next action & follow-up',
+                      hintText: 'e.g. Share registration details on Monday',
                       border: OutlineInputBorder(),
                       isDense: true,
                     ),
                   ),
                   const SizedBox(height: 16),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        cubit.recordVisitOutcome(
-                          visitId: visit.id,
-                          metPeople: metCtrl.text.trim(),
-                          nextAction: nextCtrl.text.trim(),
-                          leadsCollected:
-                              int.tryParse(leadsCtrl.text.trim()) ?? 0,
-                          interestedCount:
-                              int.tryParse(interestedCtrl.text.trim()) ?? 0,
-                        );
-                        Navigator.pop(ctx);
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF4338CA),
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 13),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () {
+                            cubit.cancelCollegeVisit(
+                              visitId: visit.id,
+                              reason: metCtrl.text.trim().isNotEmpty
+                                  ? metCtrl.text.trim()
+                                  : 'Cancelled by executive',
+                            );
+                            Navigator.pop(ctx);
+                          },
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: const Color(0xFFDC2626),
+                            side: const BorderSide(color: Color(0xFFDC2626)),
+                            padding: const EdgeInsets.symmetric(vertical: 13),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: const Text('Cancel Visit'),
                         ),
                       ),
-                      child: const Text(
-                        'Save Visit Outcome',
-                        style: TextStyle(fontWeight: FontWeight.w700),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        flex: 2,
+                        child: ElevatedButton(
+                          onPressed: () {
+                            cubit.recordVisitOutcome(
+                              visitId: visit.id,
+                              metPeople: metCtrl.text.trim(),
+                              nextAction: nextCtrl.text.trim(),
+                              leadsCollected:
+                                  int.tryParse(leadsCtrl.text.trim()) ?? 0,
+                              interestedCount:
+                                  int.tryParse(interestedCtrl.text.trim()) ?? 0,
+                            );
+                            Navigator.pop(ctx);
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF15803D),
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 13),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: const Text(
+                            'Mark Completed',
+                            style: TextStyle(fontWeight: FontWeight.w700),
+                          ),
+                        ),
                       ),
-                    ),
+                    ],
                   ),
                 ],
               ),
@@ -499,128 +529,149 @@ class VisitsTabView extends StatelessWidget {
   void _showLogVisitModal(BuildContext context) {
     final cubit = context.read<VisitsCubit>();
     final collegeCtrl = TextEditingController();
-    final dayCtrl = TextEditingController(text: '04');
-    final monthCtrl = TextEditingController(text: 'NOV');
-    final subCtrl = TextEditingController(
-      text: 'Wed · 10:30 AM · IT department',
+    DateTime selectedDate = DateTime.now();
+    final dateCtrl = TextEditingController(
+      text: DateFormat('dd MMM yyyy').format(selectedDate),
     );
-    final purposeCtrl = TextEditingController(
-      text: 'Promote Python & Data Science workshop · meet HOD',
-    );
+    final subCtrl = TextEditingController();
+    final purposeCtrl = TextEditingController();
 
     showDialog(
       context: context,
-      builder: (ctx) => Dialog(
-        backgroundColor: Colors.white,
-        insetPadding: EdgeInsets.symmetric(
-          horizontal: ctx.devicePadding.clamp(16.0, 24.0),
-          vertical: 24,
-        ),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 480),
-          child: Padding(
-            padding: EdgeInsets.all(ctx.devicePadding.clamp(16.0, 20.0)),
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Log / Plan College Visit (FR-8.1)',
-                    style: TextStyle(
-                      fontSize: 17,
-                      fontWeight: FontWeight.w800,
-                      color: Color(0xFF0F172A),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  TextField(
-                    controller: collegeCtrl,
-                    decoration: const InputDecoration(
-                      labelText: 'College Name *',
-                      hintText: 'e.g. MES College Kuttippuram',
-                      border: OutlineInputBorder(),
-                      isDense: true,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: TextField(
-                          controller: monthCtrl,
-                          decoration: const InputDecoration(
-                            labelText: 'Month (e.g. NOV)',
-                            border: OutlineInputBorder(),
-                            isDense: true,
-                          ),
-                        ),
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) => Dialog(
+          backgroundColor: Colors.white,
+          insetPadding: EdgeInsets.symmetric(
+            horizontal: ctx.devicePadding.clamp(16.0, 24.0),
+            vertical: 24,
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 480),
+            child: Padding(
+              padding: EdgeInsets.all(ctx.devicePadding.clamp(16.0, 20.0)),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Plan College Visit',
+                      style: TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.w800,
+                        color: Color(0xFF0F172A),
                       ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: TextField(
-                          controller: dayCtrl,
-                          decoration: const InputDecoration(
-                            labelText: 'Day (e.g. 04)',
-                            border: OutlineInputBorder(),
-                            isDense: true,
-                          ),
-                        ),
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: collegeCtrl,
+                      decoration: const InputDecoration(
+                        labelText: 'College Name *',
+                        hintText: 'e.g. Kannur University',
+                        border: OutlineInputBorder(),
+                        isDense: true,
                       ),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
-                  TextField(
-                    controller: subCtrl,
-                    decoration: const InputDecoration(
-                      labelText: 'Time & Department',
-                      border: OutlineInputBorder(),
-                      isDense: true,
                     ),
-                  ),
-                  const SizedBox(height: 10),
-                  TextField(
-                    controller: purposeCtrl,
-                    decoration: const InputDecoration(
-                      labelText: 'Visit Purpose',
-                      border: OutlineInputBorder(),
-                      isDense: true,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        if (collegeCtrl.text.trim().isEmpty) return;
-                        CollegeSelectorField.saveCollegeIfNew(
-                          collegeCtrl.text.trim(),
+                    const SizedBox(height: 10),
+                    InkWell(
+                      onTap: () async {
+                        final picked = await showDatePicker(
+                          context: ctx,
+                          initialDate: selectedDate,
+                          firstDate: DateTime(2024),
+                          lastDate: DateTime(2030),
                         );
-                        cubit.addCollegeVisit(
-                          collegeName: collegeCtrl.text.trim(),
-                          dayNumber: dayCtrl.text.trim(),
-                          monthShort: monthCtrl.text.trim(),
-                          subtitle: subCtrl.text.trim(),
-                          purpose: purposeCtrl.text.trim(),
-                        );
-                        Navigator.pop(ctx);
+                        if (picked != null) {
+                          setDialogState(() {
+                            selectedDate = picked;
+                            dateCtrl.text = DateFormat(
+                              'dd MMM yyyy',
+                            ).format(picked);
+                          });
+                        }
                       },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFD95D24),
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 13),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                      child: IgnorePointer(
+                        child: TextField(
+                          controller: dateCtrl,
+                          decoration: const InputDecoration(
+                            labelText: 'Visit Date *',
+                            suffixIcon: Icon(
+                              Icons.calendar_today_rounded,
+                              size: 18,
+                            ),
+                            border: OutlineInputBorder(),
+                            isDense: true,
+                          ),
                         ),
                       ),
-                      child: const Text(
-                        'Add Visit',
-                        style: TextStyle(fontWeight: FontWeight.w700),
+                    ),
+                    const SizedBox(height: 10),
+                    TextField(
+                      controller: subCtrl,
+                      decoration: const InputDecoration(
+                        labelText: 'Department / Location',
+                        hintText: 'e.g. MCA Dept · 10:30 AM',
+                        border: OutlineInputBorder(),
+                        isDense: true,
                       ),
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 10),
+                    TextField(
+                      controller: purposeCtrl,
+                      decoration: const InputDecoration(
+                        labelText: 'Visit Purpose',
+                        hintText: 'e.g. Seminar + student drive',
+                        border: OutlineInputBorder(),
+                        isDense: true,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          if (collegeCtrl.text.trim().isEmpty) return;
+                          CollegeSelectorField.saveCollegeIfNew(
+                            collegeCtrl.text.trim(),
+                          );
+                          final dayNum = DateFormat('dd').format(selectedDate);
+                          final month = DateFormat(
+                            'MMM',
+                          ).format(selectedDate).toUpperCase();
+                          cubit.addCollegeVisit(
+                            collegeName: collegeCtrl.text.trim(),
+                            dayNumber: dayNum,
+                            monthShort: month,
+                            subtitle: subCtrl.text.trim().isNotEmpty
+                                ? subCtrl.text.trim()
+                                : DateFormat(
+                                    'EEE · hh:mm a',
+                                  ).format(selectedDate),
+                            purpose: purposeCtrl.text.trim().isNotEmpty
+                                ? purposeCtrl.text.trim()
+                                : 'Campus outreach & student interaction',
+                          );
+                          Navigator.pop(ctx);
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF4338CA),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 13),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: const Text(
+                          'Save Visit',
+                          style: TextStyle(fontWeight: FontWeight.w700),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -884,11 +935,16 @@ class _RecentVisitCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isCompleted = visit.statusLabel == 'Completed';
+    final isCancelled = visit.statusLabel == 'Cancelled';
     final dateBg = isCompleted
         ? const Color(0xFFE6F4EA)
+        : isCancelled
+        ? const Color(0xFFFEE2E2)
         : const Color(0xFFF2F4F7);
     final dateFg = isCompleted
         ? const Color(0xFF15803D)
+        : isCancelled
+        ? const Color(0xFFB91C1C)
         : const Color(0xFF344054);
 
     return Container(

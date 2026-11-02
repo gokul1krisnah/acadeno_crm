@@ -132,4 +132,26 @@ class VisitsRds {
       );
     }
   }
+
+  /// Cancels an assigned college visit in Firestore.
+  Future<void> cancelCollegeVisit({
+    required String visitId,
+    String reason = '',
+  }) async {
+    final uid = _firebaseAuth.currentUser?.uid;
+    await _visits.doc(visitId).set({
+      'status': 'Cancelled',
+      'statusLabel': 'Cancelled',
+      'outcomeNotes':
+          reason.trim().isNotEmpty ? reason.trim() : 'Visit cancelled',
+      'cancelReason': reason.trim(),
+      'updatedByUid': uid,
+      'updatedAt': FieldValue.serverTimestamp(),
+    }, SetOptions(merge: true));
+  }
+
+  /// Permanently deletes a college visit from Firestore.
+  Future<void> deleteCollegeVisit(String visitId) async {
+    await _visits.doc(visitId).delete();
+  }
 }

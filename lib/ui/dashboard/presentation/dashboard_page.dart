@@ -1012,7 +1012,7 @@ class _Panel extends StatelessWidget {
                         fontWeight: FontWeight.w700,
                       ),
                     ),
-                    if (badge != null) badge!,
+                    ?badge,
                     trailing!,
                   ],
                 );
@@ -1031,7 +1031,10 @@ class _Panel extends StatelessWidget {
                     ),
                   ),
                   if (badge != null) ...[const SizedBox(width: 8), badge!],
-                  if (trailing != null) ...[const SizedBox(width: 10), trailing!],
+                  if (trailing != null) ...[
+                    const SizedBox(width: 10),
+                    trailing!,
+                  ],
                   const Spacer(),
                 ],
               );
@@ -1050,13 +1053,7 @@ class _StatCard extends StatelessWidget {
   final Color color;
   final IconData? icon;
 
-  const _StatCard(
-    this.label,
-    this.value,
-    this.sub,
-    this.color, {
-    this.icon,
-  });
+  const _StatCard(this.label, this.value, this.sub, this.color, {this.icon});
 
   @override
   Widget build(BuildContext context) {
@@ -1736,22 +1733,6 @@ class _CollegeVisits extends StatelessWidget {
 
   const _CollegeVisits({required this.onPlanVisit});
 
-  static const _defaultVisits = [
-    ['Thu 29', 'NIT Calicut', 'AI & ML workshop promo · Team visit', 'Planned'],
-    [
-      'Fri 30',
-      'KMCT College of Engineering',
-      'Placement cell meeting · Campus drive',
-      'Planned',
-    ],
-    [
-      'Thu 22',
-      'GEC Kozhikode',
-      'Industrial visit & student interaction',
-      'Completed',
-    ],
-  ];
-
   @override
   Widget build(BuildContext context) {
     return _Panel(
@@ -1771,9 +1752,21 @@ class _CollegeVisits extends StatelessWidget {
         builder: (context, snapshot) {
           final List<List<String>> displayVisits;
           if (snapshot.hasData && snapshot.data!.docs.isNotEmpty) {
-            displayVisits = snapshot.data!.docs.take(3).map((d) {
+            displayVisits = snapshot.data!.docs.take(5).map((d) {
               final data = d.data();
-              final day = ' ';
+              String day = '';
+              if (data['dayNumber'] != null && data['monthShort'] != null) {
+                day = '${data['dayNumber']} ${data['monthShort']}';
+              } else if (data['dateLabel'] != null &&
+                  data['dateLabel'].toString().isNotEmpty) {
+                day = data['dateLabel'].toString().split(' ').take(2).join(' ');
+              } else if (data['createdAt'] is Timestamp) {
+                day = DateFormat(
+                  'dd MMM',
+                ).format((data['createdAt'] as Timestamp).toDate());
+              } else {
+                day = DateFormat('dd MMM').format(DateTime.now());
+              }
               final name = (data['collegeName'] ?? 'College').toString();
               final desc =
                   (data['purpose'] ?? data['subtitle'] ?? 'Campus visit')
@@ -1787,6 +1780,18 @@ class _CollegeVisits extends StatelessWidget {
             displayVisits = const [];
           }
 
+          if (displayVisits.isEmpty) {
+            return const Padding(
+              padding: EdgeInsets.symmetric(vertical: 24),
+              child: Center(
+                child: Text(
+                  'No college visits scheduled yet.',
+                  style: TextStyle(color: _muted, fontSize: 13),
+                ),
+              ),
+            );
+          }
+
           return Column(
             children: [
               for (final r in displayVisits) ...[
@@ -1795,12 +1800,13 @@ class _CollegeVisits extends StatelessWidget {
                   child: Row(
                     children: [
                       SizedBox(
-                        width: 56,
+                        width: 58,
                         child: Text(
                           r[0],
                           style: const TextStyle(
                             color: _primary,
                             fontWeight: FontWeight.w600,
+                            fontSize: 12.5,
                           ),
                         ),
                       ),
@@ -1849,6 +1855,12 @@ class _CollegeVisits extends StatelessWidget {
                               'Completed',
                               const Color(0xFFDCFCE7),
                               const Color(0xFF15803D),
+                            )
+                          : r[3] == 'Cancelled'
+                          ? _badge(
+                              'Cancelled',
+                              const Color(0xFFFEE2E2),
+                              const Color(0xFFB91C1C),
                             )
                           : _badge(
                               'Planned',

@@ -20,6 +20,13 @@ class _UserManagementViewState extends State<UserManagementView> {
   String _searchQuery = '';
   String _roleFilter = 'all';
   String _statusFilter = 'all';
+  Stream<QuerySnapshot<Map<String, dynamic>>>? _usersStream;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _usersStream ??= context.read<DashboardCubit>().watchAllUsers();
+  }
 
   static const _primaryColor = Color(0xFF4338CA);
   static const _textDark = Color(0xFF0F172A);
@@ -557,7 +564,7 @@ class _UserManagementViewState extends State<UserManagementView> {
     final myUid = cubit.currentUserId;
 
     return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-      stream: cubit.watchAllUsers(),
+      stream: _usersStream ??= cubit.watchAllUsers(),
       builder: (context, snapshot) {
         final allUsers = cubit.mapAndSortUsers(snapshot.data);
 
@@ -881,19 +888,35 @@ class _UserManagementViewState extends State<UserManagementView> {
                     ],
                   ),
                   const SizedBox(height: 16),
-                  if (snapshot.connectionState == ConnectionState.waiting)
+                  if (snapshot.connectionState == ConnectionState.waiting &&
+                      !snapshot.hasData)
                     const Center(
                       child: Padding(
                         padding: EdgeInsets.all(32),
                         child: CircularProgressIndicator(),
                       ),
                     )
-                  else if (snapshot.hasError)
+                  else if (snapshot.hasError && !snapshot.hasData)
                     Padding(
                       padding: const EdgeInsets.all(16),
-                      child: Text(
-                        'Error loading users: ${snapshot.error}',
-                        style: const TextStyle(color: Colors.red),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Error loading users: ${snapshot.error}',
+                            style: const TextStyle(color: Colors.red),
+                          ),
+                          const SizedBox(height: 8),
+                          OutlinedButton.icon(
+                            onPressed: () {
+                              setState(() {
+                                _usersStream = cubit.watchAllUsers();
+                              });
+                            },
+                            icon: const Icon(Icons.refresh, size: 16),
+                            label: const Text('Retry Loading Users'),
+                          ),
+                        ],
                       ),
                     )
                   else if (filteredUsers.isEmpty)
