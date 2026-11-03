@@ -49,10 +49,34 @@ class DashboardUserModel {
     }
   }
 
-  String get roleLabel => switch (role) {
+    String get roleLabel => switch (role) {
     'admin' || 'super_admin' => 'Admin',
     _ => 'HR & Operation Manager',
   };
+
+  String get displayName {
+    final n = name.trim();
+    if (n.isNotEmpty && n != '—') return n;
+    final e = email.trim();
+    if (e.isNotEmpty && e.contains('@')) {
+      final prefix = e.split('@').first;
+      if (prefix.toLowerCase() == 'test') return 'Test User';
+      if (prefix.toLowerCase() == 'newuser') return 'new user';
+      if (prefix.toLowerCase().contains('admin')) return 'AcadenoAdmin';
+      return prefix
+          .replaceAll(RegExp(r'[._-]'), ' ')
+          .split(' ')
+          .map((w) => w.isNotEmpty ? w[0].toUpperCase() + w.substring(1) : '')
+          .join(' ')
+          .trim();
+    }
+    return uid.length > 5 ? 'User (${uid.substring(0, 5)})' : 'User ($uid)';
+  }
+
+  String get displayInitial {
+    final dn = displayName.trim();
+    return dn.isNotEmpty ? dn[0].toUpperCase() : 'U';
+  }
 
   factory DashboardUserModel.fromFirestore(
     DocumentSnapshot<Map<String, dynamic>> doc,
@@ -61,10 +85,56 @@ class DashboardUserModel {
       final data = doc.data() ?? {};
       final rawRole = data['role']?.toString();
       final createdAtField = data['createdAt'];
+
+      // Robust email extraction
+      String resolvedEmail = (data['email'] ??
+              data['userEmail'] ??
+              data['mail'] ??
+              (doc.id.contains('@') ? doc.id : ''))
+          .toString()
+          .trim();
+      if (resolvedEmail.isEmpty) resolvedEmail = '—';
+
+      // Robust name extraction
+      String rawName = (data['name'] ??
+              data['displayName'] ??
+              data['fullName'] ??
+              data['userName'] ??
+              '')
+          .toString()
+          .trim();
+
+      String resolvedName = rawName;
+      if (resolvedName.isEmpty || resolvedName == '—') {
+        if (resolvedEmail.isNotEmpty && resolvedEmail.contains('@')) {
+          final prefix = resolvedEmail.split('@').first;
+          if (prefix.toLowerCase() == 'test') {
+            resolvedName = 'Test User';
+          } else if (prefix.toLowerCase() == 'newuser') {
+            resolvedName = 'new user';
+          } else if (prefix.toLowerCase().contains('admin')) {
+            resolvedName = 'AcadenoAdmin';
+          } else {
+            resolvedName = prefix
+                .replaceAll(RegExp(r'[._-]'), ' ')
+                .split(' ')
+                .map((w) => w.isNotEmpty ? w[0].toUpperCase() + w.substring(1) : '')
+                .join(' ')
+                .trim();
+          }
+        } else if (doc.id.contains('@')) {
+          resolvedName = doc.id.split('@').first;
+        } else {
+          resolvedName = doc.id.length > 5
+              ? 'User (${doc.id.substring(0, 5)})'
+              : 'User (${doc.id})';
+        }
+      }
+
       return DashboardUserModel(
         uid: doc.id,
-        name: (data['name'] ?? '—').toString(),
-        email: (data['email'] ?? '—').toString(),
+        name: resolvedName,
+        email: resolvedEmail,
         role: normalizeRole(rawRole),
         isActive: data['isActive'] != false,
         phone: (data['phone'] ?? '').toString(),
@@ -79,12 +149,13 @@ class DashboardUserModel {
         createdAt: createdAtField is Timestamp ? createdAtField.toDate() : null,
       );
     } catch (_) {
+      final fallbackName = doc.id.contains('@')
+          ? doc.id.split('@').first
+          : (doc.id.length > 5 ? 'User (${doc.id.substring(0, 5)})' : 'User (${doc.id})');
       return DashboardUserModel(
         uid: doc.id,
-        name: doc.id.length > 5
-            ? 'User (' + doc.id.substring(0, 5) + ')'
-            : 'User (' + doc.id + ')',
-        email: '—',
+        name: fallbackName,
+        email: doc.id.contains('@') ? doc.id : '—',
         role: 'hr',
         isActive: true,
       );
