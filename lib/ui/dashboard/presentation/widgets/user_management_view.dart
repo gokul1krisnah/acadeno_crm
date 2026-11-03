@@ -632,13 +632,23 @@ class _UserManagementViewState extends State<UserManagementView> {
                   children: [
                     OutlinedButton.icon(
                       onPressed: () => _openAddUserDialog(byUid: true),
-                      icon: const Icon(Icons.key_outlined, size: 16),
-                      label: const Text('Add by UID'),
+                      icon: const Icon(Icons.key_outlined, size: 16, color: Color(0xFF475467)),
+                      label: const Text(
+                        'Add by UID',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF334155),
+                        ),
+                      ),
                       style: OutlinedButton.styleFrom(
-                        foregroundColor: _textDark,
-                        side: const BorderSide(color: Color(0xFFD0D5DD)),
+                        backgroundColor: Colors.white,
+                        side: const BorderSide(color: Color(0xFFE2E8F0)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 14,
+                          horizontal: 16,
                           vertical: 10,
                         ),
                       ),
@@ -646,16 +656,22 @@ class _UserManagementViewState extends State<UserManagementView> {
                     ElevatedButton.icon(
                       onPressed: () => _openAddUserDialog(byUid: false),
                       icon: const Icon(
-                        Icons.person_add_alt_1_rounded,
-                        size: 16,
+                        Icons.add,
+                        size: 18,
                       ),
-                      label: const Text('Add User'),
+                      label: const Text(
+                        'Add User',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: _primaryColor,
+                        backgroundColor: const Color(0xFF4F46E5),
                         foregroundColor: Colors.white,
                         elevation: 0,
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
+                          horizontal: 18,
                           vertical: 10,
                         ),
                         shape: RoundedRectangleBorder(
@@ -1041,10 +1057,10 @@ class _UserManagementViewState extends State<UserManagementView> {
 
   Widget _badge(String text, Color bg, Color fg) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
       decoration: BoxDecoration(
         color: bg,
-        borderRadius: BorderRadius.circular(6),
+        borderRadius: BorderRadius.circular(20),
       ),
       child: Text(
         text,
@@ -1150,17 +1166,30 @@ class _UserManagementViewState extends State<UserManagementView> {
                         padding: const EdgeInsets.only(right: 14),
                         child: Row(
                           children: [
-                            CircleAvatar(
-                              radius: 16,
-                              backgroundColor: const Color(0xFFEEF0FF),
+                            Container(
+                              width: 32,
+                              height: 32,
+                              decoration: BoxDecoration(
+                                color: user.name.toLowerCase().contains('admin')
+                                    ? const Color(0xFFFEF3C7)
+                                    : (user.name.toLowerCase().contains('test')
+                                        ? const Color(0xFFF3E8FF)
+                                        : const Color(0xFFEEF2FF)),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              alignment: Alignment.center,
                               child: Text(
                                 user.name.isNotEmpty
                                     ? user.name[0].toUpperCase()
                                     : 'U',
-                                style: const TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w700,
-                                  color: _primaryColor,
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w800,
+                                  color: user.name.toLowerCase().contains('admin')
+                                      ? const Color(0xFFD97706)
+                                      : (user.name.toLowerCase().contains('test')
+                                          ? const Color(0xFF9333EA)
+                                          : const Color(0xFF4F46E5)),
                                 ),
                               ),
                             ),
@@ -1197,11 +1226,12 @@ class _UserManagementViewState extends State<UserManagementView> {
                                             ),
                                           ),
                                           child: const Text(
-                                            'you',
+                                            'YOU',
                                             style: TextStyle(
-                                              fontSize: 10,
-                                              fontWeight: FontWeight.w600,
-                                              color: _primaryColor,
+                                              fontSize: 9.5,
+                                              fontWeight: FontWeight.w700,
+                                              letterSpacing: 0.4,
+                                              color: Color(0xFF4F46E5),
                                             ),
                                           ),
                                         ),
@@ -1375,12 +1405,14 @@ class _UserManagementViewState extends State<UserManagementView> {
                                   const SizedBox(height: 1),
                                   Text(
                                     user.deviceBound
-                                        ? 'Registered Phone'
-                                        : 'Pending Binding',
+                                        ? 'REGISTERED PHONE'
+                                        : 'PENDING BINDING',
                                     style: TextStyle(
-                                      fontSize: 10.5,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w700,
+                                      letterSpacing: 0.3,
                                       color: user.deviceBound
-                                          ? const Color(0xFF15803D)
+                                          ? const Color(0xFF16A34A)
                                           : const Color(0xFFD97706),
                                     ),
                                   ),
@@ -1395,9 +1427,9 @@ class _UserManagementViewState extends State<UserManagementView> {
                                 minHeight: 28,
                               ),
                               icon: const Icon(
-                                Icons.phonelink_erase_rounded,
+                                Icons.cancel_rounded,
                                 size: 16,
-                                color: Color(0xFF64748B),
+                                color: Color(0xFFCBD5E1),
                               ),
                               tooltip: 'Reset Phone Binding (PR-5.1)',
                               onPressed: () =>
@@ -1419,7 +1451,7 @@ class _UserManagementViewState extends State<UserManagementView> {
                             scale: 0.85,
                             child: Switch(
                               value: user.isActive,
-                              activeThumbColor: _primaryColor,
+                              activeThumbColor: const Color(0xFF4F46E5),
                               onChanged: isMe
                                   ? null
                                   : (val) {
@@ -1467,9 +1499,9 @@ class _UserManagementViewState extends State<UserManagementView> {
                                 minHeight: 32,
                               ),
                               icon: const Icon(
-                                Icons.manage_accounts_outlined,
+                                Icons.groups_rounded,
                                 size: 18,
-                                color: _primaryColor,
+                                color: Color(0xFF4F46E5),
                               ),
                               tooltip: 'Admin Account & Password',
                               onPressed: () => showAdminAccountDialog(context, {
@@ -1574,7 +1606,7 @@ class _UserManagementViewState extends State<UserManagementView> {
                         ),
                         Switch(
                           value: user.isActive,
-                          activeThumbColor: _primaryColor,
+                          activeThumbColor: const Color(0xFF4F46E5),
                           onChanged: isMe
                               ? null
                               : (val) {

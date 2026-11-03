@@ -924,53 +924,56 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                   runSpacing: 10,
                   children: [
                     SizedBox(
-                      height: 42,
+                      height: 40,
                       child: OutlinedButton.icon(
                         style: OutlinedButton.styleFrom(
                           backgroundColor: Colors.white,
-                          foregroundColor: _text,
-                          side: const BorderSide(color: _border),
+                          foregroundColor: const Color(0xFF334155),
+                          side: const BorderSide(color: Color(0xFFE2E8F0)),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: BorderRadius.circular(10),
                           ),
+                          padding: const EdgeInsets.symmetric(horizontal: 14),
                         ),
                         onPressed: cubit.refresh,
-                        icon: const Icon(Icons.refresh_rounded, size: 18),
+                        icon: const Icon(Icons.refresh_rounded, size: 16, color: Color(0xFF475467)),
                         label: const Text(
                           'Refresh',
-                          style: TextStyle(fontWeight: FontWeight.w600),
+                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
                         ),
                       ),
                     ),
                     SizedBox(
-                      height: 42,
+                      height: 40,
                       child: OutlinedButton.icon(
                         style: OutlinedButton.styleFrom(
                           backgroundColor: Colors.white,
-                          foregroundColor: _text,
-                          side: const BorderSide(color: _border),
+                          foregroundColor: const Color(0xFF334155),
+                          side: const BorderSide(color: Color(0xFFE2E8F0)),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: BorderRadius.circular(10),
                           ),
+                          padding: const EdgeInsets.symmetric(horizontal: 14),
                         ),
                         onPressed: () => _tryDashboardCubit()?.selectNav(5),
-                        icon: const Icon(Icons.upload_file_rounded, size: 16),
+                        icon: const Icon(Icons.upload_file_rounded, size: 16, color: Color(0xFF475467)),
                         label: const Text(
                           'Import Leads',
-                          style: TextStyle(fontWeight: FontWeight.w600),
+                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
                         ),
                       ),
                     ),
                     SizedBox(
-                      height: 42,
+                      height: 40,
                       child: OutlinedButton.icon(
                         style: OutlinedButton.styleFrom(
                           backgroundColor: Colors.white,
-                          foregroundColor: _text,
-                          side: const BorderSide(color: _border),
+                          foregroundColor: const Color(0xFF334155),
+                          side: const BorderSide(color: Color(0xFFE2E8F0)),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: BorderRadius.circular(10),
                           ),
+                          padding: const EdgeInsets.symmetric(horizontal: 14),
                         ),
                         onPressed: () async {
                           final leadsToExport = state.filteredLeads;
@@ -990,33 +993,35 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                             SnackBarAlert.showToast(
                               context: context,
                               message: success
-                                  ? 'Successfully exported \ leads to CSV!'
-                                  : 'Export copied to clipboard (\ leads)',
+                                  ? 'Successfully exported leads to CSV!'
+                                  : 'Export copied to clipboard',
                             );
                           }
                         },
-                        icon: const Icon(Icons.download_rounded, size: 16),
+                        icon: const Icon(Icons.download_rounded, size: 16, color: Color(0xFF475467)),
                         label: Text(
-                          'Export (\)',
-                          style: const TextStyle(fontWeight: FontWeight.w600),
+                          'Export (${state.filteredLeads.isNotEmpty ? state.filteredLeads.length : ""})',
+                          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
                         ),
                       ),
                     ),
                     SizedBox(
-                      height: 42,
-                      child: ElevatedButton(
+                      height: 40,
+                      child: ElevatedButton.icon(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: _primary,
+                          backgroundColor: const Color(0xFF4F46E5),
                           foregroundColor: Colors.white,
                           elevation: 0,
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: BorderRadius.circular(10),
                           ),
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
                         ),
                         onPressed: () => _openAddLeadDialog(context, state),
-                        child: const Text(
-                          '+ Add lead',
-                          style: TextStyle(fontWeight: FontWeight.w600),
+                        icon: const Icon(Icons.add, size: 16),
+                        label: const Text(
+                          'Add lead',
+                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
                         ),
                       ),
                     ),
@@ -1190,200 +1195,220 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
               ),
             ),
             const SizedBox(height: 16),
-
-            // Dark Bulk Selection & Assignment Bar
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              decoration: BoxDecoration(
-                color: _text,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Wrap(
-                alignment: WrapAlignment.spaceBetween,
-                crossAxisAlignment: WrapCrossAlignment.center,
-                spacing: 12,
-                runSpacing: 10,
-                children: [
-                  Text(
-                    '${state.selectedLeadIds.length} leads selected',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 15,
-                      fontWeight: FontWeight.w700,
+            // Dark Bulk Selection & Assignment Bar - ONLY SHOWN WHEN SELECTING TICK
+            if (state.selectedLeadIds.isNotEmpty) ...[
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF0F172A),
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.1),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
                     ),
-                  ),
-                  Wrap(
-                    crossAxisAlignment: WrapCrossAlignment.center,
-                    spacing: 10,
-                    runSpacing: 8,
-                    children: [
-                      const Text(
-                        'Assign to',
-                        style: TextStyle(
-                          color: Color(0xFF9CA3AF),
-                          fontSize: 13,
-                        ),
+                  ],
+                ),
+                child: Wrap(
+                  alignment: WrapAlignment.spaceBetween,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  spacing: 16,
+                  runSpacing: 12,
+                  children: [
+                    Text(
+                      '${state.selectedLeadIds.length} leads selected',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 14.5,
+                        fontWeight: FontWeight.w700,
                       ),
-                      Container(
-                        height: 38,
-                        padding: const EdgeInsets.symmetric(horizontal: 12),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(8),
+                    ),
+                    Wrap(
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      spacing: 12,
+                      runSpacing: 8,
+                      children: [
+                        const Text(
+                          'Assign to',
+                          style: TextStyle(
+                            color: Color(0xFF94A3B8),
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
-                        child: DropdownButtonHideUnderline(
-                          child: state.activeExecutives.isEmpty
-                              ? const Center(
-                                  child: Text(
-                                    'No active HR users',
-                                    style: TextStyle(
-                                      color: _muted,
+                        Container(
+                          height: 38,
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF1E293B),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: const Color(0xFF334155)),
+                          ),
+                          child: DropdownButtonHideUnderline(
+                            child: state.activeExecutives.isEmpty
+                                ? const Center(
+                                    child: Text(
+                                      'No active HR users',
+                                      style: TextStyle(
+                                        color: Color(0xFF94A3B8),
+                                        fontSize: 13,
+                                      ),
+                                    ),
+                                  )
+                                : DropdownButton<String>(
+                                    dropdownColor: const Color(0xFF1E293B),
+                                    value: state.selectedExecutive?.uid,
+                                    isDense: true,
+                                    icon: const Icon(
+                                      Icons.keyboard_arrow_down_rounded,
+                                      size: 18,
+                                      color: Color(0xFF94A3B8),
+                                    ),
+                                    style: const TextStyle(
+                                      color: Colors.white,
                                       fontSize: 13,
                                       fontWeight: FontWeight.w600,
                                     ),
+                                    items: state.activeExecutives.map((exec) {
+                                      final count = state
+                                          .assignmentCountForExecutive(exec.uid);
+                                      return DropdownMenuItem<String>(
+                                        value: exec.uid,
+                                        child: Text(
+                                          '${exec.name} ($count today)',
+                                        ),
+                                      );
+                                    }).toList(),
+                                    onChanged: (uid) {
+                                      if (uid != null) {
+                                        cubit.selectExecutive(uid);
+                                      }
+                                    },
                                   ),
-                                )
-                              : DropdownButton<String>(
-                                  value: state.selectedExecutive?.uid,
+                          ),
+                        ),
+                        const Text(
+                          'for',
+                          style: TextStyle(
+                            color: Color(0xFF94A3B8),
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        Container(
+                          height: 38,
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF1E293B),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: const Color(0xFF334155)),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              DropdownButtonHideUnderline(
+                                child: DropdownButton<String>(
+                                  dropdownColor: const Color(0xFF1E293B),
+                                  value: state.selectedDateKey,
                                   isDense: true,
+                                  icon: const Icon(
+                                    Icons.keyboard_arrow_down_rounded,
+                                    size: 18,
+                                    color: Color(0xFF94A3B8),
+                                  ),
                                   style: const TextStyle(
-                                    color: _text,
+                                    color: Colors.white,
                                     fontSize: 13,
                                     fontWeight: FontWeight.w600,
                                   ),
-                                  items: state.activeExecutives.map((exec) {
-                                    final count = state
-                                        .assignmentCountForExecutive(exec.uid);
-                                    return DropdownMenuItem<String>(
-                                      value: exec.uid,
-                                      child: Text(
-                                        '${exec.name} ($count today)',
-                                      ),
-                                    );
-                                  }).toList(),
-                                  onChanged: (uid) {
-                                    if (uid != null) {
-                                      cubit.selectExecutive(uid);
+                                  items: state.dateOptions
+                                      .map(
+                                        (d) => DropdownMenuItem<String>(
+                                          value: d.dateKey,
+                                          child: Text(d.label),
+                                        ),
+                                      )
+                                      .toList(),
+                                  onChanged: (key) {
+                                    if (key != null) {
+                                      cubit.selectAssignmentDate(key);
                                     }
                                   },
                                 ),
-                        ),
-                      ),
-                      const Text(
-                        'for',
-                        style: TextStyle(
-                          color: Color(0xFF9CA3AF),
-                          fontSize: 13,
-                        ),
-                      ),
-                      Container(
-                        height: 38,
-                        padding: const EdgeInsets.symmetric(horizontal: 10),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: _border),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            DropdownButtonHideUnderline(
-                              child: DropdownButton<String>(
-                                value: state.selectedDateKey,
-                                isDense: true,
-                                style: const TextStyle(
-                                  color: _text,
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                                items: state.dateOptions
-                                    .map(
-                                      (d) => DropdownMenuItem<String>(
-                                        value: d.dateKey,
-                                        child: Text(d.label),
-                                      ),
-                                    )
-                                    .toList(),
-                                onChanged: (key) {
-                                  if (key != null) {
-                                    cubit.selectAssignmentDate(key);
+                              ),
+                              const SizedBox(width: 8),
+                              InkWell(
+                                onTap: () async {
+                                  final now = DateTime.now();
+                                  final parsed =
+                                      DateTime.tryParse(state.selectedDateKey) ??
+                                      now;
+                                  final picked = await showDatePicker(
+                                    context: context,
+                                    initialDate: parsed,
+                                    firstDate: DateTime(2024),
+                                    lastDate: DateTime(2030),
+                                    builder: (ctx, child) {
+                                      return Theme(
+                                        data: Theme.of(ctx).copyWith(
+                                          colorScheme: const ColorScheme.light(
+                                            primary: Color(0xFF4F46E5),
+                                            onPrimary: Colors.white,
+                                            onSurface: Color(0xFF0F172A),
+                                          ),
+                                        ),
+                                        child: child!,
+                                      );
+                                    },
+                                  );
+                                  if (picked != null) {
+                                    cubit.selectCustomAssignmentDate(picked);
                                   }
                                 },
-                              ),
-                            ),
-                            const SizedBox(width: 4),
-                            InkWell(
-                              onTap: () async {
-                                final now = DateTime.now();
-                                final parsed =
-                                    DateTime.tryParse(state.selectedDateKey) ??
-                                    now;
-                                final picked = await showDatePicker(
-                                  context: context,
-                                  initialDate: parsed,
-                                  firstDate: DateTime(2024),
-                                  lastDate: DateTime(2030),
-                                  builder: (ctx, child) {
-                                    return Theme(
-                                      data: Theme.of(ctx).copyWith(
-                                        colorScheme: const ColorScheme.light(
-                                          primary: Color(0xFF4338CA),
-                                          onPrimary: Colors.white,
-                                          onSurface: Color(0xFF0F172A),
-                                        ),
-                                      ),
-                                      child: child!,
-                                    );
-                                  },
-                                );
-                                if (picked != null) {
-                                  cubit.selectCustomAssignmentDate(picked);
-                                }
-                              },
-                              borderRadius: BorderRadius.circular(4),
-                              child: const Padding(
-                                padding: EdgeInsets.all(4.0),
-                                child: Icon(
+                                borderRadius: BorderRadius.circular(4),
+                                child: const Icon(
                                   Icons.calendar_month_rounded,
-                                  size: 18,
-                                  color: Color(0xFF4338CA),
+                                  size: 16,
+                                  color: Color(0xFF818CF8),
                                 ),
                               ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      SizedBox(
-                        height: 38,
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: _amber,
-                            foregroundColor: _text,
-                            elevation: 0,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
-                          onPressed:
-                              state.selectedLeadIds.isEmpty ||
-                                  state.activeExecutives.isEmpty ||
-                                  state.isSubmitting
-                              ? null
-                              : () =>
-                                    _openReviewAssignmentDialog(context, state),
-                          child: const Text(
-                            'Assign',
-                            style: TextStyle(fontWeight: FontWeight.w700),
+                            ],
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-                ],
+                        SizedBox(
+                          height: 38,
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF4F46E5),
+                              foregroundColor: Colors.white,
+                              elevation: 0,
+                              padding: const EdgeInsets.symmetric(horizontal: 18),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                            onPressed:
+                                state.selectedLeadIds.isEmpty ||
+                                    state.activeExecutives.isEmpty ||
+                                    state.isSubmitting
+                                ? null
+                                : () =>
+                                      _openReviewAssignmentDialog(context, state),
+                            child: const Text(
+                              'Assign',
+                              style: TextStyle(fontWeight: FontWeight.w700),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
-            ),
-            const SizedBox(height: 16),
+              const SizedBox(height: 16),
+            ],
 
             // Leads Table Card (Loading, Error, Empty, or Data rows)
             Container(
@@ -1677,7 +1702,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                   const Expanded(flex: 3, child: Text('NAME', style: h)),
                   const Expanded(
                     flex: 3,
-                    child: Text('COLLEGE · BRANCH', style: h),
+                    child: Text('COLLEGE - BRANCH', style: h),
                   ),
                   const Expanded(flex: 2, child: Text('SOURCE', style: h)),
                   const Expanded(flex: 2, child: Text('STATUS', style: h)),

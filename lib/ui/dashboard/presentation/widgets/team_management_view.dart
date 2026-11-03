@@ -220,13 +220,23 @@ class _TeamManagementViewState extends State<TeamManagementView> {
                             activeUsers,
                             filteredLeads,
                           ),
-                          icon: const Icon(Icons.download_outlined, size: 16),
-                          label: const Text('Watermarked Export (Super Admin)'),
+                          icon: const Icon(Icons.download_rounded, size: 16, color: Color(0xFF334155)),
+                          label: const Text(
+                            'Watermarked Export (Super Admin)',
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFF334155),
+                            ),
+                          ),
                           style: OutlinedButton.styleFrom(
-                            foregroundColor: const Color(0xFF0F172A),
-                            side: const BorderSide(color: Color(0xFFD0D5DD)),
+                            backgroundColor: Colors.white,
+                            side: const BorderSide(color: Color(0xFFE2E8F0)),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
                             padding: const EdgeInsets.symmetric(
-                              horizontal: 14,
+                              horizontal: 16,
                               vertical: 10,
                             ),
                           ),
@@ -463,18 +473,37 @@ class _TeamManagementViewState extends State<TeamManagementView> {
                   ),
                 ],
               ),
-              SizedBox(
-                width: 140,
-                child: AcadenoDropdown.strings(
-                  value: _selectedDateRange,
-                  items: const ['Today', 'This week', 'This month', 'All Time'],
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 6,
+              Container(
+                height: 36,
+                padding: const EdgeInsets.symmetric(horizontal: 14),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: const Color(0xFFE2E8F0)),
+                ),
+                child: DropdownButtonHideUnderline(
+                  child: DropdownButton<String>(
+                    value: _selectedDateRange,
+                    icon: const Icon(
+                      Icons.keyboard_arrow_down_rounded,
+                      size: 18,
+                      color: Color(0xFF64748B),
+                    ),
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF334155),
+                    ),
+                    items: const [
+                      DropdownMenuItem(value: 'All Time', child: Text('All Time')),
+                      DropdownMenuItem(value: 'Today', child: Text('Today')),
+                      DropdownMenuItem(value: 'This week', child: Text('This week')),
+                      DropdownMenuItem(value: 'This month', child: Text('This month')),
+                    ],
+                    onChanged: (v) {
+                      if (v != null) setState(() => _selectedDateRange = v);
+                    },
                   ),
-                  onChanged: (v) {
-                    if (v != null) setState(() => _selectedDateRange = v);
-                  },
                 ),
               ),
             ],
@@ -626,15 +655,14 @@ class _TeamManagementViewState extends State<TeamManagementView> {
                                     ),
                                   ),
                                   Text(
-                                    user.roleLabel,
+                                    user.isAdminRole ? 'ADMIN' : 'HR & OPERATION MANAGER',
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(
-                                      fontSize: 10.5,
-                                      fontWeight: FontWeight.w600,
-                                      color: user.isAdminRole
-                                          ? const Color(0xFF4338CA)
-                                          : const Color(0xFF0284C7),
+                                    style: const TextStyle(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w700,
+                                      color: Color(0xFF2563EB),
+                                      letterSpacing: 0.3,
                                     ),
                                   ),
                                 ],
