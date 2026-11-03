@@ -388,10 +388,9 @@ class LeadRecord {
         (data['course'] ?? data['workshop'] ?? data['program'] ?? '')
             .toString()
             .trim();
-    final rawFee =
-        (data['fee'] ?? data['courseFee'] ?? data['amount'] ?? '')
-            .toString()
-            .trim();
+    final rawFee = (data['fee'] ?? data['courseFee'] ?? data['amount'] ?? '')
+        .toString()
+        .trim();
     final rawConsent =
         (data['consent'] ?? data['consentBasis'] ?? data['consentSource'] ?? '')
             .toString()

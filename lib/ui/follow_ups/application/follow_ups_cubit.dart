@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/services/app_notification_service.dart';
 import '../data/model/follow_up_models.dart';
 import '../data/repository/follow_ups_repo.dart';
 import 'follow_ups_state.dart';
@@ -9,10 +10,13 @@ import 'follow_ups_state.dart';
 class FollowUpsCubit extends Cubit<FollowUpsState> {
   final FollowUpsRepository _repository;
   StreamSubscription<List<ExecutiveFollowUpItem>>? _sub;
+  Timer? _periodicCheckTimer;
+  final Set<String> _notifiedOverdueIds = <String>{};
 
   FollowUpsCubit(this._repository)
-      : super(FollowUpsState(followUps: _repository.fetchFollowUps())) {
+    : super(FollowUpsState(followUps: _repository.fetchFollowUps())) {
     _subscribe();
+    _startPeriodicOverdueCheck();
   }
 
   void _subscribe() {
@@ -20,12 +24,63 @@ class FollowUpsCubit extends Cubit<FollowUpsState> {
     _sub = _repository.watchFollowUps().listen(
       (liveItems) {
         if (isClosed) return;
-        emit(state.copyWith(followUps: liveItems));
+        emit(state.copyWith(followUps: liveItems, isLoading: false));
+        _notifyOverdueItems(liveItems);
       },
       onError: (_) {
-        // Fallback gracefully if offline
+        if (isClosed) return;
+        emit(state.copyWith(isLoading: false));
       },
     );
+  }
+
+  void _startPeriodicOverdueCheck() {
+    _periodicCheckTimer?.cancel();
+    // Re-check every 30 seconds so time-sensitive slots transition to Overdue automatically
+    _periodicCheckTimer = Timer.periodic(const Duration(seconds: 30), (_) {
+      if (!isClosed) {
+        refresh(silent: true);
+      }
+    });
+  }
+
+  /// Refreshes follow-ups directly from Cloud Firestore.
+  Future<void> refresh({bool silent = false}) async {
+    if (!silent) {
+      emit(state.copyWith(isLoading: true));
+    }
+    try {
+      final items = await _repository.fetchLiveFollowUps();
+      if (!isClosed) {
+        emit(state.copyWith(followUps: items, isLoading: false));
+        _notifyOverdueItems(items);
+      }
+    } catch (_) {
+      if (!isClosed) {
+        emit(state.copyWith(isLoading: false));
+      }
+    }
+  }
+
+  /// Triggers push notification and in-app alerts for any newly detected overdue follow-ups
+  void _notifyOverdueItems(List<ExecutiveFollowUpItem> items) {
+    final overdue = items
+        .where((f) => !f.isCompleted && f.bucket == FollowUpBucket.overdue)
+        .toList();
+
+    for (final item in overdue) {
+      if (!_notifiedOverdueIds.contains(item.id)) {
+        _notifiedOverdueIds.add(item.id);
+
+        AppNotificationService.instance.showNativeNotification(
+          title: '⚠️ Overdue Follow-up: ${item.leadName}',
+          body:
+              '${item.leadName} (${item.collegeInfo}) was scheduled for ${item.timeLabel} and is now overdue.',
+          tag: 'followup_overdue_${item.id}',
+          id: item.id.hashCode,
+        );
+      }
+    }
   }
 
   void selectFollowUpBucket(FollowUpBucket bucket) {
@@ -145,6 +200,7 @@ class FollowUpsCubit extends Cubit<FollowUpsState> {
   @override
   Future<void> close() {
     _sub?.cancel();
+    _periodicCheckTimer?.cancel();
     return super.close();
   }
 }

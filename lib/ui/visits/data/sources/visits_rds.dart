@@ -12,8 +12,8 @@ class VisitsRds {
   final FirebaseAuth _firebaseAuth;
 
   VisitsRds({FirebaseFirestore? firestore, FirebaseAuth? firebaseAuth})
-      : _firestore = firestore ?? FirebaseFirestore.instance,
-        _firebaseAuth = firebaseAuth ?? FirebaseAuth.instance;
+    : _firestore = firestore ?? FirebaseFirestore.instance,
+      _firebaseAuth = firebaseAuth ?? FirebaseAuth.instance;
 
   CollectionReference<Map<String, dynamic>> get _visits =>
       _firestore.collection('college_visits');
@@ -26,8 +26,8 @@ class VisitsRds {
       }
       return snap.docs.map((doc) {
         final data = doc.data();
-        final status =
-            (data['status'] ?? data['statusLabel'] ?? 'Planned').toString();
+        final status = (data['status'] ?? data['statusLabel'] ?? 'Planned')
+            .toString();
         final rawInitials = data['staffInitials'];
         final List<String> staffInitials = rawInitials is List
             ? rawInitials.map((e) => e.toString()).toList()
@@ -46,8 +46,8 @@ class VisitsRds {
               .toString(),
           leadsCollected: (data['leadsCollected'] as num?)?.toInt() ?? 0,
           interestedCount: (data['interestedCount'] as num?)?.toInt() ?? 0,
-          metSummary:
-              (data['metSummary'] ?? data['outcomeNotes'] ?? '').toString(),
+          metSummary: (data['metSummary'] ?? data['outcomeNotes'] ?? '')
+              .toString(),
           nextActionSummary: (data['nextActionSummary'] ?? '').toString(),
           isUpcoming: status != 'Completed' && status != 'Cancelled',
         );
@@ -142,8 +142,9 @@ class VisitsRds {
     await _visits.doc(visitId).set({
       'status': 'Cancelled',
       'statusLabel': 'Cancelled',
-      'outcomeNotes':
-          reason.trim().isNotEmpty ? reason.trim() : 'Visit cancelled',
+      'outcomeNotes': reason.trim().isNotEmpty
+          ? reason.trim()
+          : 'Visit cancelled',
       'cancelReason': reason.trim(),
       'updatedByUid': uid,
       'updatedAt': FieldValue.serverTimestamp(),

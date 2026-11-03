@@ -8,8 +8,15 @@ class FollowUpsRepository {
 
   List<ExecutiveFollowUpItem> fetchFollowUps() => _rds.fetchFollowUps();
 
+  Future<List<ExecutiveFollowUpItem>> fetchLiveFollowUps({
+    String? executiveUid,
+  }) => _rds.fetchLiveFollowUps(executiveUid: executiveUid);
+
   Stream<List<ExecutiveFollowUpItem>> watchFollowUps({String? executiveUid}) =>
       _rds.watchFollowUps(executiveUid: executiveUid);
+
+  Stream<List<ExecutiveFollowUpItem>> watchAllFollowUps() =>
+      _rds.watchAllFollowUps();
 
   Future<void> completeFollowUp(String id) => _rds.completeFollowUp(id);
 

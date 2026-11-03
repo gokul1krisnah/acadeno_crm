@@ -361,13 +361,18 @@ class _SettingsViewState extends State<SettingsView>
           // 1. Profile Name Card
           _buildCard(
             title: 'Admin Profile',
-            subtitle: 'Change your public display name shown across audit logs and lead assignments.',
+            subtitle:
+                'Change your public display name shown across audit logs and lead assignments.',
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
                   'Display Name',
-                  style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600, color: _text),
+                  style: TextStyle(
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w600,
+                    color: _text,
+                  ),
                 ),
                 const SizedBox(height: 6),
                 Row(
@@ -376,8 +381,15 @@ class _SettingsViewState extends State<SettingsView>
                       child: TextField(
                         controller: _nameController,
                         decoration: InputDecoration(
-                          prefixIcon: const Icon(Icons.person_outline, size: 18, color: _muted),
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                          prefixIcon: const Icon(
+                            Icons.person_outline,
+                            size: 18,
+                            color: _muted,
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 10,
+                          ),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
                             borderSide: const BorderSide(color: _border),
@@ -395,14 +407,22 @@ class _SettingsViewState extends State<SettingsView>
                       style: ElevatedButton.styleFrom(
                         backgroundColor: _primary,
                         foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 14,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
                       ),
                       child: _isSavingName
                           ? const SizedBox(
                               width: 16,
                               height: 16,
-                              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
                             )
                           : const Text('Save Name'),
                     ),
@@ -423,14 +443,25 @@ class _SettingsViewState extends State<SettingsView>
               children: [
                 const Text(
                   'New Email Address',
-                  style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600, color: _text),
+                  style: TextStyle(
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w600,
+                    color: _text,
+                  ),
                 ),
                 const SizedBox(height: 6),
                 TextField(
                   controller: _emailController,
                   decoration: InputDecoration(
-                    prefixIcon: const Icon(Icons.email_outlined, size: 18, color: _muted),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    prefixIcon: const Icon(
+                      Icons.email_outlined,
+                      size: 18,
+                      color: _muted,
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 10,
+                    ),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
                       borderSide: const BorderSide(color: _border),
@@ -444,23 +475,38 @@ class _SettingsViewState extends State<SettingsView>
                 const SizedBox(height: 12),
                 const Text(
                   'Current Password (for authorization)',
-                  style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600, color: _text),
+                  style: TextStyle(
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w600,
+                    color: _text,
+                  ),
                 ),
                 const SizedBox(height: 6),
                 TextField(
                   controller: _emailPasswordController,
                   obscureText: _obscureEmailPass,
                   decoration: InputDecoration(
-                    prefixIcon: const Icon(Icons.lock_outline, size: 18, color: _muted),
+                    prefixIcon: const Icon(
+                      Icons.lock_outline,
+                      size: 18,
+                      color: _muted,
+                    ),
                     suffixIcon: IconButton(
                       icon: Icon(
-                        _obscureEmailPass ? Icons.visibility_off : Icons.visibility,
+                        _obscureEmailPass
+                            ? Icons.visibility_off
+                            : Icons.visibility,
                         size: 18,
                         color: _muted,
                       ),
-                      onPressed: () => setState(() => _obscureEmailPass = !_obscureEmailPass),
+                      onPressed: () => setState(
+                        () => _obscureEmailPass = !_obscureEmailPass,
+                      ),
                     ),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 10,
+                    ),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
                       borderSide: const BorderSide(color: _border),
@@ -477,14 +523,22 @@ class _SettingsViewState extends State<SettingsView>
                   style: ElevatedButton.styleFrom(
                     backgroundColor: _primary,
                     foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 12,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
                   ),
                   child: _isSavingEmail
                       ? const SizedBox(
                           width: 16,
                           height: 16,
-                          child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
                         )
                       : const Text('Update Email'),
                 ),
@@ -497,27 +551,53 @@ class _SettingsViewState extends State<SettingsView>
           // 3. Password Card
           _buildCard(
             title: 'Change Password',
-            subtitle: 'Ensure your account has a strong password of at least 6 characters.',
+            subtitle:
+                'Ensure your account has a strong password of at least 6 characters.',
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
                   'Current Password',
-                  style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600, color: _text),
+                  style: TextStyle(
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w600,
+                    color: _text,
+                  ),
                 ),
                 const SizedBox(height: 6),
                 TextField(
                   controller: _currentPasswordController,
                   obscureText: _obscureCurrentPass,
                   decoration: InputDecoration(
-                    prefixIcon: const Icon(Icons.lock_outline, size: 18, color: _muted),
-                    suffixIcon: IconButton(
-                      icon: Icon(_obscureCurrentPass ? Icons.visibility_off : Icons.visibility, size: 18, color: _muted),
-                      onPressed: () => setState(() => _obscureCurrentPass = !_obscureCurrentPass),
+                    prefixIcon: const Icon(
+                      Icons.lock_outline,
+                      size: 18,
+                      color: _muted,
                     ),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: _border)),
-                    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: _border)),
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _obscureCurrentPass
+                            ? Icons.visibility_off
+                            : Icons.visibility,
+                        size: 18,
+                        color: _muted,
+                      ),
+                      onPressed: () => setState(
+                        () => _obscureCurrentPass = !_obscureCurrentPass,
+                      ),
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 10,
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: const BorderSide(color: _border),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: const BorderSide(color: _border),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -527,20 +607,48 @@ class _SettingsViewState extends State<SettingsView>
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text('New Password', style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600, color: _text)),
+                          const Text(
+                            'New Password',
+                            style: TextStyle(
+                              fontSize: 12.5,
+                              fontWeight: FontWeight.w600,
+                              color: _text,
+                            ),
+                          ),
                           const SizedBox(height: 6),
                           TextField(
                             controller: _newPasswordController,
                             obscureText: _obscureNewPass,
                             decoration: InputDecoration(
-                              prefixIcon: const Icon(Icons.lock_outline, size: 18, color: _muted),
-                              suffixIcon: IconButton(
-                                icon: Icon(_obscureNewPass ? Icons.visibility_off : Icons.visibility, size: 18, color: _muted),
-                                onPressed: () => setState(() => _obscureNewPass = !_obscureNewPass),
+                              prefixIcon: const Icon(
+                                Icons.lock_outline,
+                                size: 18,
+                                color: _muted,
                               ),
-                              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: _border)),
-                              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: _border)),
+                              suffixIcon: IconButton(
+                                icon: Icon(
+                                  _obscureNewPass
+                                      ? Icons.visibility_off
+                                      : Icons.visibility,
+                                  size: 18,
+                                  color: _muted,
+                                ),
+                                onPressed: () => setState(
+                                  () => _obscureNewPass = !_obscureNewPass,
+                                ),
+                              ),
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 10,
+                              ),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                borderSide: const BorderSide(color: _border),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                borderSide: const BorderSide(color: _border),
+                              ),
                             ),
                           ),
                         ],
@@ -551,20 +659,49 @@ class _SettingsViewState extends State<SettingsView>
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text('Confirm New Password', style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600, color: _text)),
+                          const Text(
+                            'Confirm New Password',
+                            style: TextStyle(
+                              fontSize: 12.5,
+                              fontWeight: FontWeight.w600,
+                              color: _text,
+                            ),
+                          ),
                           const SizedBox(height: 6),
                           TextField(
                             controller: _confirmPasswordController,
                             obscureText: _obscureConfirmPass,
                             decoration: InputDecoration(
-                              prefixIcon: const Icon(Icons.lock_outline, size: 18, color: _muted),
-                              suffixIcon: IconButton(
-                                icon: Icon(_obscureConfirmPass ? Icons.visibility_off : Icons.visibility, size: 18, color: _muted),
-                                onPressed: () => setState(() => _obscureConfirmPass = !_obscureConfirmPass),
+                              prefixIcon: const Icon(
+                                Icons.lock_outline,
+                                size: 18,
+                                color: _muted,
                               ),
-                              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: _border)),
-                              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: _border)),
+                              suffixIcon: IconButton(
+                                icon: Icon(
+                                  _obscureConfirmPass
+                                      ? Icons.visibility_off
+                                      : Icons.visibility,
+                                  size: 18,
+                                  color: _muted,
+                                ),
+                                onPressed: () => setState(
+                                  () => _obscureConfirmPass =
+                                      !_obscureConfirmPass,
+                                ),
+                              ),
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 10,
+                              ),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                borderSide: const BorderSide(color: _border),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                borderSide: const BorderSide(color: _border),
+                              ),
                             ),
                           ),
                         ],
@@ -578,14 +715,22 @@ class _SettingsViewState extends State<SettingsView>
                   style: ElevatedButton.styleFrom(
                     backgroundColor: _primary,
                     foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 12,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
                   ),
                   child: _isSavingPassword
                       ? const SizedBox(
                           width: 16,
                           height: 16,
-                          child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
                         )
                       : const Text('Update Password'),
                 ),
@@ -608,17 +753,27 @@ class _SettingsViewState extends State<SettingsView>
         children: [
           _buildCard(
             title: 'Organization Profile',
-            subtitle: 'Company details displayed on exported sheets and student communication.',
+            subtitle:
+                'Company details displayed on exported sheets and student communication.',
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildInfoRow('Organization Name', 'Acadeno Research & Innovation Centre'),
+                _buildInfoRow(
+                  'Organization Name',
+                  'Acadeno Research & Innovation Centre',
+                ),
                 const Divider(height: 24),
                 _buildInfoRow('Branch / Center Code', 'ACADENO_KL_CENTRE'),
                 const Divider(height: 24),
-                _buildInfoRow('Operating Region', 'Kerala, India (IST UTC+05:30)'),
+                _buildInfoRow(
+                  'Operating Region',
+                  'Kerala, India (IST UTC+05:30)',
+                ),
                 const Divider(height: 24),
-                _buildInfoRow('Standard Working Hours', '09:00 AM – 06:00 PM (Mon – Sat)'),
+                _buildInfoRow(
+                  'Standard Working Hours',
+                  '09:00 AM – 06:00 PM (Mon – Sat)',
+                ),
               ],
             ),
           ),
@@ -627,7 +782,8 @@ class _SettingsViewState extends State<SettingsView>
 
           _buildCard(
             title: 'Lead Management & Escalations',
-            subtitle: 'Configure daily workload capacities and automatic escalation triggers.',
+            subtitle:
+                'Configure daily workload capacities and automatic escalation triggers.',
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -645,7 +801,8 @@ class _SettingsViewState extends State<SettingsView>
                   value: _overdueEscalationHours,
                   items: const ['12', '24', '48', '72'],
                   onChanged: (val) {
-                    if (val != null) setState(() => _overdueEscalationHours = val);
+                    if (val != null)
+                      setState(() => _overdueEscalationHours = val);
                   },
                 ),
                 const SizedBox(height: 16),
@@ -654,7 +811,11 @@ class _SettingsViewState extends State<SettingsView>
                   activeThumbColor: _primary,
                   title: const Text(
                     'Auto-assign Walk-in Leads to Creator',
-                    style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.w600, color: _text),
+                    style: TextStyle(
+                      fontSize: 13.5,
+                      fontWeight: FontWeight.w600,
+                      color: _text,
+                    ),
                   ),
                   subtitle: const Text(
                     'When an executive logs a walk-in student, automatically assign them for immediate follow-up.',
@@ -669,7 +830,11 @@ class _SettingsViewState extends State<SettingsView>
                   activeThumbColor: _primary,
                   title: const Text(
                     'Biometric / PIN Screen Lock (PR-5.2)',
-                    style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.w600, color: _text),
+                    style: TextStyle(
+                      fontSize: 13.5,
+                      fontWeight: FontWeight.w600,
+                      color: _text,
+                    ),
                   ),
                   subtitle: const Text(
                     'Require device authentication when app is backgrounded for more than 5 minutes.',
@@ -697,7 +862,8 @@ class _SettingsViewState extends State<SettingsView>
         children: [
           _buildCard(
             title: 'Push Notifications & Web Workers',
-            subtitle: 'Live delivery channels for background and out-of-app notifications.',
+            subtitle:
+                'Live delivery channels for background and out-of-app notifications.',
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -736,17 +902,27 @@ class _SettingsViewState extends State<SettingsView>
 
           _buildCard(
             title: 'Application Version & Environment',
-            subtitle: 'Build provenance and connected Google Cloud deployment details.',
+            subtitle:
+                'Build provenance and connected Google Cloud deployment details.',
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildInfoRow('Application Version', '1.0.4+5 (Production Release)'),
+                _buildInfoRow(
+                  'Application Version',
+                  '1.0.4+5 (Production Release)',
+                ),
                 const Divider(height: 24),
                 _buildInfoRow('Firebase Project ID', 'acadenocrm-b727a'),
                 const Divider(height: 24),
-                _buildInfoRow('Database Engine', 'Google Cloud Firestore (Native Multi-region)'),
+                _buildInfoRow(
+                  'Database Engine',
+                  'Google Cloud Firestore (Native Multi-region)',
+                ),
                 const Divider(height: 24),
-                _buildInfoRow('Hosting Destination', 'Vercel Static Edge & SPA'),
+                _buildInfoRow(
+                  'Hosting Destination',
+                  'Vercel Static Edge & SPA',
+                ),
               ],
             ),
           ),
@@ -783,10 +959,7 @@ class _SettingsViewState extends State<SettingsView>
             ),
           ),
           const SizedBox(height: 3),
-          Text(
-            subtitle,
-            style: const TextStyle(fontSize: 12.5, color: _muted),
-          ),
+          Text(subtitle, style: const TextStyle(fontSize: 12.5, color: _muted)),
           const SizedBox(height: 16),
           child,
         ],
@@ -823,7 +996,12 @@ class _SettingsViewState extends State<SettingsView>
     );
   }
 
-  Widget _buildStatusRow(String label, String status, IconData icon, Color color) {
+  Widget _buildStatusRow(
+    String label,
+    String status,
+    IconData icon,
+    Color color,
+  ) {
     return Row(
       children: [
         Icon(icon, size: 18, color: color),

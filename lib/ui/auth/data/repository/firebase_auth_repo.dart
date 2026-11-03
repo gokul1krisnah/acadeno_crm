@@ -101,7 +101,9 @@ class AuthRepository {
       sessionVerifiedOnline = false;
       return user;
     } catch (e) {
-      debugPrint('restoreSession: user.reload offline or timed out, trusting local session');
+      debugPrint(
+        'restoreSession: user.reload offline or timed out, trusting local session',
+      );
       sessionVerifiedOnline = false;
       return user;
     }

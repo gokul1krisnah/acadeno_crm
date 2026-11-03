@@ -7,10 +7,7 @@ class HomeState {
   final int bottomNavIndex;
   final HomeUserModel user;
 
-  const HomeState({
-    this.bottomNavIndex = 0,
-    this.user = HomeUserModel.empty,
-  });
+  const HomeState({this.bottomNavIndex = 0, this.user = HomeUserModel.empty});
 
   /// "Good morning" / "Good afternoon" / "Good evening" by local time.
   String get greeting {
@@ -24,8 +21,18 @@ class HomeState {
   String get todayLabel {
     const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
     const months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
     ];
     final n = DateTime.now();
     return '${days[n.weekday - 1]}, ${n.day} ${months[n.month - 1]}';

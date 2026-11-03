@@ -19,4 +19,3 @@ class HomeRds {
     return _firestore.collection('users').doc(uid).snapshots();
   }
 }
-

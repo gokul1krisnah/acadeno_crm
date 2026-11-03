@@ -468,7 +468,10 @@ class _TeamManagementViewState extends State<TeamManagementView> {
                 child: AcadenoDropdown.strings(
                   value: _selectedDateRange,
                   items: const ['Today', 'This week', 'This month', 'All Time'],
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 6,
+                  ),
                   onChanged: (v) {
                     if (v != null) setState(() => _selectedDateRange = v);
                   },

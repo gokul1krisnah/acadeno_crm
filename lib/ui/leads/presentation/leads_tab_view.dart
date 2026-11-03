@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:acadeno_crm/core/services/app_phone_call_service.dart';
 import 'package:acadeno_crm/core/services/offline_queue_service.dart';
 import 'dart:ui';
@@ -28,6 +29,51 @@ class LeadsTabView extends StatefulWidget {
 
 class _LeadsTabViewState extends State<LeadsTabView> {
   double _scrollProgress = 0.0;
+
+  void _confirmLogout(BuildContext context) {
+    showCupertinoModalPopup<void>(
+      context: context,
+      builder: (ctx) => CupertinoActionSheet(
+        title: const Text(
+          'Log Out',
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w700,
+            color: Color(0xFF0F172A),
+          ),
+        ),
+        message: const Text(
+          'Are you sure you want to end your current session?',
+        ),
+        actions: [
+          CupertinoActionSheetAction(
+            isDestructiveAction: true,
+            onPressed: () {
+              Navigator.pop(ctx);
+              widget.onLogout();
+            },
+            child: const Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  CupertinoIcons.square_arrow_right,
+                  color: CupertinoColors.destructiveRed,
+                  size: 20,
+                ),
+                SizedBox(width: 8),
+                Text('Log Out'),
+              ],
+            ),
+          ),
+        ],
+        cancelButton: CupertinoActionSheetAction(
+          isDefaultAction: true,
+          onPressed: () => Navigator.pop(ctx),
+          child: const Text('Cancel'),
+        ),
+      ),
+    );
+  }
 
   bool _handleScroll(ScrollNotification notification) {
     if (notification.metrics.axis == Axis.vertical) {
@@ -151,7 +197,7 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 const Icon(
-                                  Icons.cloud_upload_outlined,
+                                  CupertinoIcons.cloud_upload,
                                   size: 14,
                                   color: Color(0xFFD97706),
                                 ),
@@ -169,54 +215,25 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                           );
                         },
                       ),
-                      // Bell icon button with orange unread badge
+                      // Logout button with Cupertino icon
                       InkWell(
-                        onTap: () => homeCubit.selectBottomNav(3),
+                        onTap: () => _confirmLogout(context),
                         borderRadius: BorderRadius.circular(14),
                         child: Container(
                           width: 44,
                           height: 44,
                           decoration: BoxDecoration(
-                            color: const Color(0xFFF2F4F7),
+                            color: const Color(
+                              0xFFFEE2E2,
+                            ).withValues(alpha: 0.65),
                             borderRadius: BorderRadius.circular(14),
+                            border: Border.all(color: const Color(0xFFFECACA)),
                           ),
-                          child: Stack(
-                            alignment: Alignment.center,
-                            children: [
-                              const Icon(
-                                Icons.notifications_none_rounded,
-                                color: Color(0xFF0F172A),
-                                size: 23,
-                              ),
-                              if (alertsState.unreadAlertsCount > 0)
-                                Positioned(
-                                  top: 6,
-                                  right: 6,
-                                  child: Container(
-                                    constraints: const BoxConstraints(
-                                      minWidth: 18,
-                                      minHeight: 18,
-                                    ),
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 4,
-                                      vertical: 1,
-                                    ),
-                                    decoration: const BoxDecoration(
-                                      color: Color(0xFFC2410C),
-                                      shape: BoxShape.circle,
-                                    ),
-                                    alignment: Alignment.center,
-                                    child: Text(
-                                      '${alertsState.unreadAlertsCount}',
-                                      style: const TextStyle(
-                                        fontSize: 10,
-                                        fontWeight: FontWeight.w800,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                            ],
+                          alignment: Alignment.center,
+                          child: const Icon(
+                            CupertinoIcons.square_arrow_right,
+                            color: Color(0xFFDC2626),
+                            size: 20,
                           ),
                         ),
                       ),
@@ -361,7 +378,7 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                                 Row(
                                                   children: [
                                                     const Icon(
-                                                      Icons.access_time_rounded,
+                                                      CupertinoIcons.clock,
                                                       size: 14,
                                                       color: Color(0xFFB45309),
                                                     ),
@@ -408,7 +425,7 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                               shape: BoxShape.circle,
                                             ),
                                             child: const Icon(
-                                              Icons.phone_outlined,
+                                              CupertinoIcons.phone_fill,
                                               color: Colors.white,
                                               size: 22,
                                             ),
@@ -436,7 +453,7 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                 child: const Row(
                                   children: [
                                     Icon(
-                                      Icons.check_circle_outline_rounded,
+                                      CupertinoIcons.checkmark_circle,
                                       color: Color(0xFF15803D),
                                       size: 20,
                                     ),
@@ -538,7 +555,7 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                   children: [
                                     Icon(
                                       state.isPermissionDenied
-                                          ? Icons.lock_outline_rounded
+                                          ? CupertinoIcons.lock
                                           : Icons.error_outline_rounded,
                                       color: const Color(0xFFB42318),
                                       size: 32,
@@ -567,7 +584,7 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                     OutlinedButton.icon(
                                       onPressed: cubit.refresh,
                                       icon: const Icon(
-                                        Icons.refresh_rounded,
+                                        CupertinoIcons.refresh,
                                         size: 16,
                                       ),
                                       label: const Text('Retry'),
@@ -621,7 +638,7 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                     OutlinedButton.icon(
                                       onPressed: cubit.refresh,
                                       icon: const Icon(
-                                        Icons.refresh_rounded,
+                                        CupertinoIcons.refresh,
                                         size: 16,
                                       ),
                                       label: const Text('Refresh'),
@@ -663,7 +680,7 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                           context,
                                         ),
                                     icon: const Icon(
-                                      Icons.person_add_alt_1_outlined,
+                                      CupertinoIcons.person_add,
                                       size: 16,
                                     ),
                                     label: const Text(
@@ -797,7 +814,7 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                 ),
                 ListTile(
                   leading: const Icon(
-                    Icons.person_search_outlined,
+                    CupertinoIcons.search,
                     color: Color(0xFF4338CA),
                   ),
                   title: const Text(
@@ -1034,7 +1051,7 @@ class _TodayLeadCard extends StatelessWidget {
                     Row(
                       children: [
                         const Icon(
-                          Icons.lock_outline_rounded,
+                          CupertinoIcons.lock,
                           size: 13.5,
                           color: Color(0xFFB45309),
                         ),
@@ -1067,7 +1084,7 @@ class _TodayLeadCard extends StatelessWidget {
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(
-                    Icons.phone_outlined,
+                    CupertinoIcons.phone_fill,
                     color: Color(0xFF4338CA),
                     size: 20,
                   ),

@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:acadeno_crm/core/router/app_router.dart';
 import 'package:acadeno_crm/shared/extensions/build_context_extension.dart';
 import 'package:acadeno_crm/shared/snackbar_alerts/snack_alert.dart';
@@ -232,10 +233,10 @@ class _ExecutiveBottomNavBar extends StatelessWidget {
   });
 
   static const _items = [
-    (Icons.phone_outlined, 'Today'),
-    (Icons.access_time_rounded, 'Follow-ups'),
-    (Icons.location_on_outlined, 'Visits'),
-    (Icons.notifications_none_rounded, 'Alerts'),
+    (CupertinoIcons.phone_fill, 'Today'),
+    (CupertinoIcons.clock_fill, 'Follow-ups'),
+    (CupertinoIcons.placemark_fill, 'Visits'),
+    (CupertinoIcons.bell_fill, 'Alerts'),
   ];
 
   @override

@@ -11,8 +11,8 @@ class AlertsRds {
   final FirebaseAuth _firebaseAuth;
 
   AlertsRds({FirebaseFirestore? firestore, FirebaseAuth? firebaseAuth})
-      : _firestore = firestore ?? FirebaseFirestore.instance,
-        _firebaseAuth = firebaseAuth ?? FirebaseAuth.instance;
+    : _firestore = firestore ?? FirebaseFirestore.instance,
+      _firebaseAuth = firebaseAuth ?? FirebaseAuth.instance;
 
   DateTime _parseDateTime(dynamic val, [dynamic fallback]) {
     if (val is Timestamp) return val.toDate();
@@ -38,69 +38,77 @@ class AlertsRds {
         .limit(100)
         .snapshots()
         .map((snap) {
-      final liveAlerts = <ExecutiveAlertItem>[];
-      final now = DateTime.now();
-      final startOfToday = DateTime(now.year, now.month, now.day);
-      final startOfYesterday = startOfToday.subtract(const Duration(days: 1));
+          final liveAlerts = <ExecutiveAlertItem>[];
+          final now = DateTime.now();
+          final startOfToday = DateTime(now.year, now.month, now.day);
+          final startOfYesterday = startOfToday.subtract(
+            const Duration(days: 1),
+          );
 
-      for (final doc in snap.docs) {
-        final data = doc.data();
-        final recUid = (data['recipientUid'] ?? '').toString();
-        // Check recipient permission: this executive, or broadcast 'all', or empty
-        if (recUid.isNotEmpty &&
-            recUid != 'all' &&
-            uid.isNotEmpty &&
-            recUid != uid) {
-          continue; // Not for this user
-        }
+          for (final doc in snap.docs) {
+            final data = doc.data();
+            final recUid = (data['recipientUid'] ?? '').toString();
+            // Check recipient permission: this executive, or broadcast 'all', or empty
+            if (recUid.isNotEmpty &&
+                recUid != 'all' &&
+                uid.isNotEmpty &&
+                recUid != uid) {
+              continue; // Not for this user
+            }
 
-        final isRead = data['isRead'] as bool? ?? false;
-        final title = (data['title'] ?? 'Notification').toString();
-        final subtitle = (data['subtitle'] ?? '').toString();
-        final category = (data['category'] ?? '').toString();
+            final isRead = data['isRead'] as bool? ?? false;
+            final title = (data['title'] ?? 'Notification').toString();
+            final subtitle = (data['subtitle'] ?? '').toString();
+            final category = (data['category'] ?? '').toString();
 
-        final createdAt =
-            _parseDateTime(data['createdAt'], data['timestamp']).toLocal();
-        final itemDay =
-            DateTime(createdAt.year, createdAt.month, createdAt.day);
-        final isToday = itemDay.isAtSameMomentAs(startOfToday) ||
-            itemDay.isAfter(startOfToday);
-        final isYesterday = itemDay.isAtSameMomentAs(startOfYesterday);
+            final createdAt = _parseDateTime(
+              data['createdAt'],
+              data['timestamp'],
+            ).toLocal();
+            final itemDay = DateTime(
+              createdAt.year,
+              createdAt.month,
+              createdAt.day,
+            );
+            final isToday =
+                itemDay.isAtSameMomentAs(startOfToday) ||
+                itemDay.isAfter(startOfToday);
+            final isYesterday = itemDay.isAtSameMomentAs(startOfYesterday);
 
-        final timeStr = DateFormat('hh:mm a').format(createdAt);
-        String timeLabel;
-        if (isToday) {
-          timeLabel = timeStr;
-        } else if (isYesterday) {
-          timeLabel = 'Yesterday, $timeStr';
-        } else {
-          final dateStr = DateFormat('dd MMM').format(createdAt);
-          timeLabel = '$dateStr, $timeStr';
-        }
+            final timeStr = DateFormat('hh:mm a').format(createdAt);
+            String timeLabel;
+            if (isToday) {
+              timeLabel = timeStr;
+            } else if (isYesterday) {
+              timeLabel = 'Yesterday, $timeStr';
+            } else {
+              final dateStr = DateFormat('dd MMM').format(createdAt);
+              timeLabel = '$dateStr, $timeStr';
+            }
 
-        AlertIconType icon = AlertIconType.list;
-        if (category == 'assignment') icon = AlertIconType.list;
-        if (category == 'followup') icon = AlertIconType.clock;
-        if (category == 'overdue') icon = AlertIconType.warning;
-        if (category == 'greeting') icon = AlertIconType.sun;
+            AlertIconType icon = AlertIconType.list;
+            if (category == 'assignment') icon = AlertIconType.list;
+            if (category == 'followup') icon = AlertIconType.clock;
+            if (category == 'overdue') icon = AlertIconType.warning;
+            if (category == 'greeting') icon = AlertIconType.sun;
 
-        liveAlerts.add(
-          ExecutiveAlertItem(
-            id: doc.id,
-            title: title,
-            subtitle: subtitle,
-            timeLabel: timeLabel,
-            iconType: icon,
-            isToday: isToday,
-            isUnread: !isRead,
-            targetTabIndex: category == 'followup' ? 1 : 0,
-            createdAt: createdAt,
-          ),
-        );
-      }
+            liveAlerts.add(
+              ExecutiveAlertItem(
+                id: doc.id,
+                title: title,
+                subtitle: subtitle,
+                timeLabel: timeLabel,
+                iconType: icon,
+                isToday: isToday,
+                isUnread: !isRead,
+                targetTabIndex: category == 'followup' ? 1 : 0,
+                createdAt: createdAt,
+              ),
+            );
+          }
 
-      return liveAlerts;
-    });
+          return liveAlerts;
+        });
   }
 
   /// Mark all alerts as read for the user in Firestore

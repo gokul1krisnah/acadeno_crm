@@ -36,4 +36,3 @@ class HomeRepository {
         .handleError((_) {});
   }
 }
-

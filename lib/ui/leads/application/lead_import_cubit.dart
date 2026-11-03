@@ -35,7 +35,8 @@ class LeadImportCubit extends Cubit<LeadImportState> {
 
   /// Loads the built-in realistic ACADENO webinar sample leads so Admin can test with 1 click.
   Future<void> loadSampleData() async {
-    const sampleCsv = '''Name,Phone,Email,College,Branch,Year,Course,Source,Notes,Consent
+    const sampleCsv =
+        '''Name,Phone,Email,College,Branch,Year,Course,Source,Notes,Consent
 Anand Kumar,9847011111,anand.k@example.com,NIT Calicut,CSE,3rd Year,AI & Python Bootcamp,AI & Machine Learning Workshop (Nov),Interested in weekend batch,Event registration form
 Pooja Nair,9847022222,pooja.nair@gmail.com,CET Trivandrum,ECE,4th Year,Full Stack Flutter,AI & Machine Learning Workshop (Nov),Wants discount for group of 3,College attendance sheet
 Mohammed R,9847033333,mohammed.r@outlook.com,GEC Thrissur,ME,2nd Year,Robotics & IoT,AI & Machine Learning Workshop (Nov),Follow up on Saturday,Website inquiry form
@@ -185,10 +186,13 @@ Divya Suresh,9847066666,divya.suresh@gmail.com,SCMS Cochin,MCA,2nd Year,Data Sci
         if (newName.isEmpty) {
           newStatus = LeadImportStatus.invalid;
           newIssue = 'Name is missing – skipped';
-        } else if (phone10.length != 10 || !RegExp(r'^[6-9]\d{9}$').hasMatch(phone10)) {
+        } else if (phone10.length != 10 ||
+            !RegExp(r'^[6-9]\d{9}$').hasMatch(phone10)) {
           newStatus = LeadImportStatus.invalid;
-          newIssue = 'Invalid phone (must be 10 digits starting with 6–9) – skipped';
-        } else if (newEmail.isNotEmpty && !RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$').hasMatch(newEmail)) {
+          newIssue =
+              'Invalid phone (must be 10 digits starting with 6–9) – skipped';
+        } else if (newEmail.isNotEmpty &&
+            !RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$').hasMatch(newEmail)) {
           newStatus = LeadImportStatus.invalid;
           newIssue = 'Invalid email format – skipped';
         } else {
@@ -241,16 +245,15 @@ Divya Suresh,9847066666,divya.suresh@gmail.com,SCMS Cochin,MCA,2nd Year,Data Sci
         items: state.items,
         sourceEvent: state.sourceEvent,
         consentBasis: state.consentBasis,
-        fileName: state.fileName.isNotEmpty ? state.fileName : 'imported_leads.csv',
+        fileName: state.fileName.isNotEmpty
+            ? state.fileName
+            : 'imported_leads.csv',
         fileSizeBytes: state.fileSizeBytes,
         skipExisting: skipExisting,
         onProgress: (processed, total) {
           if (!isClosed) {
             emit(
-              state.copyWith(
-                processedCount: processed,
-                totalCandidates: total,
-              ),
+              state.copyWith(processedCount: processed, totalCandidates: total),
             );
           }
         },
@@ -277,4 +280,3 @@ Divya Suresh,9847066666,divya.suresh@gmail.com,SCMS Cochin,MCA,2nd Year,Data Sci
     }
   }
 }
-

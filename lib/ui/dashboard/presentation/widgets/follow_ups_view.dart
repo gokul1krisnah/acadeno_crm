@@ -1,3 +1,4 @@
+import 'package:acadeno_crm/ui/follow_ups/data/model/follow_up_time_helper.dart';
 import 'package:acadeno_crm/shared/widgets/acadeno_dropdown.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
@@ -199,8 +200,16 @@ class _FollowUpsViewState extends State<FollowUpsView> {
                     isDone ||
                     _localCompletedIds.contains(doc.id) ||
                     status == 'converted';
-                final isOverdue =
-                    !isCompleted && (status == 'follow-up' || status == 'new');
+                final eval = FollowUpTimeHelper.evaluate(
+                  rawFollowUpTime: d['followUpTime'],
+                  assignedDateKey: d['assignedDateKey'],
+                  assignedDateLabel: d['assignedDateLabel'],
+                  assignedAt: d['assignedAt'],
+                  updatedAt: d['updatedAt'],
+                  createdAt: d['createdAt'],
+                  status: status,
+                );
+                final isOverdue = !isCompleted && eval.isOverdue;
 
                 followUps.add(
                   _FollowUpRow(
@@ -216,12 +225,7 @@ class _FollowUpsViewState extends State<FollowUpsView> {
                         (d['notes'] ??
                                 'Follow up on admission & workshop details')
                             .toString(),
-                    dueLabel:
-                        (d['assignedDateLabel'] ??
-                                (isOverdue
-                                    ? 'Overdue · High Priority'
-                                    : 'Due today'))
-                            .toString(),
+                    dueLabel: eval.displayLabel,
                     isOverdue: isOverdue,
                     assignedExec: currentExec,
                     completed: isCompleted,
@@ -229,8 +233,6 @@ class _FollowUpsViewState extends State<FollowUpsView> {
                 );
               }
             }
-
-            
 
             // Filter items
             final filteredItems = followUps.where((item) {
@@ -391,7 +393,10 @@ class _FollowUpsViewState extends State<FollowUpsView> {
                           child: AcadenoDropdown.strings(
                             value: _selectedExecFilter,
                             items: ['All executives', ...executives],
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 6,
+                            ),
                             onChanged: (v) {
                               if (v != null) {
                                 setState(() => _selectedExecFilter = v);

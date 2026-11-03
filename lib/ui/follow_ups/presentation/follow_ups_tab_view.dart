@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -104,7 +105,7 @@ class FollowUpsTabView extends StatelessWidget {
                 color: const Color(0xFF4338CA),
                 backgroundColor: Colors.white,
                 onRefresh: () async {
-                  await Future.delayed(const Duration(milliseconds: 500));
+                  await context.read<FollowUpsCubit>().refresh();
                 },
                 child: items.isEmpty
                     ? ListView(
@@ -163,85 +164,83 @@ class FollowUpsTabView extends StatelessWidget {
       context: context,
       builder: (ctx) => Dialog(
         backgroundColor: Colors.white,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 420),
           child: Padding(
             padding: EdgeInsets.all(ctx.devicePadding.clamp(16.0, 22.0)),
             child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Snooze follow-up · ${item.leadName} (FR-4.5)',
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w800,
-                  color: Color(0xFF0F172A),
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Snooze follow-up · ${item.leadName} (FR-4.5)',
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w800,
+                    color: Color(0xFF0F172A),
+                  ),
                 ),
-              ),
-              const SizedBox(height: 4),
-              const Text(
-                'Executives can snooze or mark done their own follow-ups; overdue escalations to managers cannot be silenced.',
-                style: TextStyle(fontSize: 12, color: Color(0xFF667085)),
-              ),
-              const SizedBox(height: 12),
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                leading: const Icon(
-                  Icons.schedule_rounded,
-                  color: Color(0xFF4338CA),
+                const SizedBox(height: 4),
+                const Text(
+                  'Executives can snooze or mark done their own follow-ups; overdue escalations to managers cannot be silenced.',
+                  style: TextStyle(fontSize: 12, color: Color(0xFF667085)),
                 ),
-                title: const Text(
-                  'In 1 hour (Today · 4:30 PM)',
-                  style: TextStyle(fontWeight: FontWeight.w600),
+                const SizedBox(height: 12),
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: const Icon(
+                    CupertinoIcons.clock,
+                    color: Color(0xFF4338CA),
+                  ),
+                  title: const Text(
+                    'In 1 hour (Today · 4:30 PM)',
+                    style: TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    cubit.snoozeFollowUp(item.id, '4:30 PM');
+                  },
                 ),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  cubit.snoozeFollowUp(item.id, '4:30 PM');
-                },
-              ),
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                leading: const Icon(
-                  Icons.wb_twilight_rounded,
-                  color: Color(0xFF4338CA),
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: const Icon(
+                    CupertinoIcons.sun_haze,
+                    color: Color(0xFF4338CA),
+                  ),
+                  title: const Text(
+                    'This evening (Today · 6:30 PM)',
+                    style: TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    cubit.snoozeFollowUp(item.id, '6:30 PM');
+                  },
                 ),
-                title: const Text(
-                  'This evening (Today · 6:30 PM)',
-                  style: TextStyle(fontWeight: FontWeight.w600),
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: const Icon(
+                    CupertinoIcons.calendar,
+                    color: Color(0xFF4338CA),
+                  ),
+                  title: const Text(
+                    'Tomorrow morning (10:00 AM)',
+                    style: TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    cubit.snoozeFollowUp(
+                      item.id,
+                      'Tomorrow · 10:00 AM',
+                      moveToUpcoming: true,
+                    );
+                  },
                 ),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  cubit.snoozeFollowUp(item.id, '6:30 PM');
-                },
-              ),
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                leading: const Icon(
-                  Icons.calendar_today_outlined,
-                  color: Color(0xFF4338CA),
-                ),
-                title: const Text(
-                  'Tomorrow morning (10:00 AM)',
-                  style: TextStyle(fontWeight: FontWeight.w600),
-                ),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  cubit.snoozeFollowUp(
-                    item.id,
-                    'Tomorrow · 10:00 AM',
-                    moveToUpcoming: true,
-                  );
-                },
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
-    ),
     );
   }
 }
@@ -416,7 +415,7 @@ class _FollowUpCard extends StatelessWidget {
                   height: 42,
                   child: ElevatedButton.icon(
                     onPressed: onCallNow,
-                    icon: const Icon(Icons.phone_outlined, size: 17),
+                    icon: const Icon(CupertinoIcons.phone_fill, size: 17),
                     label: const Text(
                       'Call now',
                       style: TextStyle(
@@ -470,7 +469,7 @@ class _FollowUpCard extends StatelessWidget {
                     border: Border.all(color: const Color(0xFFD0D5DD)),
                   ),
                   child: const Icon(
-                    Icons.check_rounded,
+                    CupertinoIcons.checkmark_alt,
                     color: Color(0xFF15803D),
                     size: 20,
                   ),

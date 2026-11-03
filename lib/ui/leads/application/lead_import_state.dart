@@ -35,11 +35,13 @@ class LeadImportState {
 
   factory LeadImportState.initial() => const LeadImportState();
 
-  int get newLeadsCount =>
-      items.where((i) => i.status == LeadImportStatus.valid && !i.isExcluded).length;
+  int get newLeadsCount => items
+      .where((i) => i.status == LeadImportStatus.valid && !i.isExcluded)
+      .length;
 
-  int get existingLeadsCount =>
-      items.where((i) => i.status == LeadImportStatus.existing && !i.isExcluded).length;
+  int get existingLeadsCount => items
+      .where((i) => i.status == LeadImportStatus.existing && !i.isExcluded)
+      .length;
 
   int get skippedLeadsCount => items
       .where(
@@ -55,15 +57,17 @@ class LeadImportState {
   List<LeadImportItem> get filteredItems {
     return switch (filter) {
       'new' => items.where((i) => i.status == LeadImportStatus.valid).toList(),
-      'existing' => items.where((i) => i.status == LeadImportStatus.existing).toList(),
-      'issues' => items
-          .where(
-            (i) =>
-                i.status == LeadImportStatus.invalid ||
-                i.status == LeadImportStatus.duplicateInFile ||
-                i.status == LeadImportStatus.failed,
-          )
-          .toList(),
+      'existing' =>
+        items.where((i) => i.status == LeadImportStatus.existing).toList(),
+      'issues' =>
+        items
+            .where(
+              (i) =>
+                  i.status == LeadImportStatus.invalid ||
+                  i.status == LeadImportStatus.duplicateInFile ||
+                  i.status == LeadImportStatus.failed,
+            )
+            .toList(),
       _ => items,
     };
   }
@@ -103,4 +107,3 @@ class LeadImportState {
     );
   }
 }
-

@@ -14,6 +14,5 @@ class AlertsRepository {
   Future<void> markAllAlertsRead({String? executiveUid}) =>
       _rds.markAllAlertsRead(executiveUid: executiveUid);
 
-  Future<void> markAlertRead(String alertId) =>
-      _rds.markAlertRead(alertId);
+  Future<void> markAlertRead(String alertId) => _rds.markAlertRead(alertId);
 }

@@ -33,4 +33,3 @@ class DashboardActionFailure extends DashboardState {
 class DashboardSignedOut extends DashboardState {
   const DashboardSignedOut({super.selectedNavIndex = 0});
 }
-

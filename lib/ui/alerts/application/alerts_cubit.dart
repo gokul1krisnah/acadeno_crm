@@ -12,19 +12,16 @@ class AlertsCubit extends Cubit<AlertsState> {
   StreamSubscription<List<ExecutiveAlertItem>>? _alertsSub;
 
   AlertsCubit(this._repository)
-      : super(AlertsState(alerts: _repository.fetchAlerts())) {
+    : super(AlertsState(alerts: _repository.fetchAlerts())) {
     _subscribe();
   }
 
   void _subscribe() {
     _alertsSub?.cancel();
-    _alertsSub = _repository.watchAlerts().listen(
-      (liveAlerts) {
-        if (isClosed) return;
-        emit(state.copyWith(alerts: liveAlerts));
-      },
-      onError: (_) {},
-    );
+    _alertsSub = _repository.watchAlerts().listen((liveAlerts) {
+      if (isClosed) return;
+      emit(state.copyWith(alerts: liveAlerts));
+    }, onError: (_) {});
   }
 
   void clearToast() {

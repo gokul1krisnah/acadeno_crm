@@ -7,7 +7,8 @@ import '../model/lead_models.dart';
 
 /// Pure Dart parser for CSV and Excel (.xlsx) lead data files (FR-1.1 - FR-1.3).
 class LeadImportParser {
-  static const String sampleTemplateCsv = '''Name,Phone,Email,College,Branch,Year,Course,Source,Notes,Consent
+  static const String sampleTemplateCsv =
+      '''Name,Phone,Email,College,Branch,Year,Course,Source,Notes,Consent
 Anand Kumar,9847011111,anand.k@example.com,NIT Calicut,CSE,3rd Year,AI & Python Bootcamp,AI & Machine Learning Workshop (Nov),Interested in weekend batch,Event registration form
 Pooja Nair,9847022222,pooja.nair@gmail.com,CET Trivandrum,ECE,4th Year,Full Stack Flutter,College Seminar,Wants discount for group of 3,College attendance sheet
 Mohammed R,9847033333,mohammed.r@outlook.com,GEC Thrissur,ME,2nd Year,Robotics & IoT,Direct visit,Follow up on Saturday,Website inquiry form
@@ -174,7 +175,11 @@ Mohammed R,9847033333,mohammed.r@outlook.com,GEC Thrissur,ME,2nd Year,Robotics &
     cleanCsv = _stripBom(cleanCsv);
     final delimiter = _detectDelimiter(cleanCsv);
     final rawRows = _splitCsvLines(cleanCsv, delimiter: delimiter);
-    return _process2dRows(rawRows, defaultSource: defaultSource, defaultConsent: defaultConsent);
+    return _process2dRows(
+      rawRows,
+      defaultSource: defaultSource,
+      defaultConsent: defaultConsent,
+    );
   }
 
   /// Parses raw CSV bytes (supports UTF-8 with/without BOM, UTF-16 LE/BE, and ANSI).
@@ -202,7 +207,10 @@ Mohammed R,9847033333,mohammed.r@outlook.com,GEC Thrissur,ME,2nd Year,Robotics &
         charCodes.add((bytes[i] << 8) | bytes[i + 1]);
       }
       str = String.fromCharCodes(charCodes);
-    } else if (bytes.length >= 3 && bytes[0] == 0xEF && bytes[1] == 0xBB && bytes[2] == 0xBF) {
+    } else if (bytes.length >= 3 &&
+        bytes[0] == 0xEF &&
+        bytes[1] == 0xBB &&
+        bytes[2] == 0xBF) {
       // UTF-8 with BOM
       str = utf8.decode(bytes.sublist(3), allowMalformed: true);
     } else {
@@ -220,7 +228,11 @@ Mohammed R,9847033333,mohammed.r@outlook.com,GEC Thrissur,ME,2nd Year,Robotics &
 
     str = _stripBom(str);
     str = _recoverByteEncodedCsv(str);
-    return parseCsvString(str, defaultSource: defaultSource, defaultConsent: defaultConsent);
+    return parseCsvString(
+      str,
+      defaultSource: defaultSource,
+      defaultConsent: defaultConsent,
+    );
   }
 
   /// Recovers CSV text if the uploaded file was saved as comma-separated byte numbers
@@ -234,7 +246,10 @@ Mohammed R,9847033333,mohammed.r@outlook.com,GEC Thrissur,ME,2nd Year,Robotics &
       final firstToken = trimmed.substring(0, firstComma).trim();
       final firstNum = int.tryParse(firstToken);
       if (firstNum != null && firstNum >= 0 && firstNum <= 255) {
-        final sampleTokens = trimmed.split(RegExp(r'[,\r\n\s]+')).take(25).toList();
+        final sampleTokens = trimmed
+            .split(RegExp(r'[,\r\n\s]+'))
+            .take(25)
+            .toList();
         if (sampleTokens.length >= 8 &&
             sampleTokens.every((t) {
               final n = int.tryParse(t);
@@ -251,7 +266,10 @@ Mohammed R,9847033333,mohammed.r@outlook.com,GEC Thrissur,ME,2nd Year,Robotics &
             }
             if (byteList.length >= 10) {
               final u8 = Uint8List.fromList(byteList);
-              if (u8.length >= 3 && u8[0] == 0xEF && u8[1] == 0xBB && u8[2] == 0xBF) {
+              if (u8.length >= 3 &&
+                  u8[0] == 0xEF &&
+                  u8[1] == 0xBB &&
+                  u8[2] == 0xBF) {
                 return utf8.decode(u8.sublist(3), allowMalformed: true);
               }
               return utf8.decode(u8, allowMalformed: true);
@@ -271,7 +289,9 @@ Mohammed R,9847033333,mohammed.r@outlook.com,GEC Thrissur,ME,2nd Year,Robotics &
   }) {
     final zipEntries = _readZipEntries(bytes);
     if (zipEntries.isEmpty) {
-      throw const FormatException('The uploaded file is not a valid zip / Excel file.');
+      throw const FormatException(
+        'The uploaded file is not a valid zip / Excel file.',
+      );
     }
 
     // 1. Read shared strings
@@ -287,17 +307,25 @@ Mohammed R,9847033333,mohammed.r@outlook.com,GEC Thrissur,ME,2nd Year,Robotics &
 
     // 2. Read first sheet
     final sheetEntry = zipEntries.firstWhere(
-      (e) => e.name.toLowerCase().contains('worksheets/sheet1.xml') || e.name.toLowerCase().contains('sheet1.xml'),
+      (e) =>
+          e.name.toLowerCase().contains('worksheets/sheet1.xml') ||
+          e.name.toLowerCase().contains('sheet1.xml'),
       orElse: () => _SimpleZipEntry('', Uint8List(0)),
     );
     if (sheetEntry.data.isEmpty) {
-      throw const FormatException('Excel file does not contain a valid worksheet (sheet1.xml).');
+      throw const FormatException(
+        'Excel file does not contain a valid worksheet (sheet1.xml).',
+      );
     }
 
     final sheetXml = utf8.decode(sheetEntry.data, allowMalformed: true);
     final rawRows = _parseSheetXmlRows(sheetXml, sharedStrings);
 
-    return _process2dRows(rawRows, defaultSource: defaultSource, defaultConsent: defaultConsent);
+    return _process2dRows(
+      rawRows,
+      defaultSource: defaultSource,
+      defaultConsent: defaultConsent,
+    );
   }
 
   /// Generates a downloadable CSV containing all skipped, invalid, and failed rows.
@@ -306,15 +334,20 @@ Mohammed R,9847033333,mohammed.r@outlook.com,GEC Thrissur,ME,2nd Year,Robotics &
     buffer.writeln('Row Number,Name,Phone,Email,Status,Reason');
 
     for (final item in items) {
-      if (item.status == LeadImportStatus.valid || item.status == LeadImportStatus.imported) {
+      if (item.status == LeadImportStatus.valid ||
+          item.status == LeadImportStatus.imported) {
         continue;
       }
       final cleanName = _escapeCsvField(item.name);
       final cleanPhone = _escapeCsvField(item.phone);
       final cleanEmail = _escapeCsvField(item.email);
       final cleanStatus = _escapeCsvField(item.status.label);
-      final cleanReason = _escapeCsvField(item.issueMessage.isNotEmpty ? item.issueMessage : 'Skipped');
-      buffer.writeln('${item.rowNumber},$cleanName,$cleanPhone,$cleanEmail,$cleanStatus,$cleanReason');
+      final cleanReason = _escapeCsvField(
+        item.issueMessage.isNotEmpty ? item.issueMessage : 'Skipped',
+      );
+      buffer.writeln(
+        '${item.rowNumber},$cleanName,$cleanPhone,$cleanEmail,$cleanStatus,$cleanReason',
+      );
     }
     return buffer.toString();
   }
@@ -329,7 +362,9 @@ Mohammed R,9847033333,mohammed.r@outlook.com,GEC Thrissur,ME,2nd Year,Robotics &
     required String defaultConsent,
   }) {
     if (rawRows.isEmpty) {
-      throw const FormatException('The file is empty. Please upload a file with data rows.');
+      throw const FormatException(
+        'The file is empty. Please upload a file with data rows.',
+      );
     }
 
     int headerIndex = 0;
@@ -346,13 +381,16 @@ Mohammed R,9847033333,mohammed.r@outlook.com,GEC Thrissur,ME,2nd Year,Robotics &
       if (candidateMap.containsKey('name')) score += 5;
       if (candidateMap.containsKey('phone')) score += 5;
       if (candidateMap.containsKey('email')) score += 2;
-      if (candidateMap.containsKey('college') || candidateMap.containsKey('college_branch')) score += 2;
+      if (candidateMap.containsKey('college') ||
+          candidateMap.containsKey('college_branch'))
+        score += 2;
 
       if (score > bestScore) {
         bestScore = score;
         headerIndex = i;
         columnMap = candidateMap;
-        if (candidateMap.containsKey('name') && candidateMap.containsKey('phone')) {
+        if (candidateMap.containsKey('name') &&
+            candidateMap.containsKey('phone')) {
           break; // Perfect header row found
         }
       }
@@ -375,7 +413,10 @@ Mohammed R,9847033333,mohammed.r@outlook.com,GEC Thrissur,ME,2nd Year,Robotics &
     // If phone is still missing, scan sample rows to locate any column containing valid phone numbers
     if (!columnMap.containsKey('phone')) {
       final sampleRows = rawRows.skip(headerIndex + 1).take(20).toList();
-      final maxCols = sampleRows.fold<int>(0, (m, r) => r.length > m ? r.length : m);
+      final maxCols = sampleRows.fold<int>(
+        0,
+        (m, r) => r.length > m ? r.length : m,
+      );
       for (int c = 0; c < maxCols; c++) {
         if (columnMap.values.contains(c)) continue;
         int matchCount = 0;
@@ -418,7 +459,8 @@ Mohammed R,9847033333,mohammed.r@outlook.com,GEC Thrissur,ME,2nd Year,Robotics &
     }
 
     final results = <LeadImportItem>[];
-    final seenPhoneToRowMap = <String, int>{}; // normalized 10-digit -> first row number
+    final seenPhoneToRowMap =
+        <String, int>{}; // normalized 10-digit -> first row number
 
     for (int r = headerIndex + 1; r < rawRows.length; r++) {
       final row = rawRows[r];
@@ -459,7 +501,9 @@ Mohammed R,9847033333,mohammed.r@outlook.com,GEC Thrissur,ME,2nd Year,Robotics &
 
       final notes = getCol('notes');
       final consentVal = getCol('consent');
-      final effectiveConsent = consentVal.isNotEmpty ? consentVal : defaultConsent;
+      final effectiveConsent = consentVal.isNotEmpty
+          ? consentVal
+          : defaultConsent;
 
       final item = LeadImportItem(
         rowNumber: rowNumber,
@@ -510,7 +554,8 @@ Mohammed R,9847033333,mohammed.r@outlook.com,GEC Thrissur,ME,2nd Year,Robotics &
       }
 
       // Validation 3: Email format (if provided)
-      if (email.isNotEmpty && !RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$').hasMatch(email)) {
+      if (email.isNotEmpty &&
+          !RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$').hasMatch(email)) {
         item.status = LeadImportStatus.invalid;
         item.issueMessage = 'Invalid email address format – skipped';
         results.add(item);
@@ -539,7 +584,10 @@ Mohammed R,9847033333,mohammed.r@outlook.com,GEC Thrissur,ME,2nd Year,Robotics &
   static Map<String, int> _buildColumnMap(List<String> headers) {
     final map = <String, int>{};
     for (int col = 0; col < headers.length; col++) {
-      final rawHeader = headers[col].toLowerCase().replaceAll(RegExp(r'[^a-z0-9_]'), '');
+      final rawHeader = headers[col].toLowerCase().replaceAll(
+        RegExp(r'[^a-z0-9_]'),
+        '',
+      );
       if (rawHeader.isEmpty) continue;
 
       for (final entry in _headerAliases.entries) {
@@ -552,13 +600,14 @@ Mohammed R,9847033333,mohammed.r@outlook.com,GEC Thrissur,ME,2nd Year,Robotics &
         }
 
         // Substring / suffix matches for compound names
-        final matched = entry.value.any((alias) =>
-          rawHeader == alias ||
-          rawHeader.startsWith('${alias}_') ||
-          rawHeader.endsWith('_${alias}') ||
-          rawHeader == '${alias}no' ||
-          rawHeader == '${alias}num' ||
-          rawHeader == '${alias}number'
+        final matched = entry.value.any(
+          (alias) =>
+              rawHeader == alias ||
+              rawHeader.startsWith('${alias}_') ||
+              rawHeader.endsWith('_${alias}') ||
+              rawHeader == '${alias}no' ||
+              rawHeader == '${alias}num' ||
+              rawHeader == '${alias}number',
         );
         if (matched) {
           map[entry.key] = col;
@@ -570,12 +619,17 @@ Mohammed R,9847033333,mohammed.r@outlook.com,GEC Thrissur,ME,2nd Year,Robotics &
   }
 
   /// Automatically infers column roles by scanning candidate data rows.
-  static Map<String, int> _inferColumnsFromData(List<List<String>> rawRows, int headerIndex) {
+  static Map<String, int> _inferColumnsFromData(
+    List<List<String>> rawRows,
+    int headerIndex,
+  ) {
     final inferred = <String, int>{};
     final sampleRows = rawRows.skip(headerIndex + 1).take(20).toList();
     if (sampleRows.isEmpty) return inferred;
 
-    final numCols = sampleRows.map((r) => r.length).fold<int>(0, (max, len) => len > max ? len : max);
+    final numCols = sampleRows
+        .map((r) => r.length)
+        .fold<int>(0, (max, len) => len > max ? len : max);
 
     for (int col = 0; col < numCols; col++) {
       int phoneMatches = 0;
@@ -594,17 +648,21 @@ Mohammed R,9847033333,mohammed.r@outlook.com,GEC Thrissur,ME,2nd Year,Robotics &
           phoneMatches++;
         } else if (cell.contains('@') && cell.contains('.')) {
           emailMatches++;
-        } else if (RegExp(r'^[a-zA-Z\s\.À-ɏ]{2,50}$').hasMatch(cell) && !cell.contains('http')) {
+        } else if (RegExp(r'^[a-zA-Z\s\.À-ɏ]{2,50}$').hasMatch(cell) &&
+            !cell.contains('http')) {
           nameMatches++;
         }
       }
 
       if (totalNonEmpty > 0) {
-        if (phoneMatches / totalNonEmpty >= 0.4 && !inferred.containsKey('phone')) {
+        if (phoneMatches / totalNonEmpty >= 0.4 &&
+            !inferred.containsKey('phone')) {
           inferred['phone'] = col;
-        } else if (emailMatches / totalNonEmpty >= 0.4 && !inferred.containsKey('email')) {
+        } else if (emailMatches / totalNonEmpty >= 0.4 &&
+            !inferred.containsKey('email')) {
           inferred['email'] = col;
-        } else if (nameMatches / totalNonEmpty >= 0.4 && !inferred.containsKey('name')) {
+        } else if (nameMatches / totalNonEmpty >= 0.4 &&
+            !inferred.containsKey('name')) {
           inferred['name'] = col;
         }
       }
@@ -636,7 +694,11 @@ Mohammed R,9847033333,mohammed.r@outlook.com,GEC Thrissur,ME,2nd Year,Robotics &
   }
 
   static String _detectDelimiter(String text) {
-    final lines = text.split(RegExp(r'\r\n|\r|\n')).where((l) => l.trim().isNotEmpty).take(5).toList();
+    final lines = text
+        .split(RegExp(r'\r\n|\r|\n'))
+        .where((l) => l.trim().isNotEmpty)
+        .take(5)
+        .toList();
     if (lines.isEmpty) return ',';
 
     int commas = 0;
@@ -651,13 +713,17 @@ Mohammed R,9847033333,mohammed.r@outlook.com,GEC Thrissur,ME,2nd Year,Robotics &
       pipes += '|'.allMatches(line).length;
     }
 
-    if (semicolons > commas && semicolons > tabs && semicolons > pipes) return ';';
+    if (semicolons > commas && semicolons > tabs && semicolons > pipes)
+      return ';';
     if (tabs > commas && tabs > semicolons && tabs > pipes) return '\t';
     if (pipes > commas && pipes > semicolons && pipes > tabs) return '|';
     return ',';
   }
 
-  static List<List<String>> _splitCsvLines(String input, {String delimiter = ','}) {
+  static List<List<String>> _splitCsvLines(
+    String input, {
+    String delimiter = ',',
+  }) {
     final rows = <List<String>>[];
     final currentField = StringBuffer();
     final currentRow = <String>[];
@@ -703,7 +769,10 @@ Mohammed R,9847033333,mohammed.r@outlook.com,GEC Thrissur,ME,2nd Year,Robotics &
   }
 
   static String _escapeCsvField(String field) {
-    if (field.contains(',') || field.contains('"') || field.contains('\n') || field.contains('\r')) {
+    if (field.contains(',') ||
+        field.contains('"') ||
+        field.contains('\n') ||
+        field.contains('\r')) {
       return '"${field.replaceAll('"', '""')}"';
     }
     return field;
@@ -768,7 +837,9 @@ Mohammed R,9847033333,mohammed.r@outlook.com,GEC Thrissur,ME,2nd Year,Robotics &
       final siContent = match.group(1) ?? '';
       final tMatches = tRegex.allMatches(siContent);
       if (tMatches.isNotEmpty) {
-        final combined = tMatches.map((m) => _decodeXmlEntities(m.group(1) ?? '')).join();
+        final combined = tMatches
+            .map((m) => _decodeXmlEntities(m.group(1) ?? ''))
+            .join();
         strings.add(combined);
       } else {
         strings.add('');
@@ -777,10 +848,19 @@ Mohammed R,9847033333,mohammed.r@outlook.com,GEC Thrissur,ME,2nd Year,Robotics &
     return strings;
   }
 
-  static List<List<String>> _parseSheetXmlRows(String xml, List<String> sharedStrings) {
+  static List<List<String>> _parseSheetXmlRows(
+    String xml,
+    List<String> sharedStrings,
+  ) {
     final rows = <List<String>>[];
-    final rowRegex = RegExp(r'<row\s+[^>]*?r="(\d+)"[^>]*?>(.*?)</row>', dotAll: true);
-    final cellRegex = RegExp(r'<c\s+r="([A-Z]+)(\d+)"(?:\s+[^>]*?t="([^"]*)")?[^>]*?>(?:<v>(.*?)</v>)?.*?</c>', dotAll: true);
+    final rowRegex = RegExp(
+      r'<row\s+[^>]*?r="(\d+)"[^>]*?>(.*?)</row>',
+      dotAll: true,
+    );
+    final cellRegex = RegExp(
+      r'<c\s+r="([A-Z]+)(\d+)"(?:\s+[^>]*?t="([^"]*)")?[^>]*?>(?:<v>(.*?)</v>)?.*?</c>',
+      dotAll: true,
+    );
 
     for (final rowMatch in rowRegex.allMatches(xml)) {
       final rowContent = rowMatch.group(2) ?? '';
@@ -840,4 +920,3 @@ class _SimpleZipEntry {
 
   const _SimpleZipEntry(this.name, this.data);
 }
-

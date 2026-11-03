@@ -24,8 +24,9 @@ class LeadExportHelper {
       final assignmentSlot = _escape(l.assignedDateLabel ?? '—');
       final lastContact = _escape(l.lastContact);
       final notes = _escape(l.notes);
-      final createdAt =
-          _escape(l.createdAt?.toIso8601String().split('T').first ?? '—');
+      final createdAt = _escape(
+        l.createdAt?.toIso8601String().split('T').first ?? '—',
+      );
 
       buffer.writeln(
         '$id,$name,$phone,$email,$college,$course,$source,$status,$assignedTo,$assignmentSlot,$lastContact,$notes,$createdAt',
@@ -45,12 +46,18 @@ class LeadExportHelper {
         '${now.year}_${now.month.toString().padLeft(2, '0')}_${now.day.toString().padLeft(2, '0')}';
     final fileName = customFileName ?? 'acadeno_leads_export_$dateStr.csv';
     final csvContent = generateCsv(leads);
-    return FileDownloadHelper.downloadCsv(fileName: fileName, content: csvContent);
+    return FileDownloadHelper.downloadCsv(
+      fileName: fileName,
+      content: csvContent,
+    );
   }
 
   static String _escape(String value) {
     var v = value.trim();
-    if (v.contains(',') || v.contains('"') || v.contains('\n') || v.contains('\r')) {
+    if (v.contains(',') ||
+        v.contains('"') ||
+        v.contains('\n') ||
+        v.contains('\r')) {
       v = '"${v.replaceAll('"', '""')}"';
     }
     return v;

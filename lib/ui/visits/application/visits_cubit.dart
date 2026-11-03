@@ -11,7 +11,7 @@ class VisitsCubit extends Cubit<VisitsState> {
   StreamSubscription<List<ExecutiveCollegeVisit>>? _visitsSub;
 
   VisitsCubit(this._repository)
-      : super(VisitsState(visits: _repository.fetchVisits())) {
+    : super(VisitsState(visits: _repository.fetchVisits())) {
     _subscribe();
   }
 

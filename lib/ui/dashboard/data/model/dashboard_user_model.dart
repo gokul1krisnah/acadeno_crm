@@ -68,7 +68,10 @@ class DashboardUserModel {
         role: normalizeRole(rawRole),
         isActive: data['isActive'] != false,
         phone: (data['phone'] ?? '').toString(),
-        deviceName: (data['deviceName'] ?? (data['boundDeviceModel'] ?? 'Registered Android')).toString(),
+        deviceName:
+            (data['deviceName'] ??
+                    (data['boundDeviceModel'] ?? 'Registered Android'))
+                .toString(),
         deviceBound: data['deviceBound'] != false,
         callsToday: (data['callsToday'] as num?)?.toInt() ?? 0,
         assignedToday: (data['assignedToday'] as num?)?.toInt() ?? 0,
@@ -78,7 +81,9 @@ class DashboardUserModel {
     } catch (_) {
       return DashboardUserModel(
         uid: doc.id,
-        name: doc.id.length > 5 ? 'User (' + doc.id.substring(0, 5) + ')' : 'User (' + doc.id + ')',
+        name: doc.id.length > 5
+            ? 'User (' + doc.id.substring(0, 5) + ')'
+            : 'User (' + doc.id + ')',
         email: '—',
         role: 'hr',
         isActive: true,

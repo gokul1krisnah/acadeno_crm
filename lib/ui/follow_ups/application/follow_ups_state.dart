@@ -4,11 +4,13 @@ class FollowUpsState {
   final FollowUpBucket selectedFollowUpBucket;
   final List<ExecutiveFollowUpItem> followUps;
   final String? toastMessage;
+  final bool isLoading;
 
   const FollowUpsState({
     this.selectedFollowUpBucket = FollowUpBucket.today,
     required this.followUps,
     this.toastMessage,
+    this.isLoading = false,
   });
 
   List<ExecutiveFollowUpItem> get overdueFollowUps => followUps
@@ -35,13 +37,14 @@ class FollowUpsState {
     List<ExecutiveFollowUpItem>? followUps,
     String? toastMessage,
     bool clearToast = false,
+    bool? isLoading,
   }) {
     return FollowUpsState(
       selectedFollowUpBucket:
           selectedFollowUpBucket ?? this.selectedFollowUpBucket,
       followUps: followUps ?? this.followUps,
       toastMessage: clearToast ? null : (toastMessage ?? this.toastMessage),
+      isLoading: isLoading ?? this.isLoading,
     );
   }
 }
-

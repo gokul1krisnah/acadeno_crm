@@ -103,11 +103,9 @@ class LoginCubit extends Cubit<LoginState> {
       // Keep persisted session in sync if online; do not block startup
       if (_authRepository.sessionVerifiedOnline) {
         try {
-          await _authRepository.saveSession(
-            user,
-            role: currentRole,
-            isAdmin: isAdmin,
-          ).timeout(const Duration(milliseconds: 500));
+          await _authRepository
+              .saveSession(user, role: currentRole, isAdmin: isAdmin)
+              .timeout(const Duration(milliseconds: 500));
         } catch (_) {}
       }
       return true;
@@ -116,7 +114,8 @@ class LoginCubit extends Cubit<LoginState> {
       final saved = _authRepository.savedSession;
       final current = _authRepository.currentUser;
       if (saved != null && current != null && saved.uid == current.uid) {
-        final isOfflineAdmin = (saved.isAdmin) ||
+        final isOfflineAdmin =
+            (saved.isAdmin) ||
             current.uid == _kAdminUid ||
             _kAdminRoles.contains(saved.role?.toLowerCase());
         if (isOfflineAdmin) {
@@ -149,7 +148,8 @@ class LoginCubit extends Cubit<LoginState> {
     if (offline) {
       final saved = _authRepository.savedSession;
       if (saved != null && saved.uid == user.uid) {
-        final isOfflineAdmin = saved.isAdmin ||
+        final isOfflineAdmin =
+            saved.isAdmin ||
             user.uid == _kAdminUid ||
             _kAdminRoles.contains(saved.role?.toLowerCase());
         if (isOfflineAdmin) {
@@ -175,7 +175,8 @@ class LoginCubit extends Cubit<LoginState> {
       // Backend unreachable or timed out: trust cached session from Hive
       final saved = _authRepository.savedSession;
       if (saved != null && saved.uid == user.uid) {
-        final isOfflineAdmin = saved.isAdmin ||
+        final isOfflineAdmin =
+            saved.isAdmin ||
             user.uid == _kAdminUid ||
             _kAdminRoles.contains(saved.role?.toLowerCase());
         if (isOfflineAdmin) {
@@ -231,10 +232,11 @@ class LoginCubit extends Cubit<LoginState> {
 
       // PR-5.1 & PR-5.4: Enforce single-phone hardware binding and integrity for Sales Executives
       if (!offline) {
-        final deviceCheckResult = await DeviceSecurityService.verifyDeviceBinding(
-          user: user,
-          userData: data,
-        );
+        final deviceCheckResult =
+            await DeviceSecurityService.verifyDeviceBinding(
+              user: user,
+              userData: data,
+            );
         if (deviceCheckResult != null) {
           await _authRepository.signOut();
           _resetRole();
@@ -276,11 +278,7 @@ class LoginCubit extends Cubit<LoginState> {
       // Newly registered users have default hr role
       _resetRole();
       currentRole = 'hr';
-      await _authRepository.saveSession(
-        user,
-        role: 'hr',
-        isAdmin: false,
-      );
+      await _authRepository.saveSession(user, role: 'hr', isAdmin: false);
       emit(const LoginState.success());
     } on FirebaseAuthException catch (error) {
       emit(LoginState.failure(message: _errorMessage(error)));

@@ -1,3 +1,5 @@
+import 'package:acadeno_crm/ui/follow_ups/data/model/follow_up_models.dart';
+import 'package:acadeno_crm/ui/follow_ups/data/model/follow_up_time_helper.dart';
 import 'package:acadeno_crm/core/utils/url_dialer_helper.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
@@ -1518,17 +1520,35 @@ class _DashboardViewState extends State<_DashboardView> {
         ? (contactedCount / totalAssigned * 100).round()
         : (totalLeads > 0 ? (contactedCount / totalLeads * 100).round() : 0);
 
-    final followUpsCount = leads.where((l) {
-      final status = (l['status'] ?? '').toString().toLowerCase();
-      return status == 'follow-up' || status == 'claimed';
+    final evaluatedFollowUps = leads
+        .where((l) {
+          final isDone = (l['isDone'] as bool?) ?? false;
+          return !isDone;
+        })
+        .map((l) {
+          final eval = FollowUpTimeHelper.evaluate(
+            rawFollowUpTime: l['followUpTime'],
+            assignedDateKey: l['assignedDateKey'],
+            assignedDateLabel: l['assignedDateLabel'],
+            assignedAt: l['assignedAt'],
+            updatedAt: l['updatedAt'],
+            createdAt: l['createdAt'],
+            status: (l['status'] ?? '').toString(),
+          );
+          return (lead: l, eval: eval);
+        })
+        .toList();
+
+    final followUpsCount = evaluatedFollowUps.where((e) {
+      final s = (e.lead['status'] ?? '').toString().toLowerCase();
+      return e.eval.bucket == FollowUpBucket.today ||
+          s == 'follow-up' ||
+          s == 'claimed';
     }).length;
 
-    final overdueCount = leads.where((l) {
-      final isDone = (l['isDone'] as bool?) ?? false;
-      final status = (l['status'] ?? '').toString().toLowerCase();
-      return !isDone &&
-          (status == 'new' || status == 'follow-up' || status == 'claimed');
-    }).length;
+    final overdueCount = evaluatedFollowUps
+        .where((e) => e.eval.isOverdue)
+        .length;
 
     final convertedCount = leads.where((l) {
       final status = (l['status'] ?? '').toString().toLowerCase();
@@ -2103,9 +2123,17 @@ class _OverdueFollowUps extends StatelessWidget {
   Widget build(BuildContext context) {
     final overdue = leads.where((l) {
       final isDone = (l['isDone'] as bool?) ?? false;
-      final status = (l['status'] ?? '').toString().toLowerCase();
-      return !isDone &&
-          (status == 'follow-up' || status == 'claimed' || status == 'new');
+      if (isDone) return false;
+      final eval = FollowUpTimeHelper.evaluate(
+        rawFollowUpTime: l['followUpTime'],
+        assignedDateKey: l['assignedDateKey'],
+        assignedDateLabel: l['assignedDateLabel'],
+        assignedAt: l['assignedAt'],
+        updatedAt: l['updatedAt'],
+        createdAt: l['createdAt'],
+        status: (l['status'] ?? '').toString(),
+      );
+      return eval.isOverdue;
     }).toList();
 
     return Container(

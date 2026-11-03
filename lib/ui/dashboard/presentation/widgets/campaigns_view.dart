@@ -13,14 +13,46 @@ class _CampaignReason {
 
   const _CampaignReason(this.label, this.bg, this.fg);
 
-  static const blue = _CampaignReason('Branch match', Color(0xFFE8F1FD), Color(0xFF1D4ED8));
-  static const interest = _CampaignReason('Interest match', Color(0xFFE8F1FD), Color(0xFF1D4ED8));
-  static const attended = _CampaignReason('Attended similar event', Color(0xFFE8F1FD), Color(0xFF1D4ED8));
-  static const targetYr = _CampaignReason('Target year', Color(0xFFE8F1FD), Color(0xFF1D4ED8));
-  static const recent = _CampaignReason('Recent lead', Color(0xFFE8F1FD), Color(0xFF1D4ED8));
-  static const warm = _CampaignReason('Warm lead', Color(0xFFE6F4EA), Color(0xFF15803D));
-  static const pastCustomer = _CampaignReason('Past customer', Color(0xFFE6F4EA), Color(0xFF15803D));
-  static const calledRecent = _CampaignReason('Called in last 7 days', Color(0xFFFEF0E6), Color(0xFF9A3412));
+  static const blue = _CampaignReason(
+    'Branch match',
+    Color(0xFFE8F1FD),
+    Color(0xFF1D4ED8),
+  );
+  static const interest = _CampaignReason(
+    'Interest match',
+    Color(0xFFE8F1FD),
+    Color(0xFF1D4ED8),
+  );
+  static const attended = _CampaignReason(
+    'Attended similar event',
+    Color(0xFFE8F1FD),
+    Color(0xFF1D4ED8),
+  );
+  static const targetYr = _CampaignReason(
+    'Target year',
+    Color(0xFFE8F1FD),
+    Color(0xFF1D4ED8),
+  );
+  static const recent = _CampaignReason(
+    'Recent lead',
+    Color(0xFFE8F1FD),
+    Color(0xFF1D4ED8),
+  );
+  static const warm = _CampaignReason(
+    'Warm lead',
+    Color(0xFFE6F4EA),
+    Color(0xFF15803D),
+  );
+  static const pastCustomer = _CampaignReason(
+    'Past customer',
+    Color(0xFFE6F4EA),
+    Color(0xFF15803D),
+  );
+  static const calledRecent = _CampaignReason(
+    'Called in last 7 days',
+    Color(0xFFFEF0E6),
+    Color(0xFF9A3412),
+  );
 }
 
 class _CampaignLead {
@@ -93,7 +125,9 @@ class CampaignsView extends StatefulWidget {
 }
 
 class _CampaignsViewState extends State<CampaignsView> {
-  final TextEditingController _splitCountController = TextEditingController(text: '80');
+  final TextEditingController _splitCountController = TextEditingController(
+    text: '80',
+  );
   bool _showAllCampaigns = false;
   int _activeCampaignIndex = 0;
 
@@ -271,7 +305,9 @@ class _CampaignsViewState extends State<CampaignsView> {
   }
 
   void _listenLiveCampaigns() {
-    FirebaseFirestore.instance.collection('campaigns').snapshots().listen((snap) {
+    FirebaseFirestore.instance.collection('campaigns').snapshots().listen((
+      snap,
+    ) {
       if (snap.docs.isEmpty) {
         _seedDefaultCampaigns();
       } else {
@@ -324,19 +360,26 @@ class _CampaignsViewState extends State<CampaignsView> {
   void _listenLiveLeadsAndRank() {
     FirebaseFirestore.instance.collection('leads').snapshots().listen((snap) {
       if (snap.docs.isNotEmpty) {
-        final currentCampaign = _campaigns.isNotEmpty ? _campaigns[_activeCampaignIndex] : null;
-        final targetBranches = (currentCampaign?.branches ?? 'CSE, IT, ECE').toUpperCase();
-        final targetTopics = (currentCampaign?.topics ?? 'ai, python, ml').toLowerCase();
+        final currentCampaign = _campaigns.isNotEmpty
+            ? _campaigns[_activeCampaignIndex]
+            : null;
+        final targetBranches = (currentCampaign?.branches ?? 'CSE, IT, ECE')
+            .toUpperCase();
+        final targetTopics = (currentCampaign?.topics ?? 'ai, python, ml')
+            .toLowerCase();
 
         final scoredList = <_CampaignLead>[];
         for (var i = 0; i < snap.docs.length; i++) {
           final doc = snap.docs[i];
           final d = doc.data();
           final name = (d['name'] ?? 'Lead ${i + 1}').toString();
-          final college = (d['college'] ?? d['collegeBranch'] ?? 'College').toString();
+          final college = (d['college'] ?? d['collegeBranch'] ?? 'College')
+              .toString();
           final branch = (d['branch'] ?? '').toString().toUpperCase();
           final year = (d['year'] ?? '').toString();
-          final course = (d['course'] ?? d['source'] ?? '').toString().toLowerCase();
+          final course = (d['course'] ?? d['source'] ?? '')
+              .toString()
+              .toLowerCase();
           final status = (d['status'] ?? 'New').toString();
 
           int score = 40;
@@ -346,14 +389,19 @@ class _CampaignsViewState extends State<CampaignsView> {
             score += 25;
             reasons.add(_CampaignReason.blue);
           }
-          if (course.isNotEmpty && (course.contains('ai') || course.contains('python') || course.contains('workshop') || targetTopics.contains(course))) {
+          if (course.isNotEmpty &&
+              (course.contains('ai') ||
+                  course.contains('python') ||
+                  course.contains('workshop') ||
+                  targetTopics.contains(course))) {
             score += 20;
             reasons.add(_CampaignReason.interest);
           }
           if (status.toLowerCase().contains('interest')) {
             score += 15;
             reasons.add(_CampaignReason.warm);
-          } else if (status.toLowerCase().contains('new') || status.toLowerCase().contains('assigned')) {
+          } else if (status.toLowerCase().contains('new') ||
+              status.toLowerCase().contains('assigned')) {
             score += 10;
             reasons.add(_CampaignReason.recent);
           }
@@ -364,9 +412,15 @@ class _CampaignsViewState extends State<CampaignsView> {
           score = score.clamp(20, 98);
           final barColor = score >= 70
               ? const Color(0xFF15803D)
-              : (score >= 50 ? const Color(0xFF2563EB) : const Color(0xFF94A3B8));
+              : (score >= 50
+                    ? const Color(0xFF2563EB)
+                    : const Color(0xFF94A3B8));
 
-          final collegeBranchYear = [college, if (branch.isNotEmpty) branch, if (year.isNotEmpty) year].join(' · ');
+          final collegeBranchYear = [
+            college,
+            if (branch.isNotEmpty) branch,
+            if (year.isNotEmpty) year,
+          ].join(' · ');
 
           scoredList.add(
             _CampaignLead(
@@ -378,7 +432,8 @@ class _CampaignsViewState extends State<CampaignsView> {
               scoreBarColor: barColor,
               reasons: reasons.isEmpty ? [_CampaignReason.recent] : reasons,
               lastContact: (d['lastContact'] ?? 'Recently').toString(),
-              assignedExec: (d['assignedToName'] ?? d['assignedTo'])?.toString(),
+              assignedExec: (d['assignedToName'] ?? d['assignedTo'])
+                  ?.toString(),
             ),
           );
         }
@@ -432,7 +487,8 @@ class _CampaignsViewState extends State<CampaignsView> {
     final targetLeads = _rankedLeads.take(toAssignCount).toList();
 
     final now = DateTime.now();
-    final dateKey = '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+    final dateKey =
+        '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
     final dateLabel = 'Today';
     final batch = FirebaseFirestore.instance.batch();
 
@@ -451,7 +507,9 @@ class _CampaignsViewState extends State<CampaignsView> {
         final targetExecName = execs[i % execs.length];
 
         if (lead.id.isNotEmpty && !lead.id.startsWith('fblead_')) {
-          final docRef = FirebaseFirestore.instance.collection('leads').doc(lead.id);
+          final docRef = FirebaseFirestore.instance
+              .collection('leads')
+              .doc(lead.id);
           batch.update(docRef, {
             'assignedTo': targetExecName,
             'assignedToName': targetExecName,
@@ -463,7 +521,9 @@ class _CampaignsViewState extends State<CampaignsView> {
           });
 
           final assignId = '${lead.id}_$dateKey';
-          final assignRef = FirebaseFirestore.instance.collection('assignments').doc(assignId);
+          final assignRef = FirebaseFirestore.instance
+              .collection('assignments')
+              .doc(assignId);
           batch.set(assignRef, {
             'id': assignId,
             'leadId': lead.id,
@@ -481,17 +541,21 @@ class _CampaignsViewState extends State<CampaignsView> {
       if (_campaigns.isNotEmpty) {
         final camp = _campaigns[_activeCampaignIndex];
         if (camp.id.isNotEmpty && !camp.id.startsWith('cmp_default_')) {
-          FirebaseFirestore.instance.collection('campaigns').doc(camp.id).update({
-            'assignedCount': FieldValue.increment(toAssignCount),
-            'updatedAt': FieldValue.serverTimestamp(),
-          });
+          FirebaseFirestore.instance
+              .collection('campaigns')
+              .doc(camp.id)
+              .update({
+                'assignedCount': FieldValue.increment(toAssignCount),
+                'updatedAt': FieldValue.serverTimestamp(),
+              });
         }
       }
 
       await batch.commit();
 
       await FirebaseFirestore.instance.collection('audit_log').add({
-        'action': 'Assigned $toAssignCount campaign leads across ${execs.join(", ")}',
+        'action':
+            'Assigned $toAssignCount campaign leads across ${execs.join(", ")}',
         'category': 'campaign_assignment',
         'timestamp': FieldValue.serverTimestamp(),
       });
@@ -538,17 +602,23 @@ class _CampaignsViewState extends State<CampaignsView> {
                 const SizedBox(height: 12),
                 TextField(
                   controller: badgeCtrl,
-                  decoration: const InputDecoration(labelText: 'Start date label'),
+                  decoration: const InputDecoration(
+                    labelText: 'Start date label',
+                  ),
                 ),
                 const SizedBox(height: 12),
                 TextField(
                   controller: topicsCtrl,
-                  decoration: const InputDecoration(labelText: 'Target topics (comma separated)'),
+                  decoration: const InputDecoration(
+                    labelText: 'Target topics (comma separated)',
+                  ),
                 ),
                 const SizedBox(height: 12),
                 TextField(
                   controller: branchesCtrl,
-                  decoration: const InputDecoration(labelText: 'Target branches'),
+                  decoration: const InputDecoration(
+                    labelText: 'Target branches',
+                  ),
                 ),
                 const SizedBox(height: 12),
                 TextField(
@@ -573,7 +643,9 @@ class _CampaignsViewState extends State<CampaignsView> {
               if (titleCtrl.text.trim().isEmpty) return;
               final newCamp = _CampaignData(
                 title: titleCtrl.text.trim(),
-                badge: badgeCtrl.text.trim().isEmpty ? 'Upcoming' : badgeCtrl.text.trim(),
+                badge: badgeCtrl.text.trim().isEmpty
+                    ? 'Upcoming'
+                    : badgeCtrl.text.trim(),
                 topics: topicsCtrl.text.trim(),
                 branches: branchesCtrl.text.trim(),
                 years: yearsCtrl.text.trim(),
@@ -615,7 +687,9 @@ class _CampaignsViewState extends State<CampaignsView> {
 
   @override
   Widget build(BuildContext context) {
-    final campaign = _campaigns.isNotEmpty ? _campaigns[_activeCampaignIndex] : _defaultCampaigns.first;
+    final campaign = _campaigns.isNotEmpty
+        ? _campaigns[_activeCampaignIndex]
+        : _defaultCampaigns.first;
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -653,7 +727,10 @@ class _CampaignsViewState extends State<CampaignsView> {
                   label: const Text('New campaign'),
                   style: TextButton.styleFrom(
                     foregroundColor: const Color(0xFF4338CA),
-                    textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                    textStyle: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
               ],
@@ -731,14 +808,21 @@ class _CampaignsViewState extends State<CampaignsView> {
                           ),
                           decoration: InputDecoration(
                             isDense: true,
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 8,
+                            ),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
-                              borderSide: const BorderSide(color: Color(0xFFD0D5DD)),
+                              borderSide: const BorderSide(
+                                color: Color(0xFFD0D5DD),
+                              ),
                             ),
                             enabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
-                              borderSide: const BorderSide(color: Color(0xFFD0D5DD)),
+                              borderSide: const BorderSide(
+                                color: Color(0xFFD0D5DD),
+                              ),
                             ),
                           ),
                         ),
@@ -756,7 +840,8 @@ class _CampaignsViewState extends State<CampaignsView> {
                         return InkWell(
                           onTap: () {
                             setState(() {
-                              if (isSelected && _selectedExecutives.length > 1) {
+                              if (isSelected &&
+                                  _selectedExecutives.length > 1) {
                                 _selectedExecutives.remove(exec);
                               } else {
                                 _selectedExecutives.add(exec);
@@ -765,12 +850,19 @@ class _CampaignsViewState extends State<CampaignsView> {
                           },
                           borderRadius: BorderRadius.circular(20),
                           child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 7,
+                            ),
                             decoration: BoxDecoration(
-                              color: isSelected ? const Color(0xFFEEF0FF) : Colors.white,
+                              color: isSelected
+                                  ? const Color(0xFFEEF0FF)
+                                  : Colors.white,
                               borderRadius: BorderRadius.circular(20),
                               border: Border.all(
-                                color: isSelected ? const Color(0xFF4338CA) : const Color(0xFFD0D5DD),
+                                color: isSelected
+                                    ? const Color(0xFF4338CA)
+                                    : const Color(0xFFD0D5DD),
                                 width: isSelected ? 1.3 : 1.0,
                               ),
                             ),
@@ -779,7 +871,9 @@ class _CampaignsViewState extends State<CampaignsView> {
                               style: TextStyle(
                                 fontSize: 12.5,
                                 fontWeight: FontWeight.w600,
-                                color: isSelected ? const Color(0xFF4338CA) : const Color(0xFF475467),
+                                color: isSelected
+                                    ? const Color(0xFF4338CA)
+                                    : const Color(0xFF475467),
                               ),
                             ),
                           ),
@@ -814,7 +908,10 @@ class _CampaignsViewState extends State<CampaignsView> {
                           ),
                           child: const Text(
                             'Assign for tomorrow',
-                            style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                         ),
                       ),
@@ -833,7 +930,9 @@ class _CampaignsViewState extends State<CampaignsView> {
                 borderRadius: BorderRadius.circular(14),
                 border: Border.all(color: const Color(0xFFE8EAF0)),
               ),
-              child: isMobile ? _buildMobileRankedList() : _buildDesktopRankedTable(),
+              child: isMobile
+                  ? _buildMobileRankedList()
+                  : _buildDesktopRankedTable(),
             ),
           ],
         );
@@ -889,11 +988,7 @@ class _CampaignsViewState extends State<CampaignsView> {
         const SizedBox(height: 8),
         const Text(
           'Score = branch match 30 · interest match 30 · attended similar event 20 · warm lead 15 · target year 10 · recent lead 5 · called in last 7 days −25 · not interested −30',
-          style: TextStyle(
-            fontSize: 12,
-            color: Color(0xFF667085),
-            height: 1.4,
-          ),
+          style: TextStyle(fontSize: 12, color: Color(0xFF667085), height: 1.4),
         ),
       ],
     );
@@ -906,7 +1001,10 @@ class _CampaignsViewState extends State<CampaignsView> {
         children: [
           TextSpan(
             text: label,
-            style: const TextStyle(fontWeight: FontWeight.w700, color: Color(0xFF0F172A)),
+            style: const TextStyle(
+              fontWeight: FontWeight.w700,
+              color: Color(0xFF0F172A),
+            ),
           ),
           TextSpan(text: value),
         ],
@@ -914,11 +1012,26 @@ class _CampaignsViewState extends State<CampaignsView> {
     );
   }
 
-  Widget _buildCampaignStatsRight(_CampaignData campaign, {required bool isMobile}) {
+  Widget _buildCampaignStatsRight(
+    _CampaignData campaign, {
+    required bool isMobile,
+  }) {
     final boxes = [
-      _buildStatMiniBox(campaign.matchingLeads, 'Matching leads', const Color(0xFF0F172A)),
-      _buildStatMiniBox(campaign.score70Plus, 'Score 70+', const Color(0xFF15803D)),
-      _buildStatMiniBox('${campaign.assignedCount}', 'Assigned', const Color(0xFF4338CA)),
+      _buildStatMiniBox(
+        campaign.matchingLeads,
+        'Matching leads',
+        const Color(0xFF0F172A),
+      ),
+      _buildStatMiniBox(
+        campaign.score70Plus,
+        'Score 70+',
+        const Color(0xFF15803D),
+      ),
+      _buildStatMiniBox(
+        '${campaign.assignedCount}',
+        'Assigned',
+        const Color(0xFF4338CA),
+      ),
     ];
 
     if (isMobile) {
@@ -966,10 +1079,7 @@ class _CampaignsViewState extends State<CampaignsView> {
           const SizedBox(height: 2),
           Text(
             label,
-            style: const TextStyle(
-              fontSize: 11.5,
-              color: Color(0xFF667085),
-            ),
+            style: const TextStyle(fontSize: 11.5, color: Color(0xFF667085)),
           ),
         ],
       ),
@@ -995,10 +1105,19 @@ class _CampaignsViewState extends State<CampaignsView> {
             children: [
               SizedBox(width: 50, child: Text('#', style: headerStyle)),
               Expanded(flex: 3, child: Text('NAME', style: headerStyle)),
-              Expanded(flex: 4, child: Text('COLLEGE & BRANCH', style: headerStyle)),
+              Expanded(
+                flex: 4,
+                child: Text('COLLEGE & BRANCH', style: headerStyle),
+              ),
               Expanded(flex: 2, child: Text('SCORE', style: headerStyle)),
-              Expanded(flex: 5, child: Text('REASONS FOR HIGH SCORE', style: headerStyle)),
-              Expanded(flex: 2, child: Text('LAST CONTACT', style: headerStyle)),
+              Expanded(
+                flex: 5,
+                child: Text('REASONS FOR HIGH SCORE', style: headerStyle),
+              ),
+              Expanded(
+                flex: 2,
+                child: Text('LAST CONTACT', style: headerStyle),
+              ),
               Expanded(flex: 2, child: Text('ASSIGNED', style: headerStyle)),
             ],
           ),
@@ -1007,7 +1126,8 @@ class _CampaignsViewState extends State<CampaignsView> {
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
           itemCount: _rankedLeads.length,
-          separatorBuilder: (_, _) => const Divider(height: 1, color: Color(0xFFE8EAF0)),
+          separatorBuilder: (_, _) =>
+              const Divider(height: 1, color: Color(0xFFE8EAF0)),
           itemBuilder: (context, index) {
             final lead = _rankedLeads[index];
             return Padding(
@@ -1040,7 +1160,10 @@ class _CampaignsViewState extends State<CampaignsView> {
                     flex: 4,
                     child: Text(
                       lead.collegeBranchYear,
-                      style: const TextStyle(fontSize: 13, color: Color(0xFF475467)),
+                      style: const TextStyle(
+                        fontSize: 13,
+                        color: Color(0xFF475467),
+                      ),
                     ),
                   ),
                   Expanded(
@@ -1078,7 +1201,10 @@ class _CampaignsViewState extends State<CampaignsView> {
                       runSpacing: 4,
                       children: lead.reasons.map((r) {
                         return Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 3,
+                          ),
                           decoration: BoxDecoration(
                             color: r.bg,
                             borderRadius: BorderRadius.circular(10),
@@ -1099,14 +1225,20 @@ class _CampaignsViewState extends State<CampaignsView> {
                     flex: 2,
                     child: Text(
                       lead.lastContact,
-                      style: const TextStyle(fontSize: 12.5, color: Color(0xFF667085)),
+                      style: const TextStyle(
+                        fontSize: 12.5,
+                        color: Color(0xFF667085),
+                      ),
                     ),
                   ),
                   Expanded(
                     flex: 2,
                     child: lead.assignedExec != null
                         ? Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 3,
+                            ),
                             decoration: BoxDecoration(
                               color: const Color(0xFFEEF0FF),
                               borderRadius: BorderRadius.circular(6),
@@ -1122,7 +1254,10 @@ class _CampaignsViewState extends State<CampaignsView> {
                           )
                         : const Text(
                             '—',
-                            style: TextStyle(fontSize: 12.5, color: Color(0xFF98A2B3)),
+                            style: TextStyle(
+                              fontSize: 12.5,
+                              color: Color(0xFF98A2B3),
+                            ),
                           ),
                   ),
                 ],
@@ -1188,7 +1323,10 @@ class _CampaignsViewState extends State<CampaignsView> {
                   ),
                   if (lead.assignedExec != null)
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 3,
+                      ),
                       decoration: BoxDecoration(
                         color: const Color(0xFFEEF0FF),
                         borderRadius: BorderRadius.circular(6),
@@ -1207,7 +1345,10 @@ class _CampaignsViewState extends State<CampaignsView> {
               const SizedBox(height: 6),
               Text(
                 lead.collegeBranchYear,
-                style: const TextStyle(fontSize: 12.5, color: Color(0xFF475467)),
+                style: const TextStyle(
+                  fontSize: 12.5,
+                  color: Color(0xFF475467),
+                ),
               ),
               const SizedBox(height: 8),
               Row(
@@ -1240,14 +1381,21 @@ class _CampaignsViewState extends State<CampaignsView> {
                 runSpacing: 6,
                 children: lead.reasons.map((r) {
                   return Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 3,
+                    ),
                     decoration: BoxDecoration(
                       color: r.bg,
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Text(
                       r.label,
-                      style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: r.fg),
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: r.fg,
+                      ),
                     ),
                   );
                 }).toList(),
@@ -1326,7 +1474,10 @@ class _CampaignsViewState extends State<CampaignsView> {
                           ),
                           const SizedBox(width: 8),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 3,
+                            ),
                             decoration: BoxDecoration(
                               color: const Color(0xFFFEF0E6),
                               borderRadius: BorderRadius.circular(10),
@@ -1345,7 +1496,10 @@ class _CampaignsViewState extends State<CampaignsView> {
                       const SizedBox(height: 6),
                       Text(
                         'Topics: ${c.topics} · Branches: ${c.branches}',
-                        style: const TextStyle(fontSize: 12.5, color: Color(0xFF475467)),
+                        style: const TextStyle(
+                          fontSize: 12.5,
+                          color: Color(0xFF475467),
+                        ),
                       ),
                     ],
                   ),

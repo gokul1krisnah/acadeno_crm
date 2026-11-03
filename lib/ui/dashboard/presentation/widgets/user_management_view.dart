@@ -47,7 +47,10 @@ class _UserManagementViewState extends State<UserManagementView> {
           children: [
             Icon(Icons.phonelink_erase_rounded, color: Color(0xFFD97706)),
             SizedBox(width: 8),
-            Text('Reset Phone Binding (PR-5.1)', style: TextStyle(fontSize: 16)),
+            Text(
+              'Reset Phone Binding (PR-5.1)',
+              style: TextStyle(fontSize: 16),
+            ),
           ],
         ),
         content: Text(
@@ -70,7 +73,8 @@ class _UserManagementViewState extends State<UserManagementView> {
               cubit.resetUserDevice(user.uid, user.name);
               SnackBarAlert.showToast(
                 context: context,
-                message: 'Phone binding reset for ${user.name}. They may now register a new phone.',
+                message:
+                    'Phone binding reset for ${user.name}. They may now register a new phone.',
               );
             },
             child: const Text('Approve & Reset Phone'),
@@ -109,7 +113,8 @@ class _UserManagementViewState extends State<UserManagementView> {
               cubit.forceSignOutUser(user.uid, user.name);
               SnackBarAlert.showToast(
                 context: context,
-                message: 'Remote sign out sent for ${user.name}. Their session will terminate immediately.',
+                message:
+                    'Remote sign out sent for ${user.name}. Their session will terminate immediately.',
               );
             },
             icon: const Icon(Icons.logout_rounded, size: 16),
@@ -1023,11 +1028,7 @@ class _UserManagementViewState extends State<UserManagementView> {
       value: _statusFilter,
       borderRadius: 8,
       borderColor: _borderColor,
-      prefixIcon: const Icon(
-        Icons.tune_rounded,
-        size: 18,
-        color: _textMuted,
-      ),
+      prefixIcon: const Icon(Icons.tune_rounded, size: 18, color: _textMuted),
       contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       items: const [
         AcadenoDropdownItem(value: 'all', label: 'All Statuses'),
@@ -1118,7 +1119,11 @@ class _UserManagementViewState extends State<UserManagementView> {
               ),
               SizedBox(
                 width: 90,
-                child: Text('ACTIONS', style: _tblHdr, textAlign: TextAlign.right),
+                child: Text(
+                  'ACTIONS',
+                  style: _tblHdr,
+                  textAlign: TextAlign.right,
+                ),
               ),
             ],
           ),
@@ -1275,7 +1280,9 @@ class _UserManagementViewState extends State<UserManagementView> {
                           ),
                           child: DropdownButtonHideUnderline(
                             child: DropdownButton<String>(
-                              value: DashboardUserModel.normalizeRole(user.role),
+                              value: DashboardUserModel.normalizeRole(
+                                user.role,
+                              ),
                               isDense: true,
                               isExpanded: true,
                               style: const TextStyle(
@@ -1393,11 +1400,8 @@ class _UserManagementViewState extends State<UserManagementView> {
                                 color: Color(0xFF64748B),
                               ),
                               tooltip: 'Reset Phone Binding (PR-5.1)',
-                              onPressed: () => _confirmResetDevice(
-                                context,
-                                cubit,
-                                user,
-                              ),
+                              onPressed: () =>
+                                  _confirmResetDevice(context, cubit, user),
                             ),
                           ],
                         ),
@@ -1452,11 +1456,8 @@ class _UserManagementViewState extends State<UserManagementView> {
                             ),
                             icon: const Icon(Icons.logout_rounded, size: 16),
                             tooltip: 'Remote sign out session',
-                            onPressed: () => _confirmForceSignOut(
-                              context,
-                              cubit,
-                              user,
-                            ),
+                            onPressed: () =>
+                                _confirmForceSignOut(context, cubit, user),
                           ),
                           if (isMe)
                             IconButton(
@@ -1471,14 +1472,11 @@ class _UserManagementViewState extends State<UserManagementView> {
                                 color: _primaryColor,
                               ),
                               tooltip: 'Admin Account & Password',
-                              onPressed: () => showAdminAccountDialog(
-                                context,
-                                {
-                                  'name': user.name,
-                                  'email': user.email,
-                                  'role': user.role,
-                                },
-                              ),
+                              onPressed: () => showAdminAccountDialog(context, {
+                                'name': user.name,
+                                'email': user.email,
+                                'role': user.role,
+                              }),
                             )
                           else
                             IconButton(
@@ -1493,11 +1491,8 @@ class _UserManagementViewState extends State<UserManagementView> {
                                 color: Color(0xFFDC2626),
                               ),
                               tooltip: 'Remove user',
-                              onPressed: () => _confirmDelete(
-                                context,
-                                user.uid,
-                                user.name,
-                              ),
+                              onPressed: () =>
+                                  _confirmDelete(context, user.uid, user.name),
                             ),
                         ],
                       ),
@@ -1693,7 +1688,10 @@ class _UserManagementViewState extends State<UserManagementView> {
                     ),
                     const SizedBox(height: 8),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 6,
+                      ),
                       decoration: BoxDecoration(
                         color: const Color(0xFFF8FAFC),
                         borderRadius: BorderRadius.circular(8),
@@ -1714,7 +1712,11 @@ class _UserManagementViewState extends State<UserManagementView> {
                           Expanded(
                             child: Text(
                               'Device: ${user.deviceName} (${user.deviceBound ? "Registered" : "Pending"})',
-                              style: const TextStyle(fontSize: 11.5, color: _textDark, fontWeight: FontWeight.w500),
+                              style: const TextStyle(
+                                fontSize: 11.5,
+                                color: _textDark,
+                                fontWeight: FontWeight.w500,
+                              ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -1722,11 +1724,20 @@ class _UserManagementViewState extends State<UserManagementView> {
                           TextButton.icon(
                             style: TextButton.styleFrom(
                               visualDensity: VisualDensity.compact,
-                              padding: const EdgeInsets.symmetric(horizontal: 6),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 6,
+                              ),
                             ),
-                            onPressed: () => _confirmResetDevice(context, cubit, user),
-                            icon: const Icon(Icons.phonelink_erase_rounded, size: 14),
-                            label: const Text('Reset', style: TextStyle(fontSize: 11)),
+                            onPressed: () =>
+                                _confirmResetDevice(context, cubit, user),
+                            icon: const Icon(
+                              Icons.phonelink_erase_rounded,
+                              size: 14,
+                            ),
+                            label: const Text(
+                              'Reset',
+                              style: TextStyle(fontSize: 11),
+                            ),
                           ),
                         ],
                       ),
@@ -1744,7 +1755,8 @@ class _UserManagementViewState extends State<UserManagementView> {
                             IconButton(
                               icon: const Icon(Icons.logout_rounded, size: 18),
                               tooltip: 'Remote sign out session (PR-5.3)',
-                              onPressed: () => _confirmForceSignOut(context, cubit, user),
+                              onPressed: () =>
+                                  _confirmForceSignOut(context, cubit, user),
                             ),
                             if (isMe)
                               IconButton(
@@ -1754,10 +1766,12 @@ class _UserManagementViewState extends State<UserManagementView> {
                                   color: _primaryColor,
                                 ),
                                 tooltip: 'Admin Account & Password',
-                                onPressed: () => showAdminAccountDialog(
-                                  context,
-                                  {'name': user.name, 'email': user.email, 'role': user.role},
-                                ),
+                                onPressed: () =>
+                                    showAdminAccountDialog(context, {
+                                      'name': user.name,
+                                      'email': user.email,
+                                      'role': user.role,
+                                    }),
                               )
                             else
                               IconButton(

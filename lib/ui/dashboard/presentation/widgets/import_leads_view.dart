@@ -351,7 +351,6 @@ class _ImportLeadsBodyState extends State<_ImportLeadsBody> {
                       ),
                     ),
                   ),
-
                 ],
               ),
             ],
@@ -428,7 +427,10 @@ class _ImportLeadsBodyState extends State<_ImportLeadsBody> {
                             backgroundColor: const Color(0xFF4338CA),
                             foregroundColor: Colors.white,
                             elevation: 0,
-                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 13),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 24,
+                              vertical: 13,
+                            ),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(10),
                             ),
@@ -437,7 +439,10 @@ class _ImportLeadsBodyState extends State<_ImportLeadsBody> {
                           icon: const Icon(Icons.folder_open_rounded, size: 20),
                           label: const Text(
                             'Browse Excel / CSV File',
-                            style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
+                            style: TextStyle(
+                              fontWeight: FontWeight.w700,
+                              fontSize: 14,
+                            ),
                           ),
                         ),
                       ],
@@ -1192,7 +1197,10 @@ class _ImportLeadsBodyState extends State<_ImportLeadsBody> {
       final picked = await NativeFilePicker.pickFile();
       if (picked != null && picked.bytes.isNotEmpty) {
         if (context.mounted) {
-          context.read<LeadImportCubit>().parseFileBytes(picked.bytes, picked.name);
+          context.read<LeadImportCubit>().parseFileBytes(
+            picked.bytes,
+            picked.name,
+          );
         }
       }
     } catch (e) {

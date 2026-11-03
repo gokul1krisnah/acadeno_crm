@@ -5,7 +5,10 @@ import 'package:flutter/material.dart';
 import 'package:acadeno_crm/shared/snackbar_alerts/snack_alert.dart';
 
 /// Opens the Admin Account Management & Security Dialog.
-void showAdminAccountDialog(BuildContext context, Map<String, dynamic> userDocData) {
+void showAdminAccountDialog(
+  BuildContext context,
+  Map<String, dynamic> userDocData,
+) {
   showDialog(
     context: context,
     builder: (ctx) => AdminAccountDialog(userDocData: userDocData),
@@ -55,7 +58,10 @@ class _AdminAccountDialogState extends State<AdminAccountDialog>
     _tabController = TabController(length: 3, vsync: this);
 
     final currentUser = _auth.currentUser;
-    final initialName = (widget.userDocData['name'] ?? currentUser?.displayName ?? '').toString().trim();
+    final initialName =
+        (widget.userDocData['name'] ?? currentUser?.displayName ?? '')
+            .toString()
+            .trim();
     _nameController = TextEditingController(
       text: initialName.isNotEmpty ? initialName : 'Admin',
     );
@@ -78,7 +84,11 @@ class _AdminAccountDialogState extends State<AdminAccountDialog>
   Future<void> _updateDisplayName() async {
     final newName = _nameController.text.trim();
     if (newName.isEmpty) {
-      SnackBarAlert.showToast(context: context, message: 'Please enter a valid name', isWarning: true);
+      SnackBarAlert.showToast(
+        context: context,
+        message: 'Please enter a valid name',
+        isWarning: true,
+      );
       return;
     }
 
@@ -94,12 +104,19 @@ class _AdminAccountDialogState extends State<AdminAccountDialog>
         }, SetOptions(merge: true));
 
         if (mounted) {
-          SnackBarAlert.showToast(context: context, message: 'Admin name updated successfully');
+          SnackBarAlert.showToast(
+            context: context,
+            message: 'Admin name updated successfully',
+          );
         }
       }
     } catch (e) {
       if (mounted) {
-        SnackBarAlert.showToast(context: context, message: 'Failed to update name: $e', isWarning: true);
+        SnackBarAlert.showToast(
+          context: context,
+          message: 'Failed to update name: $e',
+          isWarning: true,
+        );
       }
     } finally {
       if (mounted) setState(() => _isSavingName = false);
@@ -112,11 +129,19 @@ class _AdminAccountDialogState extends State<AdminAccountDialog>
     final password = _emailPasswordController.text;
 
     if (newEmail.isEmpty || !newEmail.contains('@')) {
-      SnackBarAlert.showToast(context: context, message: 'Please enter a valid email address', isWarning: true);
+      SnackBarAlert.showToast(
+        context: context,
+        message: 'Please enter a valid email address',
+        isWarning: true,
+      );
       return;
     }
     if (password.isEmpty) {
-      SnackBarAlert.showToast(context: context, message: 'Current password required to verify identity', isWarning: true);
+      SnackBarAlert.showToast(
+        context: context,
+        message: 'Current password required to verify identity',
+        isWarning: true,
+      );
       return;
     }
 
@@ -148,19 +173,29 @@ class _AdminAccountDialogState extends State<AdminAccountDialog>
       if (mounted) {
         SnackBarAlert.showToast(
           context: context,
-          message: 'Verification link sent to $newEmail. Please verify to complete.',
+          message:
+              'Verification link sent to $newEmail. Please verify to complete.',
         );
       }
     } on FirebaseAuthException catch (e) {
       if (mounted) {
         String msg = e.message ?? 'Failed to update email';
         if (e.code == 'wrong-password') msg = 'Incorrect current password';
-        if (e.code == 'email-already-in-use') msg = 'This email is already in use by another account';
-        SnackBarAlert.showToast(context: context, message: msg, isWarning: true);
+        if (e.code == 'email-already-in-use')
+          msg = 'This email is already in use by another account';
+        SnackBarAlert.showToast(
+          context: context,
+          message: msg,
+          isWarning: true,
+        );
       }
     } catch (e) {
       if (mounted) {
-        SnackBarAlert.showToast(context: context, message: 'Error: $e', isWarning: true);
+        SnackBarAlert.showToast(
+          context: context,
+          message: 'Error: $e',
+          isWarning: true,
+        );
       }
     } finally {
       if (mounted) setState(() => _isSavingEmail = false);
@@ -174,15 +209,27 @@ class _AdminAccountDialogState extends State<AdminAccountDialog>
     final confirmPass = _confirmPasswordController.text;
 
     if (currentPass.isEmpty) {
-      SnackBarAlert.showToast(context: context, message: 'Please enter current password', isWarning: true);
+      SnackBarAlert.showToast(
+        context: context,
+        message: 'Please enter current password',
+        isWarning: true,
+      );
       return;
     }
     if (newPass.length < 6) {
-      SnackBarAlert.showToast(context: context, message: 'New password must be at least 6 characters', isWarning: true);
+      SnackBarAlert.showToast(
+        context: context,
+        message: 'New password must be at least 6 characters',
+        isWarning: true,
+      );
       return;
     }
     if (newPass != confirmPass) {
-      SnackBarAlert.showToast(context: context, message: 'New passwords do not match', isWarning: true);
+      SnackBarAlert.showToast(
+        context: context,
+        message: 'New passwords do not match',
+        isWarning: true,
+      );
       return;
     }
 
@@ -208,17 +255,28 @@ class _AdminAccountDialogState extends State<AdminAccountDialog>
       _confirmPasswordController.clear();
 
       if (mounted) {
-        SnackBarAlert.showToast(context: context, message: 'Admin password updated successfully');
+        SnackBarAlert.showToast(
+          context: context,
+          message: 'Admin password updated successfully',
+        );
       }
     } on FirebaseAuthException catch (e) {
       if (mounted) {
         String msg = e.message ?? 'Failed to update password';
         if (e.code == 'wrong-password') msg = 'Current password is incorrect';
-        SnackBarAlert.showToast(context: context, message: msg, isWarning: true);
+        SnackBarAlert.showToast(
+          context: context,
+          message: msg,
+          isWarning: true,
+        );
       }
     } catch (e) {
       if (mounted) {
-        SnackBarAlert.showToast(context: context, message: 'Error: $e', isWarning: true);
+        SnackBarAlert.showToast(
+          context: context,
+          message: 'Error: $e',
+          isWarning: true,
+        );
       }
     } finally {
       if (mounted) setState(() => _isSavingPassword = false);
@@ -306,7 +364,9 @@ class _AdminAccountDialogState extends State<AdminAccountDialog>
                       radius: 22,
                       backgroundColor: primary,
                       child: Text(
-                        currentName.isNotEmpty ? currentName[0].toUpperCase() : 'A',
+                        currentName.isNotEmpty
+                            ? currentName[0].toUpperCase()
+                            : 'A',
                         style: const TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.w700,
@@ -353,7 +413,10 @@ class _AdminAccountDialogState extends State<AdminAccountDialog>
                           const SizedBox(height: 2),
                           Text(
                             currentEmail,
-                            style: const TextStyle(fontSize: 12.5, color: textMuted),
+                            style: const TextStyle(
+                              fontSize: 12.5,
+                              color: textMuted,
+                            ),
                           ),
                         ],
                       ),
@@ -523,9 +586,8 @@ class _AdminAccountDialogState extends State<AdminAccountDialog>
                   _obscureCurrentPass ? Icons.visibility_off : Icons.visibility,
                   size: 18,
                 ),
-                onPressed: () => setState(
-                  () => _obscureCurrentPass = !_obscureCurrentPass,
-                ),
+                onPressed: () =>
+                    setState(() => _obscureCurrentPass = !_obscureCurrentPass),
               ),
               isDense: true,
               border: OutlineInputBorder(
@@ -568,9 +630,8 @@ class _AdminAccountDialogState extends State<AdminAccountDialog>
                   _obscureConfirmPass ? Icons.visibility_off : Icons.visibility,
                   size: 18,
                 ),
-                onPressed: () => setState(
-                  () => _obscureConfirmPass = !_obscureConfirmPass,
-                ),
+                onPressed: () =>
+                    setState(() => _obscureConfirmPass = !_obscureConfirmPass),
               ),
               isDense: true,
               border: OutlineInputBorder(
