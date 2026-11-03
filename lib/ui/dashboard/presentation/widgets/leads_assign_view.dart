@@ -893,34 +893,32 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Top Header
-            Wrap(
-              alignment: WrapAlignment.spaceBetween,
-              crossAxisAlignment: WrapCrossAlignment.center,
-              spacing: 12,
-              runSpacing: 12,
-              children: [
-                Column(
+            // Top Header - Rigorously aligned to the far right top
+            LayoutBuilder(
+              builder: (context, c) {
+                final isNarrow = c.maxWidth < 760;
+                final titleCol = Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
                       'Leads',
                       style: TextStyle(
-                        fontSize: 26,
-                        fontWeight: FontWeight.w700,
+                        fontSize: 28,
+                        fontWeight: FontWeight.w800,
                         color: _text,
+                        letterSpacing: -0.5,
                       ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       '${state.allLeads.length} leads · filter, select and assign to HR for a day',
-                      style: const TextStyle(color: _muted, fontSize: 14),
+                      style: const TextStyle(color: _muted, fontSize: 13),
                     ),
                   ],
-                ),
-                Wrap(
-                  spacing: 10,
-                  runSpacing: 10,
+                );
+
+                final actionButtons = Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     SizedBox(
                       height: 40,
@@ -942,6 +940,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                         ),
                       ),
                     ),
+                    const SizedBox(width: 10),
                     SizedBox(
                       height: 40,
                       child: OutlinedButton.icon(
@@ -962,6 +961,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                         ),
                       ),
                     ),
+                    const SizedBox(width: 10),
                     SizedBox(
                       height: 40,
                       child: OutlinedButton.icon(
@@ -1004,6 +1004,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                         ),
                       ),
                     ),
+                    const SizedBox(width: 10),
                     SizedBox(
                       height: 40,
                       child: ElevatedButton.icon(
@@ -1025,8 +1026,35 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                       ),
                     ),
                   ],
-                ),
-              ],
+                );
+
+                if (isNarrow) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      titleCol,
+                      const SizedBox(height: 12),
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: actionButtons,
+                      ),
+                    ],
+                  );
+                }
+
+                return SizedBox(
+                  width: double.infinity,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Expanded(child: titleCol),
+                      const SizedBox(width: 16),
+                      actionButtons,
+                    ],
+                  ),
+                );
+              },
             ),
             const SizedBox(height: 18),
 
