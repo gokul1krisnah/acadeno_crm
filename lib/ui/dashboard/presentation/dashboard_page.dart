@@ -64,13 +64,11 @@ class _NavItem {
   final String svgAsset;
   final IconData fallbackIcon;
   final String label;
-  final String? badge;
 
   const _NavItem({
     required this.svgAsset,
     required this.fallbackIcon,
     required this.label,
-    this.badge,
   });
 }
 
@@ -103,7 +101,6 @@ class _DashboardViewState extends State<_DashboardView> {
       svgAsset: 'assets/svgs/leads.svg',
       fallbackIcon: Icons.format_list_bulleted_rounded,
       label: 'Leads & Assign',
-      badge: '12+',
     ),
     _NavItem(
       svgAsset: 'assets/svgs/campaigns.svg',
@@ -707,25 +704,7 @@ class _DashboardViewState extends State<_DashboardView> {
                     ),
                   ),
                 ),
-                if (item.badge != null)
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 7,
-                      vertical: 2,
-                    ),
-                    decoration: BoxDecoration(
-                      color: _primary,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Text(
-                      item.badge!,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 10.5,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
+
               ],
             ),
           ),
