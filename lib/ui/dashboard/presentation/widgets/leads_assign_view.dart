@@ -17,7 +17,6 @@ const _primary = Color(0xFF4338CA);
 const _border = Color(0xFFE5E7EB);
 const _muted = Color(0xFF6B7280);
 const _text = Color(0xFF111827);
-const _amber = Color(0xFFF59E0B);
 
 class LeadsAssignView extends StatelessWidget {
   final AdminLeadsCubit? cubit;
@@ -1412,7 +1411,6 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
               ),
             ),
             const SizedBox(height: 16),
-            ],
 
             // Leads Table Card (Loading, Error, Empty, or Data rows)
             Container(

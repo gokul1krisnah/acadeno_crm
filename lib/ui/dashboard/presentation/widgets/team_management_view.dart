@@ -1,4 +1,3 @@
-import 'package:acadeno_crm/shared/widgets/acadeno_dropdown.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -246,7 +245,6 @@ class _TeamManagementViewState extends State<TeamManagementView> {
                           ),
                         ],
                       ),
-                    ),
                     ),
                     const SizedBox(height: 20),
 

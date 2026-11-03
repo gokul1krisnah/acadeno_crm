@@ -548,12 +548,6 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
                 ],
               ),
             ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-
             const SizedBox(height: 18),
 
             ...visits.map((visit) {

@@ -8,7 +8,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:acadeno_crm/shared/extensions/build_context_extension.dart';
 import 'package:acadeno_crm/shared/theme/app_images.dart';
-import 'package:acadeno_crm/ui/alerts/application/alerts_cubit.dart';
 import 'package:acadeno_crm/ui/follow_ups/application/follow_ups_cubit.dart';
 import 'package:acadeno_crm/ui/follow_ups/data/model/follow_up_models.dart';
 import 'package:acadeno_crm/ui/home/application/home_cubit.dart';

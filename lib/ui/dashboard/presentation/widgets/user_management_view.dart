@@ -687,8 +687,6 @@ class _UserManagementViewState extends State<UserManagementView> {
                 ],
               ),
             ),
-              ],
-            ),
             const SizedBox(height: 20),
 
             // Search & Filter Toolbar
