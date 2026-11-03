@@ -6,16 +6,19 @@ import 'package:hive_flutter/hive_flutter.dart';
 
 /// Device Security, Integrity & Hardware Binding Service (PR-5.1 - PR-5.4).
 class DeviceSecurityService {
-  static const MethodChannel _securityChannel =
-      MethodChannel('com.acadeno.crm/security');
+  static const MethodChannel _securityChannel = MethodChannel(
+    'com.acadeno.crm/security',
+  );
 
   /// Fetches unique hardware deviceId and human-readable device model name.
-  static Future<({String deviceId, String deviceName})> getDeviceIdentifier() async {
+  static Future<({String deviceId, String deviceName})>
+  getDeviceIdentifier() async {
     if (kIsWeb) {
       final box = await Hive.openBox('acadeno_device_security');
       var id = box.get('browser_device_id') as String?;
       if (id == null || id.isEmpty) {
-        id = 'web_${DateTime.now().millisecondsSinceEpoch}_${DateTime.now().microsecond % 9999}';
+        id =
+            'web_${DateTime.now().millisecondsSinceEpoch}_${DateTime.now().microsecond % 9999}';
         await box.put('browser_device_id', id);
       }
       return (deviceId: id, deviceName: 'Web Browser');
@@ -23,8 +26,9 @@ class DeviceSecurityService {
 
     if (defaultTargetPlatform == TargetPlatform.android) {
       try {
-        final res = await _securityChannel
-            .invokeMapMethod<String, String>('getDeviceInfo');
+        final res = await _securityChannel.invokeMapMethod<String, String>(
+          'getDeviceInfo',
+        );
         if (res != null) {
           final id = res['deviceId'] ?? 'android_unknown';
           final name = res['deviceName'] ?? 'Android Phone';
@@ -46,8 +50,9 @@ class DeviceSecurityService {
   static Future<bool> isDeviceCompromised() async {
     if (kIsWeb || defaultTargetPlatform != TargetPlatform.android) return false;
     try {
-      final res = await _securityChannel
-          .invokeMapMethod<String, bool>('checkDeviceIntegrity');
+      final res = await _securityChannel.invokeMapMethod<String, bool>(
+        'checkDeviceIntegrity',
+      );
       if (res != null) {
         final isRooted = res['isRooted'] ?? false;
         return isRooted;
@@ -79,12 +84,15 @@ class DeviceSecurityService {
     if (!isDeviceBound || registeredId == null || registeredId.isEmpty) {
       // First login or reset device approval: bind this phone to the executive
       try {
-        await FirebaseFirestore.instance.collection('users').doc(user.uid).update({
-          'registeredDeviceId': currentId,
-          'deviceName': currentName,
-          'deviceBound': true,
-          'lastBoundAt': FieldValue.serverTimestamp(),
-        });
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid)
+            .update({
+              'registeredDeviceId': currentId,
+              'deviceName': currentName,
+              'deviceBound': true,
+              'lastBoundAt': FieldValue.serverTimestamp(),
+            });
       } catch (_) {}
       return null;
     }

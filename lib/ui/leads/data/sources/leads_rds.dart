@@ -538,7 +538,7 @@ class FirestoreLeadsBackend implements LeadsBackend {
       year: parsed.year,
       source: source.trim().isEmpty ? 'Direct visit' : source.trim(),
       status: effectiveStatus,
-      lastContact: 'Just now',
+      lastContact: assignToSelfAsWalkIn ? 'Today · Walk-in' : 'Never',
       assignedToUid: assignedUid,
       assignedToName: assignedName,
       assignedDateKey: assignToSelfAsWalkIn ? todayKey : null,
@@ -1179,6 +1179,8 @@ class FirestoreLeadsBackend implements LeadsBackend {
         await leadRef.set({
           'status': outcome,
           'lastContact': 'Today',
+          'lastContactAt': FieldValue.serverTimestamp(),
+          'lastCalledAt': FieldValue.serverTimestamp(),
           'isDone': !isFollowUpPending,
           'isLocked': false,
           'lockedByUid': null,
@@ -1240,6 +1242,8 @@ class FirestoreLeadsBackend implements LeadsBackend {
             .update({
               'status': nextStatus,
               'lastContact': 'Today',
+              'lastContactAt': FieldValue.serverTimestamp(),
+              'lastCalledAt': FieldValue.serverTimestamp(),
               'isDone': !isFollowUpPending,
               'isLocked': false,
               'lockedByUid': null,
@@ -1614,6 +1618,4 @@ class FirestoreLeadsBackend implements LeadsBackend {
   }
 }
 
-extension _ObjectLet<T> on T {
-  R let<R>(R Function(T self) block) => block(this);
-}
+

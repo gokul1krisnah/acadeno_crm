@@ -138,6 +138,102 @@ abstract final class LeadDateHelper {
     if (diff == 1) return 'Yesterday';
     return '${dt.day} ${_months[dt.month - 1]}';
   }
+
+  /// Evaluates and formats the actual Last Contact for a lead based on real call logs,
+  /// timestamps, and status (returns 'Never' if uncontacted).
+  static String formatLastContact({
+    dynamic lastContactAt,
+    dynamic lastCalledAt,
+    dynamic rawLastContact,
+    dynamic updatedAt,
+    dynamic createdAt,
+    String status = '',
+    List<dynamic>? timeline,
+  }) {
+    DateTime? dt;
+    final primaryTs = lastContactAt ?? lastCalledAt;
+    if (primaryTs is Timestamp) {
+      dt = primaryTs.toDate();
+    } else if (primaryTs is DateTime) {
+      dt = primaryTs;
+    } else if (primaryTs is String && primaryTs.trim().isNotEmpty) {
+      try {
+        dt = DateTime.parse(primaryTs.trim());
+      } catch (_) {}
+    }
+
+    final s = status.trim().toLowerCase();
+    final isUncontactedStatus = s == 'new' || s == 'unassigned' || s.isEmpty;
+
+    if (dt == null) {
+      if (isUncontactedStatus) {
+        return 'Never';
+      }
+
+      if (timeline != null && timeline.isNotEmpty) {
+        for (final entry in timeline) {
+          final str = entry.toString().toLowerCase();
+          if (str.contains('logged by') ||
+              str.contains('call') ||
+              str.contains('contacted')) {
+            final uTs = updatedAt ?? createdAt;
+            if (uTs is Timestamp) {
+              dt = uTs.toDate();
+              break;
+            } else if (uTs is DateTime) {
+              dt = uTs;
+              break;
+            }
+          }
+        }
+      }
+
+      if (dt == null) {
+        final raw = (rawLastContact ?? '').toString().trim();
+        final rawLower = raw.toLowerCase();
+        if (rawLower == 'just now' || rawLower == 'recently') {
+          return isUncontactedStatus ? 'Never' : 'Today';
+        }
+        if (rawLower == 'never' || raw == '—' || raw.isEmpty) {
+          return 'Never';
+        }
+        if (rawLower == 'today') {
+          final uTs = updatedAt;
+          if (uTs is Timestamp) {
+            final uDt = uTs.toDate();
+            final now = DateTime.now();
+            final diff = DateTime(
+              now.year,
+              now.month,
+              now.day,
+            ).difference(DateTime(uDt.year, uDt.month, uDt.day)).inDays;
+            if (diff == 0) return 'Today';
+            if (diff == 1) return 'Yesterday';
+            if (diff > 1 && diff < 7) return _days[uDt.weekday - 1];
+            return '${uDt.day} ${_months[uDt.month - 1]}';
+          }
+          return isUncontactedStatus ? 'Never' : 'Today';
+        }
+        return raw;
+      }
+    }
+
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final day = DateTime(dt.year, dt.month, dt.day);
+    final diff = today.difference(day).inDays;
+
+    if (diff == 0) {
+      return 'Today';
+    }
+    if (diff == 1) {
+      return 'Yesterday';
+    }
+    if (diff > 1 && diff < 7) {
+      return _days[dt.weekday - 1];
+    }
+    return '${dt.day} ${_months[dt.month - 1]}';
+  }
 }
 
 /// Thrown when a lead with the same normalized 10-digit phone already exists.
@@ -413,9 +509,14 @@ class LeadRecord {
       year: year,
       source: source.isEmpty ? 'Direct visit' : source,
       status: status.isEmpty ? 'New' : status,
-      lastContact: LeadDateHelper.formatTimestamp(
-        lastContactField,
-        fallback: '—',
+      lastContact: LeadDateHelper.formatLastContact(
+        lastContactAt: data['lastContactAt'],
+        lastCalledAt: data['lastCalledAt'],
+        rawLastContact: lastContactField,
+        updatedAt: updatedAtField,
+        createdAt: createdAtField,
+        status: status,
+        timeline: timelineList,
       ),
       assignedToUid: assignedUidRaw.isEmpty ? null : assignedUidRaw,
       assignedToName: assignedNameRaw.isEmpty || assignedNameRaw == 'null'

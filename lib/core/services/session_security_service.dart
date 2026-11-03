@@ -70,7 +70,9 @@ class SessionSecurityService {
     }
 
     if (!doc.exists) {
-      await terminateSession('Your account is no longer registered. Session terminated.');
+      await terminateSession(
+        'Your account is no longer registered. Session terminated.',
+      );
       return;
     }
 
@@ -80,7 +82,9 @@ class SessionSecurityService {
     final isActive = data['isActive'] as bool? ?? true;
     final status = (data['status'] as String?)?.toLowerCase();
     if (!isActive || status == 'inactive') {
-      await terminateSession('Your account has been deactivated by Super Admin (PR-5.3).');
+      await terminateSession(
+        'Your account has been deactivated by Super Admin (PR-5.3).',
+      );
       return;
     }
 
@@ -95,12 +99,15 @@ class SessionSecurityService {
     }
 
     // 3. Detect if a NEW force-logout has been triggered since login
-    final hasNewToken = serverLogoutToken != null &&
+    final hasNewToken =
+        serverLogoutToken != null &&
         serverLogoutToken.isNotEmpty &&
         serverLogoutToken != _initialLogoutToken;
 
-    final hasNewTimestamp = serverLogoutAt != null &&
-        (_initialLogoutAt == null || serverLogoutAt.compareTo(_initialLogoutAt!) > 0);
+    final hasNewTimestamp =
+        serverLogoutAt != null &&
+        (_initialLogoutAt == null ||
+            serverLogoutAt.compareTo(_initialLogoutAt!) > 0);
 
     if (hasNewToken || hasNewTimestamp) {
       _initialLogoutToken = serverLogoutToken;
@@ -148,7 +155,9 @@ class SessionSecurityService {
           backgroundColor: const Color(0xFFDC2626),
           duration: const Duration(seconds: 8),
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
         ),
       );
 

@@ -161,7 +161,9 @@ class AppNotificationService {
 
       // 4. Retrieve FCM device token with fast timeout so offline startup never hangs
       try {
-        _fcmToken = await _fcm.getToken().timeout(const Duration(milliseconds: 1000));
+        _fcmToken = await _fcm.getToken().timeout(
+          const Duration(milliseconds: 1000),
+        );
         debugPrint('FCM Device Token: $_fcmToken');
       } catch (e) {
         debugPrint('FCM getToken notice (offline or skipped): $e');
@@ -272,7 +274,9 @@ class AppNotificationService {
 
         // Recurring 24-hour interval
         _morningPeriodicTimer?.cancel();
-        _morningPeriodicTimer = Timer.periodic(const Duration(hours: 24), (_) async {
+        _morningPeriodicTimer = Timer.periodic(const Duration(hours: 24), (
+          _,
+        ) async {
           final recurringNow = DateTime.now();
           final recurringDate =
               '${recurringNow.year}-${recurringNow.month.toString().padLeft(2, '0')}-${recurringNow.day.toString().padLeft(2, '0')}';

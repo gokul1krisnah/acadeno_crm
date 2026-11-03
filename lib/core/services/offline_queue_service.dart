@@ -473,6 +473,8 @@ class OfflineQueueService {
       await leadRef.set({
         'status': nextStatus,
         'lastContact': 'Today',
+        'lastContactAt': FieldValue.serverTimestamp(),
+        'lastCalledAt': FieldValue.serverTimestamp(),
         'isDone': !isFollowUpPending,
         'isLocked': false,
         'lockedByUid': null,

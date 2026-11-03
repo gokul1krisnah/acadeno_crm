@@ -20,8 +20,9 @@ class AppPhoneCallService with WidgetsBindingObserver {
   AppPhoneCallService._();
   static final AppPhoneCallService instance = AppPhoneCallService._();
 
-  static const MethodChannel _channel =
-      MethodChannel('com.acadeno.crm/phone_call');
+  static const MethodChannel _channel = MethodChannel(
+    'com.acadeno.crm/phone_call',
+  );
 
   bool _initialized = false;
   ExecutiveLeadItem? _activeLead;
@@ -52,8 +53,9 @@ class AppPhoneCallService with WidgetsBindingObserver {
     _dialStartTimeMs = DateTime.now().millisecondsSinceEpoch;
     _isWaitingForCallReturn = true;
 
-    final rawPhone =
-        lead.fullPhone.isNotEmpty ? lead.fullPhone : lead.maskedPhone;
+    final rawPhone = lead.fullPhone.isNotEmpty
+        ? lead.fullPhone
+        : lead.maskedPhone;
     final cleanPhone = rawPhone.replaceAll(RegExp(r'[^0-9+]'), '');
 
     if (cleanPhone.isEmpty) {
@@ -114,15 +116,12 @@ class AppPhoneCallService with WidgetsBindingObserver {
     // Retry querying Android CallLog up to 4 times (with 700ms intervals)
     // because Android Telecom writes the CallLog entry asynchronously upon hangup
     for (int attempt = 0; attempt < 4; attempt++) {
-      await Future.delayed(
-        Duration(milliseconds: attempt == 0 ? 800 : 700),
-      );
+      await Future.delayed(Duration(milliseconds: attempt == 0 ? 800 : 700));
       if (!context.mounted) return;
 
       if (!kIsWeb && Platform.isAndroid) {
         try {
-          final res =
-              await _channel.invokeMethod<int>('getLastCallDuration', {
+          final res = await _channel.invokeMethod<int>('getLastCallDuration', {
             'phone': cleanPhone,
             'startTimestamp': startMs,
           });

@@ -1,3 +1,4 @@
+import 'package:acadeno_crm/ui/leads/data/model/lead_models.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -148,26 +149,26 @@ class _CampaignsViewState extends State<CampaignsView> {
 
   static final List<_CampaignData> _defaultCampaigns = [
     _CampaignData(
-      id: 'cmp_default_1',
-      title: 'AI & Machine Learning Workshop',
-      badge: 'Starts 14 Nov',
-      topics: 'ai, python, ml',
-      branches: 'CSE, IT, ECE',
-      years: '2nd, 3rd',
-      matchingLeads: '1,942',
-      score70Plus: '312',
-      assignedCount: 120,
-    ),
-    _CampaignData(
       id: 'cmp_default_2',
       title: 'Full Stack Web Bootcamp',
       badge: 'Starts 22 Nov',
       topics: 'web, react, node',
       branches: 'CSE, IT, BCA',
       years: '3rd, 4th',
-      matchingLeads: '1,410',
+      matchingLeads: '1410',
       score70Plus: '248',
-      assignedCount: 85,
+      assignedCount: 267,
+    ),
+    _CampaignData(
+      id: 'cmp_default_1',
+      title: 'AI & Machine Learning Workshop',
+      badge: 'Starts 14 Nov',
+      topics: 'ai, python, ml',
+      branches: 'CSE, IT, ECE',
+      years: '2nd, 3rd',
+      matchingLeads: '1942',
+      score70Plus: '312',
+      assignedCount: 120,
     ),
     _CampaignData(
       id: 'cmp_default_3',
@@ -288,7 +289,7 @@ class _CampaignsViewState extends State<CampaignsView> {
     ),
   ];
 
-  late List<_CampaignLead> _rankedLeads = const [];
+  late List<_CampaignLead> _rankedLeads = List.from(_fallbackLeads);
 
   @override
   void initState() {
@@ -431,7 +432,15 @@ class _CampaignsViewState extends State<CampaignsView> {
               score: score,
               scoreBarColor: barColor,
               reasons: reasons.isEmpty ? [_CampaignReason.recent] : reasons,
-              lastContact: (d['lastContact'] ?? 'Recently').toString(),
+              lastContact: LeadDateHelper.formatLastContact(
+                lastContactAt: d['lastContactAt'],
+                lastCalledAt: d['lastCalledAt'],
+                rawLastContact: d['lastContact'],
+                updatedAt: d['updatedAt'],
+                createdAt: d['createdAt'],
+                status: (d['status'] ?? '').toString(),
+                timeline: (d['timeline'] as List?)?.toList(),
+              ),
               assignedExec: (d['assignedToName'] ?? d['assignedTo'])
                   ?.toString(),
             ),
@@ -721,15 +730,17 @@ class _CampaignsViewState extends State<CampaignsView> {
                     ),
                   ),
                 ),
-                TextButton.icon(
+                ElevatedButton.icon(
                   onPressed: _showNewCampaignDialog,
-                  icon: const Icon(Icons.add, size: 16),
-                  label: const Text('New campaign'),
-                  style: TextButton.styleFrom(
-                    foregroundColor: const Color(0xFF4338CA),
-                    textStyle: const TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
+                  icon: const Icon(Icons.add, size: 18),
+                  label: const Text('New Campaign'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF4F46E5),
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
                     ),
                   ),
                 ),
@@ -773,7 +784,7 @@ class _CampaignsViewState extends State<CampaignsView> {
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: const Color(0xFF4338CA), width: 1.5),
+                border: Border.all(color: const Color(0xFFC7D2FE), width: 1.2),
               ),
               child: Wrap(
                 spacing: 12,
@@ -787,48 +798,41 @@ class _CampaignsViewState extends State<CampaignsView> {
                     crossAxisAlignment: WrapCrossAlignment.center,
                     children: [
                       const Text(
-                        'Split top',
+                        'Split Top',
                         style: TextStyle(
                           fontSize: 13.5,
                           fontWeight: FontWeight.w700,
                           color: Color(0xFF0F172A),
                         ),
                       ),
-                      SizedBox(
-                        width: 68,
+                      Container(
+                        width: 60,
                         height: 36,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: const Color(0xFFD1D5DB)),
+                        ),
+                        alignment: Alignment.center,
                         child: TextField(
                           controller: _splitCountController,
                           keyboardType: TextInputType.number,
+                          textAlign: TextAlign.center,
                           onChanged: (_) => setState(() {}),
                           style: const TextStyle(
-                            fontSize: 13.5,
-                            fontWeight: FontWeight.w600,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
                             color: Color(0xFF0F172A),
                           ),
-                          decoration: InputDecoration(
+                          decoration: const InputDecoration(
                             isDense: true,
-                            contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 8,
-                            ),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide: const BorderSide(
-                                color: Color(0xFFD0D5DD),
-                              ),
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide: const BorderSide(
-                                color: Color(0xFFD0D5DD),
-                              ),
-                            ),
+                            border: InputBorder.none,
+                            contentPadding: EdgeInsets.zero,
                           ),
                         ),
                       ),
                       const Text(
-                        'leads evenly across',
+                        'Leads Evenly Across',
                         style: TextStyle(
                           fontSize: 13.5,
                           fontWeight: FontWeight.w700,
@@ -861,7 +865,7 @@ class _CampaignsViewState extends State<CampaignsView> {
                               borderRadius: BorderRadius.circular(20),
                               border: Border.all(
                                 color: isSelected
-                                    ? const Color(0xFF4338CA)
+                                    ? const Color(0xFF4F46E5)
                                     : const Color(0xFFD0D5DD),
                                 width: isSelected ? 1.3 : 1.0,
                               ),
@@ -872,7 +876,7 @@ class _CampaignsViewState extends State<CampaignsView> {
                                 fontSize: 12.5,
                                 fontWeight: FontWeight.w600,
                                 color: isSelected
-                                    ? const Color(0xFF4338CA)
+                                    ? const Color(0xFF4F46E5)
                                     : const Color(0xFF475467),
                               ),
                             ),
@@ -898,7 +902,7 @@ class _CampaignsViewState extends State<CampaignsView> {
                         child: ElevatedButton(
                           onPressed: _assignCampaignLeads,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF4338CA),
+                            backgroundColor: const Color(0xFF4F46E5),
                             foregroundColor: Colors.white,
                             elevation: 0,
                             padding: const EdgeInsets.symmetric(horizontal: 18),
@@ -907,7 +911,7 @@ class _CampaignsViewState extends State<CampaignsView> {
                             ),
                           ),
                           child: const Text(
-                            'Assign for tomorrow',
+                            'Assign For Tomorrow',
                             style: TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.w600,
@@ -987,8 +991,13 @@ class _CampaignsViewState extends State<CampaignsView> {
         ),
         const SizedBox(height: 8),
         const Text(
-          'Score = branch match 30 · interest match 30 · attended similar event 20 · warm lead 15 · target year 10 · recent lead 5 · called in last 7 days −25 · not interested −30',
-          style: TextStyle(fontSize: 12, color: Color(0xFF667085), height: 1.4),
+          'SCORE = BRANCH MATCH 30 · INTEREST MATCH 30 · ATTENDED SIMILAR EVENT 20 · WARM LEAD 15 · TARGET YEAR 10 -\nRECENT LEAD 5 · CALLED IN LAST 7 DAYS -25 · NOT INTERESTED -30',
+          style: TextStyle(
+            fontSize: 10.5,
+            color: Color(0xFF94A3B8),
+            fontWeight: FontWeight.w500,
+            height: 1.45,
+          ),
         ),
       ],
     );
@@ -1030,7 +1039,7 @@ class _CampaignsViewState extends State<CampaignsView> {
       _buildStatMiniBox(
         '${campaign.assignedCount}',
         'Assigned',
-        const Color(0xFF4338CA),
+        const Color(0xFF4F46E5),
       ),
     ];
 
@@ -1060,26 +1069,32 @@ class _CampaignsViewState extends State<CampaignsView> {
 
   Widget _buildStatMiniBox(String value, String label, Color valueColor) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
       decoration: BoxDecoration(
         color: const Color(0xFFF8FAFC),
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
         children: [
           Text(
             value,
             style: TextStyle(
-              fontSize: 20,
+              fontSize: 24,
               fontWeight: FontWeight.w800,
               color: valueColor,
             ),
           ),
-          const SizedBox(height: 2),
+          const SizedBox(height: 4),
           Text(
             label,
-            style: const TextStyle(fontSize: 11.5, color: Color(0xFF667085)),
+            style: const TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.w700,
+              color: Color(0xFF64748B),
+              letterSpacing: 0.3,
+            ),
           ),
         ],
       ),
@@ -1203,18 +1218,19 @@ class _CampaignsViewState extends State<CampaignsView> {
                         return Container(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 8,
-                            vertical: 3,
+                            vertical: 3.5,
                           ),
                           decoration: BoxDecoration(
-                            color: r.bg,
-                            borderRadius: BorderRadius.circular(10),
+                            color: const Color(0xFFEEF2FF),
+                            borderRadius: BorderRadius.circular(6),
                           ),
                           child: Text(
-                            r.label,
-                            style: TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w600,
-                              color: r.fg,
+                            r.label.toUpperCase(),
+                            style: const TextStyle(
+                              fontSize: 10.5,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFF4F46E5),
+                              letterSpacing: 0.3,
                             ),
                           ),
                         );
@@ -1437,7 +1453,7 @@ class _CampaignsViewState extends State<CampaignsView> {
               icon: const Icon(Icons.add, size: 16),
               label: const Text('New campaign'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF4338CA),
+                backgroundColor: const Color(0xFF4F46E5),
                 foregroundColor: Colors.white,
               ),
             ),

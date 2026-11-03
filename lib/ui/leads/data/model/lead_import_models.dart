@@ -135,7 +135,7 @@ class LeadImportItem {
       year: year.trim(),
       source: source.trim().isNotEmpty ? source.trim() : 'Direct visit',
       status: 'New',
-      lastContact: 'Just now',
+      lastContact: 'Never',
       notes: notes.trim(),
       timeline: [
         '${LeadDateHelper.formatTimestamp(ts)} · Imported via Bulk Import by $creatorName (Consent: ${consent.isNotEmpty ? consent : "Recorded"})',

@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:acadeno_crm/ui/follow_ups/data/model/follow_up_time_helper.dart';
 import 'package:acadeno_crm/shared/widgets/acadeno_dropdown.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -321,7 +322,7 @@ class _FollowUpsViewState extends State<FollowUpsView> {
                             crossAxisAlignment: WrapCrossAlignment.center,
                             children: [
                               const Icon(
-                                Icons.swap_horiz_rounded,
+                                CupertinoIcons.shuffle,
                                 color: Color(0xFF4338CA),
                                 size: 20,
                               ),
@@ -353,25 +354,28 @@ class _FollowUpsViewState extends State<FollowUpsView> {
                               ),
                             ],
                           ),
-                          ElevatedButton.icon(
+                          ElevatedButton(
                             style: ElevatedButton.styleFrom(
                               backgroundColor: const Color(0xFF4338CA),
                               foregroundColor: Colors.white,
+                              elevation: 0,
                               padding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 10,
+                                horizontal: 20,
+                                vertical: 12,
                               ),
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
+                                borderRadius: BorderRadius.circular(10),
                               ),
                             ),
                             onPressed: () =>
                                 _bulkMoveExecutiveFollowUps(followUps),
-                            icon: const Icon(
-                              Icons.arrow_forward_rounded,
-                              size: 16,
+                            child: const Text(
+                              'Re Assign in Fire Store',
+                              style: TextStyle(
+                                fontSize: 13.5,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
-                            label: const Text('Reassign in Firestore'),
                           ),
                         ],
                       ),
@@ -452,22 +456,22 @@ class _FollowUpsViewState extends State<FollowUpsView> {
       onTap: () => setState(() => _filterMode = mode),
       borderRadius: BorderRadius.circular(8),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF4338CA) : Colors.white,
+          color: isSelected ? const Color(0xFF3F37C9) : Colors.white,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
             color: isSelected
-                ? const Color(0xFF4338CA)
-                : const Color(0xFFD0D5DD),
+                ? const Color(0xFF3F37C9)
+                : const Color(0xFFE2E8F0),
           ),
         ),
         child: Text(
           label,
           style: TextStyle(
-            fontSize: 12.5,
+            fontSize: 13,
             fontWeight: FontWeight.w600,
-            color: isSelected ? Colors.white : const Color(0xFF344054),
+            color: isSelected ? Colors.white : const Color(0xFF475467),
           ),
         ),
       ),
@@ -497,48 +501,52 @@ class _FollowUpsViewState extends State<FollowUpsView> {
     bool isMobile,
     List<String> executives,
   ) {
+    final isOverdue = item.isOverdue;
+
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(14),
         border: Border.all(
-          color: item.isOverdue
-              ? const Color(0xFFFECDCA)
-              : const Color(0xFFE4E7EC),
-          width: item.isOverdue ? 1.4 : 1,
+          color: isOverdue
+              ? const Color(0xFFFED7AA)
+              : const Color(0xFFE2E8F0),
+          width: isOverdue ? 1.2 : 1.0,
         ),
       ),
       child: Wrap(
         spacing: 16,
-        runSpacing: 12,
+        runSpacing: 14,
         alignment: WrapAlignment.spaceBetween,
         crossAxisAlignment: WrapCrossAlignment.center,
         children: [
           Row(
             mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
-                width: 38,
-                height: 38,
+                width: 40,
+                height: 40,
                 decoration: BoxDecoration(
-                  color: item.isOverdue
-                      ? const Color(0xFFFEF3F2)
-                      : const Color(0xFFEEF0FF),
+                  color: isOverdue
+                      ? const Color(0xFFFFF7ED)
+                      : const Color(0xFFEFF6FF),
                   borderRadius: BorderRadius.circular(10),
                 ),
+                alignment: Alignment.center,
                 child: Icon(
-                  item.isOverdue
-                      ? Icons.warning_amber_rounded
-                      : Icons.access_time_rounded,
-                  color: item.isOverdue
-                      ? const Color(0xFFB42318)
-                      : const Color(0xFF4338CA),
-                  size: 20,
+                  isOverdue
+                      ? Icons.warning_rounded
+                      : CupertinoIcons.clock,
+                  color: isOverdue
+                      ? const Color(0xFFEA580C)
+                      : const Color(0xFF2563EB),
+                  size: 21,
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 14),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -547,7 +555,7 @@ class _FollowUpsViewState extends State<FollowUpsView> {
                       Text(
                         item.studentName,
                         style: const TextStyle(
-                          fontSize: 15,
+                          fontSize: 16,
                           fontWeight: FontWeight.w700,
                           color: Color(0xFF0F172A),
                         ),
@@ -556,42 +564,43 @@ class _FollowUpsViewState extends State<FollowUpsView> {
                       Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 8,
-                          vertical: 2,
+                          vertical: 3,
                         ),
                         decoration: BoxDecoration(
-                          color: item.isOverdue
-                              ? const Color(0xFFFEF3F2)
-                              : const Color(0xFFEEF0FF),
-                          borderRadius: BorderRadius.circular(6),
+                          color: isOverdue
+                              ? const Color(0xFFFFEDD5)
+                              : const Color(0xFFEFF6FF),
+                          borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
-                          item.dueLabel,
+                          item.dueLabel.toUpperCase(),
                           style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w700,
-                            color: item.isOverdue
-                                ? const Color(0xFFB42318)
-                                : const Color(0xFF4338CA),
+                            fontSize: 10.5,
+                            fontWeight: FontWeight.w800,
+                            color: isOverdue
+                                ? const Color(0xFFC2410C)
+                                : const Color(0xFF2563EB),
+                            letterSpacing: 0.2,
                           ),
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 3),
+                  const SizedBox(height: 4),
                   Text(
                     '${item.phone} · ${item.collegeBranch}',
                     style: const TextStyle(
-                      fontSize: 12,
-                      color: Color(0xFF667085),
+                      fontSize: 13,
+                      color: Color(0xFF475467),
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 5),
                   Text(
                     'Note: ${item.note}',
                     style: const TextStyle(
-                      fontSize: 12.5,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFF344054),
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                      color: Color(0xFF334155),
                     ),
                   ),
                 ],
@@ -599,24 +608,24 @@ class _FollowUpsViewState extends State<FollowUpsView> {
             ],
           ),
           Wrap(
-            spacing: 10,
-            runSpacing: 8,
+            spacing: 12,
+            runSpacing: 10,
             crossAxisAlignment: WrapCrossAlignment.center,
             children: [
               Container(
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 4,
+                  horizontal: 14,
+                  vertical: 8,
                 ),
                 decoration: BoxDecoration(
                   color: const Color(0xFFF8FAFC),
-                  borderRadius: BorderRadius.circular(6),
+                  borderRadius: BorderRadius.circular(8),
                   border: Border.all(color: const Color(0xFFE2E8F0)),
                 ),
                 child: Text(
                   'Assigned: ${item.assignedExec}',
                   style: const TextStyle(
-                    fontSize: 12,
+                    fontSize: 12.5,
                     fontWeight: FontWeight.w600,
                     color: Color(0xFF475467),
                   ),
@@ -625,26 +634,45 @@ class _FollowUpsViewState extends State<FollowUpsView> {
               OutlinedButton(
                 style: OutlinedButton.styleFrom(
                   foregroundColor: const Color(0xFF4338CA),
-                  side: const BorderSide(color: Color(0xFFC7D2FE)),
+                  side: const BorderSide(color: Color(0xFF4338CA)),
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 8,
+                    horizontal: 18,
+                    vertical: 10,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
                   ),
                 ),
                 onPressed: () => _reassignSingle(item, executives),
-                child: const Text('Reassign'),
+                child: const Text(
+                  'Reassign',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
               ),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF16A34A),
+                  backgroundColor: const Color(0xFF059669),
                   foregroundColor: Colors.white,
+                  elevation: 0,
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 8,
+                    horizontal: 18,
+                    vertical: 10,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
                   ),
                 ),
                 onPressed: () => _markCompleted(item.id, item.studentName),
-                child: const Text('Mark Done'),
+                child: const Text(
+                  'Mark Done',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
               ),
             ],
           ),

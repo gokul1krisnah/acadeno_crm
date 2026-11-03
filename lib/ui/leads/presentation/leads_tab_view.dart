@@ -97,7 +97,6 @@ class _LeadsTabViewState extends State<LeadsTabView> {
         final homeState = context.watch<HomeCubit>().state;
         final followUpsCubit = context.read<FollowUpsCubit>();
         final followUpsState = context.watch<FollowUpsCubit>().state;
-        final alertsState = context.watch<AlertsCubit>().state;
         final pad = context.devicePadding;
         final displayedLeads = state.showingPendingCalls
             ? state.pendingLeads

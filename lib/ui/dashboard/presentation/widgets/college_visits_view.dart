@@ -513,14 +513,10 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
                   children: [
                     const Text(
                       'College visits',
-
                       style: TextStyle(
-                        fontSize: 26,
-
+                        fontSize: 28,
                         fontWeight: FontWeight.w800,
-
                         color: Color(0xFF0F172A),
-
                         letterSpacing: -0.5,
                       ),
                     ),
@@ -549,12 +545,10 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
                     label: const Text('Plan college visit'),
 
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF4338CA),
-
+                      backgroundColor: const Color(0xFF4F46E5),
                       foregroundColor: Colors.white,
-
                       elevation: 0,
-
+                      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),
@@ -571,84 +565,65 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
 
               return Container(
                 width: double.infinity,
-
-                margin: const EdgeInsets.only(bottom: 12),
-
-                padding: const EdgeInsets.all(20),
-
+                margin: const EdgeInsets.only(bottom: 14),
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
                 decoration: BoxDecoration(
                   color: Colors.white,
-
-                  borderRadius: BorderRadius.circular(14),
-
-                  border: Border.all(color: const Color(0xFFE8EAF0)),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: const Color(0xFFF1F5F9), width: 1.2),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0x05000000),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
                 ),
-
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-
                   children: [
                     Wrap(
-                      spacing: 10,
-
-                      runSpacing: 8,
-
+                      spacing: 12,
+                      runSpacing: 10,
                       alignment: WrapAlignment.spaceBetween,
-
                       crossAxisAlignment: WrapCrossAlignment.center,
-
                       children: [
                         Row(
                           mainAxisSize: MainAxisSize.min,
-
                           children: [
-                            Flexible(
-                              child: Text(
-                                visit.collegeName,
-
-                                style: const TextStyle(
-                                  fontSize: 16,
-
-                                  fontWeight: FontWeight.w700,
-
-                                  color: Color(0xFF0F172A),
-                                ),
+                            Text(
+                              visit.collegeName,
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w800,
+                                color: Color(0xFF0F172A),
                               ),
                             ),
-
-                            const SizedBox(width: 10),
-
+                            const SizedBox(width: 12),
                             Container(
                               padding: const EdgeInsets.symmetric(
-                                horizontal: 10,
+                                horizontal: 12,
                                 vertical: 4,
                               ),
-
                               decoration: BoxDecoration(
                                 color: isCompleted
-                                    ? const Color(0xFFE6F4EA)
-                                    : const Color(0xFFFEF0E6),
-
-                                borderRadius: BorderRadius.circular(12),
+                                    ? const Color(0xFFECFDF5)
+                                    : const Color(0xFFFFF7ED),
+                                borderRadius: BorderRadius.circular(20),
                               ),
-
                               child: Text(
-                                '${visit.status} · ${visit.dateLabel}',
-
+                                '• ${visit.status} • ${visit.dateLabel}',
                                 style: TextStyle(
-                                  fontSize: 11.5,
-
+                                  fontSize: 12,
                                   fontWeight: FontWeight.w700,
-
                                   color: isCompleted
-                                      ? const Color(0xFF15803D)
-                                      : const Color(0xFF9A3412),
+                                      ? const Color(0xFF059669)
+                                      : const Color(0xFFEA580C),
                                 ),
                               ),
                             ),
                           ],
                         ),
-
                         Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
@@ -658,39 +633,56 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
                                     visit.collegeName,
                                   ),
                               icon: const Icon(
-                                Icons.directions_outlined,
-                                size: 15,
-                                color: Color(0xFF4338CA),
+                                Icons.near_me_rounded,
+                                size: 14,
+                                color: Color(0xFF4F46E5),
                               ),
                               label: const Text(
                                 'Directions',
                                 style: TextStyle(
-                                  fontSize: 12.5,
+                                  fontSize: 13,
                                   fontWeight: FontWeight.w600,
-                                  color: Color(0xFF4338CA),
+                                  color: Color(0xFF4F46E5),
                                 ),
                               ),
                               style: OutlinedButton.styleFrom(
                                 visualDensity: VisualDensity.compact,
-                                side: const BorderSide(
-                                  color: Color(0xFFD0D5DD),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 10,
                                 ),
+                                side: const BorderSide(
+                                  color: Color(0xFFE2E8F0),
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                backgroundColor: Colors.white,
                               ),
                             ),
-                            const SizedBox(width: 8),
+                            const SizedBox(width: 10),
                             OutlinedButton(
                               onPressed: () => _showLogOutcomeDialog(visit),
                               style: OutlinedButton.styleFrom(
                                 visualDensity: VisualDensity.compact,
-                                side: const BorderSide(
-                                  color: Color(0xFFD0D5DD),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 10,
                                 ),
+                                side: const BorderSide(
+                                  color: Color(0xFFE2E8F0),
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                backgroundColor: Colors.white,
                               ),
                               child: Text(
                                 isCompleted ? 'Update outcome' : 'Log outcome',
                                 style: const TextStyle(
-                                  fontSize: 12.5,
+                                  fontSize: 13,
                                   fontWeight: FontWeight.w600,
+                                  color: Color(0xFF475467),
                                 ),
                               ),
                             ),
@@ -698,86 +690,88 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
                         ),
                       ],
                     ),
-
-                    const SizedBox(height: 8),
-
-                    Text(
-                      'Purpose: ${visit.purpose} · Staff: ${visit.assignedStaff}',
-
-                      style: const TextStyle(
-                        fontSize: 13,
-                        color: Color(0xFF344054),
+                    const SizedBox(height: 12),
+                    RichText(
+                      text: TextSpan(
+                        style: const TextStyle(
+                          fontSize: 13.5,
+                          color: Color(0xFF475467),
+                        ),
+                        children: [
+                          const TextSpan(
+                            text: 'Purpose: ',
+                            style: TextStyle(
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFF334155),
+                            ),
+                          ),
+                          TextSpan(
+                            text:
+                                '${visit.purpose.isEmpty ? "Campus outreach" : visit.purpose}   •   ',
+                          ),
+                          const TextSpan(
+                            text: 'Staff: ',
+                            style: TextStyle(
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFF334155),
+                            ),
+                          ),
+                          TextSpan(
+                            text: visit.assignedStaff.isEmpty
+                                ? 'Team'
+                                : visit.assignedStaff,
+                          ),
+                          if (visit.outcomeNotes.isNotEmpty) ...[
+                            const TextSpan(text: ' '),
+                            TextSpan(
+                              text: visit.outcomeNotes,
+                              style: const TextStyle(
+                                color: Color(0xFF64748B),
+                              ),
+                            ),
+                          ],
+                        ],
                       ),
                     ),
-
-                    if (visit.outcomeNotes.isNotEmpty) ...[
-                      const SizedBox(height: 6),
-
-                      Text(
-                        visit.outcomeNotes,
-
-                        style: const TextStyle(
-                          fontSize: 12.5,
-                          color: Color(0xFF667085),
-                        ),
-                      ),
-                    ],
-
                     if (visit.leadsCollected > 0 || visit.conversions > 0) ...[
                       const SizedBox(height: 12),
-
                       Wrap(
                         spacing: 8,
-
                         runSpacing: 8,
-
                         children: [
                           Container(
                             padding: const EdgeInsets.symmetric(
                               horizontal: 10,
                               vertical: 4,
                             ),
-
                             decoration: BoxDecoration(
-                              color: const Color(0xFFE8F1FD),
-
+                              color: const Color(0xFFEFF6FF),
                               borderRadius: BorderRadius.circular(6),
                             ),
-
                             child: Text(
                               '${visit.leadsCollected} leads collected',
-
                               style: const TextStyle(
                                 fontSize: 12,
-
                                 fontWeight: FontWeight.w700,
-
                                 color: Color(0xFF1D4ED8),
                               ),
                             ),
                           ),
-
                           Container(
                             padding: const EdgeInsets.symmetric(
                               horizontal: 10,
                               vertical: 4,
                             ),
-
                             decoration: BoxDecoration(
-                              color: const Color(0xFFE6F4EA),
-
+                              color: const Color(0xFFECFDF5),
                               borderRadius: BorderRadius.circular(6),
                             ),
-
                             child: Text(
                               '${visit.conversions} enrollments / conversions',
-
                               style: const TextStyle(
                                 fontSize: 12,
-
                                 fontWeight: FontWeight.w700,
-
-                                color: Color(0xFF15803D),
+                                color: Color(0xFF059669),
                               ),
                             ),
                           ),
