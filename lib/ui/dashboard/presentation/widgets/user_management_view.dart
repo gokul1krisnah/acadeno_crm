@@ -1174,22 +1174,26 @@ class _UserManagementViewState extends State<UserManagementView> {
                               width: 32,
                               height: 32,
                               decoration: BoxDecoration(
-                                color: user.displayName.toLowerCase().contains('admin')
+                                color: user.name.toLowerCase().contains('admin')
                                     ? const Color(0xFFFEF3C7)
-                                    : (user.displayName.toLowerCase().contains('test')
+                                    : (user.name.toLowerCase().contains('test')
                                         ? const Color(0xFFF3E8FF)
                                         : const Color(0xFFEEF2FF)),
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               alignment: Alignment.center,
                               child: Text(
-                                user.displayInitial,
+                                user.name.isNotEmpty && user.name != '—'
+                                    ? user.name[0].toUpperCase()
+                                    : (user.email.isNotEmpty && user.email != '—'
+                                        ? user.email[0].toUpperCase()
+                                        : 'U'),
                                 style: TextStyle(
                                   fontSize: 13,
                                   fontWeight: FontWeight.w800,
-                                  color: user.displayName.toLowerCase().contains('admin')
+                                  color: user.name.toLowerCase().contains('admin')
                                       ? const Color(0xFFD97706)
-                                      : (user.displayName.toLowerCase().contains('test')
+                                      : (user.name.toLowerCase().contains('test')
                                           ? const Color(0xFF9333EA)
                                           : const Color(0xFF4F46E5)),
                                 ),
@@ -1204,7 +1208,11 @@ class _UserManagementViewState extends State<UserManagementView> {
                                     children: [
                                       Flexible(
                                         child: Text(
-                                          user.displayName,
+                                          user.name.isNotEmpty
+                                              ? user.name
+                                              : (user.email.isNotEmpty && user.email != '—'
+                                                  ? user.email.split('@').first
+                                                  : user.uid),
                                           maxLines: 1,
                                           overflow: TextOverflow.ellipsis,
                                           style: const TextStyle(
@@ -1256,14 +1264,14 @@ class _UserManagementViewState extends State<UserManagementView> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
+                            SelectableText(
                               user.email.isNotEmpty && user.email != '—'
                                   ? user.email
                                   : (user.name.contains('@') ? user.name : '—'),
                               maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
                               style: const TextStyle(
-                                fontSize: 12.5,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w500,
                                 color: _textDark,
                               ),
                             ),
@@ -1572,9 +1580,11 @@ class _UserManagementViewState extends State<UserManagementView> {
                           radius: 16,
                           backgroundColor: const Color(0xFFEEF0FF),
                           child: Text(
-                            user.name.isNotEmpty
+                            user.name.isNotEmpty && user.name != "—"
                                 ? user.name[0].toUpperCase()
-                                : 'U',
+                                : (user.email.isNotEmpty && user.email != "—"
+                                    ? user.email[0].toUpperCase()
+                                    : "U"),
                             style: const TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w700,
@@ -1588,7 +1598,13 @@ class _UserManagementViewState extends State<UserManagementView> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                isMe ? '${user.displayName} (YOU)' : user.displayName,
+                                isMe
+                                    ? '${user.name.isNotEmpty && user.name != "—" ? user.name : (user.email.isNotEmpty && user.email != "—" ? user.email.split("@").first : user.uid)} (YOU)'
+                                    : (user.name.isNotEmpty && user.name != "—"
+                                        ? user.name
+                                        : (user.email.isNotEmpty && user.email != "—"
+                                            ? user.email.split("@").first
+                                            : user.uid)),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: const TextStyle(
@@ -1597,7 +1613,9 @@ class _UserManagementViewState extends State<UserManagementView> {
                                 ),
                               ),
                               Text(
-                                user.email,
+                                user.email.isNotEmpty && user.email != "—"
+                                    ? user.email
+                                    : (user.name.contains("@") ? user.name : "—"),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: const TextStyle(

@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class DashboardUserModel {
   const DashboardUserModel({
@@ -30,7 +31,6 @@ class DashboardUserModel {
   final DateTime? createdAt;
 
   static const List<String> allowedRoles = ['admin', 'hr'];
-
   static const List<String> adminRoles = ['admin', 'super_admin'];
   static const List<String> superAdminRoles = ['admin', 'super_admin'];
 
@@ -49,34 +49,10 @@ class DashboardUserModel {
     }
   }
 
-    String get roleLabel => switch (role) {
+  String get roleLabel => switch (role) {
     'admin' || 'super_admin' => 'Admin',
     _ => 'HR & Operation Manager',
   };
-
-  String get displayName {
-    final n = name.trim();
-    if (n.isNotEmpty && n != '—') return n;
-    final e = email.trim();
-    if (e.isNotEmpty && e.contains('@')) {
-      final prefix = e.split('@').first;
-      if (prefix.toLowerCase() == 'test') return 'Test User';
-      if (prefix.toLowerCase() == 'newuser') return 'new user';
-      if (prefix.toLowerCase().contains('admin')) return 'AcadenoAdmin';
-      return prefix
-          .replaceAll(RegExp(r'[._-]'), ' ')
-          .split(' ')
-          .map((w) => w.isNotEmpty ? w[0].toUpperCase() + w.substring(1) : '')
-          .join(' ')
-          .trim();
-    }
-    return uid.length > 5 ? 'User (${uid.substring(0, 5)})' : 'User ($uid)';
-  }
-
-  String get displayInitial {
-    final dn = displayName.trim();
-    return dn.isNotEmpty ? dn[0].toUpperCase() : 'U';
-  }
 
   factory DashboardUserModel.fromFirestore(
     DocumentSnapshot<Map<String, dynamic>> doc,
@@ -86,76 +62,110 @@ class DashboardUserModel {
       final rawRole = data['role']?.toString();
       final createdAtField = data['createdAt'];
 
-      // Robust email extraction
-      String resolvedEmail = (data['email'] ??
+      // Extract original email from all possible Firestore document fields
+      String email = (data['email'] ??
               data['userEmail'] ??
+              data['gmail'] ??
               data['mail'] ??
-              (doc.id.contains('@') ? doc.id : ''))
-          .toString()
-          .trim();
-      if (resolvedEmail.isEmpty) resolvedEmail = '—';
-
-      // Robust name extraction
-      String rawName = (data['name'] ??
-              data['displayName'] ??
-              data['fullName'] ??
-              data['userName'] ??
+              data['emailAddress'] ??
+              data['emailId'] ??
+              data['user_email'] ??
+              data['user_mail'] ??
               '')
           .toString()
           .trim();
 
-      String resolvedName = rawName;
-      if (resolvedName.isEmpty || resolvedName == '—') {
-        if (resolvedEmail.isNotEmpty && resolvedEmail.contains('@')) {
-          final prefix = resolvedEmail.split('@').first;
-          if (prefix.toLowerCase() == 'test') {
-            resolvedName = 'Test User';
-          } else if (prefix.toLowerCase() == 'newuser') {
-            resolvedName = 'new user';
-          } else if (prefix.toLowerCase().contains('admin')) {
-            resolvedName = 'AcadenoAdmin';
-          } else {
-            resolvedName = prefix
-                .replaceAll(RegExp(r'[._-]'), ' ')
-                .split(' ')
-                .map((w) => w.isNotEmpty ? w[0].toUpperCase() + w.substring(1) : '')
-                .join(' ')
-                .trim();
-          }
+      if (email.isEmpty && doc.id.contains('@')) {
+        email = doc.id.trim();
+      }
+
+      final currentAuthUser = FirebaseAuth.instance.currentUser;
+      if (email.isEmpty && currentAuthUser != null && currentAuthUser.uid == doc.id) {
+        if (currentAuthUser.email != null && currentAuthUser.email!.trim().isNotEmpty) {
+          email = currentAuthUser.email!.trim();
+        }
+      }
+
+      // Extract original name as actually saved in Firestore
+      String name = (data['name'] ??
+              data['displayName'] ??
+              data['fullName'] ??
+              data['userName'] ??
+              data['username'] ??
+              data['name_display'] ??
+              '')
+          .toString()
+          .trim();
+
+      if (name.isEmpty && currentAuthUser != null && currentAuthUser.uid == doc.id) {
+        if (currentAuthUser.displayName != null && currentAuthUser.displayName!.trim().isNotEmpty) {
+          name = currentAuthUser.displayName!.trim();
+        }
+      }
+
+      // If email was empty but name contains @, name is likely the email
+      if (email.isEmpty && name.contains('@')) {
+        email = name;
+      }
+
+      // If name is still empty, derive fallback without synthetic fake strings
+      if (name.isEmpty) {
+        if (email.isNotEmpty && email != '—' && email.contains('@')) {
+          name = email.split('@').first;
         } else if (doc.id.contains('@')) {
-          resolvedName = doc.id.split('@').first;
+          name = doc.id.split('@').first;
         } else {
-          resolvedName = doc.id.length > 5
+          name = doc.id.length > 5
               ? 'User (${doc.id.substring(0, 5)})'
               : 'User (${doc.id})';
         }
       }
 
+      if (email.isEmpty) {
+        email = '—';
+      }
+
+      // Device info
+      final deviceName = (data['deviceName'] ??
+              data['boundDeviceModel'] ??
+              data['deviceModel'] ??
+              data['device'] ??
+              (data['deviceBound'] == false
+                  ? 'Pending new phone...'
+                  : 'Registered Android'))
+          .toString();
+
+      final deviceBound = data['deviceBound'] != false &&
+          !deviceName.toLowerCase().contains('pending');
+
       return DashboardUserModel(
         uid: doc.id,
-        name: resolvedName,
-        email: resolvedEmail,
+        name: name,
+        email: email,
         role: normalizeRole(rawRole),
         isActive: data['isActive'] != false,
         phone: (data['phone'] ?? '').toString(),
-        deviceName:
-            (data['deviceName'] ??
-                    (data['boundDeviceModel'] ?? 'Registered Android'))
-                .toString(),
-        deviceBound: data['deviceBound'] != false,
+        deviceName: deviceName,
+        deviceBound: deviceBound,
         callsToday: (data['callsToday'] as num?)?.toInt() ?? 0,
         assignedToday: (data['assignedToday'] as num?)?.toInt() ?? 0,
         conversionsMonth: (data['conversionsMonth'] as num?)?.toInt() ?? 0,
         createdAt: createdAtField is Timestamp ? createdAtField.toDate() : null,
       );
     } catch (_) {
+      final currentAuthUser = FirebaseAuth.instance.currentUser;
+      final fallbackEmail = (currentAuthUser != null && currentAuthUser.uid == doc.id && currentAuthUser.email != null)
+          ? currentAuthUser.email!
+          : (doc.id.contains('@') ? doc.id : '—');
       final fallbackName = doc.id.contains('@')
           ? doc.id.split('@').first
-          : (doc.id.length > 5 ? 'User (${doc.id.substring(0, 5)})' : 'User (${doc.id})');
+          : (fallbackEmail.contains('@')
+              ? fallbackEmail.split('@').first
+              : (doc.id.length > 5 ? 'User (${doc.id.substring(0, 5)})' : 'User (${doc.id})'));
       return DashboardUserModel(
         uid: doc.id,
         name: fallbackName,
-        email: doc.id.contains('@') ? doc.id : '—',
+        email: fallbackEmail,
         role: 'hr',
         isActive: true,
       );

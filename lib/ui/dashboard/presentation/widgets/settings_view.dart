@@ -99,6 +99,7 @@ class _SettingsViewState extends State<SettingsView>
         await _firestore.collection('users').doc(user.uid).set({
           'name': newName,
           'role': 'admin',
+          if (user.email != null) 'email': user.email,
           'updatedAt': FieldValue.serverTimestamp(),
         }, SetOptions(merge: true));
 
