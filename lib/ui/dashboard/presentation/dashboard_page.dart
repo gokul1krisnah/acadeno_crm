@@ -542,15 +542,16 @@ class _DashboardViewState extends State<_DashboardView> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(18, 22, 18, 16),
+            padding: const EdgeInsets.fromLTRB(18, 20, 18, 16),
             child: Image.asset(
               AppImages.logo,
-              height: 42,
+              height: 56,
               fit: BoxFit.contain,
+              alignment: Alignment.centerLeft,
               errorBuilder: (_, _, _) => const Text(
                 'ACADENO',
                 style: TextStyle(
-                  fontSize: 22,
+                  fontSize: 24,
                   fontWeight: FontWeight.w800,
                   color: _primary,
                 ),
