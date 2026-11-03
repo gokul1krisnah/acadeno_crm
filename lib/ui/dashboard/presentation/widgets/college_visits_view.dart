@@ -497,61 +497,57 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
           crossAxisAlignment: CrossAxisAlignment.start,
 
           children: [
-            Wrap(
-              spacing: 16,
-
-              runSpacing: 12,
-
-              alignment: WrapAlignment.spaceBetween,
-
-              crossAxisAlignment: WrapCrossAlignment.center,
-
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-
-                  children: [
-                    const Text(
-                      'College visits',
-                      style: TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.w800,
-                        color: Color(0xFF0F172A),
-                        letterSpacing: -0.5,
+                        SizedBox(
+              width: double.infinity,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'College visits',
+                          style: TextStyle(
+                            fontSize: 28,
+                            fontWeight: FontWeight.w800,
+                            color: Color(0xFF0F172A),
+                            letterSpacing: -0.5,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Plan campus outreach, log HOD/faculty meetings, and track $totalLeads leads ($totalConversions conversions) generated',
+                          style: const TextStyle(
+                            fontSize: 13,
+                            color: Color(0xFF667085),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  SizedBox(
+                    height: 40,
+                    child: ElevatedButton.icon(
+                      onPressed: _showPlanVisitDialog,
+                      icon: const Icon(Icons.add, size: 16),
+                      label: const Text('Plan college visit'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF4F46E5),
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
                       ),
                     ),
-
-                    const SizedBox(height: 4),
-
-                    Text(
-                      'Plan campus outreach, log HOD/faculty meetings, and track $totalLeads leads ($totalConversions conversions) generated',
-
-                      style: const TextStyle(
-                        fontSize: 13,
-                        color: Color(0xFF667085),
-                      ),
-                    ),
-                  ],
-                ),
-
-                SizedBox(
-                  height: 40,
-
-                  child: ElevatedButton.icon(
-                    onPressed: _showPlanVisitDialog,
-
-                    icon: const Icon(Icons.add, size: 16),
-
-                    label: const Text('Plan college visit'),
-
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF4F46E5),
-                      foregroundColor: Colors.white,
-                      elevation: 0,
-                      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
+                  ),
+                ],
+              ),
+            ),
                     ),
                   ),
                 ),

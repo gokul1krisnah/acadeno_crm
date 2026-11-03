@@ -1194,124 +1194,70 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                 },
               ),
             ),
-            const SizedBox(height: 16),
-            // Dark Bulk Selection & Assignment Bar - ONLY SHOWN WHEN SELECTING TICK
-            if (state.selectedLeadIds.isNotEmpty) ...[
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF0F172A),
-                  borderRadius: BorderRadius.circular(12),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.1),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
+            const SizedBox(height: 16),            // Dark Bulk Selection & Assignment Bar (Always shown; grey & disabled if no tick selected)
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+              decoration: BoxDecoration(
+                color: const Color(0xFF0F172A),
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.1),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Wrap(
+                alignment: WrapAlignment.spaceBetween,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                spacing: 16,
+                runSpacing: 12,
+                children: [
+                  Text(
+                    '${state.selectedLeadIds.length} leads selected',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 14.5,
+                      fontWeight: FontWeight.w700,
                     ),
-                  ],
-                ),
-                child: Wrap(
-                  alignment: WrapAlignment.spaceBetween,
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  spacing: 16,
-                  runSpacing: 12,
-                  children: [
-                    Text(
-                      '${state.selectedLeadIds.length} leads selected',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 14.5,
-                        fontWeight: FontWeight.w700,
+                  ),
+                  Wrap(
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    spacing: 12,
+                    runSpacing: 8,
+                    children: [
+                      const Text(
+                        'Assign to',
+                        style: TextStyle(
+                          color: Color(0xFF94A3B8),
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
-                    ),
-                    Wrap(
-                      crossAxisAlignment: WrapCrossAlignment.center,
-                      spacing: 12,
-                      runSpacing: 8,
-                      children: [
-                        const Text(
-                          'Assign to',
-                          style: TextStyle(
-                            color: Color(0xFF94A3B8),
-                            fontSize: 13,
-                            fontWeight: FontWeight.w500,
-                          ),
+                      Container(
+                        height: 38,
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF1E293B),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: const Color(0xFF334155)),
                         ),
-                        Container(
-                          height: 38,
-                          padding: const EdgeInsets.symmetric(horizontal: 12),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF1E293B),
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: const Color(0xFF334155)),
-                          ),
-                          child: DropdownButtonHideUnderline(
-                            child: state.activeExecutives.isEmpty
-                                ? const Center(
-                                    child: Text(
-                                      'No active HR users',
-                                      style: TextStyle(
-                                        color: Color(0xFF94A3B8),
-                                        fontSize: 13,
-                                      ),
-                                    ),
-                                  )
-                                : DropdownButton<String>(
-                                    dropdownColor: const Color(0xFF1E293B),
-                                    value: state.selectedExecutive?.uid,
-                                    isDense: true,
-                                    icon: const Icon(
-                                      Icons.keyboard_arrow_down_rounded,
-                                      size: 18,
+                        child: DropdownButtonHideUnderline(
+                          child: state.activeExecutives.isEmpty
+                              ? const Center(
+                                  child: Text(
+                                    'No active HR users',
+                                    style: TextStyle(
                                       color: Color(0xFF94A3B8),
-                                    ),
-                                    style: const TextStyle(
-                                      color: Colors.white,
                                       fontSize: 13,
-                                      fontWeight: FontWeight.w600,
                                     ),
-                                    items: state.activeExecutives.map((exec) {
-                                      final count = state
-                                          .assignmentCountForExecutive(exec.uid);
-                                      return DropdownMenuItem<String>(
-                                        value: exec.uid,
-                                        child: Text(
-                                          '${exec.name} ($count today)',
-                                        ),
-                                      );
-                                    }).toList(),
-                                    onChanged: (uid) {
-                                      if (uid != null) {
-                                        cubit.selectExecutive(uid);
-                                      }
-                                    },
                                   ),
-                          ),
-                        ),
-                        const Text(
-                          'for',
-                          style: TextStyle(
-                            color: Color(0xFF94A3B8),
-                            fontSize: 13,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        Container(
-                          height: 38,
-                          padding: const EdgeInsets.symmetric(horizontal: 12),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF1E293B),
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: const Color(0xFF334155)),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              DropdownButtonHideUnderline(
-                                child: DropdownButton<String>(
+                                )
+                              : DropdownButton<String>(
                                   dropdownColor: const Color(0xFF1E293B),
-                                  value: state.selectedDateKey,
+                                  value: state.selectedExecutive?.uid,
                                   isDense: true,
                                   icon: const Icon(
                                     Icons.keyboard_arrow_down_rounded,
@@ -1323,91 +1269,149 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                                     fontSize: 13,
                                     fontWeight: FontWeight.w600,
                                   ),
-                                  items: state.dateOptions
-                                      .map(
-                                        (d) => DropdownMenuItem<String>(
-                                          value: d.dateKey,
-                                          child: Text(d.label),
-                                        ),
-                                      )
-                                      .toList(),
-                                  onChanged: (key) {
-                                    if (key != null) {
-                                      cubit.selectAssignmentDate(key);
+                                  items: state.activeExecutives.map((exec) {
+                                    final count = state
+                                        .assignmentCountForExecutive(exec.uid);
+                                    return DropdownMenuItem<String>(
+                                      value: exec.uid,
+                                      child: Text(
+                                        '${exec.name} ($count today)',
+                                      ),
+                                    );
+                                  }).toList(),
+                                  onChanged: (uid) {
+                                    if (uid != null) {
+                                      cubit.selectExecutive(uid);
                                     }
                                   },
                                 ),
-                              ),
-                              const SizedBox(width: 8),
-                              InkWell(
-                                onTap: () async {
-                                  final now = DateTime.now();
-                                  final parsed =
-                                      DateTime.tryParse(state.selectedDateKey) ??
-                                      now;
-                                  final picked = await showDatePicker(
-                                    context: context,
-                                    initialDate: parsed,
-                                    firstDate: DateTime(2024),
-                                    lastDate: DateTime(2030),
-                                    builder: (ctx, child) {
-                                      return Theme(
-                                        data: Theme.of(ctx).copyWith(
-                                          colorScheme: const ColorScheme.light(
-                                            primary: Color(0xFF4F46E5),
-                                            onPrimary: Colors.white,
-                                            onSurface: Color(0xFF0F172A),
-                                          ),
-                                        ),
-                                        child: child!,
-                                      );
-                                    },
-                                  );
-                                  if (picked != null) {
-                                    cubit.selectCustomAssignmentDate(picked);
+                        ),
+                      ),
+                      const Text(
+                        'for',
+                        style: TextStyle(
+                          color: Color(0xFF94A3B8),
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      Container(
+                        height: 38,
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF1E293B),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: const Color(0xFF334155)),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            DropdownButtonHideUnderline(
+                              child: DropdownButton<String>(
+                                dropdownColor: const Color(0xFF1E293B),
+                                value: state.selectedDateKey,
+                                isDense: true,
+                                icon: const Icon(
+                                  Icons.keyboard_arrow_down_rounded,
+                                  size: 18,
+                                  color: Color(0xFF94A3B8),
+                                ),
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                                items: state.dateOptions
+                                    .map(
+                                      (d) => DropdownMenuItem<String>(
+                                        value: d.dateKey,
+                                        child: Text(d.label),
+                                      ),
+                                    )
+                                    .toList(),
+                                onChanged: (key) {
+                                  if (key != null) {
+                                    cubit.selectAssignmentDate(key);
                                   }
                                 },
-                                borderRadius: BorderRadius.circular(4),
-                                child: const Icon(
-                                  Icons.calendar_month_rounded,
-                                  size: 16,
-                                  color: Color(0xFF818CF8),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        SizedBox(
-                          height: 38,
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF4F46E5),
-                              foregroundColor: Colors.white,
-                              elevation: 0,
-                              padding: const EdgeInsets.symmetric(horizontal: 18),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
                               ),
                             ),
-                            onPressed:
-                                state.selectedLeadIds.isEmpty ||
-                                    state.activeExecutives.isEmpty ||
-                                    state.isSubmitting
-                                ? null
-                                : () =>
-                                      _openReviewAssignmentDialog(context, state),
-                            child: const Text(
-                              'Assign',
-                              style: TextStyle(fontWeight: FontWeight.w700),
+                            const SizedBox(width: 8),
+                            InkWell(
+                              onTap: () async {
+                                final now = DateTime.now();
+                                final parsed =
+                                    DateTime.tryParse(state.selectedDateKey) ??
+                                    now;
+                                final picked = await showDatePicker(
+                                  context: context,
+                                  initialDate: parsed,
+                                  firstDate: DateTime(2024),
+                                  lastDate: DateTime(2030),
+                                  builder: (ctx, child) {
+                                    return Theme(
+                                      data: Theme.of(ctx).copyWith(
+                                        colorScheme: const ColorScheme.light(
+                                          primary: Color(0xFF4F46E5),
+                                          onPrimary: Colors.white,
+                                          onSurface: Color(0xFF0F172A),
+                                        ),
+                                      ),
+                                      child: child!,
+                                    );
+                                  },
+                                );
+                                if (picked != null) {
+                                  cubit.selectCustomAssignmentDate(picked);
+                                }
+                              },
+                              borderRadius: BorderRadius.circular(4),
+                              child: const Icon(
+                                Icons.calendar_month_rounded,
+                                size: 16,
+                                color: Color(0xFF818CF8),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      SizedBox(
+                        height: 38,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: state.selectedLeadIds.isEmpty
+                                ? const Color(0xFF1E293B)
+                                : const Color(0xFF4F46E5),
+                            foregroundColor: state.selectedLeadIds.isEmpty
+                                ? const Color(0xFF64748B)
+                                : Colors.white,
+                            disabledBackgroundColor: const Color(0xFF1E293B),
+                            disabledForegroundColor: const Color(0xFF64748B),
+                            elevation: 0,
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
                             ),
                           ),
+                          onPressed:
+                              state.selectedLeadIds.isEmpty ||
+                                  state.activeExecutives.isEmpty ||
+                                  state.isSubmitting
+                              ? null
+                              : () =>
+                                    _openReviewAssignmentDialog(context, state),
+                          child: const Text(
+                            'Assign',
+                            style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
+                          ),
                         ),
-                      ],
-                    ),
-                  ],
-                ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
-              const SizedBox(height: 16),
+            ),
+            const SizedBox(height: 16),
             ],
 
             // Leads Table Card (Loading, Error, Empty, or Data rows)

@@ -187,61 +187,66 @@ class _TeamManagementViewState extends State<TeamManagementView> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Header Section
-                    Wrap(
-                      spacing: 16,
-                      runSpacing: 12,
-                      alignment: WrapAlignment.spaceBetween,
-                      crossAxisAlignment: WrapCrossAlignment.center,
-                      children: [
-                        const Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Team Management',
-                              style: TextStyle(
-                                fontSize: 26,
-                                fontWeight: FontWeight.w800,
-                                color: Color(0xFF0F172A),
-                                letterSpacing: -0.5,
-                              ),
+                                        SizedBox(
+                      width: double.infinity,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          const Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Team Management',
+                                  style: TextStyle(
+                                    fontSize: 28,
+                                    fontWeight: FontWeight.w800,
+                                    color: Color(0xFF0F172A),
+                                    letterSpacing: -0.5,
+                                  ),
+                                ),
+                                SizedBox(height: 4),
+                                Text(
+                                  'Real-time team analytics, live conversion tracking, and member performance (FR-6.3)',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    color: Color(0xFF667085),
+                                  ),
+                                ),
+                              ],
                             ),
-                            SizedBox(height: 4),
-                            Text(
-                              'Real-time team analytics, live conversion tracking, and member performance (FR-6.3)',
+                          ),
+                          const SizedBox(width: 16),
+                          OutlinedButton.icon(
+                            onPressed: () => _showWatermarkedExportModal(
+                              activeUsers,
+                              filteredLeads,
+                            ),
+                            icon: const Icon(Icons.download_rounded, size: 16, color: Color(0xFF334155)),
+                            label: const Text(
+                              'Watermarked Export (Super Admin)',
                               style: TextStyle(
                                 fontSize: 13,
-                                color: Color(0xFF667085),
+                                fontWeight: FontWeight.w600,
+                                color: Color(0xFF334155),
                               ),
                             ),
-                          ],
-                        ),
-                        OutlinedButton.icon(
-                          onPressed: () => _showWatermarkedExportModal(
-                            activeUsers,
-                            filteredLeads,
-                          ),
-                          icon: const Icon(Icons.download_rounded, size: 16, color: Color(0xFF334155)),
-                          label: const Text(
-                            'Watermarked Export (Super Admin)',
-                            style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                              color: Color(0xFF334155),
+                            style: OutlinedButton.styleFrom(
+                              backgroundColor: Colors.white,
+                              side: const BorderSide(color: Color(0xFFE2E8F0)),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 10,
+                              ),
                             ),
                           ),
-                          style: OutlinedButton.styleFrom(
-                            backgroundColor: Colors.white,
-                            side: const BorderSide(color: Color(0xFFE2E8F0)),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 10,
-                            ),
-                          ),
-                        ),
-                      ],
+                        ],
+                      ),
+                    ),
                     ),
                     const SizedBox(height: 20),
 
