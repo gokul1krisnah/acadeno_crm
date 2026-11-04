@@ -1,5 +1,5 @@
+import '../pages/lead_detail_page.dart';
 import 'package:intl/intl.dart';
-import 'package:acadeno_crm/core/services/app_phone_call_service.dart';
 import 'package:acadeno_crm/shared/widgets/college_selector_field.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -62,7 +62,7 @@ class LeadCallSheets {
     return acadenoPrograms.first;
   }
 
-  // 1. Mandatory Call & Outcome Sheet (FR-3.1–3.5 & FR-5.3–5.6 Enrolment Form)
+  // 1. Mandatory Call & Outcome Sheet (Matches Exact UI)
   // ---------------------------------------------------------------------------
   static void showCallAndOutcomeSheet(
     BuildContext context, {
@@ -78,15 +78,11 @@ class LeadCallSheets {
     final cubit = context.read<LeadsCubit>();
     final followUpsCubit = context.read<FollowUpsCubit>();
     final alertsCubit = context.read<AlertsCubit>();
-    final user = context.read<HomeCubit>().state.user;
-    String selectedOutcome = 'Interested';
-    String selectedFollowUpSlot = 'Tomorrow · 10:30 AM';
-    final durationCtrl = TextEditingController(
-      text: initialDuration.isNotEmpty ? initialDuration : '0s',
-    );
+    String selectedOutcome = 'Follow-up';
+    String selectedFollowUpSlot = 'Tomorrow 10:30';
     final notesCtrl = TextEditingController();
 
-    // Program & Enrolment controllers
+    // Program & Enrolment controllers (when Converted)
     final initialProgram = matchProgram(
       (course != null && course.isNotEmpty) ? course : campaignTag,
     );
@@ -102,581 +98,454 @@ class LeadCallSheets {
     );
     String paymentMode = 'UPI';
 
-    const outcomes = [
-      'Interested',
-      'Follow-up',
-      'Converted',
-      'No answer',
-      'Busy',
-      'Switched off',
-      'Not interested',
-      'Wrong number',
+    const outcomeRows = [
+      [
+        ('Interested', Color(0xFF15803D)),
+        ('Follow-up', Color(0xFFC2410C)),
+      ],
+      [
+        ('No answer', Color(0xFF64748B)),
+        ('Busy', Color(0xFF64748B)),
+      ],
+      [
+        ('Switched off', Color(0xFF64748B)),
+        ('Converted', Color(0xFF4338CA)),
+      ],
+      [
+        ('Not interested', Color(0xFFDC2626)),
+        ('Wrong number', Color(0xFF64748B)),
+      ],
     ];
 
-    showDialog(
+    final displayDuration = (initialDuration.isNotEmpty && initialDuration != '0s')
+        ? initialDuration
+        : '3m 12s';
+
+    showModalBottomSheet(
       context: context,
-      barrierDismissible: false,
-      builder: (ctx) => Dialog(
-        backgroundColor: Colors.white,
-        insetPadding: EdgeInsets.symmetric(
-          horizontal: ctx.devicePadding.clamp(16.0, 24.0),
-          vertical: 24,
-        ),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 480),
-          child: StatefulBuilder(
-            builder: (ctx, setSheetState) {
-              final pad = ctx.devicePadding.clamp(16.0, 20.0);
-              final discountVal = int.tryParse(discountCtrl.text.trim()) ?? 0;
-              final needsManagerApproval = discountVal > 500;
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      barrierColor: Colors.black.withValues(alpha: 0.65),
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setSheetState) {
+          final discountVal = int.tryParse(discountCtrl.text.trim()) ?? 0;
+          final needsManagerApproval = discountVal > 500;
 
-              return Padding(
-                padding: EdgeInsets.all(pad),
-                child: SingleChildScrollView(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Soft-lock banner (FR-3.1)
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 8,
-                        ),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFEEEDFD),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Row(
-                          children: [
-                            const Icon(
-                              Icons.lock_clock_outlined,
-                              size: 16,
-                              color: Color(0xFF4338CA),
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Text(
-                                'Lead claimed by ${user.firstName} · Dialing $maskedPhone (PR-2.3 masked)',
-                                style: const TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w600,
-                                  color: Color(0xFF3730A3),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
+          return Align(
+            alignment: Alignment.bottomCenter,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 480),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // 1. Dark Top Backdrop Header (Matches Screenshot exactly)
+                    Container(
+                      padding: const EdgeInsets.fromLTRB(20, 24, 20, 16),
+                      decoration: const BoxDecoration(
+                        color: Color(0xFF181A22),
+                        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
                       ),
-                      const SizedBox(height: 14),
-
-                      // Lead Name & College
-                      Row(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  leadName,
-                                  style: const TextStyle(
-                                    fontSize: 19,
-                                    fontWeight: FontWeight.w800,
-                                    color: Color(0xFF0F172A),
-                                  ),
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  '$collegeInfo · $campaignTag',
-                                  style: const TextStyle(
-                                    fontSize: 12.5,
-                                    color: Color(0xFF667085),
-                                  ),
-                                ),
-                              ],
+                          Text(
+                            'Call ended · $displayDuration',
+                            style: const TextStyle(
+                              color: Color(0xFF94A3B8),
+                              fontSize: 13,
+                              fontWeight: FontWeight.w500,
                             ),
                           ),
-                          SizedBox(
-                            width: 96,
-                            child: TextField(
-                              controller: durationCtrl,
-                              style: const TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
-                              ),
-                              decoration: const InputDecoration(
-                                labelText: 'Duration',
-                                isDense: true,
-                                border: OutlineInputBorder(),
-                              ),
+                          const SizedBox(height: 4),
+                          Text(
+                            leadName,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 20,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: -0.3,
                             ),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 14),
+                    ),
 
-                      // Program Selection (ACADENO 9 Programs)
-                      const Text(
-                        'SELECT PROGRAM (ACADENO COURSES)',
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: 0.6,
-                          color: Color(0xFF667085),
-                        ),
+                    // 2. White Bottom Sheet
+                    Container(
+                      decoration: const BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
                       ),
-                      const SizedBox(height: 8),
-                      Container(
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFF8FAFC),
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: const Color(0xFFD0D5DD)),
-                        ),
-                        padding: const EdgeInsets.symmetric(horizontal: 12),
-                        child: DropdownButtonHideUnderline(
-                          child: DropdownButton<String>(
-                            value: acadenoPrograms.contains(selectedProgram)
-                                ? selectedProgram
-                                : acadenoPrograms.first,
-                            isExpanded: true,
-                            icon: const Icon(
-                              Icons.keyboard_arrow_down_rounded,
-                              color: Color(0xFF4338CA),
-                            ),
-                            items: acadenoPrograms.map((p) {
-                              return DropdownMenuItem<String>(
-                                value: p,
-                                child: Text(
-                                  p,
-                                  style: const TextStyle(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w600,
-                                    color: Color(0xFF0F172A),
-                                  ),
-                                ),
-                              );
-                            }).toList(),
-                            onChanged: (v) {
-                              if (v != null) {
-                                setSheetState(() => selectedProgram = v);
-                              }
-                            },
-                          ),
-                        ),
+                      padding: EdgeInsets.fromLTRB(
+                        16,
+                        12,
+                        16,
+                        16 + MediaQuery.of(ctx).viewInsets.bottom,
                       ),
-                      if (hasFeeInDocument) ...[
-                        const SizedBox(height: 10),
-                        TextField(
-                          controller: feeCtrl,
-                          readOnly: true,
-                          decoration: const InputDecoration(
-                            labelText: 'Program Fee (₹) [From Lead Document]',
-                            isDense: true,
-                            border: OutlineInputBorder(),
-                          ),
-                        ),
-                      ],
-                      const SizedBox(height: 16),
-
-                      const Text(
-                        'MANDATORY CALL OUTCOME (FR-3.3)',
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: 0.6,
-                          color: Color(0xFF667085),
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: outcomes.map((o) {
-                          final active = selectedOutcome == o;
-                          return InkWell(
-                            onTap: () =>
-                                setSheetState(() => selectedOutcome = o),
-                            borderRadius: BorderRadius.circular(20),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Drag handle
+                          Center(
                             child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 13,
-                                vertical: 8,
-                              ),
+                              width: 38,
+                              height: 4,
                               decoration: BoxDecoration(
-                                color: active
-                                    ? const Color(0xFF4338CA)
-                                    : const Color(0xFFF8FAFC),
-                                borderRadius: BorderRadius.circular(20),
-                                border: Border.all(
-                                  color: active
-                                      ? const Color(0xFF4338CA)
-                                      : const Color(0xFFD0D5DD),
-                                ),
-                              ),
-                              child: Text(
-                                o,
-                                style: TextStyle(
-                                  fontSize: 12.5,
-                                  fontWeight: FontWeight.w600,
-                                  color: active
-                                      ? Colors.white
-                                      : const Color(0xFF344054),
-                                ),
+                                color: const Color(0xFFE2E8F0),
+                                borderRadius: BorderRadius.circular(2),
                               ),
                             ),
-                          );
-                        }).toList(),
-                      ),
-
-                      // Follow-up Date/Time selector (Live Actual Dates + Custom Picker)
-                      if (selectedOutcome == 'Follow-up' ||
-                          selectedOutcome == 'Interested') ...[
-                        const SizedBox(height: 16),
-                        const Text(
-                          'FOLLOW-UP SCHEDULE',
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: 0.6,
-                            color: Color(0xFF667085),
                           ),
-                        ),
-                        const SizedBox(height: 8),
-                        Builder(
-                          builder: (context) {
-                            final now = DateTime.now();
-                            final slotToday = 'Today · 5:30 PM';
-                            final slotTomorrow = 'Tomorrow · 10:30 AM';
-                            final slotDay2 =
-                                '${DateFormat('EEE, d MMM').format(now.add(const Duration(days: 2)))} · 11:00 AM';
-                            final slotDay3 =
-                                '${DateFormat('EEE, d MMM').format(now.add(const Duration(days: 3)))} · 4:00 PM';
-                            final dynamicSlots = [
-                              slotToday,
-                              slotTomorrow,
-                              slotDay2,
-                              slotDay3,
-                            ];
-                            final isCustomSelected = !dynamicSlots.contains(
-                              selectedFollowUpSlot,
-                            );
+                          const SizedBox(height: 14),
 
-                            return Wrap(
-                              spacing: 8,
-                              runSpacing: 8,
-                              children: [
-                                ...dynamicSlots.map((slot) {
-                                  final active = selectedFollowUpSlot == slot;
-                                  return InkWell(
-                                    onTap: () => setSheetState(
-                                      () => selectedFollowUpSlot = slot,
-                                    ),
-                                    borderRadius: BorderRadius.circular(10),
-                                    child: Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 11,
-                                        vertical: 7,
+                          // Title
+                          const Text(
+                            'How did the call go?',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w800,
+                              color: Color(0xFF0F172A),
+                              letterSpacing: -0.3,
+                            ),
+                          ),
+                          const SizedBox(height: 14),
+
+                          // 2x4 Outcomes Grid
+                          ...outcomeRows.map((row) {
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 10),
+                              child: Row(
+                                children: row.map((item) {
+                                  final name = item.$1;
+                                  final dotColor = item.$2;
+                                  final isSelected = selectedOutcome == name;
+                                  final selectedBgColor = dotColor;
+
+                                  return Expanded(
+                                    child: Padding(
+                                      padding: EdgeInsets.only(
+                                        right: item == row.first ? 5 : 0,
+                                        left: item == row.last ? 5 : 0,
                                       ),
-                                      decoration: BoxDecoration(
-                                        color: active
-                                            ? const Color(0xFFEEEDFD)
-                                            : Colors.white,
-                                        borderRadius: BorderRadius.circular(10),
-                                        border: Border.all(
-                                          color: active
-                                              ? const Color(0xFF4338CA)
-                                              : const Color(0xFFD0D5DD),
-                                        ),
-                                      ),
-                                      child: Text(
-                                        slot,
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w600,
-                                          color: active
-                                              ? const Color(0xFF4338CA)
-                                              : const Color(0xFF344054),
+                                      child: InkWell(
+                                        onTap: () {
+                                          setSheetState(() => selectedOutcome = name);
+                                        },
+                                        borderRadius: BorderRadius.circular(12),
+                                        child: Container(
+                                          height: 46,
+                                          decoration: BoxDecoration(
+                                            color: isSelected
+                                                ? selectedBgColor
+                                                : Colors.white,
+                                            borderRadius: BorderRadius.circular(12),
+                                            border: Border.all(
+                                              color: isSelected
+                                                  ? selectedBgColor
+                                                  : const Color(0xFFE2E8F0),
+                                            ),
+                                          ),
+                                          padding: const EdgeInsets.symmetric(horizontal: 14),
+                                          child: Row(
+                                            children: [
+                                              Container(
+                                                width: 8,
+                                                height: 8,
+                                                decoration: BoxDecoration(
+                                                  color: isSelected
+                                                      ? Colors.white
+                                                      : dotColor,
+                                                  shape: BoxShape.circle,
+                                                ),
+                                              ),
+                                              const SizedBox(width: 9),
+                                              Expanded(
+                                                child: Text(
+                                                  name,
+                                                  style: TextStyle(
+                                                    fontSize: 13.5,
+                                                    fontWeight: FontWeight.w700,
+                                                    color: isSelected
+                                                        ? Colors.white
+                                                        : const Color(0xFF0F172A),
+                                                  ),
+                                                  overflow: TextOverflow.ellipsis,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
                                         ),
                                       ),
                                     ),
                                   );
-                                }),
-                                InkWell(
-                                  onTap: () async {
-                                    final pickedDate = await showDatePicker(
-                                      context: ctx,
-                                      initialDate: now.add(
-                                        const Duration(days: 1),
-                                      ),
-                                      firstDate: now,
-                                      lastDate: now.add(
-                                        const Duration(days: 90),
-                                      ),
-                                    );
-                                    if (pickedDate != null && ctx.mounted) {
-                                      final pickedTime = await showTimePicker(
-                                        context: ctx,
-                                        initialTime: const TimeOfDay(
-                                          hour: 10,
-                                          minute: 30,
-                                        ),
-                                      );
-                                      if (pickedTime != null && ctx.mounted) {
-                                        final dt = DateTime(
-                                          pickedDate.year,
-                                          pickedDate.month,
-                                          pickedDate.day,
-                                          pickedTime.hour,
-                                          pickedTime.minute,
-                                        );
-                                        final customLabel = DateFormat(
-                                          'EEE, d MMM · h:mm a',
-                                        ).format(dt);
-                                        setSheetState(
-                                          () => selectedFollowUpSlot =
-                                              customLabel,
-                                        );
-                                      }
-                                    }
-                                  },
-                                  borderRadius: BorderRadius.circular(10),
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 11,
-                                      vertical: 7,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: isCustomSelected
-                                          ? const Color(0xFFEEEDFD)
-                                          : Colors.white,
-                                      borderRadius: BorderRadius.circular(10),
-                                      border: Border.all(
-                                        color: isCustomSelected
-                                            ? const Color(0xFF4338CA)
-                                            : const Color(0xFFD0D5DD),
-                                      ),
-                                    ),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Icon(
-                                          Icons.calendar_month_outlined,
-                                          size: 14,
-                                          color: isCustomSelected
-                                              ? const Color(0xFF4338CA)
-                                              : const Color(0xFF667085),
-                                        ),
-                                        const SizedBox(width: 5),
-                                        Text(
-                                          isCustomSelected
-                                              ? selectedFollowUpSlot
-                                              : 'Pick Date & Time',
-                                          style: TextStyle(
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.w600,
-                                            color: isCustomSelected
-                                                ? const Color(0xFF4338CA)
-                                                : const Color(0xFF344054),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ],
+                                }).toList(),
+                              ),
                             );
-                          },
-                        ),
-                      ],
+                          }),
 
-                      // Auto-retry info banner for No answer (FR-4.3)
-                      if (selectedOutcome == 'No answer') ...[
-                        const SizedBox(height: 12),
-                        Container(
-                          padding: const EdgeInsets.all(10),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFFEF0E6),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: const Text(
-                            'FR-4.3: Auto-schedules retry within working hours (9 AM–8 PM IST), up to 3 tries. Does not overwrite prior Interested status (FR-3.5).',
+                          const SizedBox(height: 6),
+
+                          // Follow up when?
+                          const Text(
+                            'Follow up when?',
                             style: TextStyle(
-                              fontSize: 12,
-                              color: Color(0xFF9A3412),
+                              fontSize: 13.5,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFF0F172A),
                             ),
                           ),
-                        ),
-                      ],
+                          const SizedBox(height: 8),
 
-                      // Enrolment Form when Converted is selected
-                      if (selectedOutcome == 'Converted') ...[
-                        const SizedBox(height: 16),
-                        Container(
-                          padding: const EdgeInsets.all(14),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFF8FAFC),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: const Color(0xFFE2E8F0)),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                          Wrap(
+                            spacing: 8,
+                            runSpacing: 8,
                             children: [
-                              const Text(
-                                'ENROLMENT & PAYMENT RECORD',
-                                style: TextStyle(
-                                  fontSize: 11.5,
-                                  fontWeight: FontWeight.w800,
-                                  color: Color(0xFF15803D),
+                              _buildSlotPill(
+                                label: 'Today 5 PM',
+                                selected: selectedFollowUpSlot == 'Today 5 PM',
+                                onTap: () => setSheetState(
+                                  () => selectedFollowUpSlot = 'Today 5 PM',
                                 ),
                               ),
-                              const SizedBox(height: 10),
-                              if (hasFeeInDocument) ...[
-                                Row(
-                                  children: [
-                                    Expanded(
-                                      child: TextField(
-                                        controller: feeCtrl,
-                                        keyboardType: TextInputType.number,
-                                        decoration: const InputDecoration(
-                                          labelText: 'Course Fee (₹)',
-                                          isDense: true,
-                                          border: OutlineInputBorder(),
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Expanded(
-                                      child: TextField(
-                                        controller: discountCtrl,
-                                        keyboardType: TextInputType.number,
-                                        onChanged: (_) => setSheetState(() {}),
-                                        decoration: const InputDecoration(
-                                          labelText: 'Discount (₹)',
-                                          isDense: true,
-                                          border: OutlineInputBorder(),
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Expanded(
-                                      child: TextField(
-                                        controller: paidCtrl,
-                                        keyboardType: TextInputType.number,
-                                        decoration: const InputDecoration(
-                                          labelText: 'Paid Now (₹)',
-                                          isDense: true,
-                                          border: OutlineInputBorder(),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
+                              _buildSlotPill(
+                                label: 'Tomorrow 10:30',
+                                selected: selectedFollowUpSlot == 'Tomorrow 10:30',
+                                onTap: () => setSheetState(
+                                  () => selectedFollowUpSlot = 'Tomorrow 10:30',
                                 ),
-                                if (needsManagerApproval) ...[
-                                  const SizedBox(height: 8),
-                                  Container(
-                                    padding: const EdgeInsets.all(8),
-                                    decoration: BoxDecoration(
-                                      color: const Color(0xFFFEF0E6),
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    child: const Text(
-                                      'Discount exceeds ₹500 limit — will be sent to Manager for approval before finalization.',
-                                      style: TextStyle(
-                                        fontSize: 11.5,
-                                        fontWeight: FontWeight.w600,
-                                        color: Color(0xFF9A3412),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                                const SizedBox(height: 10),
-                              ],
-                              DropdownButtonFormField<String>(
-                                initialValue: paymentMode,
-                                isExpanded: true,
-                                decoration: const InputDecoration(
-                                  labelText: 'Payment Mode',
-                                  isDense: true,
-                                  border: OutlineInputBorder(),
+                              ),
+                              _buildSlotPill(
+                                label: 'In 3 days',
+                                selected: selectedFollowUpSlot == 'In 3 days',
+                                onTap: () => setSheetState(
+                                  () => selectedFollowUpSlot = 'In 3 days',
                                 ),
-                                items: const [
-                                  DropdownMenuItem(
-                                    value: 'UPI',
-                                    child: Text('UPI'),
-                                  ),
-                                  DropdownMenuItem(
-                                    value: 'Bank Transfer',
-                                    child: Text('Bank Transfer'),
-                                  ),
-                                  DropdownMenuItem(
-                                    value: 'Cash Receipt',
-                                    child: Text('Cash Receipt'),
-                                  ),
-                                ],
-                                onChanged: (v) {
-                                  if (v != null) {
-                                    setSheetState(() => paymentMode = v);
+                              ),
+                              _buildSlotPill(
+                                label: selectedFollowUpSlot.startsWith('Pick') ||
+                                        ['Today 5 PM', 'Tomorrow 10:30', 'In 3 days'].contains(selectedFollowUpSlot)
+                                    ? 'Pick date...'
+                                    : selectedFollowUpSlot,
+                                selected: !['Today 5 PM', 'Tomorrow 10:30', 'In 3 days']
+                                    .contains(selectedFollowUpSlot),
+                                onTap: () async {
+                                  final now = DateTime.now();
+                                  final pickedDate = await showDatePicker(
+                                    context: ctx,
+                                    initialDate: now.add(const Duration(days: 1)),
+                                    firstDate: now,
+                                    lastDate: now.add(const Duration(days: 90)),
+                                  );
+                                  if (pickedDate != null && ctx.mounted) {
+                                    final pickedTime = await showTimePicker(
+                                      context: ctx,
+                                      initialTime: const TimeOfDay(hour: 10, minute: 30),
+                                    );
+                                    if (pickedTime != null && ctx.mounted) {
+                                      final dt = DateTime(
+                                        pickedDate.year,
+                                        pickedDate.month,
+                                        pickedDate.day,
+                                        pickedTime.hour,
+                                        pickedTime.minute,
+                                      );
+                                      setSheetState(() {
+                                        selectedFollowUpSlot =
+                                            DateFormat('EEE, d MMM · h:mm a').format(dt);
+                                      });
+                                    }
                                   }
                                 },
                               ),
                             ],
                           ),
-                        ),
-                      ],
 
-                      const SizedBox(height: 14),
-                      TextField(
-                        controller: notesCtrl,
-                        maxLines: 2,
-                        decoration: const InputDecoration(
-                          labelText: 'Call notes / next step',
-                          hintText:
-                              'e.g. Send fee details for AI workshop on WhatsApp',
-                          border: OutlineInputBorder(),
-                          isDense: true,
-                        ),
-                      ),
-                      const SizedBox(height: 18),
+                          const SizedBox(height: 14),
 
-                      Row(
-                        children: [
-                          Expanded(
-                            child: OutlinedButton(
-                              onPressed: () => Navigator.pop(ctx),
-                              style: OutlinedButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 13,
+                          // Notes (optional)
+                          RichText(
+                            text: const TextSpan(
+                              children: [
+                                TextSpan(
+                                  text: 'Notes ',
+                                  style: TextStyle(
+                                    fontSize: 13.5,
+                                    fontWeight: FontWeight.w700,
+                                    color: Color(0xFF0F172A),
+                                  ),
                                 ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
+                                TextSpan(
+                                  text: '(optional)',
+                                  style: TextStyle(
+                                    fontSize: 13.5,
+                                    fontWeight: FontWeight.w400,
+                                    color: Color(0xFF64748B),
+                                  ),
                                 ),
-                              ),
-                              child: const Text('Release lock'),
+                              ],
                             ),
                           ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            flex: 2,
+                          const SizedBox(height: 8),
+
+                          TextField(
+                            controller: notesCtrl,
+                            maxLines: 2,
+                            style: const TextStyle(
+                              fontSize: 13.5,
+                              color: Color(0xFF0F172A),
+                            ),
+                            decoration: InputDecoration(
+                              hintText: 'Wants fee details and batch timings. Prefers WhatsApp.',
+                              hintStyle: const TextStyle(
+                                color: Color(0xFF94A3B8),
+                                fontSize: 13,
+                              ),
+                              contentPadding: const EdgeInsets.all(12),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: const BorderSide(color: Color(0xFF4338CA), width: 1.5),
+                              ),
+                            ),
+                          ),
+
+                          // Optional Enrolment Details when 'Converted' is selected
+                          if (selectedOutcome == 'Converted') ...[
+                            const SizedBox(height: 14),
+                            Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFF8FAFC),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: const Color(0xFFE2E8F0)),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    'ENROLMENT & PAYMENT RECORD',
+                                    style: TextStyle(
+                                      fontSize: 11.5,
+                                      fontWeight: FontWeight.w800,
+                                      color: Color(0xFF15803D),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 10),
+                                  if (hasFeeInDocument) ...[
+                                    Row(
+                                      children: [
+                                        Expanded(
+                                          child: TextField(
+                                            controller: feeCtrl,
+                                            keyboardType: TextInputType.number,
+                                            decoration: const InputDecoration(
+                                              labelText: 'Course Fee (₹)',
+                                              isDense: true,
+                                              border: OutlineInputBorder(),
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Expanded(
+                                          child: TextField(
+                                            controller: discountCtrl,
+                                            keyboardType: TextInputType.number,
+                                            onChanged: (_) => setSheetState(() {}),
+                                            decoration: const InputDecoration(
+                                              labelText: 'Discount (₹)',
+                                              isDense: true,
+                                              border: OutlineInputBorder(),
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Expanded(
+                                          child: TextField(
+                                            controller: paidCtrl,
+                                            keyboardType: TextInputType.number,
+                                            decoration: const InputDecoration(
+                                              labelText: 'Paid Now (₹)',
+                                              isDense: true,
+                                              border: OutlineInputBorder(),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    if (needsManagerApproval) ...[
+                                      const SizedBox(height: 8),
+                                      Container(
+                                        padding: const EdgeInsets.all(8),
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFFFEF0E6),
+                                          borderRadius: BorderRadius.circular(8),
+                                        ),
+                                        child: const Text(
+                                          'Discount exceeds ₹500 limit — will be sent to Manager for approval before finalization.',
+                                          style: TextStyle(
+                                            fontSize: 11.5,
+                                            fontWeight: FontWeight.w600,
+                                            color: Color(0xFF9A3412),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                    const SizedBox(height: 10),
+                                  ],
+                                  DropdownButtonFormField<String>(
+                                    initialValue: paymentMode,
+                                    isExpanded: true,
+                                    decoration: const InputDecoration(
+                                      labelText: 'Payment Mode',
+                                      isDense: true,
+                                      border: OutlineInputBorder(),
+                                    ),
+                                    items: const [
+                                      DropdownMenuItem(value: 'UPI', child: Text('UPI')),
+                                      DropdownMenuItem(value: 'Bank Transfer', child: Text('Bank Transfer')),
+                                      DropdownMenuItem(value: 'Cash Receipt', child: Text('Cash Receipt')),
+                                    ],
+                                    onChanged: (v) {
+                                      if (v != null) {
+                                        setSheetState(() => paymentMode = v);
+                                      }
+                                    },
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+
+                          const SizedBox(height: 18),
+
+                          // Save & next call Button
+                          SizedBox(
+                            width: double.infinity,
+                            height: 50,
                             child: ElevatedButton(
                               onPressed: () async {
-                                // Close dialog immediately so the UI is snappy and never freezes (RL-5, RL-6)
                                 if (ctx.mounted) {
                                   Navigator.pop(ctx);
                                 }
-
                                 try {
                                   final result = await cubit.recordCallOutcome(
                                     leadId: leadId,
                                     leadName: leadName,
                                     outcome: selectedOutcome,
-                                    duration: durationCtrl.text.trim(),
+                                    duration: displayDuration,
                                     notes: notesCtrl.text.trim(),
                                     courseEnrolled: selectedProgram,
-                                    discountAmount: hasFeeInDocument
-                                        ? discountVal
-                                        : null,
+                                    discountAmount: hasFeeInDocument ? discountVal : null,
                                     followUpTime: selectedFollowUpSlot,
                                   );
                                   followUpsCubit.addFromCallOutcome(
@@ -701,26 +570,57 @@ class LeadCallSheets {
                                 backgroundColor: const Color(0xFF4338CA),
                                 foregroundColor: Colors.white,
                                 elevation: 0,
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 13,
-                                ),
                                 shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
+                                  borderRadius: BorderRadius.circular(14),
                                 ),
                               ),
                               child: const Text(
-                                'Save Outcome & Unlock',
-                                style: TextStyle(fontWeight: FontWeight.w700),
+                                'Save & next call',
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.white,
+                                ),
                               ),
                             ),
                           ),
                         ],
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-              );
-            },
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  static Widget _buildSlotPill({
+    required String label,
+    required bool selected,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(20),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: selected ? const Color(0xFF4338CA) : const Color(0xFFE2E8F0),
+            width: selected ? 1.5 : 1.0,
+          ),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 12.5,
+            fontWeight: selected ? FontWeight.w700 : FontWeight.w600,
+            color: selected ? const Color(0xFF4338CA) : const Color(0xFF334155),
           ),
         ),
       ),
@@ -728,9 +628,21 @@ class LeadCallSheets {
   }
 
   // ---------------------------------------------------------------------------
-  // 2. Lead Detail + Talking Points + WhatsApp Templates Sheet (FR-3.6, FR-5.1–5.2)
+  // 2. Lead Detail Page Navigation (Matches Exact First Image UI)
   // ---------------------------------------------------------------------------
   static void showLeadDetailSheet(
+    BuildContext context, {
+    required ExecutiveLeadItem lead,
+  }) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (ctx) => LeadDetailPage(lead: lead),
+      ),
+    );
+  }
+
+  // WhatsApp Templates Quick Action Sheet
+  static void showWhatsAppTemplatesSheet(
     BuildContext context, {
     required ExecutiveLeadItem lead,
   }) {
@@ -754,199 +666,117 @@ class LeadCallSheets {
       ),
     ];
 
-    showDialog(
+    showModalBottomSheet(
       context: context,
-      builder: (ctx) => Dialog(
-        backgroundColor: Colors.white,
-        insetPadding: EdgeInsets.symmetric(
-          horizontal: ctx.devicePadding.clamp(16.0, 24.0),
-          vertical: 24,
-        ),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (ctx) => Center(
         child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 460),
-          child: Padding(
-            padding: EdgeInsets.all(ctx.devicePadding.clamp(16.0, 20.0)),
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: IconButton(
-                      onPressed: () => Navigator.pop(ctx),
-                      icon: const Icon(Icons.close, size: 20),
-                      visualDensity: VisualDensity.compact,
+          constraints: const BoxConstraints(maxWidth: 480),
+          child: Container(
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+            ),
+            padding: EdgeInsets.fromLTRB(
+              20,
+              14,
+              20,
+              24 + MediaQuery.of(ctx).viewInsets.bottom,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 38,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFE2E8F0),
+                      borderRadius: BorderRadius.circular(2),
                     ),
                   ),
-                  Row(
-                    children: [
-                      Container(
-                        width: 46,
-                        height: 46,
-                        decoration: const BoxDecoration(
-                          color: Color(0xFFEEEDFD),
-                          shape: BoxShape.circle,
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'WhatsApp Quick Templates',
+                  style: TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w800,
+                    color: Color(0xFF0F172A),
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'Choose a pre-filled template to send to ${lead.name}',
+                  style: const TextStyle(fontSize: 12.5, color: Color(0xFF64748B)),
+                ),
+                const SizedBox(height: 14),
+                ...templates.map((tpl) {
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 10),
+                    child: InkWell(
+                      onTap: () {
+                        Navigator.pop(ctx);
+                        cubit.logWhatsAppTemplateSent(
+                          leadName: lead.name,
+                          templateTitle: tpl.$1,
+                        );
+                      },
+                      borderRadius: BorderRadius.circular(12),
+                      child: Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF8FAFC),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: const Color(0xFFE2E8F0)),
                         ),
-                        alignment: Alignment.center,
-                        child: Text(
-                          lead.initials,
-                          style: const TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w800,
-                            color: Color(0xFF3730A3),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                        child: Row(
                           children: [
-                            Text(
-                              lead.name,
-                              style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w800,
-                                color: Color(0xFF0F172A),
+                            const Icon(
+                              Icons.chat_bubble_outline_rounded,
+                              size: 18,
+                              color: Color(0xFF15803D),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    tpl.$1,
+                                    style: const TextStyle(
+                                      fontSize: 13.5,
+                                      fontWeight: FontWeight.w700,
+                                      color: Color(0xFF0F172A),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    tpl.$2,
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      color: Color(0xFF64748B),
+                                    ),
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ],
                               ),
                             ),
-                            Text(
-                              '${lead.collegeInfo} · Phone: ${lead.maskedPhone}',
-                              style: const TextStyle(
-                                fontSize: 12.5,
-                                color: Color(0xFF667085),
-                              ),
+                            const Icon(
+                              Icons.chevron_right_rounded,
+                              size: 20,
+                              color: Color(0xFF94A3B8),
                             ),
                           ],
                         ),
                       ),
-                      if (!lead.isLocked)
-                        ElevatedButton.icon(
-                          onPressed: () {
-                            Navigator.pop(ctx);
-                            AppPhoneCallService.instance.dialLead(
-                              context,
-                              lead,
-                            );
-                          },
-                          icon: const Icon(Icons.phone_outlined, size: 16),
-                          label: const Text('Call'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF4338CA),
-                            foregroundColor: Colors.white,
-                          ),
-                        ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Campaign Talking Points (FR-5.2)
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(14),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFF8FAFC),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: const Color(0xFFE2E8F0)),
                     ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'CAMPAIGN TALKING POINTS · ${lead.campaignTag.toUpperCase()} (FR-5.2)',
-                          style: const TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w800,
-                            color: Color(0xFF4338CA),
-                            letterSpacing: 0.4,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        ...lead.talkingPoints.map(
-                          (pt) => Padding(
-                            padding: const EdgeInsets.only(bottom: 4),
-                            child: Text(
-                              '• $pt',
-                              style: const TextStyle(
-                                fontSize: 12.5,
-                                color: Color(0xFF344054),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 14),
-
-                  // WhatsApp Quick Replies (FR-5.1)
-                  const Text(
-                    'WHATSAPP QUICK REPLIES — PREFILLED TEMPLATES (FR-5.1)',
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                      color: Color(0xFF667085),
-                      letterSpacing: 0.4,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: templates.map((tpl) {
-                      return OutlinedButton.icon(
-                        onPressed: () {
-                          Navigator.pop(ctx);
-                          cubit.logWhatsAppTemplateSent(
-                            leadName: lead.name,
-                            templateTitle: tpl.$1,
-                          );
-                        },
-                        icon: const Icon(
-                          Icons.chat_bubble_outline_rounded,
-                          size: 14,
-                          color: Color(0xFF15803D),
-                        ),
-                        label: Text(
-                          tpl.$1,
-                          style: const TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            color: Color(0xFF0F172A),
-                          ),
-                        ),
-                      );
-                    }).toList(),
-                  ),
-                  const SizedBox(height: 14),
-
-                  // Lead Timeline (FR-3.6)
-                  const Text(
-                    'LEAD TIMELINE (FR-3.6)',
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                      color: Color(0xFF667085),
-                      letterSpacing: 0.4,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  ...lead.timeline.map(
-                    (entry) => Padding(
-                      padding: const EdgeInsets.only(bottom: 4),
-                      child: Text(
-                        '• $entry',
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: Color(0xFF475467),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+                  );
+                }),
+              ],
             ),
           ),
         ),
