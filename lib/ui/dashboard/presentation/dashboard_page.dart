@@ -308,21 +308,23 @@ class _DashboardViewState extends State<_DashboardView> {
                                       ),
                                       InkWell(
                                         onTap: _logout,
-                                        borderRadius: BorderRadius.circular(8),
+                                        borderRadius: BorderRadius.circular(12),
                                         child: Container(
                                           width: 40,
                                           height: 40,
                                           decoration: BoxDecoration(
-                                            color: Colors.white,
-                                            borderRadius: BorderRadius.circular(
-                                              8,
+                                            color: const Color(0xFFF9FAFB),
+                                            borderRadius: BorderRadius.circular(12),
+                                            border: Border.all(
+                                              color: const Color(0xFFF3F4F6),
+                                              width: 1,
                                             ),
-                                            border: Border.all(color: _border),
                                           ),
-                                          child: const Icon(
-                                            Icons.logout,
-                                            color: _muted,
-                                            size: 20,
+                                          alignment: Alignment.center,
+                                          child: SvgPicture.asset(
+                                            'assets/svgs/logout.svg',
+                                            width: 16,
+                                            height: 16,
                                           ),
                                         ),
                                       ),

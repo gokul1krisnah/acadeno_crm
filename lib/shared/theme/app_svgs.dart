@@ -6,4 +6,5 @@ abstract class AppSvgs {
   static const String filter = 'assets/svgs/filter.svg';
   static const String notifications = 'assets/svgs/notification.svg';
   static const String settings = 'assets/svgs/setting.svg';
+  static const String logout = 'assets/svgs/logout.svg';
 }

@@ -1,3 +1,5 @@
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:acadeno_crm/shared/theme/app_svgs.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:acadeno_crm/core/services/app_phone_call_service.dart';
 import 'package:acadeno_crm/core/services/offline_queue_service.dart';
@@ -209,23 +211,26 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                           );
                         },
                       ),
-                      // Logout button with Cupertino icon
+                      // Logout button (Figma spec: 40x40, radius 12, #F9FAFB, border #F3F4F6, logout.svg)
                       InkWell(
                         onTap: () => _confirmLogout(context),
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(12),
                         child: Container(
-                          width: 44,
-                          height: 44,
+                          width: 40,
+                          height: 40,
                           decoration: BoxDecoration(
-                            color: const Color(0xFFF8FAFC),
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(color: const Color(0xFFF1F5F9)),
+                            color: const Color(0xFFF9FAFB),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: const Color(0xFFF3F4F6),
+                              width: 1,
+                            ),
                           ),
                           alignment: Alignment.center,
-                          child: const Icon(
-                            Icons.logout_rounded,
-                            color: Color(0xFFDC2626),
-                            size: 20,
+                          child: SvgPicture.asset(
+                            AppSvgs.logout,
+                            width: 16,
+                            height: 16,
                           ),
                         ),
                       ),
