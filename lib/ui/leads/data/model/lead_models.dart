@@ -303,6 +303,7 @@ class LeadRecord {
   final String? assignedByUid;
   final String? assignedByName;
   final DateTime? assignedAt;
+  final String followUpTime;
   final String notes;
   final bool isDone;
   final bool isLocked;
@@ -338,6 +339,7 @@ class LeadRecord {
     this.assignedByUid,
     this.assignedByName,
     this.assignedAt,
+    this.followUpTime = '',
     this.notes = '',
     this.isDone = false,
     this.isLocked = false,
@@ -491,6 +493,12 @@ class LeadRecord {
         (data['consent'] ?? data['consentBasis'] ?? data['consentSource'] ?? '')
             .toString()
             .trim();
+    final rawFollowUp = (data['followUpTime'] ??
+            data['follow_up_time'] ??
+            data['nextFollowUp'] ??
+            '')
+        .toString()
+        .trim();
 
     return LeadRecord(
       id: id,
@@ -529,6 +537,7 @@ class LeadRecord {
       assignedAt: assignedAtField is Timestamp
           ? assignedAtField.toDate()
           : (assignedAtField is DateTime ? assignedAtField : null),
+      followUpTime: rawFollowUp,
       notes: (data['notes'] ?? '').toString(),
       isDone: data['isDone'] == true,
       isLocked: data['isLocked'] == true,
@@ -571,6 +580,7 @@ class LeadRecord {
       'assignedDateLabel': assignedDateLabel,
       'assignedByUid': assignedByUid,
       'assignedByName': assignedByName,
+      if (followUpTime.isNotEmpty) 'followUpTime': followUpTime.trim(),
       'notes': notes,
       'isDone': isDone,
       'isLocked': isLocked,
@@ -606,6 +616,7 @@ class LeadRecord {
     String? assignedByUid,
     String? assignedByName,
     DateTime? assignedAt,
+    String? followUpTime,
     String? notes,
     bool? isDone,
     bool? isLocked,
@@ -641,6 +652,7 @@ class LeadRecord {
       assignedByUid: assignedByUid ?? this.assignedByUid,
       assignedByName: assignedByName ?? this.assignedByName,
       assignedAt: assignedAt ?? this.assignedAt,
+      followUpTime: followUpTime ?? this.followUpTime,
       notes: notes ?? this.notes,
       isDone: isDone ?? this.isDone,
       isLocked: isLocked ?? this.isLocked,
@@ -677,6 +689,7 @@ class LeadRecord {
       lockedMessage: lockedMessage,
       isDone: done,
       talkingPoints: talkingPoints,
+      followUpTime: followUpTime,
       course: course.isNotEmpty ? course : (assignment?.course ?? ''),
       fee: fee.isNotEmpty ? fee : (assignment?.fee ?? ''),
       timeline: timeline.isNotEmpty
@@ -855,6 +868,7 @@ class ExecutiveLeadItem {
   bool isDone;
   final List<String> talkingPoints;
   final List<String> timeline;
+  final String followUpTime;
   final String course;
   final String fee;
 
@@ -882,6 +896,7 @@ class ExecutiveLeadItem {
       '27 Oct, 9:20 AM · Assigned to Anjali R by Deepak PM',
       '24 Oct · Registered via College Webinar sheet (Consent recorded)',
     ],
+    this.followUpTime = '',
     this.course = '',
     this.fee = '',
   });

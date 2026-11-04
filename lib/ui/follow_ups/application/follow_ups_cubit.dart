@@ -106,6 +106,10 @@ class FollowUpsCubit extends Cubit<FollowUpsState> {
     final updated = List<ExecutiveFollowUpItem>.from(state.followUps);
 
     if (outcome == 'Follow-up' || outcome == 'Interested') {
+      final isDueToday = followUpTimeLabel != null &&
+          (followUpTimeLabel.toLowerCase().contains('today') ||
+              followUpTimeLabel.toLowerCase().contains('5 pm') ||
+              followUpTimeLabel.toLowerCase().contains('now'));
       updated.insert(
         0,
         ExecutiveFollowUpItem(
@@ -118,7 +122,7 @@ class FollowUpsCubit extends Cubit<FollowUpsState> {
           note: notes.isEmpty
               ? 'Scheduled follow-up after $outcome call'
               : notes,
-          bucket: FollowUpBucket.upcoming,
+          bucket: isDueToday ? FollowUpBucket.today : FollowUpBucket.upcoming,
         ),
       );
     } else if (outcome == 'No answer') {

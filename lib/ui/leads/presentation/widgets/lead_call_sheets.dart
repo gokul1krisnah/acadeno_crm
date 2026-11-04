@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:acadeno_crm/shared/extensions/build_context_extension.dart';
-import 'package:acadeno_crm/ui/alerts/application/alerts_cubit.dart';
 import 'package:acadeno_crm/ui/follow_ups/application/follow_ups_cubit.dart';
 import 'package:acadeno_crm/ui/home/application/home_cubit.dart';
 import 'package:acadeno_crm/ui/leads/application/leads_cubit.dart';
@@ -77,31 +76,14 @@ class LeadCallSheets {
   }) {
     final cubit = context.read<LeadsCubit>();
     final followUpsCubit = context.read<FollowUpsCubit>();
-    final alertsCubit = context.read<AlertsCubit>();
     String selectedOutcome = 'Follow-up';
     String selectedFollowUpSlot = 'Tomorrow 10:30';
     final notesCtrl = TextEditingController();
 
-    // Program & Enrolment controllers (when Converted)
-    final initialProgram = matchProgram(
-      (course != null && course.isNotEmpty) ? course : campaignTag,
-    );
-    String selectedProgram = initialProgram;
-    final cleanFee = (fee ?? '').trim();
-    final bool hasFeeInDocument = cleanFee.isNotEmpty && cleanFee != '0';
-    final feeCtrl = TextEditingController(
-      text: hasFeeInDocument ? cleanFee : '',
-    );
-    final discountCtrl = TextEditingController(text: '0');
-    final paidCtrl = TextEditingController(
-      text: hasFeeInDocument ? cleanFee : '',
-    );
-    String paymentMode = 'UPI';
-
     const outcomeRows = [
       [
         ('Interested', Color(0xFF15803D)),
-        ('Follow-up', Color(0xFFC2410C)),
+        ('Follow-up', Color(0xFFEF8144)),
       ],
       [
         ('No answer', Color(0xFF64748B)),
@@ -128,9 +110,6 @@ class LeadCallSheets {
       barrierColor: Colors.black.withValues(alpha: 0.65),
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setSheetState) {
-          final discountVal = int.tryParse(discountCtrl.text.trim()) ?? 0;
-          final needsManagerApproval = discountVal > 500;
-
           return Align(
             alignment: Alignment.bottomCenter,
             child: ConstrainedBox(
@@ -414,119 +393,10 @@ class LeadCallSheets {
                               ),
                               focusedBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
-                                borderSide: const BorderSide(color: Color(0xFF4338CA), width: 1.5),
+                                borderSide: const BorderSide(color: Color(0xFFEF8144), width: 1.5),
                               ),
                             ),
                           ),
-
-                          // Optional Enrolment Details when 'Converted' is selected
-                          if (selectedOutcome == 'Converted') ...[
-                            const SizedBox(height: 14),
-                            Container(
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFF8FAFC),
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: const Color(0xFFE2E8F0)),
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Text(
-                                    'ENROLMENT & PAYMENT RECORD',
-                                    style: TextStyle(
-                                      fontSize: 11.5,
-                                      fontWeight: FontWeight.w800,
-                                      color: Color(0xFF15803D),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 10),
-                                  if (hasFeeInDocument) ...[
-                                    Row(
-                                      children: [
-                                        Expanded(
-                                          child: TextField(
-                                            controller: feeCtrl,
-                                            keyboardType: TextInputType.number,
-                                            decoration: const InputDecoration(
-                                              labelText: 'Course Fee (₹)',
-                                              isDense: true,
-                                              border: OutlineInputBorder(),
-                                            ),
-                                          ),
-                                        ),
-                                        const SizedBox(width: 8),
-                                        Expanded(
-                                          child: TextField(
-                                            controller: discountCtrl,
-                                            keyboardType: TextInputType.number,
-                                            onChanged: (_) => setSheetState(() {}),
-                                            decoration: const InputDecoration(
-                                              labelText: 'Discount (₹)',
-                                              isDense: true,
-                                              border: OutlineInputBorder(),
-                                            ),
-                                          ),
-                                        ),
-                                        const SizedBox(width: 8),
-                                        Expanded(
-                                          child: TextField(
-                                            controller: paidCtrl,
-                                            keyboardType: TextInputType.number,
-                                            decoration: const InputDecoration(
-                                              labelText: 'Paid Now (₹)',
-                                              isDense: true,
-                                              border: OutlineInputBorder(),
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    if (needsManagerApproval) ...[
-                                      const SizedBox(height: 8),
-                                      Container(
-                                        padding: const EdgeInsets.all(8),
-                                        decoration: BoxDecoration(
-                                          color: const Color(0xFFFEF0E6),
-                                          borderRadius: BorderRadius.circular(8),
-                                        ),
-                                        child: const Text(
-                                          'Discount exceeds ₹500 limit — will be sent to Manager for approval before finalization.',
-                                          style: TextStyle(
-                                            fontSize: 11.5,
-                                            fontWeight: FontWeight.w600,
-                                            color: Color(0xFF9A3412),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                    const SizedBox(height: 10),
-                                  ],
-                                  DropdownButtonFormField<String>(
-                                    initialValue: paymentMode,
-                                    isExpanded: true,
-                                    decoration: const InputDecoration(
-                                      labelText: 'Payment Mode',
-                                      isDense: true,
-                                      border: OutlineInputBorder(),
-                                    ),
-                                    items: const [
-                                      DropdownMenuItem(value: 'UPI', child: Text('UPI')),
-                                      DropdownMenuItem(value: 'Bank Transfer', child: Text('Bank Transfer')),
-                                      DropdownMenuItem(value: 'Cash Receipt', child: Text('Cash Receipt')),
-                                    ],
-                                    onChanged: (v) {
-                                      if (v != null) {
-                                        setSheetState(() => paymentMode = v);
-                                      }
-                                    },
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-
-                          const SizedBox(height: 18),
 
                           // Save & next call Button
                           SizedBox(
@@ -544,8 +414,6 @@ class LeadCallSheets {
                                     outcome: selectedOutcome,
                                     duration: displayDuration,
                                     notes: notesCtrl.text.trim(),
-                                    courseEnrolled: selectedProgram,
-                                    discountAmount: hasFeeInDocument ? discountVal : null,
                                     followUpTime: selectedFollowUpSlot,
                                   );
                                   followUpsCubit.addFromCallOutcome(
@@ -555,19 +423,12 @@ class LeadCallSheets {
                                     notes: notesCtrl.text.trim(),
                                     followUpTimeLabel: selectedFollowUpSlot,
                                   );
-                                  if (result.needsDiscountApproval) {
-                                    alertsCubit.addDiscountApprovalAlert(
-                                      leadName: leadName,
-                                      courseEnrolled: selectedProgram,
-                                      discountAmount: discountVal,
-                                    );
-                                  }
                                 } catch (e) {
                                   debugPrint('recordCallOutcome error: $e');
                                 }
                               },
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF4338CA),
+                                backgroundColor: const Color(0xFFEF8144),
                                 foregroundColor: Colors.white,
                                 elevation: 0,
                                 shape: RoundedRectangleBorder(
@@ -611,7 +472,7 @@ class LeadCallSheets {
           color: Colors.white,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: selected ? const Color(0xFF4338CA) : const Color(0xFFE2E8F0),
+            color: selected ? const Color(0xFFEF8144) : const Color(0xFFE2E8F0),
             width: selected ? 1.5 : 1.0,
           ),
         ),
@@ -620,7 +481,7 @@ class LeadCallSheets {
           style: TextStyle(
             fontSize: 12.5,
             fontWeight: selected ? FontWeight.w700 : FontWeight.w600,
-            color: selected ? const Color(0xFF4338CA) : const Color(0xFF334155),
+            color: selected ? const Color(0xFFEF8144) : const Color(0xFF334155),
           ),
         ),
       ),

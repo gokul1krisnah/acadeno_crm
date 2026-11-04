@@ -785,24 +785,13 @@ class _DashboardViewState extends State<_DashboardView> {
                     InkWell(
                       onTap: _pickDashboardDate,
                       borderRadius: BorderRadius.circular(6),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            '$_today ·',
-                            style: const TextStyle(
-                              color: _muted,
-                              fontSize: 12.5,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                          const SizedBox(width: 4),
-                          const Icon(
-                            Icons.calendar_today_rounded,
-                            size: 13,
-                            color: _orangeAccent,
-                          ),
-                        ],
+                      child: Text(
+                        _today,
+                        style: const TextStyle(
+                          color: _muted,
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
                     ),
                   ],
@@ -863,24 +852,13 @@ class _DashboardViewState extends State<_DashboardView> {
               InkWell(
                 onTap: _pickDashboardDate,
                 borderRadius: BorderRadius.circular(6),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      '$_today ·',
-                      style: const TextStyle(
-                        color: _muted,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    const SizedBox(width: 4),
-                    const Icon(
-                      Icons.calendar_today_rounded,
-                      size: 14,
-                      color: _orangeAccent,
-                    ),
-                  ],
+                child: Text(
+                  _today,
+                  style: const TextStyle(
+                    color: _muted,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
               ),
             ],

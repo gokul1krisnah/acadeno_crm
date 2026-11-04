@@ -1248,10 +1248,14 @@ class FirestoreLeadsBackend implements LeadsBackend {
               'isLocked': false,
               'lockedByUid': null,
               'lockedMessage': null,
-              if (outcome == 'Follow-up' || outcome == 'Callback')
-                'followUpTime': 'Tomorrow · 10:30 AM',
-              if (outcome == 'No answer') 'followUpTime': 'Today · 4:30 PM',
-              if (outcome == 'Interested') 'followUpTime': 'Today · 5:30 PM',
+              if (followUpTime != null && followUpTime.trim().isNotEmpty)
+                'followUpTime': followUpTime.trim()
+              else if (outcome == 'Follow-up' || outcome == 'Callback')
+                'followUpTime': 'Tomorrow · 10:30 AM'
+              else if (outcome == 'No answer')
+                'followUpTime': 'Today · 4:30 PM'
+              else if (outcome == 'Interested')
+                'followUpTime': 'Today · 5:30 PM',
               if (notes.trim().isNotEmpty) 'notes': notes.trim(),
               'timeline': nextTimeline,
               'updatedAt': FieldValue.serverTimestamp(),
