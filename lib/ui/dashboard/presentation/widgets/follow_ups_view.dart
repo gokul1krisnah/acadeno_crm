@@ -184,9 +184,15 @@ class _FollowUpsViewState extends State<FollowUpsView> {
               final isDone = (d['isDone'] as bool?) ?? false;
               final status = (d['status'] ?? '').toString().toLowerCase();
 
-              // Follow-up candidates: follow-up status, claimed, or leads with notes/timelines
+              // Follow-up candidates: leads with followUpTime, or follow-up status, callback, overdue, claimed, interested, or with notes/timelines
+              final hasFollowUpTime = (d['followUpTime'] != null &&
+                  d['followUpTime'].toString().trim().isNotEmpty);
               final isCandidate =
+                  hasFollowUpTime ||
+                  d['isOverdue'] == true ||
                   status == 'follow-up' ||
+                  status == 'callback' ||
+                  status == 'overdue' ||
                   status == 'claimed' ||
                   status == 'interested' ||
                   ((d['notes'] as String?)?.isNotEmpty ?? false) ||
@@ -235,15 +241,9 @@ class _FollowUpsViewState extends State<FollowUpsView> {
               }
             }
 
-            // Filter items
-            final filteredItems = followUps.where((item) {
+            // Follow-ups matching executive filter
+            final execFollowUps = followUps.where((item) {
               if (item.completed) return false;
-              if (_filterMode == 'Overdue only' && !item.isOverdue) {
-                return false;
-              }
-              if (_filterMode == 'Due today' && item.isOverdue) {
-                return false;
-              }
               if (_selectedExecFilter != 'All executives' &&
                   item.assignedExec != _selectedExecFilter) {
                 return false;
@@ -251,10 +251,24 @@ class _FollowUpsViewState extends State<FollowUpsView> {
               return true;
             }).toList();
 
-            final overdueCount = followUps
-                .where((f) => !f.completed && f.isOverdue)
-                .length;
-            final openCount = followUps.where((f) => !f.completed).length;
+            final openCount = execFollowUps.length;
+            final overdueCount = execFollowUps.where((f) => f.isOverdue).length;
+            final dueTodayCount = execFollowUps.where((f) => !f.isOverdue).length;
+
+            final totalOpenAll = followUps.where((f) => !f.completed).length;
+            final totalOverdueAll =
+                followUps.where((f) => !f.completed && f.isOverdue).length;
+
+            // Filter items based on active pill
+            final filteredItems = execFollowUps.where((item) {
+              if (_filterMode == 'Overdue only' && !item.isOverdue) {
+                return false;
+              }
+              if (_filterMode == 'Due today' && item.isOverdue) {
+                return false;
+              }
+              return true;
+            }).toList();
 
             return LayoutBuilder(
               builder: (context, constraints) {
@@ -283,7 +297,7 @@ class _FollowUpsViewState extends State<FollowUpsView> {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              '$openCount open follow-ups across ${executives.length} team members · $overdueCount overdue (live from database)',
+                              '$totalOpenAll open follow-ups across ${executives.length} team members · $totalOverdueAll overdue (live from database)',
                               style: const TextStyle(
                                 fontSize: 13,
                                 color: Color(0xFF667085),
@@ -390,22 +404,51 @@ class _FollowUpsViewState extends State<FollowUpsView> {
                       children: [
                         _buildFilterPill('All open ($openCount)'),
                         _buildFilterPill('Overdue only ($overdueCount)'),
-                        _buildFilterPill('Due today'),
-                        const SizedBox(width: 8),
-                        SizedBox(
-                          width: 170,
-                          child: AcadenoDropdown.strings(
-                            value: _selectedExecFilter,
-                            items: ['All executives', ...executives],
-                            contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 6,
+                        _buildFilterPill('Due today ($dueTodayCount)'),
+                        const SizedBox(width: 4),
+                        Container(
+                          height: 38,
+                          padding: const EdgeInsets.symmetric(horizontal: 14),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: const Color(0xFFE2E8F0),
                             ),
-                            onChanged: (v) {
-                              if (v != null) {
-                                setState(() => _selectedExecFilter = v);
-                              }
-                            },
+                          ),
+                          child: DropdownButtonHideUnderline(
+                            child: DropdownButton<String>(
+                              value: _selectedExecFilter,
+                              icon: const Icon(
+                                CupertinoIcons.chevron_down,
+                                size: 14,
+                                color: Color(0xFF64748B),
+                              ),
+                              isDense: true,
+                              style: const TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: Color(0xFF475467),
+                              ),
+                              items: ['All executives', ...executives].map((s) {
+                                return DropdownMenuItem<String>(
+                                  value: s,
+                                  child: Text(
+                                    s,
+                                    style: const TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w600,
+                                      color: Color(0xFF475467),
+                                    ),
+                                  ),
+                                );
+                              }).toList(),
+                              onChanged: (v) {
+                                if (v != null) {
+                                  setState(() => _selectedExecFilter = v);
+                                }
+                              },
+                            ),
                           ),
                         ),
                       ],
