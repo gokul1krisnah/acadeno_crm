@@ -148,16 +148,7 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                homeState.todayLabel,
-                                style: const TextStyle(
-                                  fontSize: 12.5,
-                                  fontWeight: FontWeight.w500,
-                                  color: Color(0xFF667085),
-                                ),
-                              ),
-                              const SizedBox(height: 1),
-                              Text(
-                                '${homeState.greeting}, ${homeState.user.firstName}',
+                                '${homeState.greeting}, ${homeState.user.firstName.isNotEmpty ? homeState.user.firstName : "Test"}',
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: const TextStyle(
@@ -165,6 +156,15 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                   fontWeight: FontWeight.w800,
                                   color: Color(0xFF0F172A),
                                   letterSpacing: -0.3,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                homeState.todayLabel,
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w500,
+                                  color: Color(0xFF64748B),
                                 ),
                               ),
                             ],
@@ -216,20 +216,18 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                       // Logout button with Cupertino icon
                       InkWell(
                         onTap: () => _confirmLogout(context),
-                        borderRadius: BorderRadius.circular(14),
+                        borderRadius: BorderRadius.circular(16),
                         child: Container(
                           width: 44,
                           height: 44,
                           decoration: BoxDecoration(
-                            color: const Color(
-                              0xFFFEE2E2,
-                            ).withValues(alpha: 0.65),
-                            borderRadius: BorderRadius.circular(14),
-                            border: Border.all(color: const Color(0xFFFECACA)),
+                            color: const Color(0xFFF8FAFC),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: const Color(0xFFF1F5F9)),
                           ),
                           alignment: Alignment.center,
                           child: const Icon(
-                            CupertinoIcons.square_arrow_right,
+                            Icons.logout_rounded,
                             color: Color(0xFFDC2626),
                             size: 20,
                           ),
@@ -247,8 +245,9 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                           value:
                               '${state.callsDoneCount}/${state.totalCallsAssigned}',
                           label: 'Calls done',
-                          bgColor: const Color(0xFFEEEDFD),
-                          valueColor: const Color(0xFF312E81),
+                          bgColor: const Color(0xFFEEF2FF),
+                          valueColor: const Color(0xFF4338CA),
+                          labelColor: const Color(0xFF6366F1),
                           onTap: () => cubit.togglePendingOrDoneCalls(false),
                         ),
                       ),
@@ -257,8 +256,9 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                         child: _MetricBox(
                           value: '${followUpsState.todayFollowUps.length}',
                           label: 'Follow-ups',
-                          bgColor: const Color(0xFFE8F3FC),
-                          valueColor: const Color(0xFF0369A1),
+                          bgColor: const Color(0xFFF0F9FF),
+                          valueColor: const Color(0xFF0284C7),
+                          labelColor: const Color(0xFF0EA5E9),
                           onTap: () {
                             followUpsCubit.selectFollowUpBucket(
                               FollowUpBucket.today,
@@ -272,8 +272,9 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                         child: _MetricBox(
                           value: '${followUpsState.overdueFollowUps.length}',
                           label: 'Overdue',
-                          bgColor: const Color(0xFFFDECE3),
+                          bgColor: const Color(0xFFFFF7ED),
                           valueColor: const Color(0xFFC2410C),
+                          labelColor: const Color(0xFFEA580C),
                           onTap: () {
                             followUpsCubit.selectFollowUpBucket(
                               FollowUpBucket.overdue,
@@ -288,15 +289,15 @@ class _LeadsTabViewState extends State<LeadsTabView> {
 
                   // 3. Progress Bar
                   ClipRRect(
-                    borderRadius: BorderRadius.circular(6),
+                    borderRadius: BorderRadius.circular(3),
                     child: LinearProgressIndicator(
                       value: state.totalCallsAssigned == 0
                           ? 0
                           : state.callsDoneCount / state.totalCallsAssigned,
-                      minHeight: 7,
-                      backgroundColor: const Color(0xFFE5E7EB),
+                      minHeight: 6,
+                      backgroundColor: const Color(0xFFF1F5F9),
                       valueColor: const AlwaysStoppedAnimation<Color>(
-                        Color(0xFF4338CA),
+                        Color(0xFF6366F1),
                       ),
                     ),
                   ),
@@ -305,7 +306,8 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                     "${state.progressPercent}% of today's calls done · ${state.callsLeftCount} left",
                     style: const TextStyle(
                       fontSize: 12.5,
-                      color: Color(0xFF667085),
+                      fontWeight: FontWeight.w500,
+                      color: Color(0xFF64748B),
                     ),
                   ),
                 ],
@@ -340,8 +342,8 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                               style: TextStyle(
                                 fontSize: 11.5,
                                 fontWeight: FontWeight.w700,
-                                letterSpacing: 0.7,
-                                color: Color(0xFF667085),
+                                letterSpacing: 0.8,
+                                color: Color(0xFF94A3B8),
                               ),
                             ),
                             const SizedBox(height: 10),
@@ -352,18 +354,15 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                   return InkWell(
                                     onTap: () => AppPhoneCallService.instance
                                         .dialLead(context, due),
-                                    borderRadius: BorderRadius.circular(16),
+                                    borderRadius: BorderRadius.circular(18),
                                     child: Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 16,
-                                        vertical: 15,
-                                      ),
+                                      padding: const EdgeInsets.all(18),
                                       decoration: BoxDecoration(
                                         color: Colors.white,
-                                        borderRadius: BorderRadius.circular(16),
+                                        borderRadius: BorderRadius.circular(18),
                                         border: Border.all(
-                                          color: const Color(0xFFD95D24),
-                                          width: 1.4,
+                                          color: const Color(0xFFFED7AA),
+                                          width: 1.5,
                                         ),
                                       ),
                                       child: Row(
@@ -377,50 +376,59 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                                   children: [
                                                     const Icon(
                                                       CupertinoIcons.clock,
-                                                      size: 14,
-                                                      color: Color(0xFFB45309),
+                                                      size: 15,
+                                                      color: Color(0xFFC2410C),
                                                     ),
-                                                    const SizedBox(width: 5),
+                                                    const SizedBox(width: 6),
                                                     Text(
                                                       '${due.statusTag} · Due Today',
                                                       style: const TextStyle(
-                                                        fontSize: 12.5,
+                                                        fontSize: 13,
                                                         fontWeight:
                                                             FontWeight.w700,
                                                         color: Color(
-                                                          0xFFB45309,
+                                                          0xFFC2410C,
                                                         ),
                                                       ),
                                                     ),
                                                   ],
                                                 ),
-                                                const SizedBox(height: 5),
+                                                const SizedBox(height: 8),
                                                 Text(
                                                   due.name,
                                                   style: const TextStyle(
-                                                    fontSize: 16.5,
+                                                    fontSize: 18,
                                                     fontWeight: FontWeight.w800,
                                                     color: Color(0xFF0F172A),
                                                   ),
                                                 ),
-                                                const SizedBox(height: 3),
+                                                const SizedBox(height: 4),
                                                 Text(
                                                   '${due.collegeInfo} · ${due.campaignTag}',
                                                   style: const TextStyle(
-                                                    fontSize: 13,
-                                                    color: Color(0xFF475467),
+                                                    fontSize: 13.5,
+                                                    color: Color(0xFF64748B),
+                                                    height: 1.35,
                                                   ),
                                                 ),
                                               ],
                                             ),
                                           ),
-                                          const SizedBox(width: 12),
+                                          const SizedBox(width: 14),
                                           Container(
-                                            width: 48,
-                                            height: 48,
-                                            decoration: const BoxDecoration(
-                                              color: Color(0xFF4338CA),
+                                            width: 52,
+                                            height: 52,
+                                            decoration: BoxDecoration(
+                                              color: const Color(0xFF5B61F4),
                                               shape: BoxShape.circle,
+                                              boxShadow: [
+                                                BoxShadow(
+                                                  color: const Color(0xFF5B61F4)
+                                                      .withValues(alpha: 0.38),
+                                                  blurRadius: 18,
+                                                  offset: const Offset(0, 6),
+                                                ),
+                                              ],
                                             ),
                                             child: const Icon(
                                               CupertinoIcons.phone_fill,
@@ -469,40 +477,101 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                   ],
                                 ),
                               ),
-                            const SizedBox(height: 22),
+                            const SizedBox(height: 18),
 
-                            // 5. TODAY'S CALLS Header + Pending / Done Toggles
+                            // Quick Actions: Add Walk-in Lead & My Record (Exact match to screenshot)
                             Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                const Text(
-                                  "TODAY'S CALLS",
-                                  style: TextStyle(
-                                    fontSize: 11.5,
-                                    fontWeight: FontWeight.w700,
-                                    letterSpacing: 0.7,
-                                    color: Color(0xFF667085),
+                                InkWell(
+                                  onTap: () =>
+                                      LeadCallSheets.showPhoneLookupAndWalkInSheet(
+                                        context,
+                                      ),
+                                  borderRadius: BorderRadius.circular(24),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 16,
+                                      vertical: 10,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(24),
+                                      border: Border.all(
+                                        color: const Color(0xFFEAECF0),
+                                      ),
+                                    ),
+                                    child: const Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(
+                                          CupertinoIcons.person,
+                                          size: 16,
+                                          color: Color(0xFF64748B),
+                                        ),
+                                        SizedBox(width: 7),
+                                        Text(
+                                          'Add Walk-in Lead',
+                                          style: TextStyle(
+                                            fontSize: 12.5,
+                                            fontWeight: FontWeight.w600,
+                                            color: Color(0xFF334155),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ),
-                                Row(
-                                  children: [
-                                    _TogglePill(
-                                      label:
-                                          'Pending ${state.pendingLeads.length}',
-                                      isSelected: state.showingPendingCalls,
-                                      onTap: () =>
-                                          cubit.togglePendingOrDoneCalls(true),
+                                const SizedBox(width: 10),
+                                InkWell(
+                                  onTap: () =>
+                                      LeadCallSheets.showMyRecordSheet(context),
+                                  borderRadius: BorderRadius.circular(24),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 16,
+                                      vertical: 10,
                                     ),
-                                    const SizedBox(width: 8),
-                                    _TogglePill(
-                                      label: 'Done ${state.doneLeads.length}',
-                                      isSelected: !state.showingPendingCalls,
-                                      onTap: () =>
-                                          cubit.togglePendingOrDoneCalls(false),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(24),
+                                      border: Border.all(
+                                        color: const Color(0xFFEAECF0),
+                                      ),
                                     ),
-                                  ],
+                                    child: const Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(
+                                          CupertinoIcons.folder,
+                                          size: 16,
+                                          color: Color(0xFF64748B),
+                                        ),
+                                        SizedBox(width: 7),
+                                        Text(
+                                          'My Record',
+                                          style: TextStyle(
+                                            fontSize: 12.5,
+                                            fontWeight: FontWeight.w600,
+                                            color: Color(0xFF334155),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
                                 ),
                               ],
+                            ),
+                            const SizedBox(height: 22),
+
+                            // 5. TODAY'S CALLS Header
+                            const Text(
+                              "TODAY'S CALLS",
+                              style: TextStyle(
+                                fontSize: 11.5,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: 0.8,
+                                color: Color(0xFF94A3B8),
+                              ),
                             ),
                             const SizedBox(height: 12),
 
@@ -667,74 +736,6 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                 },
                               ),
                             const SizedBox(height: 16),
-
-                            // 7. Quick Executive Utilities Row (FR-1.4 Walk-in / PR-2.2 Lookup / FR-6.2 My Record)
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: OutlinedButton.icon(
-                                    onPressed: () =>
-                                        LeadCallSheets.showPhoneLookupAndWalkInSheet(
-                                          context,
-                                        ),
-                                    icon: const Icon(
-                                      CupertinoIcons.person_add,
-                                      size: 16,
-                                    ),
-                                    label: const Text(
-                                      'Phone Lookup / + Walk-in',
-                                    ),
-                                    style: OutlinedButton.styleFrom(
-                                      foregroundColor: const Color(0xFF344054),
-                                      side: const BorderSide(
-                                        color: Color(0xFFD0D5DD),
-                                      ),
-                                      padding: const EdgeInsets.symmetric(
-                                        vertical: 10,
-                                      ),
-                                      textStyle: const TextStyle(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(width: 8),
-                                OutlinedButton.icon(
-                                  onPressed: () =>
-                                      LeadCallSheets.showMyRecordSheet(context),
-                                  icon: const Icon(
-                                    Icons.bar_chart_rounded,
-                                    size: 16,
-                                  ),
-                                  label: const Text('My Record'),
-                                  style: OutlinedButton.styleFrom(
-                                    foregroundColor: const Color(0xFF344054),
-                                    side: const BorderSide(
-                                      color: Color(0xFFD0D5DD),
-                                    ),
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 12,
-                                      vertical: 10,
-                                    ),
-                                    textStyle: const TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(width: 8),
-                                IconButton(
-                                  onPressed: widget.onLogout,
-                                  tooltip: 'Sign out',
-                                  icon: const Icon(
-                                    Icons.logout_rounded,
-                                    size: 18,
-                                    color: Color(0xFF667085),
-                                  ),
-                                ),
-                              ],
-                            ),
                           ],
                         ),
                       ),
@@ -855,6 +856,7 @@ class _MetricBox extends StatelessWidget {
   final String label;
   final Color bgColor;
   final Color valueColor;
+  final Color labelColor;
   final VoidCallback onTap;
 
   const _MetricBox({
@@ -862,6 +864,7 @@ class _MetricBox extends StatelessWidget {
     required this.label,
     required this.bgColor,
     required this.valueColor,
+    this.labelColor = const Color(0xFF475467),
     required this.onTap,
   });
 
@@ -869,12 +872,12 @@ class _MetricBox extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: BorderRadius.circular(18),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
         decoration: BoxDecoration(
           color: bgColor,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(18),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -882,7 +885,7 @@ class _MetricBox extends StatelessWidget {
             Text(
               value,
               style: TextStyle(
-                fontSize: 23,
+                fontSize: 24,
                 fontWeight: FontWeight.w800,
                 color: valueColor,
                 letterSpacing: -0.5,
@@ -891,10 +894,10 @@ class _MetricBox extends StatelessWidget {
             const SizedBox(height: 4),
             Text(
               label,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w500,
-                color: Color(0xFF475467),
+                color: labelColor,
               ),
             ),
           ],
@@ -904,43 +907,6 @@ class _MetricBox extends StatelessWidget {
   }
 }
 
-class _TogglePill extends StatelessWidget {
-  final String label;
-  final bool isSelected;
-  final VoidCallback onTap;
-
-  const _TogglePill({
-    required this.label,
-    required this.isSelected,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(20),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 7),
-        decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF4338CA) : Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          border: isSelected
-              ? null
-              : Border.all(color: const Color(0xFFD0D5DD)),
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            fontSize: 12.5,
-            fontWeight: FontWeight.w700,
-            color: isSelected ? Colors.white : const Color(0xFF0F172A),
-          ),
-        ),
-      ),
-    );
-  }
-}
 
 class _TodayLeadCard extends StatelessWidget {
   final ExecutiveLeadItem item;
@@ -957,36 +923,36 @@ class _TodayLeadCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTapCard,
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: BorderRadius.circular(18),
       child: Container(
-        padding: const EdgeInsets.all(15),
+        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: const Color(0xFFEAECF0)),
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: const Color(0xFFF1F5F9)),
         ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             // Initials Circle
             Container(
-              width: 44,
-              height: 44,
+              width: 48,
+              height: 48,
               decoration: const BoxDecoration(
-                color: Color(0xFFEEEDFD),
+                color: Color(0xFFEEF2FF),
                 shape: BoxShape.circle,
               ),
               alignment: Alignment.center,
               child: Text(
                 item.initials,
                 style: const TextStyle(
-                  fontSize: 14,
+                  fontSize: 15,
                   fontWeight: FontWeight.w800,
-                  color: Color(0xFF3730A3),
+                  color: Color(0xFF4F46E5),
                 ),
               ),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: 14),
 
             // Center Details
             Expanded(
@@ -996,7 +962,7 @@ class _TodayLeadCard extends StatelessWidget {
                   Text(
                     item.name,
                     style: const TextStyle(
-                      fontSize: 15.5,
+                      fontSize: 16,
                       fontWeight: FontWeight.w800,
                       color: Color(0xFF0F172A),
                     ),
@@ -1004,29 +970,32 @@ class _TodayLeadCard extends StatelessWidget {
                   const SizedBox(height: 2),
                   Text(
                     item.collegeInfo,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
                       fontSize: 12.5,
-                      color: Color(0xFF667085),
+                      color: Color(0xFF64748B),
                     ),
                   ),
-                  const SizedBox(height: 7),
+                  const SizedBox(height: 8),
                   Row(
                     children: [
                       Container(
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 9,
-                          vertical: 3,
+                          horizontal: 10,
+                          vertical: 3.5,
                         ),
                         decoration: BoxDecoration(
-                          color: item.statusBg,
+                          color: const Color(0xFFEEF2FF),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
-                          item.statusTag,
-                          style: TextStyle(
-                            fontSize: 11.5,
-                            fontWeight: FontWeight.w700,
-                            color: item.statusColor,
+                          item.statusTag.toUpperCase(),
+                          style: const TextStyle(
+                            fontSize: 10.5,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 0.4,
+                            color: Color(0xFF4F46E5),
                           ),
                         ),
                       ),
@@ -1037,8 +1006,8 @@ class _TodayLeadCard extends StatelessWidget {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
-                            fontSize: 12.5,
-                            color: Color(0xFF475467),
+                            fontSize: 11.5,
+                            color: Color(0xFF94A3B8),
                           ),
                         ),
                       ),
@@ -1070,24 +1039,27 @@ class _TodayLeadCard extends StatelessWidget {
             ),
 
             // Right Phone Button (hidden when locked by another executive)
-            if (!item.isLocked)
+            if (!item.isLocked) ...[
+              const SizedBox(width: 10),
               InkWell(
                 onTap: onTapCall,
                 borderRadius: BorderRadius.circular(22),
                 child: Container(
-                  width: 44,
-                  height: 44,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFEEEDFD),
+                  width: 42,
+                  height: 42,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
                     shape: BoxShape.circle,
+                    border: Border.all(color: const Color(0xFFF1F5F9)),
                   ),
                   child: const Icon(
                     CupertinoIcons.phone_fill,
-                    color: Color(0xFF4338CA),
-                    size: 20,
+                    color: Color(0xFF4F46E5),
+                    size: 18,
                   ),
                 ),
               ),
+            ],
           ],
         ),
       ),

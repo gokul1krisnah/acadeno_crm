@@ -234,9 +234,9 @@ class _ExecutiveBottomNavBar extends StatelessWidget {
 
   static const _items = [
     (CupertinoIcons.phone_fill, 'Today'),
-    (CupertinoIcons.clock_fill, 'Follow-ups'),
-    (CupertinoIcons.placemark_fill, 'Visits'),
-    (CupertinoIcons.bell_fill, 'Alerts'),
+    (CupertinoIcons.clock, 'Follow-ups'),
+    (Icons.location_on_rounded, 'Visits'),
+    (CupertinoIcons.bell, 'Alerts'),
   ];
 
   @override
@@ -268,7 +268,7 @@ class _ExecutiveBottomNavBar extends StatelessWidget {
                     height: 30,
                     decoration: BoxDecoration(
                       color: isSelected
-                          ? const Color(0xFFEEEDFD)
+                          ? const Color(0xFFEEF2FF)
                           : Colors.transparent,
                       borderRadius: BorderRadius.circular(15),
                     ),
@@ -277,8 +277,8 @@ class _ExecutiveBottomNavBar extends StatelessWidget {
                       item.$1,
                       size: 20,
                       color: isSelected
-                          ? const Color(0xFF4338CA)
-                          : const Color(0xFF475467),
+                          ? const Color(0xFF4F46E5)
+                          : const Color(0xFF64748B),
                     ),
                   ),
                   const SizedBox(height: 3),
@@ -290,8 +290,8 @@ class _ExecutiveBottomNavBar extends StatelessWidget {
                           ? FontWeight.w700
                           : FontWeight.w500,
                       color: isSelected
-                          ? const Color(0xFF4338CA)
-                          : const Color(0xFF475467),
+                          ? const Color(0xFF4F46E5)
+                          : const Color(0xFF64748B),
                     ),
                   ),
                 ],
