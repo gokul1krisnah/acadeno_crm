@@ -245,13 +245,10 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                         child: _MetricBox(
                           value:
                               '${state.callsDoneCount}/${state.totalCallsAssigned}',
-                          label: !state.showingPendingCalls ? 'Done (Viewing)' : 'Calls done',
-                          bgColor: !state.showingPendingCalls
-                              ? const Color(0xFFE0E7FF)
-                              : const Color(0xFFEEF2FF),
+                          label: 'Calls done',
+                          bgColor: const Color(0xFFEEF2FF),
                           valueColor: const Color(0xFF4338CA),
                           labelColor: const Color(0xFF6366F1),
-                          isSelected: !state.showingPendingCalls,
                           onTap: () =>
                               cubit.togglePendingOrDoneCalls(!state.showingPendingCalls ? true : false),
                         ),
@@ -858,7 +855,6 @@ class _MetricBox extends StatelessWidget {
   final Color valueColor;
   final Color labelColor;
   final VoidCallback onTap;
-  final bool isSelected;
 
   const _MetricBox({
     required this.value,
@@ -867,7 +863,6 @@ class _MetricBox extends StatelessWidget {
     required this.valueColor,
     this.labelColor = const Color(0xFF475467),
     required this.onTap,
-    this.isSelected = false,
   });
 
   @override
@@ -880,9 +875,6 @@ class _MetricBox extends StatelessWidget {
         decoration: BoxDecoration(
           color: bgColor,
           borderRadius: BorderRadius.circular(18),
-          border: isSelected
-              ? Border.all(color: valueColor, width: 2)
-              : null,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
