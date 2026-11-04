@@ -245,11 +245,15 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                         child: _MetricBox(
                           value:
                               '${state.callsDoneCount}/${state.totalCallsAssigned}',
-                          label: 'Calls done',
-                          bgColor: const Color(0xFFEEF2FF),
+                          label: !state.showingPendingCalls ? 'Done (Viewing)' : 'Calls done',
+                          bgColor: !state.showingPendingCalls
+                              ? const Color(0xFFE0E7FF)
+                              : const Color(0xFFEEF2FF),
                           valueColor: const Color(0xFF4338CA),
                           labelColor: const Color(0xFF6366F1),
-                          onTap: () => cubit.togglePendingOrDoneCalls(false),
+                          isSelected: !state.showingPendingCalls,
+                          onTap: () =>
+                              cubit.togglePendingOrDoneCalls(!state.showingPendingCalls ? true : false),
                         ),
                       ),
                       const SizedBox(width: 10),
@@ -564,15 +568,45 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                             ),
                             const SizedBox(height: 22),
 
-                            // 5. TODAY'S CALLS Header
-                            const Text(
-                              "TODAY'S CALLS",
-                              style: TextStyle(
-                                fontSize: 11.5,
-                                fontWeight: FontWeight.w700,
-                                letterSpacing: 0.8,
-                                color: Color(0xFF94A3B8),
-                              ),
+                            // 5. TODAY'S CALLS Header with Pending / Completed switcher
+                            Row(
+                              children: [
+                                Text(
+                                  state.showingPendingCalls
+                                      ? "TODAY'S CALLS · PENDING"
+                                      : "TODAY'S CALLS · COMPLETED",
+                                  style: const TextStyle(
+                                    fontSize: 11.5,
+                                    fontWeight: FontWeight.w700,
+                                    letterSpacing: 0.8,
+                                    color: Color(0xFF94A3B8),
+                                  ),
+                                ),
+                                const Spacer(),
+                                Container(
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFE2E8F0).withValues(alpha: 0.6),
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  padding: const EdgeInsets.all(3),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      _CallTabPill(
+                                        label: 'Pending (${state.pendingLeads.length})',
+                                        isSelected: state.showingPendingCalls,
+                                        onTap: () => cubit.togglePendingOrDoneCalls(true),
+                                      ),
+                                      const SizedBox(width: 4),
+                                      _CallTabPill(
+                                        label: 'Completed (${state.doneLeads.length})',
+                                        isSelected: !state.showingPendingCalls,
+                                        onTap: () => cubit.togglePendingOrDoneCalls(false),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
                             ),
                             const SizedBox(height: 12),
 
@@ -702,14 +736,43 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                         color: Color(0xFF667085),
                                       ),
                                     ),
-                                    const SizedBox(height: 10),
-                                    OutlinedButton.icon(
-                                      onPressed: cubit.refresh,
-                                      icon: const Icon(
-                                        CupertinoIcons.refresh,
-                                        size: 16,
-                                      ),
-                                      label: const Text('Refresh'),
+                                    const SizedBox(height: 12),
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        if (!state.showingPendingCalls) ...[
+                                          ElevatedButton.icon(
+                                            onPressed: () =>
+                                                cubit.togglePendingOrDoneCalls(true),
+                                            icon: const Icon(
+                                              Icons.arrow_back_rounded,
+                                              size: 16,
+                                            ),
+                                            label: const Text('Back to Pending Calls'),
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor: const Color(0xFFEF8144),
+                                              foregroundColor: Colors.white,
+                                              elevation: 0,
+                                              padding: const EdgeInsets.symmetric(
+                                                horizontal: 14,
+                                                vertical: 8,
+                                              ),
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius: BorderRadius.circular(8),
+                                              ),
+                                            ),
+                                          ),
+                                          const SizedBox(width: 8),
+                                        ],
+                                        OutlinedButton.icon(
+                                          onPressed: cubit.refresh,
+                                          icon: const Icon(
+                                            CupertinoIcons.refresh,
+                                            size: 16,
+                                          ),
+                                          label: const Text('Refresh'),
+                                        ),
+                                      ],
                                     ),
                                   ],
                                 ),
@@ -795,6 +858,7 @@ class _MetricBox extends StatelessWidget {
   final Color valueColor;
   final Color labelColor;
   final VoidCallback onTap;
+  final bool isSelected;
 
   const _MetricBox({
     required this.value,
@@ -803,6 +867,7 @@ class _MetricBox extends StatelessWidget {
     required this.valueColor,
     this.labelColor = const Color(0xFF475467),
     required this.onTap,
+    this.isSelected = false,
   });
 
   @override
@@ -815,6 +880,9 @@ class _MetricBox extends StatelessWidget {
         decoration: BoxDecoration(
           color: bgColor,
           borderRadius: BorderRadius.circular(18),
+          border: isSelected
+              ? Border.all(color: valueColor, width: 2)
+              : null,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -998,6 +1066,52 @@ class _TodayLeadCard extends StatelessWidget {
               ),
             ],
           ],
+        ),
+      ),
+    );
+  }
+}
+
+
+class _CallTabPill extends StatelessWidget {
+  final String label;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _CallTabPill({
+    required this.label,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+        decoration: BoxDecoration(
+          color: isSelected ? Colors.white : Colors.transparent,
+          borderRadius: BorderRadius.circular(8),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.06),
+                    blurRadius: 4,
+                    offset: const Offset(0, 1),
+                  ),
+                ]
+              : null,
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 11.5,
+            fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+            color: isSelected ? const Color(0xFF0F172A) : const Color(0xFF64748B),
+          ),
         ),
       ),
     );
