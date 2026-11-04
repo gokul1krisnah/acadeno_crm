@@ -141,34 +141,30 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                       ),
                       const SizedBox(width: 10),
                       Expanded(
-                        child: InkWell(
-                          onTap: () => _showQuickMenu(context),
-                          borderRadius: BorderRadius.circular(8),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                '${homeState.greeting}, ${homeState.user.firstName.isNotEmpty ? homeState.user.firstName : "Test"}',
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.w800,
-                                  color: Color(0xFF0F172A),
-                                  letterSpacing: -0.3,
-                                ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '${homeState.greeting}, ${homeState.user.firstName.isNotEmpty ? homeState.user.firstName : "Test"}',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w800,
+                                color: Color(0xFF0F172A),
+                                letterSpacing: -0.3,
                               ),
-                              const SizedBox(height: 2),
-                              Text(
-                                homeState.todayLabel,
-                                style: const TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w500,
-                                  color: Color(0xFF64748B),
-                                ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              homeState.todayLabel,
+                              style: const TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w500,
+                                color: Color(0xFF64748B),
                               ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
                       ),
                       // Offline Sync Status Pill (RL-5, RL-6)
@@ -784,71 +780,7 @@ class _LeadsTabViewState extends State<LeadsTabView> {
     );
   }
 
-  void _showQuickMenu(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (ctx) => Dialog(
-        backgroundColor: Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 400),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 12),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                ListTile(
-                  leading: const Icon(
-                    Icons.bar_chart_rounded,
-                    color: Color(0xFF4338CA),
-                  ),
-                  title: const Text(
-                    'My Record & Performance (FR-6.2)',
-                    style: TextStyle(fontWeight: FontWeight.w600),
-                  ),
-                  onTap: () {
-                    Navigator.pop(ctx);
-                    LeadCallSheets.showMyRecordSheet(context);
-                  },
-                ),
-                ListTile(
-                  leading: const Icon(
-                    CupertinoIcons.search,
-                    color: Color(0xFF4338CA),
-                  ),
-                  title: const Text(
-                    '10-Digit Phone Lookup & Walk-in Lead (FR-1.4 / PR-2.2)',
-                    style: TextStyle(fontWeight: FontWeight.w600),
-                  ),
-                  onTap: () {
-                    Navigator.pop(ctx);
-                    LeadCallSheets.showPhoneLookupAndWalkInSheet(context);
-                  },
-                ),
-                ListTile(
-                  leading: const Icon(
-                    Icons.logout_rounded,
-                    color: Color(0xFFB42318),
-                  ),
-                  title: const Text(
-                    'Sign out',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFFB42318),
-                    ),
-                  ),
-                  onTap: () {
-                    Navigator.pop(ctx);
-                    widget.onLogout();
-                  },
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
+
 }
 
 class _MetricBox extends StatelessWidget {
