@@ -54,6 +54,13 @@ class DashboardUserModel {
     _ => 'HR & Operation Manager',
   };
 
+
+  static int _parseInt(dynamic val) {
+    if (val is num) return val.toInt();
+    if (val is String) return int.tryParse(val.trim()) ?? 0;
+    return 0;
+  }
+
   factory DashboardUserModel.fromFirestore(
     DocumentSnapshot<Map<String, dynamic>> doc,
   ) {
@@ -147,9 +154,9 @@ class DashboardUserModel {
         phone: (data['phone'] ?? '').toString(),
         deviceName: deviceName,
         deviceBound: deviceBound,
-        callsToday: (data['callsToday'] as num?)?.toInt() ?? 0,
-        assignedToday: (data['assignedToday'] as num?)?.toInt() ?? 0,
-        conversionsMonth: (data['conversionsMonth'] as num?)?.toInt() ?? 0,
+        callsToday: _parseInt(data['callsToday']),
+        assignedToday: _parseInt(data['assignedToday']),
+        conversionsMonth: _parseInt(data['conversionsMonth']),
         createdAt: createdAtField is Timestamp ? createdAtField.toDate() : null,
       );
     } catch (_) {

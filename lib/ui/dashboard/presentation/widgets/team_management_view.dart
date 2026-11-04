@@ -16,6 +16,24 @@ class TeamManagementView extends StatefulWidget {
 
 class _TeamManagementViewState extends State<TeamManagementView> {
   String _selectedDateRange = 'All Time';
+  Stream<QuerySnapshot<Map<String, dynamic>>>? _usersStream;
+  Stream<QuerySnapshot<Map<String, dynamic>>>? _leadsStream;
+
+  static bool _leadIsDone(dynamic val) {
+    if (val is bool) return val;
+    if (val is num) return val != 0;
+    if (val is String) {
+      final s = val.trim().toLowerCase();
+      return s == 'true' || s == '1';
+    }
+    return false;
+  }
+
+  static bool _leadHasTimeline(dynamic val) {
+    if (val is Iterable) return val.isNotEmpty;
+    if (val is String) return val.trim().isNotEmpty;
+    return false;
+  }
 
   static const _tblHdr = TextStyle(
     fontSize: 10.5,
@@ -170,11 +188,65 @@ class _TeamManagementViewState extends State<TeamManagementView> {
     return BlocBuilder<DashboardCubit, DashboardState>(
       builder: (context, state) {
         return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-          stream: cubit.watchAllUsers(),
+          stream: _usersStream ??= cubit.watchAllUsers(),
           builder: (context, usersSnap) {
             return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-              stream: cubit.watchAllLeads(),
+              stream: _leadsStream ??= cubit.watchAllLeads(),
               builder: (context, leadsSnap) {
+                if ((usersSnap.connectionState == ConnectionState.waiting && !usersSnap.hasData) ||
+                    (leadsSnap.connectionState == ConnectionState.waiting && !leadsSnap.hasData)) {
+                  return const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 60),
+                    child: Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          CircularProgressIndicator(color: Color(0xFFEF8144)),
+                          SizedBox(height: 16),
+                          Text(
+                            'Loading team analytics and performance...',
+                            style: TextStyle(
+                              fontSize: 13.5,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFF64748B),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }
+
+                if (usersSnap.hasError && !usersSnap.hasData) {
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 40),
+                    child: Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.error_outline_rounded, color: Color(0xFFDC2626), size: 36),
+                          const SizedBox(height: 12),
+                          Text(
+                            'Could not load team data: ${usersSnap.error}',
+                            style: const TextStyle(color: Color(0xFFDC2626), fontSize: 13.5),
+                          ),
+                          const SizedBox(height: 12),
+                          OutlinedButton.icon(
+                            onPressed: () {
+                              setState(() {
+                                _usersStream = cubit.watchAllUsers();
+                                _leadsStream = cubit.watchAllLeads();
+                              });
+                            },
+                            icon: const Icon(Icons.refresh, size: 16),
+                            label: const Text('Retry Loading Team'),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }
+
                 final allUsers = cubit.mapAndSortUsers(usersSnap.data);
                 final activeUsers = allUsers.where((u) => u.isActive).toList();
                 final rawLeads =
@@ -282,7 +354,7 @@ class _TeamManagementViewState extends State<TeamManagementView> {
 
     final contactedCount = leads.where((l) {
       final status = (l['status'] ?? '').toString().toLowerCase();
-      final isDone = (l['isDone'] as bool?) ?? false;
+      final isDone = _leadIsDone(l['isDone']);
       return status != 'new' && status != 'unassigned' || isDone;
     }).length;
 
@@ -305,7 +377,7 @@ class _TeamManagementViewState extends State<TeamManagementView> {
 
     final pendingCount = leads.where((l) {
       final status = (l['status'] ?? '').toString().toLowerCase();
-      final isDone = (l['isDone'] as bool?) ?? false;
+      final isDone = _leadIsDone(l['isDone']);
       return !isDone &&
           (status == 'new' ||
               status == 'claimed' ||
@@ -598,7 +670,7 @@ class _TeamManagementViewState extends State<TeamManagementView> {
                             final status = (l['status'] ?? '')
                                 .toString()
                                 .toLowerCase();
-                            final isDone = (l['isDone'] as bool?) ?? false;
+                            final isDone = _leadIsDone(l['isDone']);
                             return status != 'new' && status != 'unassigned' ||
                                 isDone;
                           }).length;
@@ -612,10 +684,10 @@ class _TeamManagementViewState extends State<TeamManagementView> {
                             return status == 'interested';
                           }).length;
                           final actionsDone = userLeads.where((l) {
-                            final isDone = (l['isDone'] as bool?) ?? false;
-                            final timeline = l['timeline'] as List?;
+                            final isDone = _leadIsDone(l['isDone']);
+                            final hasTl = _leadHasTimeline(l['timeline']);
                             return isDone ||
-                                (timeline != null && timeline.isNotEmpty);
+                                hasTl;
                           }).length;
                           final convertedCount = userLeads.where((l) {
                             final status = (l['status'] ?? '')
@@ -624,7 +696,7 @@ class _TeamManagementViewState extends State<TeamManagementView> {
                             return status.contains('convert');
                           }).length;
                           final pendingCount = userLeads.where((l) {
-                            final isDone = (l['isDone'] as bool?) ?? false;
+                            final isDone = _leadIsDone(l['isDone']);
                             final status = (l['status'] ?? '')
                                 .toString()
                                 .toLowerCase();
@@ -786,7 +858,7 @@ class _TeamManagementViewState extends State<TeamManagementView> {
                   runSpacing: 12,
                   children: activeUsers.map((user) {
                     return Container(
-                      width: isNarrow ? double.infinity : (c.maxWidth - 24) / 3,
+                      width: isNarrow ? double.infinity : ((c.maxWidth - 24) / 3).clamp(180.0, 500.0),
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
                         color: const Color(0xFFF8FAFC),

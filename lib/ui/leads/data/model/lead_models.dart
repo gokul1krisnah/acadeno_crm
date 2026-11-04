@@ -493,12 +493,13 @@ class LeadRecord {
         (data['consent'] ?? data['consentBasis'] ?? data['consentSource'] ?? '')
             .toString()
             .trim();
-    final rawFollowUp = (data['followUpTime'] ??
-            data['follow_up_time'] ??
-            data['nextFollowUp'] ??
-            '')
-        .toString()
-        .trim();
+    final rawFollowUp =
+        (data['followUpTime'] ??
+                data['follow_up_time'] ??
+                data['nextFollowUp'] ??
+                '')
+            .toString()
+            .trim();
 
     return LeadRecord(
       id: id,

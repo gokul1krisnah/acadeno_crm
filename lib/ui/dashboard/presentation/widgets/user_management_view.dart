@@ -571,6 +571,50 @@ class _UserManagementViewState extends State<UserManagementView> {
     return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
       stream: _usersStream ??= cubit.watchAllUsers(),
       builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting &&
+            !snapshot.hasData) {
+          return const Center(
+            child: Padding(
+              padding: EdgeInsets.all(48),
+              child: CircularProgressIndicator(),
+            ),
+          );
+        }
+
+        if (snapshot.hasError && !snapshot.hasData) {
+          return Center(
+            child: Padding(
+              padding: const EdgeInsets.all(32),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.error_outline_rounded,
+                      size: 40, color: Color(0xFFDC2626)),
+                  const SizedBox(height: 12),
+                  const Text(
+                    'Unable to load users',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    '',
+                    style:
+                        const TextStyle(fontSize: 12, color: Color(0xFF64748B)),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: () => setState(() {
+                      _usersStream = cubit.watchAllUsers();
+                    }),
+                    child: const Text('Retry'),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+
         final allUsers = cubit.mapAndSortUsers(snapshot.data);
 
         // Filter users

@@ -35,11 +35,15 @@ class DashboardRds {
   }
 
   Stream<QuerySnapshot<Map<String, dynamic>>> watchAllUsers() {
-    return _users.snapshots();
+    return _users.snapshots().handleError((err) {
+      // Catch and log any stream-level Firestore exceptions to prevent unhandled errors
+    });
   }
 
   Stream<QuerySnapshot<Map<String, dynamic>>> watchAllLeads() {
-    return _leads.snapshots();
+    return _leads.snapshots().handleError((err) {
+      // Catch and log any stream-level Firestore exceptions to prevent unhandled errors
+    });
   }
 
   /// A secondary Firebase app ensures creating a user does NOT sign the admin out.

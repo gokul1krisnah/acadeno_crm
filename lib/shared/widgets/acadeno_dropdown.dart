@@ -162,15 +162,13 @@ class AcadenoDropdown<T> extends StatelessWidget {
                 item.icon!,
                 const SizedBox(width: 8),
               ],
-              Flexible(
-                child: Text(
-                  item.label,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontSize: 13.5,
-                    fontWeight: FontWeight.w500,
-                    color: Color(0xFF111827),
-                  ),
+              Text(
+                item.label,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontSize: 13.5,
+                  fontWeight: FontWeight.w500,
+                  color: Color(0xFF111827),
                 ),
               ),
               if (item.subtitle != null) ...[
