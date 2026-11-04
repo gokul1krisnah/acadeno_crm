@@ -33,7 +33,7 @@ import 'widgets/user_management_view.dart';
 import 'widgets/settings_view.dart';
 
 const _primary = Color(0xFF3F37C9);
-const _orangeAccent = Color(0xFFEA580C);
+const _orangeAccent = Color(0xFFEF8144);
 const _bg = Color(0xFFF8FAFC);
 const _border = Color(0xFFE2E8F0);
 const _muted = Color(0xFF64748B);
@@ -887,35 +887,29 @@ class _DashboardViewState extends State<_DashboardView> {
           ),
         ),
         const SizedBox(width: 16),
-        Transform.translate(
-          offset: const Offset(0, -1.5),
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 460),
-            child: _buildFigmaSearchBar(width: 460),
-          ),
+        ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 460),
+          child: _buildFigmaSearchBar(width: 460),
         ),
         const SizedBox(width: 14),
-        Transform.translate(
-          offset: const Offset(0, -1.5),
-          child: SizedBox(
-            height: 55,
-            child: ElevatedButton.icon(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: _orangeAccent,
-                foregroundColor: Colors.white,
-                elevation: 0,
-                padding: const EdgeInsets.symmetric(horizontal: 22),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
+        SizedBox(
+          height: 50,
+          child: ElevatedButton.icon(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: _orangeAccent,
+              foregroundColor: Colors.white,
+              elevation: 0,
+              padding: const EdgeInsets.symmetric(horizontal: 22),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
               ),
-              icon: const Icon(Icons.add, size: 18),
-              label: const Text(
-                "Assign Today's Leads",
-                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
-              ),
-              onPressed: () => context.read<DashboardCubit>().selectNav(1),
             ),
+            icon: const Icon(Icons.add, size: 18),
+            label: const Text(
+              "Assign Today's Leads",
+              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+            ),
+            onPressed: () => context.read<DashboardCubit>().selectNav(1),
           ),
         ),
       ],
@@ -925,12 +919,13 @@ class _DashboardViewState extends State<_DashboardView> {
   Widget _buildFigmaSearchBar({double? width}) {
     return Container(
       width: width,
-      height: 55,
+      height: 50,
       decoration: BoxDecoration(
         color: const Color(0xFFFFFFFF),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: const Color(0xFFE2E8E5), width: 1),
       ),
+      alignment: Alignment.center,
       child: TextField(
         controller: _searchCtrl,
         textAlignVertical: TextAlignVertical.center,
@@ -952,20 +947,20 @@ class _DashboardViewState extends State<_DashboardView> {
           enabledBorder: InputBorder.none,
           focusedBorder: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 16,
+            horizontal: 14,
+            vertical: 12,
           ),
           prefixIcon: const Padding(
             padding: EdgeInsets.only(left: 14, right: 10),
             child: Icon(
               Icons.search_rounded,
-              size: 21,
+              size: 20,
               color: Color(0xFF94A3B8),
             ),
           ),
           prefixIconConstraints: const BoxConstraints(
             minWidth: 44,
-            minHeight: 21,
+            minHeight: 20,
           ),
           suffixIcon: _searchQuery.isNotEmpty
               ? IconButton(
@@ -983,7 +978,7 @@ class _DashboardViewState extends State<_DashboardView> {
                   },
                 )
               : null,
-          hintText: 'Search leads, staff, colleges...',
+          hintText: 'Search',
           hintStyle: const TextStyle(
             fontSize: 14.5,
             color: Color(0xFF94A3B8),

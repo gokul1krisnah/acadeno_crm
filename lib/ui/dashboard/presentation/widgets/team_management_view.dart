@@ -443,7 +443,7 @@ class _TeamManagementViewState extends State<TeamManagementView> {
   ) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 14),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(14),
@@ -524,205 +524,219 @@ class _TeamManagementViewState extends State<TeamManagementView> {
               ),
             )
           else
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(minWidth: 700),
-                child: Column(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 14,
-                        vertical: 10,
-                      ),
-                      decoration: const BoxDecoration(
-                        color: Color(0xFFF9FAFB),
-                        border: Border(
-                          bottom: BorderSide(color: Color(0xFFEAECF0)),
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final tableWidth =
+                    constraints.maxWidth > 750 ? constraints.maxWidth : 750.0;
+                return SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: SizedBox(
+                    width: tableWidth,
+                    child: Column(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 10,
+                          ),
+                          decoration: const BoxDecoration(
+                            color: Color(0xFFF9FAFB),
+                            border: Border(
+                              bottom: BorderSide(color: Color(0xFFEAECF0)),
+                            ),
+                          ),
+                          child: const Row(
+                            children: [
+                              Expanded(
+                                flex: 22,
+                                child: Text('TEAM MEMBER', style: _tblHdr),
+                              ),
+                              Expanded(
+                                flex: 12,
+                                child: Text('ASSIGNED', style: _tblHdr),
+                              ),
+                              Expanded(
+                                flex: 16,
+                                child: Text('CONTACTED', style: _tblHdr),
+                              ),
+                              Expanded(
+                                flex: 14,
+                                child: Text('INTERESTED', style: _tblHdr),
+                              ),
+                              Expanded(
+                                flex: 15,
+                                child: Text('ACTIONS DONE', style: _tblHdr),
+                              ),
+                              Expanded(
+                                flex: 13,
+                                child: Text('CONVERTED', style: _tblHdr),
+                              ),
+                              Expanded(
+                                flex: 11,
+                                child: Text('PENDING', style: _tblHdr),
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                      child: const Row(
-                        children: [
-                          SizedBox(
-                            width: 160,
-                            child: Text('TEAM MEMBER', style: _tblHdr),
-                          ),
-                          SizedBox(
-                            width: 90,
-                            child: Text('ASSIGNED', style: _tblHdr),
-                          ),
-                          SizedBox(
-                            width: 120,
-                            child: Text('CONTACTED', style: _tblHdr),
-                          ),
-                          SizedBox(
-                            width: 100,
-                            child: Text('INTERESTED', style: _tblHdr),
-                          ),
-                          SizedBox(
-                            width: 110,
-                            child: Text('ACTIONS DONE', style: _tblHdr),
-                          ),
-                          SizedBox(
-                            width: 95,
-                            child: Text('CONVERTED', style: _tblHdr),
-                          ),
-                          SizedBox(
-                            width: 80,
-                            child: Text('PENDING', style: _tblHdr),
-                          ),
-                        ],
-                      ),
-                    ),
-                    ...activeUsers.map((user) {
-                      // Live computation for this specific user
-                      final userLeads = leads.where((l) {
-                        final assignedUid = l['assignedToUid'];
-                        final assignedName =
-                            l['assignedToName'] ?? l['assignedTo'];
-                        final ownerUid = l['ownerUid'];
-                        return assignedUid == user.uid ||
-                            ownerUid == user.uid ||
-                            (assignedName != null &&
-                                assignedName.toString().trim().toLowerCase() ==
-                                    user.name.trim().toLowerCase());
-                      }).toList();
+                        ...activeUsers.map((user) {
+                          final isLast = user == activeUsers.last;
+                          // Live computation for this specific user
+                          final userLeads = leads.where((l) {
+                            final assignedUid = l['assignedToUid'];
+                            final assignedName =
+                                l['assignedToName'] ?? l['assignedTo'];
+                            final ownerUid = l['ownerUid'];
+                            return assignedUid == user.uid ||
+                                ownerUid == user.uid ||
+                                (assignedName != null &&
+                                    assignedName.toString().trim().toLowerCase() ==
+                                        user.name.trim().toLowerCase());
+                          }).toList();
 
-                      final assignedCount = userLeads.length;
-                      final contactedCount = userLeads.where((l) {
-                        final status = (l['status'] ?? '')
-                            .toString()
-                            .toLowerCase();
-                        final isDone = (l['isDone'] as bool?) ?? false;
-                        return status != 'new' && status != 'unassigned' ||
-                            isDone;
-                      }).length;
-                      final contactedPct = assignedCount > 0
-                          ? (contactedCount / assignedCount * 100).round()
-                          : 0;
-                      final interestedCount = userLeads.where((l) {
-                        final status = (l['status'] ?? '')
-                            .toString()
-                            .toLowerCase();
-                        return status == 'interested';
-                      }).length;
-                      final actionsDone = userLeads.where((l) {
-                        final isDone = (l['isDone'] as bool?) ?? false;
-                        final timeline = l['timeline'] as List?;
-                        return isDone ||
-                            (timeline != null && timeline.isNotEmpty);
-                      }).length;
-                      final convertedCount = userLeads.where((l) {
-                        final status = (l['status'] ?? '')
-                            .toString()
-                            .toLowerCase();
-                        return status.contains('convert');
-                      }).length;
-                      final pendingCount = userLeads.where((l) {
-                        final isDone = (l['isDone'] as bool?) ?? false;
-                        final status = (l['status'] ?? '')
-                            .toString()
-                            .toLowerCase();
-                        return !isDone &&
-                            (status == 'new' ||
-                                status == 'claimed' ||
-                                status == 'follow-up' ||
-                                status.contains('pending'));
-                      }).length;
+                          final assignedCount = userLeads.length;
+                          final contactedCount = userLeads.where((l) {
+                            final status = (l['status'] ?? '')
+                                .toString()
+                                .toLowerCase();
+                            final isDone = (l['isDone'] as bool?) ?? false;
+                            return status != 'new' && status != 'unassigned' ||
+                                isDone;
+                          }).length;
+                          final contactedPct = assignedCount > 0
+                              ? (contactedCount / assignedCount * 100).round()
+                              : 0;
+                          final interestedCount = userLeads.where((l) {
+                            final status = (l['status'] ?? '')
+                                .toString()
+                                .toLowerCase();
+                            return status == 'interested';
+                          }).length;
+                          final actionsDone = userLeads.where((l) {
+                            final isDone = (l['isDone'] as bool?) ?? false;
+                            final timeline = l['timeline'] as List?;
+                            return isDone ||
+                                (timeline != null && timeline.isNotEmpty);
+                          }).length;
+                          final convertedCount = userLeads.where((l) {
+                            final status = (l['status'] ?? '')
+                                .toString()
+                                .toLowerCase();
+                            return status.contains('convert');
+                          }).length;
+                          final pendingCount = userLeads.where((l) {
+                            final isDone = (l['isDone'] as bool?) ?? false;
+                            final status = (l['status'] ?? '')
+                                .toString()
+                                .toLowerCase();
+                            return !isDone &&
+                                (status == 'new' ||
+                                    status == 'claimed' ||
+                                    status == 'follow-up' ||
+                                    status.contains('pending'));
+                          }).length;
 
-                      return Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 14,
-                          vertical: 12,
-                        ),
-                        decoration: const BoxDecoration(
-                          border: Border(
-                            bottom: BorderSide(color: Color(0xFFF2F4F7)),
-                          ),
-                        ),
-                        child: Row(
-                          children: [
-                            SizedBox(
-                              width: 160,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    user.name,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
+                          return Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 12,
+                            ),
+                            decoration: BoxDecoration(
+                              border: isLast
+                                  ? null
+                                  : const Border(
+                                      bottom: BorderSide(
+                                        color: Color(0xFFF2F4F7),
+                                      ),
+                                    ),
+                            ),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  flex: 22,
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        user.name,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: const TextStyle(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w700,
+                                          color: Color(0xFF0F172A),
+                                        ),
+                                      ),
+                                      Text(
+                                        user.isAdminRole
+                                            ? 'ADMIN'
+                                            : 'HR & OPERATION MANAGER',
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: const TextStyle(
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.w700,
+                                          color: Color(0xFF2563EB),
+                                          letterSpacing: 0.3,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Expanded(
+                                  flex: 12,
+                                  child: Text('$assignedCount', style: _tblCell),
+                                ),
+                                Expanded(
+                                  flex: 16,
+                                  child: Text(
+                                    assignedCount > 0
+                                        ? '$contactedCount ($contactedPct%)'
+                                        : '—',
+                                    style: _tblCell,
+                                  ),
+                                ),
+                                Expanded(
+                                  flex: 14,
+                                  child: Text('$interestedCount', style: _tblCell),
+                                ),
+                                Expanded(
+                                  flex: 15,
+                                  child: Text('$actionsDone', style: _tblCell),
+                                ),
+                                Expanded(
+                                  flex: 13,
+                                  child: Text(
+                                    '$convertedCount',
                                     style: const TextStyle(
                                       fontSize: 13,
                                       fontWeight: FontWeight.w700,
-                                      color: Color(0xFF0F172A),
+                                      color: Color(0xFF15803D),
                                     ),
                                   ),
-                                  Text(
-                                    user.isAdminRole ? 'ADMIN' : 'HR & OPERATION MANAGER',
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: const TextStyle(
-                                      fontSize: 10,
+                                ),
+                                Expanded(
+                                  flex: 11,
+                                  child: Text(
+                                    '$pendingCount',
+                                    style: TextStyle(
+                                      fontSize: 13,
                                       fontWeight: FontWeight.w700,
-                                      color: Color(0xFF2563EB),
-                                      letterSpacing: 0.3,
+                                      color: pendingCount == 0
+                                          ? const Color(0xFF667085)
+                                          : const Color(0xFFB42318),
                                     ),
                                   ),
-                                ],
-                              ),
-                            ),
-                            SizedBox(
-                              width: 90,
-                              child: Text('$assignedCount', style: _tblCell),
-                            ),
-                            SizedBox(
-                              width: 120,
-                              child: Text(
-                                assignedCount > 0
-                                    ? '$contactedCount ($contactedPct%)'
-                                    : '—',
-                                style: _tblCell,
-                              ),
-                            ),
-                            SizedBox(
-                              width: 100,
-                              child: Text('$interestedCount', style: _tblCell),
-                            ),
-                            SizedBox(
-                              width: 110,
-                              child: Text('$actionsDone', style: _tblCell),
-                            ),
-                            SizedBox(
-                              width: 95,
-                              child: Text(
-                                '$convertedCount',
-                                style: const TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w700,
-                                  color: Color(0xFF15803D),
                                 ),
-                              ),
+                              ],
                             ),
-                            SizedBox(
-                              width: 80,
-                              child: Text(
-                                '$pendingCount',
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w700,
-                                  color: pendingCount == 0
-                                      ? const Color(0xFF667085)
-                                      : const Color(0xFFB42318),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    }),
-                  ],
-                ),
-              ),
+                          );
+                        }),
+                      ],
+                    ),
+                  ),
+                );
+              },
             ),
         ],
       ),

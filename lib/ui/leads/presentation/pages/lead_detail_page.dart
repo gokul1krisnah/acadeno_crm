@@ -788,3 +788,4 @@ class _ActivityTimelineItem extends StatelessWidget {
     );
   }
 }
+

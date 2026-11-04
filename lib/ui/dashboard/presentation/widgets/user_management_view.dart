@@ -348,7 +348,7 @@ class _UserManagementViewState extends State<UserManagementView> {
               ),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFEA580C),
+                  backgroundColor: const Color(0xFFEF8144),
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
@@ -670,7 +670,7 @@ class _UserManagementViewState extends State<UserManagementView> {
                           ),
                         ),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFEA580C),
+                          backgroundColor: const Color(0xFFEF8144),
                           foregroundColor: Colors.white,
                           elevation: 0,
                           padding: const EdgeInsets.symmetric(
