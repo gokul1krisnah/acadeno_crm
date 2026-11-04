@@ -116,6 +116,7 @@ class FollowUpsTabView extends StatelessWidget {
                           itemBuilder: (context, index) {
                             final item = items[index];
                             return _FollowUpCard(
+                              key: ValueKey(item.id),
                               item: item,
                               onCallNow: () =>
                                   LeadCallSheets.showCallAndOutcomeSheet(
@@ -283,6 +284,7 @@ class _FollowUpCard extends StatelessWidget {
   final VoidCallback onMarkDone;
 
   const _FollowUpCard({
+    super.key,
     required this.item,
     required this.onCallNow,
     required this.onSnooze,

@@ -41,8 +41,7 @@ class FollowUpsRds {
             assignedUid != uid) {
           return false;
         }
-        final isDone = (data['isDone'] as bool?) ?? false;
-        if (isDone) return false;
+        if (_isLeadDone(data)) return false;
 
         final status = (data['status'] ?? '').toString().toLowerCase();
         final hasFollowUpTime = data['followUpTime'] != null;
@@ -76,8 +75,7 @@ class FollowUpsRds {
       final items = <ExecutiveFollowUpItem>[];
       for (final doc in snap.docs) {
         final data = doc.data();
-        final isDone = (data['isDone'] as bool?) ?? false;
-        if (isDone) continue;
+        if (_isLeadDone(data)) continue;
 
         final item = _itemFromDoc(doc);
         if (item != null) items.add(item);
@@ -106,8 +104,7 @@ class FollowUpsRds {
           assignedUid != uid) {
         continue;
       }
-      final isDone = (data['isDone'] as bool?) ?? false;
-      if (isDone) continue;
+      if (_isLeadDone(data)) continue;
 
       final item = _itemFromDoc(doc);
       if (item != null) items.add(item);
@@ -185,6 +182,17 @@ class FollowUpsRds {
     );
   }
 
+  static bool _isLeadDone(Map<String, dynamic> data) {
+    final val = data['isDone'] ?? data['followUpDone'];
+    if (val is bool) return val;
+    if (val is num) return val != 0;
+    if (val is String) {
+      final s = val.trim().toLowerCase();
+      return s == 'true' || s == '1' || s == 'yes';
+    }
+    return false;
+  }
+
   void _sortFollowUps(List<ExecutiveFollowUpItem> items) {
     items.sort((a, b) {
       // Overdue first, then Today, then Upcoming
@@ -211,6 +219,7 @@ class FollowUpsRds {
       if (snap.exists) {
         await docRef.update({
           'isDone': true,
+          'followUpDone': true,
           'isOverdue': false,
           'status': 'contacted',
           'lastContact': 'Today',

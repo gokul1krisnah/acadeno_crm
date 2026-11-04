@@ -185,20 +185,15 @@ class FollowUpsCubit extends Cubit<FollowUpsState> {
   Future<void> markCompleted(String id) async {
     final updated = List<ExecutiveFollowUpItem>.from(state.followUps);
     final idx = updated.indexWhere((f) => f.id == id);
-    String name = 'lead';
-    if (idx != -1) {
-      name = updated[idx].leadName;
-      updated.removeAt(idx);
-    }
+    if (idx == -1) return;
+    updated.removeAt(idx);
 
-    await _repository.completeFollowUp(id);
+    // Optimistic immediate update to prevent lag, double rebuilds, or screen blinking
+    emit(state.copyWith(followUps: updated, clearToast: true));
 
-    emit(
-      state.copyWith(
-        followUps: updated,
-        toastMessage: 'Follow-up with $name marked complete',
-      ),
-    );
+    try {
+      await _repository.completeFollowUp(id);
+    } catch (_) {}
   }
 
   @override
