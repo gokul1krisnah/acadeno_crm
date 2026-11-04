@@ -19,140 +19,122 @@ class FollowUpsTabView extends StatelessWidget {
         final pad = context.devicePadding;
         final items = state.activeBucketFollowUps;
 
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Top White Header + Segmented Control
-            Container(
-              width: double.infinity,
-              decoration: const BoxDecoration(
+        return Container(
+          color: const Color(0xFFF8FAFC),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Top White Header + Modern Underline Tabs
+              Container(
+                width: double.infinity,
                 color: Colors.white,
-                border: Border(bottom: BorderSide(color: Color(0xFFEAECF0))),
-              ),
-              padding: EdgeInsets.fromLTRB(pad, 16, pad, 16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Follow-ups',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.w800,
-                      color: Color(0xFF0F172A),
-                      letterSpacing: -0.4,
+                padding: EdgeInsets.fromLTRB(pad, 16, pad, 0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Follow-ups',
+                      style: TextStyle(
+                        fontSize: 26,
+                        fontWeight: FontWeight.w800,
+                        color: Color(0xFF0F172A),
+                        letterSpacing: -0.5,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 14),
+                    const SizedBox(height: 18),
 
-                  // 3-Tab Segmented Bar (Overdue 1 | Today 4 | Upcoming 9)
-                  Container(
-                    padding: const EdgeInsets.all(4),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFF2F4F7),
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    child: Row(
+                    // Flat Tab Headers: OVERDUE | TODAY | UPCOMING
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Expanded(
-                          child: _SegmentButton(
-                            label: 'Overdue',
-                            count: state.overdueFollowUps.length,
-                            isSelected:
-                                state.selectedFollowUpBucket ==
-                                FollowUpBucket.overdue,
-                            isAlertBadge: true,
-                            onTap: () => cubit.selectFollowUpBucket(
+                        _TabItem(
+                          title: 'OVERDUE',
+                          isSelected:
+                              state.selectedFollowUpBucket ==
                               FollowUpBucket.overdue,
-                            ),
+                          onTap: () => cubit.selectFollowUpBucket(
+                            FollowUpBucket.overdue,
                           ),
                         ),
-                        Expanded(
-                          child: _SegmentButton(
-                            label: 'Today',
-                            count: state.todayFollowUps.length,
-                            isSelected:
-                                state.selectedFollowUpBucket ==
-                                FollowUpBucket.today,
-                            isAlertBadge: false,
-                            onTap: () => cubit.selectFollowUpBucket(
+                        _TabItem(
+                          title: 'TODAY',
+                          isSelected:
+                              state.selectedFollowUpBucket ==
                               FollowUpBucket.today,
-                            ),
+                          onTap: () => cubit.selectFollowUpBucket(
+                            FollowUpBucket.today,
                           ),
                         ),
-                        Expanded(
-                          child: _SegmentButton(
-                            label: 'Upcoming',
-                            count: state.upcomingFollowUps.length,
-                            isSelected:
-                                state.selectedFollowUpBucket ==
-                                FollowUpBucket.upcoming,
-                            isAlertBadge: false,
-                            onTap: () => cubit.selectFollowUpBucket(
+                        _TabItem(
+                          title: 'UPCOMING',
+                          isSelected:
+                              state.selectedFollowUpBucket ==
                               FollowUpBucket.upcoming,
-                            ),
+                          onTap: () => cubit.selectFollowUpBucket(
+                            FollowUpBucket.upcoming,
                           ),
                         ),
                       ],
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
 
-            // Scrollable Cards List
-            Expanded(
-              child: RefreshIndicator(
-                color: const Color(0xFF4338CA),
-                backgroundColor: Colors.white,
-                onRefresh: () async {
-                  await context.read<FollowUpsCubit>().refresh();
-                },
-                child: items.isEmpty
-                    ? ListView(
-                        physics: const AlwaysScrollableScrollPhysics(),
-                        children: const [
-                          Padding(
-                            padding: EdgeInsets.all(32),
-                            child: Center(
-                              child: Text(
-                                'All follow-ups in this tab are completed!',
-                                style: TextStyle(
-                                  fontSize: 13.5,
-                                  color: Color(0xFF667085),
+              // Scrollable Cards List
+              Expanded(
+                child: RefreshIndicator(
+                  color: const Color(0xFFE86938),
+                  backgroundColor: Colors.white,
+                  onRefresh: () async {
+                    await context.read<FollowUpsCubit>().refresh();
+                  },
+                  child: items.isEmpty
+                      ? ListView(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          children: const [
+                            Padding(
+                              padding: EdgeInsets.all(32),
+                              child: Center(
+                                child: Text(
+                                  'All follow-ups in this tab are completed!',
+                                  style: TextStyle(
+                                    fontSize: 13.5,
+                                    color: Color(0xFF667085),
+                                  ),
                                 ),
                               ),
                             ),
+                          ],
+                        )
+                      : ListView.separated(
+                          physics: const AlwaysScrollableScrollPhysics(
+                            parent: BouncingScrollPhysics(),
                           ),
-                        ],
-                      )
-                    : ListView.separated(
-                        physics: const AlwaysScrollableScrollPhysics(
-                          parent: BouncingScrollPhysics(),
+                          padding: EdgeInsets.fromLTRB(pad, 14, pad, 24),
+                          itemCount: items.length,
+                          separatorBuilder: (_, _) => const SizedBox(height: 12),
+                          itemBuilder: (context, index) {
+                            final item = items[index];
+                            return _FollowUpCard(
+                              item: item,
+                              onCallNow: () =>
+                                  LeadCallSheets.showCallAndOutcomeSheet(
+                                    context,
+                                    leadId: item.id,
+                                    leadName: item.leadName,
+                                    maskedPhone: item.maskedPhone,
+                                    collegeInfo: item.collegeInfo,
+                                    campaignTag: item.note,
+                                  ),
+                              onSnooze: () => _showSnoozeSheet(context, item),
+                              onMarkDone: () => cubit.completeFollowUp(item.id),
+                            );
+                          },
                         ),
-                        padding: EdgeInsets.fromLTRB(pad, 16, pad, 24),
-                        itemCount: items.length,
-                        separatorBuilder: (_, _) => const SizedBox(height: 12),
-                        itemBuilder: (context, index) {
-                          final item = items[index];
-                          return _FollowUpCard(
-                            item: item,
-                            onCallNow: () =>
-                                LeadCallSheets.showCallAndOutcomeSheet(
-                                  context,
-                                  leadId: item.id,
-                                  leadName: item.leadName,
-                                  maskedPhone: item.maskedPhone,
-                                  collegeInfo: item.collegeInfo,
-                                  campaignTag: item.note,
-                                ),
-                            onSnooze: () => _showSnoozeSheet(context, item),
-                            onMarkDone: () => cubit.completeFollowUp(item.id),
-                          );
-                        },
-                      ),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         );
       },
     );
@@ -191,7 +173,7 @@ class FollowUpsTabView extends StatelessWidget {
                   contentPadding: EdgeInsets.zero,
                   leading: const Icon(
                     CupertinoIcons.clock,
-                    color: Color(0xFF4338CA),
+                    color: Color(0xFFE86938),
                   ),
                   title: const Text(
                     'In 1 hour (Today · 4:30 PM)',
@@ -206,7 +188,7 @@ class FollowUpsTabView extends StatelessWidget {
                   contentPadding: EdgeInsets.zero,
                   leading: const Icon(
                     CupertinoIcons.sun_haze,
-                    color: Color(0xFF4338CA),
+                    color: Color(0xFFE86938),
                   ),
                   title: const Text(
                     'This evening (Today · 6:30 PM)',
@@ -221,7 +203,7 @@ class FollowUpsTabView extends StatelessWidget {
                   contentPadding: EdgeInsets.zero,
                   leading: const Icon(
                     CupertinoIcons.calendar,
-                    color: Color(0xFF4338CA),
+                    color: Color(0xFFE86938),
                   ),
                   title: const Text(
                     'Tomorrow morning (10:00 AM)',
@@ -245,83 +227,50 @@ class FollowUpsTabView extends StatelessWidget {
   }
 }
 
-class _SegmentButton extends StatelessWidget {
-  final String label;
-  final int count;
+class _TabItem extends StatelessWidget {
+  final String title;
   final bool isSelected;
-  final bool isAlertBadge;
   final VoidCallback onTap;
 
-  const _SegmentButton({
-    required this.label,
-    required this.count,
+  const _TabItem({
+    required this.title,
     required this.isSelected,
-    required this.isAlertBadge,
     required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    final badgeBg = isAlertBadge
-        ? const Color(0xFFC2410C)
-        : (isSelected ? const Color(0xFFE4E7EC) : const Color(0xFFE4E7EC));
-    final badgeFg = isAlertBadge ? Colors.white : const Color(0xFF344054);
-
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(10),
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 9, horizontal: 6),
-        decoration: BoxDecoration(
-          color: isSelected ? Colors.white : Colors.transparent,
-          borderRadius: BorderRadius.circular(10),
-          boxShadow: isSelected
-              ? const [
-                  BoxShadow(
-                    color: Color(0x12000000),
-                    blurRadius: 4,
-                    offset: Offset(0, 1),
-                  ),
-                ]
-              : null,
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Flexible(
-              child: Text(
-                label,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-                  color: isSelected
-                      ? const Color(0xFF0F172A)
-                      : const Color(0xFF475467),
-                ),
+      splashColor: Colors.transparent,
+      highlightColor: Colors.transparent,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            child: Text(
+              title,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w800,
+                letterSpacing: 0.8,
+                color: isSelected
+                    ? const Color(0xFF0F172A)
+                    : const Color(0xFF94A3B8),
               ),
             ),
-            const SizedBox(width: 6),
-            Container(
-              constraints: const BoxConstraints(minWidth: 20, minHeight: 20),
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-              decoration: BoxDecoration(
-                color: badgeBg,
-                borderRadius: BorderRadius.circular(10),
-              ),
-              alignment: Alignment.center,
-              child: Text(
-                '$count',
-                style: TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w800,
-                  color: badgeFg,
-                ),
-              ),
+          ),
+          const SizedBox(height: 8),
+          Container(
+            height: 3,
+            width: 76,
+            decoration: BoxDecoration(
+              color: isSelected ? const Color(0xFFE86938) : Colors.transparent,
+              borderRadius: BorderRadius.circular(2),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -342,136 +291,150 @@ class _FollowUpCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isOverdue = item.bucket == FollowUpBucket.overdue;
+    final info = item.collegeInfo.isNotEmpty
+        ? item.collegeInfo
+        : (item.note.isNotEmpty ? item.note : 'College inquiry');
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(18, 16, 18, 16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: isOverdue ? const Color(0xFFD95D24) : const Color(0xFFEAECF0),
+          color: const Color(0xFFF1F5F9),
+          width: 1.2,
         ),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x05000000),
+            blurRadius: 8,
+            offset: Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Time + Channel Row
+          // Row 1: Student Name + Time Label (Blue)
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                item.timeLabel,
-                style: TextStyle(
-                  fontSize: 12.5,
-                  fontWeight: FontWeight.w800,
-                  color: isOverdue
-                      ? const Color(0xFFC2410C)
-                      : const Color(0xFF4338CA),
+              Expanded(
+                child: Text(
+                  item.leadName,
+                  style: const TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w800,
+                    color: Color(0xFF0F172A),
+                    letterSpacing: -0.3,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
+              const SizedBox(width: 10),
               Text(
-                item.channelLabel,
+                item.timeLabel.isNotEmpty ? item.timeLabel : 'Today · 5:30 PM',
                 style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                  color: Color(0xFF667085),
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF2563EB),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 5),
 
-          // Student Name
+          // Row 2: College · Branch · Year
           Text(
-            item.leadName,
+            info,
             style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w800,
-              color: Color(0xFF0F172A),
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+              color: Color(0xFF64748B),
+              height: 1.3,
             ),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
           ),
-          const SizedBox(height: 2),
+          const SizedBox(height: 16),
 
-          // College Info
-          Text(
-            item.collegeInfo,
-            style: const TextStyle(fontSize: 12.5, color: Color(0xFF667085)),
-          ),
-          const SizedBox(height: 6),
-
-          // Follow-up Task Note
-          Text(
-            item.note,
-            style: const TextStyle(fontSize: 13.5, color: Color(0xFF344054)),
-          ),
-          const SizedBox(height: 14),
-
-          // Action Row: Call now | Snooze | ✓
+          // Row 3: Call Now (Orange) | Snooze (Ice-blue) | Checkmark (Ice-blue)
           Row(
             children: [
               Expanded(
+                flex: 3,
                 child: SizedBox(
-                  height: 42,
-                  child: ElevatedButton.icon(
+                  height: 40,
+                  child: ElevatedButton(
                     onPressed: onCallNow,
-                    icon: const Icon(CupertinoIcons.phone_fill, size: 17),
-                    label: const Text(
-                      'Call now',
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFE86938),
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      padding: EdgeInsets.zero,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: const Text(
+                      'Call Now',
                       style: TextStyle(
                         fontSize: 13.5,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                flex: 2,
+                child: SizedBox(
+                  height: 40,
+                  child: ElevatedButton(
+                    onPressed: onSnooze,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF4338CA),
-                      foregroundColor: Colors.white,
+                      backgroundColor: const Color(0xFFF0F6FA),
+                      foregroundColor: const Color(0xFF334155),
                       elevation: 0,
+                      padding: EdgeInsets.zero,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(11),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: const Text(
+                      'Snooze',
+                      style: TextStyle(
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                   ),
                 ),
               ),
-              const SizedBox(width: 8),
-              SizedBox(
-                height: 42,
-                child: OutlinedButton(
-                  onPressed: onSnooze,
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: const Color(0xFF0F172A),
-                    side: const BorderSide(color: Color(0xFFD0D5DD)),
-                    padding: const EdgeInsets.symmetric(horizontal: 18),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(11),
+              const SizedBox(width: 10),
+              Expanded(
+                flex: 2,
+                child: SizedBox(
+                  height: 40,
+                  child: ElevatedButton(
+                    onPressed: onMarkDone,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFF0F6FA),
+                      foregroundColor: const Color(0xFF64748B),
+                      elevation: 0,
+                      padding: EdgeInsets.zero,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
-                  ),
-                  child: const Text(
-                    'Snooze',
-                    style: TextStyle(
-                      fontSize: 13.5,
-                      fontWeight: FontWeight.w700,
+                    child: const Icon(
+                      CupertinoIcons.checkmark,
+                      size: 18,
+                      color: Color(0xFF64748B),
                     ),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 8),
-              InkWell(
-                onTap: onMarkDone,
-                borderRadius: BorderRadius.circular(11),
-                child: Container(
-                  width: 42,
-                  height: 42,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(11),
-                    border: Border.all(color: const Color(0xFFD0D5DD)),
-                  ),
-                  child: const Icon(
-                    CupertinoIcons.checkmark_alt,
-                    color: Color(0xFF15803D),
-                    size: 20,
                   ),
                 ),
               ),
