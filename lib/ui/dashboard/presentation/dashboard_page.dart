@@ -191,9 +191,29 @@ class _DashboardViewState extends State<_DashboardView> {
       builder: (ctx) => AlertDialog(
         backgroundColor: Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text(
-          'Sign out',
-          style: TextStyle(fontWeight: FontWeight.w700, fontSize: 18),
+        title: Row(
+          children: [
+            Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: const Color(0xFFF9FAFB),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: const Color(0xFFF3F4F6)),
+              ),
+              alignment: Alignment.center,
+              child: SvgPicture.asset(
+                'assets/svgs/logout.svg',
+                width: 18,
+                height: 18,
+              ),
+            ),
+            const SizedBox(width: 12),
+            const Text(
+              'Sign out',
+              style: TextStyle(fontWeight: FontWeight.w700, fontSize: 18),
+            ),
+          ],
         ),
         content: const Text(
           'Are you sure you want to sign out of the dashboard?',

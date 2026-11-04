@@ -1,3 +1,4 @@
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:acadeno_crm/core/router/app_router.dart';
 import 'package:acadeno_crm/shared/extensions/build_context_extension.dart';
@@ -74,9 +75,29 @@ class _HomeScaffoldViewState extends State<_HomeScaffoldView> {
       builder: (ctx) => AlertDialog(
         backgroundColor: Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text(
-          'Sign out',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+        title: Row(
+          children: [
+            Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: const Color(0xFFF9FAFB),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: const Color(0xFFF3F4F6)),
+              ),
+              alignment: Alignment.center,
+              child: SvgPicture.asset(
+                'assets/svgs/logout.svg',
+                width: 18,
+                height: 18,
+              ),
+            ),
+            const SizedBox(width: 12),
+            const Text(
+              'Sign out',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+            ),
+          ],
         ),
         content: Text(
           'Sign out of ${context.read<HomeCubit>().state.user.displayName}’s Lead Manager session? Local offline cache will be cleared (PR-6.3).',
@@ -106,7 +127,22 @@ class _HomeScaffoldViewState extends State<_HomeScaffoldView> {
                 borderRadius: BorderRadius.circular(10),
               ),
             ),
-            child: const Text('Sign out'),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SvgPicture.asset(
+                  'assets/svgs/logout.svg',
+                  width: 14,
+                  height: 14,
+                  colorFilter: const ColorFilter.mode(
+                    Colors.white,
+                    BlendMode.srcIn,
+                  ),
+                ),
+                const SizedBox(width: 6),
+                const Text('Sign out'),
+              ],
+            ),
           ),
         ],
       ),

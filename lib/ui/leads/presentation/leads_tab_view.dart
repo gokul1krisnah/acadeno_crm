@@ -53,16 +53,16 @@ class _LeadsTabViewState extends State<LeadsTabView> {
               Navigator.pop(ctx);
               widget.onLogout();
             },
-            child: const Row(
+            child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(
-                  CupertinoIcons.square_arrow_right,
-                  color: CupertinoColors.destructiveRed,
-                  size: 20,
+                SvgPicture.asset(
+                  AppSvgs.logout,
+                  width: 18,
+                  height: 18,
                 ),
-                SizedBox(width: 8),
-                Text('Log Out'),
+                const SizedBox(width: 8),
+                const Text('Log Out'),
               ],
             ),
           ),
