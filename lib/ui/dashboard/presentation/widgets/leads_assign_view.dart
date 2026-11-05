@@ -13,7 +13,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../application/dashboard_cubit.dart';
 
-const _primary = Color(0xFF4338CA);
+const _primary = Color(0xFFEF8144);
 const _border = Color(0xFFE5E7EB);
 const _muted = Color(0xFF6B7280);
 const _text = Color(0xFF111827);
@@ -1009,7 +1009,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                       height: 40,
                       child: ElevatedButton.icon(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF4F46E5),
+                          backgroundColor: const Color(0xFFEF8144),
                           foregroundColor: Colors.white,
                           elevation: 0,
                           shape: RoundedRectangleBorder(
@@ -1379,7 +1379,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                                     return Theme(
                                       data: Theme.of(ctx).copyWith(
                                         colorScheme: const ColorScheme.light(
-                                          primary: Color(0xFF4F46E5),
+                                          primary: Color(0xFFEF8144),
                                           onPrimary: Colors.white,
                                           onSurface: Color(0xFF0F172A),
                                         ),
@@ -1408,7 +1408,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                           style: ElevatedButton.styleFrom(
                             backgroundColor: state.selectedLeadIds.isEmpty
                                 ? const Color(0xFF1E293B)
-                                : const Color(0xFF4F46E5),
+                                : const Color(0xFFEF8144),
                             foregroundColor: state.selectedLeadIds.isEmpty
                                 ? const Color(0xFF64748B)
                                 : Colors.white,
