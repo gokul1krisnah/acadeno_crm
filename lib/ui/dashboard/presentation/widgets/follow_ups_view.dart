@@ -676,8 +676,8 @@ class _FollowUpsViewState extends State<FollowUpsView> {
               ),
               OutlinedButton(
                 style: OutlinedButton.styleFrom(
-                  foregroundColor: const Color(0xFFEF8144),
-                  side: const BorderSide(color: Color(0xFFEF8144)),
+                  foregroundColor: const Color(0xFF4338CA),
+                  side: const BorderSide(color: Color(0xFF4338CA)),
                   padding: const EdgeInsets.symmetric(
                     horizontal: 18,
                     vertical: 10,

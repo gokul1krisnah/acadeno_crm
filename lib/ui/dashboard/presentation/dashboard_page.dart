@@ -2237,13 +2237,16 @@ class _OverdueFollowUps extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(width: 10),
-                      ElevatedButton(
+                      OutlinedButton(
                         onPressed: onReassign,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFEF8144),
-                          foregroundColor: Colors.white,
-                          elevation: 0,
-                          shape: const StadiumBorder(),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: const Color(0xFF4338CA),
+                          side: const BorderSide(color: Color(0xFF4338CA)),
+
+
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
                           padding: const EdgeInsets.symmetric(
                             horizontal: 14,
                             vertical: 6,
@@ -2251,7 +2254,7 @@ class _OverdueFollowUps extends StatelessWidget {
                           visualDensity: VisualDensity.compact,
                         ),
                         child: const Text(
-                          'Re Assign',
+                          'Reassign',
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w700,
