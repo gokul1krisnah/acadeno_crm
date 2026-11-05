@@ -32,7 +32,7 @@ import 'widgets/team_management_view.dart';
 import 'widgets/user_management_view.dart';
 import 'widgets/settings_view.dart';
 
-const _primary = Color(0xFF3F37C9);
+const _primary = Color(0xFFEF8144);
 const _orangeAccent = Color(0xFFEF8144);
 const _bg = Color(0xFFF8FAFC);
 const _border = Color(0xFFE2E8F0);

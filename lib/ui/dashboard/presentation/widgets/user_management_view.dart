@@ -1239,7 +1239,7 @@ class _UserManagementViewState extends State<UserManagementView> {
                                       ? const Color(0xFFD97706)
                                       : (user.name.toLowerCase().contains('test')
                                           ? const Color(0xFF9333EA)
-                                          : const Color(0xFF4F46E5)),
+                                          : const Color(0xFFEF8144)),
                                 ),
                               ),
                             ),
@@ -1285,7 +1285,7 @@ class _UserManagementViewState extends State<UserManagementView> {
                                               fontSize: 9.5,
                                               fontWeight: FontWeight.w700,
                                               letterSpacing: 0.4,
-                                              color: Color(0xFF4F46E5),
+                                              color: Color(0xFFEF8144),
                                             ),
                                           ),
                                         ),
@@ -1507,7 +1507,7 @@ class _UserManagementViewState extends State<UserManagementView> {
                             scale: 0.85,
                             child: Switch(
                               value: user.isActive,
-                              activeThumbColor: const Color(0xFF4F46E5),
+                              activeThumbColor: const Color(0xFFEF8144),
                               onChanged: isMe
                                   ? null
                                   : (val) {
@@ -1557,7 +1557,7 @@ class _UserManagementViewState extends State<UserManagementView> {
                               icon: const Icon(
                                 Icons.groups_rounded,
                                 size: 18,
-                                color: Color(0xFF4F46E5),
+                                color: Color(0xFFEF8144),
                               ),
                               tooltip: 'Admin Account & Password',
                               onPressed: () => showAdminAccountDialog(context, {
@@ -1672,7 +1672,7 @@ class _UserManagementViewState extends State<UserManagementView> {
                         ),
                         Switch(
                           value: user.isActive,
-                          activeThumbColor: const Color(0xFF4F46E5),
+                          activeThumbColor: const Color(0xFFEF8144),
                           onChanged: isMe
                               ? null
                               : (val) {

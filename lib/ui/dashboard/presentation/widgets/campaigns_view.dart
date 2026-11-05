@@ -725,7 +725,7 @@ class _CampaignsViewState extends State<CampaignsView> {
                       style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
-                        color: Color(0xFF4338CA),
+                        color: Color(0xFFEF8144),
                       ),
                     ),
                   ),
@@ -860,12 +860,12 @@ class _CampaignsViewState extends State<CampaignsView> {
                             ),
                             decoration: BoxDecoration(
                               color: isSelected
-                                  ? const Color(0xFFEEF0FF)
+                                  ? const Color(0xFFFFF7ED)
                                   : Colors.white,
                               borderRadius: BorderRadius.circular(20),
                               border: Border.all(
                                 color: isSelected
-                                    ? const Color(0xFF4F46E5)
+                                    ? const Color(0xFFEF8144)
                                     : const Color(0xFFD0D5DD),
                                 width: isSelected ? 1.3 : 1.0,
                               ),
@@ -876,7 +876,7 @@ class _CampaignsViewState extends State<CampaignsView> {
                                 fontSize: 12.5,
                                 fontWeight: FontWeight.w600,
                                 color: isSelected
-                                    ? const Color(0xFF4F46E5)
+                                    ? const Color(0xFFEF8144)
                                     : const Color(0xFF475467),
                               ),
                             ),
@@ -1039,7 +1039,7 @@ class _CampaignsViewState extends State<CampaignsView> {
       _buildStatMiniBox(
         '${campaign.assignedCount}',
         'Assigned',
-        const Color(0xFF4F46E5),
+        const Color(0xFFEF8144),
       ),
     ];
 
@@ -1229,7 +1229,7 @@ class _CampaignsViewState extends State<CampaignsView> {
                             style: const TextStyle(
                               fontSize: 10.5,
                               fontWeight: FontWeight.w700,
-                              color: Color(0xFF4F46E5),
+                              color: Color(0xFFEF8144),
                               letterSpacing: 0.3,
                             ),
                           ),
@@ -1264,7 +1264,7 @@ class _CampaignsViewState extends State<CampaignsView> {
                               style: const TextStyle(
                                 fontSize: 11.5,
                                 fontWeight: FontWeight.w600,
-                                color: Color(0xFF4338CA),
+                                color: Color(0xFFEF8144),
                               ),
                             ),
                           )
@@ -1322,7 +1322,7 @@ class _CampaignsViewState extends State<CampaignsView> {
                           style: const TextStyle(
                             fontSize: 11.5,
                             fontWeight: FontWeight.w800,
-                            color: Color(0xFF4338CA),
+                            color: Color(0xFFEF8144),
                           ),
                         ),
                       ),
@@ -1352,7 +1352,7 @@ class _CampaignsViewState extends State<CampaignsView> {
                         style: const TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.w700,
-                          color: Color(0xFF4338CA),
+                          color: Color(0xFFEF8144),
                         ),
                       ),
                     ),
