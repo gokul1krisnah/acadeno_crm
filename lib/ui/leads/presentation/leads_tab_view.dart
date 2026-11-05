@@ -356,15 +356,15 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                   return InkWell(
                                     onTap: () => AppPhoneCallService.instance
                                         .dialLead(context, due),
-                                    borderRadius: BorderRadius.circular(18),
+                                    borderRadius: BorderRadius.circular(16),
                                     child: Container(
-                                      padding: const EdgeInsets.all(18),
+                                      padding: const EdgeInsets.all(20),
                                       decoration: BoxDecoration(
                                         color: Colors.white,
-                                        borderRadius: BorderRadius.circular(18),
+                                        borderRadius: BorderRadius.circular(16),
                                         border: Border.all(
-                                          color: const Color(0xFFFED7AA),
-                                          width: 1.5,
+                                          color: const Color(0x4DF97316),
+                                          width: 2,
                                         ),
                                       ),
                                       child: Row(
@@ -379,7 +379,7 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                                     const Icon(
                                                       CupertinoIcons.clock,
                                                       size: 15,
-                                                      color: Color(0xFFC2410C),
+                                                      color: Color(0xFFEA580C),
                                                     ),
                                                     const SizedBox(width: 6),
                                                     Text(
@@ -389,7 +389,7 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                                         fontWeight:
                                                             FontWeight.w700,
                                                         color: Color(
-                                                          0xFFC2410C,
+                                                          0xFFEA580C,
                                                         ),
                                                       ),
                                                     ),
@@ -399,18 +399,19 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                                 Text(
                                                   due.name,
                                                   style: const TextStyle(
-                                                    fontSize: 18,
+                                                    fontSize: 19,
                                                     fontWeight: FontWeight.w800,
                                                     color: Color(0xFF0F172A),
+                                                    letterSpacing: -0.3,
                                                   ),
                                                 ),
-                                                const SizedBox(height: 4),
+                                                const SizedBox(height: 6),
                                                 Text(
                                                   '${due.collegeInfo} · ${due.campaignTag}',
                                                   style: const TextStyle(
                                                     fontSize: 13.5,
                                                     color: Color(0xFF64748B),
-                                                    height: 1.35,
+                                                    height: 1.4,
                                                   ),
                                                 ),
                                               ],
@@ -421,11 +422,11 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                             width: 52,
                                             height: 52,
                                             decoration: BoxDecoration(
-                                              color: const Color(0xFF5B61F4),
+                                              color: const Color(0xFFEF8144),
                                               shape: BoxShape.circle,
                                               boxShadow: [
                                                 BoxShadow(
-                                                  color: const Color(0xFF5B61F4)
+                                                  color: const Color(0xFFEF8144)
                                                       .withValues(alpha: 0.38),
                                                   blurRadius: 18,
                                                   offset: const Offset(0, 6),
@@ -481,7 +482,7 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                               ),
                             const SizedBox(height: 18),
 
-                            // Quick Actions: Add Walk-in Lead & My Record (Exact match to screenshot)
+                            // Quick Actions: Add Walk-in Lead & My Record (Exact match to Figma spec)
                             Row(
                               children: [
                                 InkWell(
@@ -489,32 +490,40 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                       LeadCallSheets.showPhoneLookupAndWalkInSheet(
                                         context,
                                       ),
-                                  borderRadius: BorderRadius.circular(24),
+                                  borderRadius: BorderRadius.circular(16),
                                   child: Container(
+                                    height: 34,
                                     padding: const EdgeInsets.symmetric(
-                                      horizontal: 16,
-                                      vertical: 10,
+                                      horizontal: 14,
                                     ),
                                     decoration: BoxDecoration(
                                       color: Colors.white,
-                                      borderRadius: BorderRadius.circular(24),
+                                      borderRadius: BorderRadius.circular(16),
                                       border: Border.all(
-                                        color: const Color(0xFFEAECF0),
+                                        color: const Color(0xFFF3F4F6),
+                                        width: 1,
                                       ),
+                                      boxShadow: const [
+                                        BoxShadow(
+                                          color: Color(0x0D000000),
+                                          blurRadius: 2,
+                                          offset: Offset(0, 1),
+                                        ),
+                                      ],
                                     ),
-                                    child: const Row(
+                                    child: Row(
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
-                                        Icon(
-                                          CupertinoIcons.person,
-                                          size: 16,
-                                          color: Color(0xFF64748B),
+                                        SvgPicture.asset(
+                                          AppSvgs.addWalkInLead,
+                                          width: 14,
+                                          height: 14,
                                         ),
-                                        SizedBox(width: 7),
-                                        Text(
+                                        const SizedBox(width: 7),
+                                        const Text(
                                           'Add Walk-in Lead',
                                           style: TextStyle(
-                                            fontSize: 12.5,
+                                            fontSize: 12,
                                             fontWeight: FontWeight.w600,
                                             color: Color(0xFF334155),
                                           ),
@@ -527,32 +536,40 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                 InkWell(
                                   onTap: () =>
                                       LeadCallSheets.showMyRecordSheet(context),
-                                  borderRadius: BorderRadius.circular(24),
+                                  borderRadius: BorderRadius.circular(16),
                                   child: Container(
+                                    height: 34,
                                     padding: const EdgeInsets.symmetric(
-                                      horizontal: 16,
-                                      vertical: 10,
+                                      horizontal: 14,
                                     ),
                                     decoration: BoxDecoration(
                                       color: Colors.white,
-                                      borderRadius: BorderRadius.circular(24),
+                                      borderRadius: BorderRadius.circular(16),
                                       border: Border.all(
-                                        color: const Color(0xFFEAECF0),
+                                        color: const Color(0xFFF3F4F6),
+                                        width: 1,
                                       ),
+                                      boxShadow: const [
+                                        BoxShadow(
+                                          color: Color(0x0D000000),
+                                          blurRadius: 2,
+                                          offset: Offset(0, 1),
+                                        ),
+                                      ],
                                     ),
-                                    child: const Row(
+                                    child: Row(
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
-                                        Icon(
-                                          CupertinoIcons.folder,
-                                          size: 16,
-                                          color: Color(0xFF64748B),
+                                        SvgPicture.asset(
+                                          AppSvgs.myRecord,
+                                          width: 14,
+                                          height: 14,
                                         ),
-                                        SizedBox(width: 7),
-                                        Text(
+                                        const SizedBox(width: 7),
+                                        const Text(
                                           'My Record',
                                           style: TextStyle(
-                                            fontSize: 12.5,
+                                            fontSize: 12,
                                             fontWeight: FontWeight.w600,
                                             color: Color(0xFF334155),
                                           ),
@@ -869,20 +886,22 @@ class _MetricBox extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(18),
+      borderRadius: BorderRadius.circular(16),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
+        height: 85,
+        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: bgColor,
-          borderRadius: BorderRadius.circular(18),
+          borderRadius: BorderRadius.circular(16),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
               value,
               style: TextStyle(
-                fontSize: 24,
+                fontSize: 22,
                 fontWeight: FontWeight.w800,
                 color: valueColor,
                 letterSpacing: -0.5,
@@ -920,13 +939,20 @@ class _TodayLeadCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTapCard,
-      borderRadius: BorderRadius.circular(18),
+      borderRadius: BorderRadius.circular(16),
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: const Color(0xFFF1F5F9)),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xFFF3F4F6), width: 1),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x0D000000),
+              blurRadius: 2,
+              offset: Offset(0, 1),
+            ),
+          ],
         ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,

@@ -7,4 +7,7 @@ abstract class AppSvgs {
   static const String notifications = 'assets/svgs/notification.svg';
   static const String settings = 'assets/svgs/setting.svg';
   static const String logout = 'assets/svgs/logout.svg';
+  static const String addWalkInLead = 'assets/svgs/addwalkinlead.svg';
+  static const String myRecord = 'assets/svgs/myrecord.svg';
+  static const String tick = 'assets/svgs/tick.svg';
 }

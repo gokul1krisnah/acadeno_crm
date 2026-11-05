@@ -1,4 +1,6 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:acadeno_crm/shared/theme/app_svgs.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -432,10 +434,14 @@ class _FollowUpCard extends StatelessWidget {
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                    child: const Icon(
-                      CupertinoIcons.checkmark,
-                      size: 18,
-                      color: Color(0xFF64748B),
+                    child: SvgPicture.asset(
+                      AppSvgs.tick,
+                      width: 14,
+                      height: 16,
+                      colorFilter: const ColorFilter.mode(
+                        Color(0xFF64748B),
+                        BlendMode.srcIn,
+                      ),
                     ),
                   ),
                 ),
