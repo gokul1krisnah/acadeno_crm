@@ -711,40 +711,79 @@ class _CampaignsViewState extends State<CampaignsView> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Top bar: < All campaigns
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                InkWell(
-                  onTap: () => setState(() => _showAllCampaigns = true),
-                  borderRadius: BorderRadius.circular(6),
-                  child: const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 4, horizontal: 2),
-                    child: Text(
-                      '< All campaigns',
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF4338CA),
+            isMobile
+                ? Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      InkWell(
+                        onTap: () => setState(() => _showAllCampaigns = true),
+                        borderRadius: BorderRadius.circular(6),
+                        child: const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 4, horizontal: 2),
+                          child: Text(
+                            '< All campaigns',
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFF4338CA),
+                            ),
+                          ),
+                        ),
                       ),
-                    ),
+                      const SizedBox(height: 8),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          onPressed: _showNewCampaignDialog,
+                          icon: const Icon(Icons.add, size: 18),
+                          label: const Text('New Campaign'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFFEF8144),
+                            foregroundColor: Colors.white,
+                            elevation: 0,
+                            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  )
+                : Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      InkWell(
+                        onTap: () => setState(() => _showAllCampaigns = true),
+                        borderRadius: BorderRadius.circular(6),
+                        child: const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 4, horizontal: 2),
+                          child: Text(
+                            '< All campaigns',
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFF4338CA),
+                            ),
+                          ),
+                        ),
+                      ),
+                      ElevatedButton.icon(
+                        onPressed: _showNewCampaignDialog,
+                        icon: const Icon(Icons.add, size: 18),
+                        label: const Text('New Campaign'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFEF8144),
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-                ElevatedButton.icon(
-                  onPressed: _showNewCampaignDialog,
-                  icon: const Icon(Icons.add, size: 18),
-                  label: const Text('New Campaign'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFEF8144),
-                    foregroundColor: Colors.white,
-                    elevation: 0,
-                    padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-                ),
-              ],
-            ),
             const SizedBox(height: 12),
 
             // Campaign Summary Card
@@ -1495,38 +1534,70 @@ class _CampaignsViewState extends State<CampaignsView> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Campaigns & Workshop Targeting',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.w800,
-                    color: Color(0xFF0F172A),
+        isMobile
+            ? Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Campaigns & Workshop Targeting',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w800,
+                      color: Color(0xFF0F172A),
+                    ),
                   ),
-                ),
-                SizedBox(height: 4),
-                Text(
-                  'Rank and assign historical leads automatically for upcoming events',
-                  style: TextStyle(fontSize: 13, color: Color(0xFF667085)),
-                ),
-              ],
-            ),
-            ElevatedButton.icon(
-              onPressed: _showNewCampaignDialog,
-              icon: const Icon(Icons.add, size: 16),
-              label: const Text('New campaign'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFEF8144),
-                foregroundColor: Colors.white,
+                  const SizedBox(height: 4),
+                  const Text(
+                    'Rank and assign historical leads automatically for upcoming events',
+                    style: TextStyle(fontSize: 13, color: Color(0xFF667085)),
+                  ),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: _showNewCampaignDialog,
+                      icon: const Icon(Icons.add, size: 16),
+                      label: const Text('New campaign'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFEF8144),
+                        foregroundColor: Colors.white,
+                      ),
+                    ),
+                  ),
+                ],
+              )
+            : Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Campaigns & Workshop Targeting',
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.w800,
+                          color: Color(0xFF0F172A),
+                        ),
+                      ),
+                      SizedBox(height: 4),
+                      Text(
+                        'Rank and assign historical leads automatically for upcoming events',
+                        style: TextStyle(fontSize: 13, color: Color(0xFF667085)),
+                      ),
+                    ],
+                  ),
+                  ElevatedButton.icon(
+                    onPressed: _showNewCampaignDialog,
+                    icon: const Icon(Icons.add, size: 16),
+                    label: const Text('New campaign'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFEF8144),
+                      foregroundColor: Colors.white,
+                    ),
+                  ),
+                ],
               ),
-            ),
-          ],
-        ),
         const SizedBox(height: 18),
         ...List.generate(_campaigns.length, (index) {
           final c = _campaigns[index];
@@ -1538,15 +1609,13 @@ class _CampaignsViewState extends State<CampaignsView> {
               borderRadius: BorderRadius.circular(14),
               border: Border.all(color: const Color(0xFFE8EAF0)),
             ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Column(
+            child: isMobile
+                ? Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
                         children: [
-                          Flexible(
+                          Expanded(
                             child: Text(
                               c.title,
                               style: const TextStyle(
@@ -1585,21 +1654,84 @@ class _CampaignsViewState extends State<CampaignsView> {
                           color: Color(0xFF475467),
                         ),
                       ),
+                      const SizedBox(height: 12),
+                      SizedBox(
+                        width: double.infinity,
+                        child: OutlinedButton(
+                          onPressed: () {
+                            setState(() {
+                              _activeCampaignIndex = index;
+                              _showAllCampaigns = false;
+                            });
+                            _listenLiveLeadsAndRank();
+                          },
+                          child: const Text('View ranked leads'),
+                        ),
+                      ),
+                    ],
+                  )
+                : Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Flexible(
+                                  child: Text(
+                                    c.title,
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w700,
+                                      color: Color(0xFF0F172A),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 3,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFFEF0E6),
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: Text(
+                                    c.badge,
+                                    style: const TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w700,
+                                      color: Color(0xFF9A3412),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              'Topics: ${c.topics} · Branches: ${c.branches}',
+                              style: const TextStyle(
+                                fontSize: 12.5,
+                                color: Color(0xFF475467),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      OutlinedButton(
+                        onPressed: () {
+                          setState(() {
+                            _activeCampaignIndex = index;
+                            _showAllCampaigns = false;
+                          });
+                          _listenLiveLeadsAndRank();
+                        },
+                        child: const Text('View ranked leads'),
+                      ),
                     ],
                   ),
-                ),
-                OutlinedButton(
-                  onPressed: () {
-                    setState(() {
-                      _activeCampaignIndex = index;
-                      _showAllCampaigns = false;
-                    });
-                    _listenLiveLeadsAndRank();
-                  },
-                  child: const Text('View ranked leads'),
-                ),
-              ],
-            ),
           );
         }),
       ],

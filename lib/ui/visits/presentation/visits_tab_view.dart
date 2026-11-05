@@ -1033,8 +1033,8 @@ class _RecentVisitCard extends StatelessWidget {
 
     return Center(
       child: Container(
-        width: 377,
-        constraints: const BoxConstraints(minHeight: 263.19),
+        constraints: const BoxConstraints(maxWidth: 377, minHeight: 263.19),
+        width: double.infinity,
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
           color: Colors.white,

@@ -391,11 +391,14 @@ class _FollowUpsViewState extends State<FollowUpsView> {
                                     ),
                                     onPressed: () =>
                                         _bulkMoveExecutiveFollowUps(followUps),
-                                    child: const Text(
-                                      'Re Assign in Fire Store',
-                                      style: TextStyle(
-                                        fontSize: 13.5,
-                                        fontWeight: FontWeight.w700,
+                                    child: const FittedBox(
+                                      fit: BoxFit.scaleDown,
+                                      child: Text(
+                                        'Re Assign in Fire Store',
+                                        style: TextStyle(
+                                          fontSize: 13.5,
+                                          fontWeight: FontWeight.w700,
+                                        ),
                                       ),
                                     ),
                                   ),

@@ -344,42 +344,71 @@ class _ImportLeadsBodyState extends State<_ImportLeadsBody> {
           const SizedBox(height: 24),
 
           // Template & Fast Testing Row
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                '2. Upload CSV or Excel file',
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w700,
-                  color: Color(0xFF0F172A),
-                ),
-              ),
-              Wrap(
-                spacing: 8,
-                children: [
-                  TextButton.icon(
-                    style: TextButton.styleFrom(
-                      foregroundColor: const Color(0xFF4338CA),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 6,
-                      ),
-                    ),
-                    onPressed: () => _downloadSampleTemplate(context),
-                    icon: const Icon(Icons.download_rounded, size: 16),
-                    label: const Text(
-                      'Download Sample CSV',
+          isMobile
+              ? Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      '2. Upload CSV or Excel file',
                       style: TextStyle(
-                        fontSize: 12.5,
-                        fontWeight: FontWeight.w600,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF0F172A),
                       ),
                     ),
-                  ),
-                ],
-              ),
-            ],
-          ),
+                    const SizedBox(height: 6),
+                    TextButton.icon(
+                      style: TextButton.styleFrom(
+                        foregroundColor: const Color(0xFF4338CA),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 0,
+                          vertical: 4,
+                        ),
+                        visualDensity: VisualDensity.compact,
+                      ),
+                      onPressed: () => _downloadSampleTemplate(context),
+                      icon: const Icon(Icons.download_rounded, size: 16),
+                      label: const Text(
+                        'Download Sample CSV',
+                        style: TextStyle(
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
+                )
+              : Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      '2. Upload CSV or Excel file',
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF0F172A),
+                      ),
+                    ),
+                    TextButton.icon(
+                      style: TextButton.styleFrom(
+                        foregroundColor: const Color(0xFF4338CA),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 6,
+                        ),
+                      ),
+                      onPressed: () => _downloadSampleTemplate(context),
+                      icon: const Icon(Icons.download_rounded, size: 16),
+                      label: const Text(
+                        'Download Sample CSV',
+                        style: TextStyle(
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
           const SizedBox(height: 10),
 
           // Upload Dropzone
@@ -473,88 +502,6 @@ class _ImportLeadsBodyState extends State<_ImportLeadsBody> {
                       ],
                     ),
             ),
-          ),
-          const SizedBox(height: 18),
-
-          // Quick testing helper banner (Responsive)
-          Container(
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: const Color(0xFFF0FDF4),
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: const Color(0xFFBBF7D0)),
-            ),
-            child: isMobile
-                ? Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          const Icon(
-                            Icons.bolt_rounded,
-                            size: 20,
-                            color: Color(0xFF16A34A),
-                          ),
-                          const SizedBox(width: 8),
-                          const Expanded(
-                            child: Text(
-                              'Want to test right now?',
-                              style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w700,
-                                color: Color(0xFF166534),
-                              ),
-                            ),
-                          ),
-                          TextButton(
-                            onPressed: () => cubit.loadSampleData(),
-                            style: TextButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                              visualDensity: VisualDensity.compact,
-                            ),
-                            child: const Text(
-                              'Load Demo Batch',
-                              style: TextStyle(
-                                fontWeight: FontWeight.w700,
-                                color: Color(0xFF15803D),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 4),
-                      const Text(
-                        'Load our pre-configured ACADENO Webinar lead batch (includes valid, existing, duplicates, and format errors).',
-                        style: TextStyle(fontSize: 12, color: Color(0xFF166534)),
-                      ),
-                    ],
-                  )
-                : Row(
-                    children: [
-                      const Icon(
-                        Icons.bolt_rounded,
-                        size: 20,
-                        color: Color(0xFF16A34A),
-                      ),
-                      const SizedBox(width: 10),
-                      const Expanded(
-                        child: Text(
-                          'Want to test right now? Load our pre-configured ACADENO Webinar lead batch (includes valid, existing, duplicates, and format errors).',
-                          style: TextStyle(fontSize: 12.5, color: Color(0xFF166534)),
-                        ),
-                      ),
-                      TextButton(
-                        onPressed: () => cubit.loadSampleData(),
-                        child: const Text(
-                          'Load Demo Batch',
-                          style: TextStyle(
-                            fontWeight: FontWeight.w700,
-                            color: Color(0xFF15803D),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
           ),
         ],
       ),
@@ -714,77 +661,150 @@ class _ImportLeadsBodyState extends State<_ImportLeadsBody> {
           const SizedBox(height: 22),
 
           // Bottom Action Buttons
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              SizedBox(
-                height: 42,
-                child: OutlinedButton(
-                  onPressed: () => cubit.setStep(1),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: const Color(0xFF0F172A),
-                    side: const BorderSide(color: Color(0xFFD0D5DD)),
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-                  child: const Text(
-                    '← Back to Upload',
-                    style: TextStyle(fontWeight: FontWeight.w600),
-                  ),
-                ),
-              ),
-              SizedBox(
-                height: 42,
-                child: ElevatedButton(
-                  onPressed:
-                      state.isImporting ||
-                          state.isVerifying ||
-                          state.importableTotal == 0
-                      ? null
-                      : () => _showImportConfirmation(context, state),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFEF8144),
-                    foregroundColor: Colors.white,
-                    elevation: 0,
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-                  child: state.isImporting
-                      ? Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const SizedBox(
-                              width: 16,
-                              height: 16,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: Colors.white,
-                              ),
-                            ),
-                            const SizedBox(width: 10),
-                            Text(
-                              'Importing (${state.processedCount}/${state.totalCandidates})...',
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
-                        )
-                      : Text(
-                          'Import ${state.importableTotal} Leads →',
-                          style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w700,
+          isMobile
+              ? Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    SizedBox(
+                      height: 44,
+                      child: ElevatedButton(
+                        onPressed:
+                            state.isImporting ||
+                                state.isVerifying ||
+                                state.importableTotal == 0
+                            ? null
+                            : () => _showImportConfirmation(context, state),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFEF8144),
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
                           ),
                         ),
+                        child: state.isImporting
+                            ? Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const SizedBox(
+                                    width: 16,
+                                    height: 16,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 10),
+                                  Text(
+                                    'Importing (${state.processedCount}/${state.totalCandidates})...',
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                              )
+                            : Text(
+                                'Import ${state.importableTotal} Leads →',
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    SizedBox(
+                      height: 42,
+                      child: OutlinedButton(
+                        onPressed: () => cubit.setStep(1),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: const Color(0xFF0F172A),
+                          side: const BorderSide(color: Color(0xFFD0D5DD)),
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        child: const Text(
+                          '← Back to Upload',
+                          style: TextStyle(fontWeight: FontWeight.w600),
+                        ),
+                      ),
+                    ),
+                  ],
+                )
+              : Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    SizedBox(
+                      height: 42,
+                      child: OutlinedButton(
+                        onPressed: () => cubit.setStep(1),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: const Color(0xFF0F172A),
+                          side: const BorderSide(color: Color(0xFFD0D5DD)),
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        child: const Text(
+                          '← Back to Upload',
+                          style: TextStyle(fontWeight: FontWeight.w600),
+                        ),
+                      ),
+                    ),
+                    SizedBox(
+                      height: 42,
+                      child: ElevatedButton(
+                        onPressed:
+                            state.isImporting ||
+                                state.isVerifying ||
+                                state.importableTotal == 0
+                            ? null
+                            : () => _showImportConfirmation(context, state),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFEF8144),
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          padding: const EdgeInsets.symmetric(horizontal: 24),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        child: state.isImporting
+                            ? Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const SizedBox(
+                                    width: 16,
+                                    height: 16,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 10),
+                                  Text(
+                                    'Importing (${state.processedCount}/${state.totalCandidates})...',
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                              )
+                            : Text(
+                                'Import ${state.importableTotal} Leads →',
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-            ],
-          ),
         ],
       ),
     );

@@ -293,12 +293,15 @@ class _TeamManagementViewState extends State<TeamManagementView> {
                               filteredLeads,
                             ),
                             icon: const Icon(Icons.download_rounded, size: 16, color: Color(0xFF334155)),
-                            label: const Text(
-                              'Watermarked Export (Super Admin)',
-                              style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
-                                color: Color(0xFF334155),
+                            label: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Text(
+                                isMobile ? 'Watermarked Export' : 'Watermarked Export (Super Admin)',
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                  color: Color(0xFF334155),
+                                ),
                               ),
                             ),
                             style: OutlinedButton.styleFrom(

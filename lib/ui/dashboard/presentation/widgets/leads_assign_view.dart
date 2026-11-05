@@ -1393,11 +1393,14 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                             state.isSubmitting
                         ? null
                         : () => _openReviewAssignmentDialog(context, state),
-                    child: Text(
-                      isMobileBar && state.selectedLeadIds.isNotEmpty
-                          ? 'Assign ${state.selectedLeadIds.length} Selected Leads'
-                          : 'Assign',
-                      style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        isMobileBar && state.selectedLeadIds.isNotEmpty
+                            ? 'Assign ${state.selectedLeadIds.length} Selected Leads'
+                            : 'Assign',
+                        style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
+                      ),
                     ),
                   ),
                 );

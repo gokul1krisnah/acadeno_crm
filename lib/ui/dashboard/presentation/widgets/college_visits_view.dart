@@ -623,8 +623,10 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
                             ),
                           );
 
-                          final actionButtons = Row(
-                            mainAxisSize: MainAxisSize.min,
+                          final actionButtons = Wrap(
+                            spacing: 8,
+                            runSpacing: 8,
+                            crossAxisAlignment: WrapCrossAlignment.center,
                             children: [
                               OutlinedButton.icon(
                                 onPressed: () =>
@@ -659,7 +661,6 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
                                   backgroundColor: Colors.white,
                                 ),
                               ),
-                              const SizedBox(width: 10),
                               OutlinedButton(
                                 onPressed: () => _showLogOutcomeDialog(visit),
                                 style: OutlinedButton.styleFrom(

@@ -669,65 +669,77 @@ class _UserManagementViewState extends State<UserManagementView> {
                   ],
                 );
 
-                final actionBtns = Row(
-                  mainAxisSize: isMobile ? MainAxisSize.max : MainAxisSize.min,
-                  children: [
-                    Expanded(
-                      flex: isMobile ? 1 : 0,
-                      child: OutlinedButton.icon(
-                        onPressed: () => _openAddUserDialog(byUid: true),
-                        icon: const Icon(Icons.key_outlined, size: 16, color: Color(0xFF475467)),
-                        label: const Text(
-                          'Add by UID',
-                          style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                            color: Color(0xFF334155),
-                          ),
-                        ),
-                        style: OutlinedButton.styleFrom(
-                          backgroundColor: Colors.white,
-                          side: const BorderSide(color: Color(0xFFE2E8F0)),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 10,
-                          ),
-                        ),
+                final addByUidBtn = OutlinedButton.icon(
+                  onPressed: () => _openAddUserDialog(byUid: true),
+                  icon: const Icon(Icons.key_outlined, size: 16, color: Color(0xFF475467)),
+                  label: const FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      'Add by UID',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF334155),
                       ),
                     ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      flex: isMobile ? 1 : 0,
-                      child: ElevatedButton.icon(
-                        onPressed: () => _openAddUserDialog(byUid: false),
-                        icon: const Icon(Icons.add, size: 18),
-                        label: const Text(
-                          'Add User',
-                          style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFEF8144),
-                          foregroundColor: Colors.white,
-                          elevation: 0,
-                          side: BorderSide.none,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 18,
-                            vertical: 10,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                        ),
-                      ),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    side: const BorderSide(color: Color(0xFFE2E8F0)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
                     ),
-                  ],
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 10,
+                    ),
+                  ),
                 );
+
+                final addUserBtn = ElevatedButton.icon(
+                  onPressed: () => _openAddUserDialog(byUid: false),
+                  icon: const Icon(Icons.add, size: 18),
+                  label: const FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      'Add User',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFEF8144),
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    side: BorderSide.none,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 10,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                );
+
+                final actionBtns = isMobile
+                    ? Row(
+                        children: [
+                          Expanded(child: addByUidBtn),
+                          const SizedBox(width: 10),
+                          Expanded(child: addUserBtn),
+                        ],
+                      )
+                    : Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          addByUidBtn,
+                          const SizedBox(width: 10),
+                          addUserBtn,
+                        ],
+                      );
 
                 if (isMobile) {
                   return Column(
