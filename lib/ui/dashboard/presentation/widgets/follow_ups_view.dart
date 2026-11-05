@@ -272,7 +272,7 @@ class _FollowUpsViewState extends State<FollowUpsView> {
 
             return LayoutBuilder(
               builder: (context, constraints) {
-                final isMobile = MediaQuery.of(context).size.width < 768 || constraints.maxWidth < 720;
+                final isMobile = MediaQuery.of(context).size.width < 640;
 
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -648,8 +648,8 @@ class _FollowUpsViewState extends State<FollowUpsView> {
 
     final assignedBadge = Container(
       padding: const EdgeInsets.symmetric(
-        horizontal: 14,
-        vertical: 8,
+        horizontal: 12,
+        vertical: 7,
       ),
       decoration: BoxDecoration(
         color: const Color(0xFFF8FAFC),
@@ -671,8 +671,8 @@ class _FollowUpsViewState extends State<FollowUpsView> {
         foregroundColor: const Color(0xFF4338CA),
         side: const BorderSide(color: Color(0xFF4338CA)),
         padding: const EdgeInsets.symmetric(
-          horizontal: 18,
-          vertical: 10,
+          horizontal: 14,
+          vertical: 8,
         ),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(8),
@@ -694,8 +694,8 @@ class _FollowUpsViewState extends State<FollowUpsView> {
         foregroundColor: Colors.white,
         elevation: 0,
         padding: const EdgeInsets.symmetric(
-          horizontal: 18,
-          vertical: 10,
+          horizontal: 14,
+          vertical: 8,
         ),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(8),
@@ -741,6 +741,8 @@ class _FollowUpsViewState extends State<FollowUpsView> {
                 fontWeight: FontWeight.w700,
                 color: Color(0xFF0F172A),
               ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
             Container(
               padding: const EdgeInsets.symmetric(
@@ -774,6 +776,8 @@ class _FollowUpsViewState extends State<FollowUpsView> {
             fontSize: 13,
             color: Color(0xFF475467),
           ),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
         ),
         if (item.note.isNotEmpty) ...[
           const SizedBox(height: 5),
@@ -784,6 +788,8 @@ class _FollowUpsViewState extends State<FollowUpsView> {
               fontWeight: FontWeight.w500,
               color: Color(0xFF334155),
             ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
         ],
       ],
@@ -829,7 +835,7 @@ class _FollowUpsViewState extends State<FollowUpsView> {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(14),
@@ -851,9 +857,9 @@ class _FollowUpsViewState extends State<FollowUpsView> {
             mainAxisSize: MainAxisSize.min,
             children: [
               assignedBadge,
-              const SizedBox(width: 10),
+              const SizedBox(width: 8),
               reassignBtn,
-              const SizedBox(width: 10),
+              const SizedBox(width: 8),
               markDoneBtn,
             ],
           ),
