@@ -354,6 +354,7 @@ class _SettingsViewState extends State<SettingsView>
   // Tab 1: Account & Security
   // ---------------------------------------------------------------------------
   Widget _buildAccountAndSecurityTab() {
+    final isMobile = MediaQuery.of(context).size.width < 640;
     return Padding(
       padding: const EdgeInsets.only(bottom: 40),
       child: Column(
@@ -376,41 +377,40 @@ class _SettingsViewState extends State<SettingsView>
                   ),
                 ),
                 const SizedBox(height: 6),
-                Row(
-                  children: [
-                    Expanded(
-                      child: TextField(
-                        controller: _nameController,
-                        decoration: InputDecoration(
-                          prefixIcon: const Icon(
-                            Icons.person_outline,
-                            size: 18,
-                            color: _muted,
-                          ),
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 10,
-                          ),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                            borderSide: const BorderSide(color: _border),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                            borderSide: const BorderSide(color: _border),
-                          ),
-                        ),
+                if (isMobile) ...[
+                  TextField(
+                    controller: _nameController,
+                    decoration: InputDecoration(
+                      prefixIcon: const Icon(
+                        Icons.person_outline,
+                        size: 18,
+                        color: _muted,
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 10,
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: const BorderSide(color: _border),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: const BorderSide(color: _border),
                       ),
                     ),
-                    const SizedBox(width: 12),
-                    ElevatedButton(
+                  ),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
                       onPressed: _isSavingName ? null : _updateDisplayName,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: _primary,
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(
                           horizontal: 20,
-                          vertical: 14,
+                          vertical: 13,
                         ),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
@@ -427,8 +427,62 @@ class _SettingsViewState extends State<SettingsView>
                             )
                           : const Text('Save Name'),
                     ),
-                  ],
-                ),
+                  ),
+                ] else ...[
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: _nameController,
+                          decoration: InputDecoration(
+                            prefixIcon: const Icon(
+                              Icons.person_outline,
+                              size: 18,
+                              color: _muted,
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 10,
+                            ),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide: const BorderSide(color: _border),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide: const BorderSide(color: _border),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      ElevatedButton(
+                        onPressed: _isSavingName ? null : _updateDisplayName,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: _primary,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 14,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        child: _isSavingName
+                            ? const SizedBox(
+                                width: 16,
+                                height: 16,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : const Text('Save Name'),
+                      ),
+                    ],
+                  ),
+                ],
               ],
             ),
           ),
@@ -519,29 +573,32 @@ class _SettingsViewState extends State<SettingsView>
                   ),
                 ),
                 const SizedBox(height: 16),
-                ElevatedButton(
-                  onPressed: _isSavingEmail ? null : _updateEmail,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: _primary,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 20,
-                      vertical: 12,
+                SizedBox(
+                  width: isMobile ? double.infinity : null,
+                  child: ElevatedButton(
+                    onPressed: _isSavingEmail ? null : _updateEmail,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: _primary,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 12,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
                     ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
+                    child: _isSavingEmail
+                        ? const SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
+                        : const Text('Update Email'),
                   ),
-                  child: _isSavingEmail
-                      ? const SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.white,
-                          ),
-                        )
-                      : const Text('Update Email'),
                 ),
               ],
             ),
@@ -602,138 +659,244 @@ class _SettingsViewState extends State<SettingsView>
                   ),
                 ),
                 const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'New Password',
-                            style: TextStyle(
-                              fontSize: 12.5,
-                              fontWeight: FontWeight.w600,
-                              color: _text,
-                            ),
-                          ),
-                          const SizedBox(height: 6),
-                          TextField(
-                            controller: _newPasswordController,
-                            obscureText: _obscureNewPass,
-                            decoration: InputDecoration(
-                              prefixIcon: const Icon(
-                                Icons.lock_outline,
-                                size: 18,
-                                color: _muted,
-                              ),
-                              suffixIcon: IconButton(
-                                icon: Icon(
-                                  _obscureNewPass
-                                      ? Icons.visibility_off
-                                      : Icons.visibility,
-                                  size: 18,
-                                  color: _muted,
-                                ),
-                                onPressed: () => setState(
-                                  () => _obscureNewPass = !_obscureNewPass,
-                                ),
-                              ),
-                              contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 10,
-                              ),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(8),
-                                borderSide: const BorderSide(color: _border),
-                              ),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(8),
-                                borderSide: const BorderSide(color: _border),
-                              ),
-                            ),
-                          ),
-                        ],
+                if (isMobile) ...[
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'New Password',
+                        style: TextStyle(
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w600,
+                          color: _text,
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'Confirm New Password',
-                            style: TextStyle(
-                              fontSize: 12.5,
-                              fontWeight: FontWeight.w600,
-                              color: _text,
+                      const SizedBox(height: 6),
+                      TextField(
+                        controller: _newPasswordController,
+                        obscureText: _obscureNewPass,
+                        decoration: InputDecoration(
+                          prefixIcon: const Icon(
+                            Icons.lock_outline,
+                            size: 18,
+                            color: _muted,
+                          ),
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _obscureNewPass
+                                  ? Icons.visibility_off
+                                  : Icons.visibility,
+                              size: 18,
+                              color: _muted,
+                            ),
+                            onPressed: () => setState(
+                              () => _obscureNewPass = !_obscureNewPass,
                             ),
                           ),
-                          const SizedBox(height: 6),
-                          TextField(
-                            controller: _confirmPasswordController,
-                            obscureText: _obscureConfirmPass,
-                            decoration: InputDecoration(
-                              prefixIcon: const Icon(
-                                Icons.lock_outline,
-                                size: 18,
-                                color: _muted,
-                              ),
-                              suffixIcon: IconButton(
-                                icon: Icon(
-                                  _obscureConfirmPass
-                                      ? Icons.visibility_off
-                                      : Icons.visibility,
-                                  size: 18,
-                                  color: _muted,
-                                ),
-                                onPressed: () => setState(
-                                  () => _obscureConfirmPass =
-                                      !_obscureConfirmPass,
-                                ),
-                              ),
-                              contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 10,
-                              ),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(8),
-                                borderSide: const BorderSide(color: _border),
-                              ),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(8),
-                                borderSide: const BorderSide(color: _border),
-                              ),
-                            ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 10,
                           ),
-                        ],
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: const BorderSide(color: _border),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: const BorderSide(color: _border),
+                          ),
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                ElevatedButton(
-                  onPressed: _isSavingPassword ? null : _updatePassword,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: _primary,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 20,
-                      vertical: 12,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
+                    ],
                   ),
-                  child: _isSavingPassword
-                      ? const SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.white,
+                  const SizedBox(height: 12),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Confirm New Password',
+                        style: TextStyle(
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w600,
+                          color: _text,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      TextField(
+                        controller: _confirmPasswordController,
+                        obscureText: _obscureConfirmPass,
+                        decoration: InputDecoration(
+                          prefixIcon: const Icon(
+                            Icons.lock_outline,
+                            size: 18,
+                            color: _muted,
                           ),
-                        )
-                      : const Text('Update Password'),
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _obscureConfirmPass
+                                  ? Icons.visibility_off
+                                  : Icons.visibility,
+                              size: 18,
+                              color: _muted,
+                            ),
+                            onPressed: () => setState(
+                              () => _obscureConfirmPass =
+                                  !_obscureConfirmPass,
+                            ),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 10,
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: const BorderSide(color: _border),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: const BorderSide(color: _border),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ] else ...[
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'New Password',
+                              style: TextStyle(
+                                fontSize: 12.5,
+                                fontWeight: FontWeight.w600,
+                                color: _text,
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            TextField(
+                              controller: _newPasswordController,
+                              obscureText: _obscureNewPass,
+                              decoration: InputDecoration(
+                                prefixIcon: const Icon(
+                                  Icons.lock_outline,
+                                  size: 18,
+                                  color: _muted,
+                                ),
+                                suffixIcon: IconButton(
+                                  icon: Icon(
+                                    _obscureNewPass
+                                        ? Icons.visibility_off
+                                        : Icons.visibility,
+                                    size: 18,
+                                    color: _muted,
+                                  ),
+                                  onPressed: () => setState(
+                                    () => _obscureNewPass = !_obscureNewPass,
+                                  ),
+                                ),
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 10,
+                                ),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: const BorderSide(color: _border),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: const BorderSide(color: _border),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Confirm New Password',
+                              style: TextStyle(
+                                fontSize: 12.5,
+                                fontWeight: FontWeight.w600,
+                                color: _text,
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            TextField(
+                              controller: _confirmPasswordController,
+                              obscureText: _obscureConfirmPass,
+                              decoration: InputDecoration(
+                                prefixIcon: const Icon(
+                                  Icons.lock_outline,
+                                  size: 18,
+                                  color: _muted,
+                                ),
+                                suffixIcon: IconButton(
+                                  icon: Icon(
+                                    _obscureConfirmPass
+                                        ? Icons.visibility_off
+                                        : Icons.visibility,
+                                    size: 18,
+                                    color: _muted,
+                                  ),
+                                  onPressed: () => setState(
+                                    () => _obscureConfirmPass =
+                                        !_obscureConfirmPass,
+                                  ),
+                                ),
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 10,
+                                ),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: const BorderSide(color: _border),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: const BorderSide(color: _border),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+                const SizedBox(height: 16),
+                SizedBox(
+                  width: isMobile ? double.infinity : null,
+                  child: ElevatedButton(
+                    onPressed: _isSavingPassword ? null : _updatePassword,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: _primary,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 12,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: _isSavingPassword
+                        ? const SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
+                        : const Text('Update Password'),
+                  ),
                 ),
               ],
             ),
@@ -940,9 +1103,10 @@ class _SettingsViewState extends State<SettingsView>
     required String subtitle,
     required Widget child,
   }) {
+    final isMobile = MediaQuery.of(context).size.width < 640;
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.all(isMobile ? 14 : 20),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
@@ -953,8 +1117,8 @@ class _SettingsViewState extends State<SettingsView>
         children: [
           Text(
             title,
-            style: const TextStyle(
-              fontSize: 16,
+            style: TextStyle(
+              fontSize: isMobile ? 15 : 16,
               fontWeight: FontWeight.w700,
               color: _text,
             ),
@@ -969,6 +1133,31 @@ class _SettingsViewState extends State<SettingsView>
   }
 
   Widget _buildInfoRow(String label, String value) {
+    final isMobile = MediaQuery.of(context).size.width < 640;
+    if (isMobile) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 12.5,
+              fontWeight: FontWeight.w500,
+              color: _muted,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: _text,
+            ),
+          ),
+        ],
+      );
+    }
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
