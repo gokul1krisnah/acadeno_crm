@@ -167,16 +167,19 @@ class LeadCallSheets {
                         color: Colors.white,
                         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
                       ),
-                      padding: EdgeInsets.fromLTRB(
-                        16,
-                        12,
-                        16,
-                        24 + MediaQuery.of(ctx).viewInsets.bottom,
-                      ),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
+                      child: SafeArea(
+                        top: false,
+                        child: Padding(
+                          padding: EdgeInsets.fromLTRB(
+                            16,
+                            12,
+                            16,
+                            24 + MediaQuery.of(ctx).viewInsets.bottom,
+                          ),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
                           // Drag handle
                           Center(
                             child: Container(
@@ -408,7 +411,7 @@ class LeadCallSheets {
                             ),
                           ),
 
-                          const SizedBox(height: 20),
+                          const SizedBox(height: 24),
 
                           // Save & next call Button
                           SizedBox(
@@ -460,7 +463,9 @@ class LeadCallSheets {
                         ],
                       ),
                     ),
-                  ],
+                  ),
+                ),
+              ],
                 ),
               ),
             ),
@@ -551,16 +556,19 @@ class LeadCallSheets {
               color: Colors.white,
               borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
             ),
-            padding: EdgeInsets.fromLTRB(
-              20,
-              14,
-              20,
-              24 + MediaQuery.of(ctx).viewInsets.bottom,
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
+            child: SafeArea(
+              top: false,
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(
+                  20,
+                  14,
+                  20,
+                  24 + MediaQuery.of(ctx).viewInsets.bottom,
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
                 Center(
                   child: Container(
                     width: 38,
@@ -654,7 +662,9 @@ class LeadCallSheets {
           ),
         ),
       ),
-    );
+    ),
+  ),
+);
   }
 
   // ---------------------------------------------------------------------------

@@ -5,10 +5,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:acadeno_crm/shared/extensions/build_context_extension.dart';
+import 'package:acadeno_crm/core/services/app_phone_call_service.dart';
 import 'package:acadeno_crm/ui/follow_ups/application/follow_ups_cubit.dart';
 import 'package:acadeno_crm/ui/follow_ups/application/follow_ups_state.dart';
 import 'package:acadeno_crm/ui/follow_ups/data/model/follow_up_models.dart';
-import 'package:acadeno_crm/ui/leads/presentation/widgets/lead_call_sheets.dart';
 
 class FollowUpsTabView extends StatelessWidget {
   const FollowUpsTabView({super.key});
@@ -120,15 +120,8 @@ class FollowUpsTabView extends StatelessWidget {
                             return _FollowUpCard(
                               key: ValueKey(item.id),
                               item: item,
-                              onCallNow: () =>
-                                  LeadCallSheets.showCallAndOutcomeSheet(
-                                    context,
-                                    leadId: item.id,
-                                    leadName: item.leadName,
-                                    maskedPhone: item.maskedPhone,
-                                    collegeInfo: item.collegeInfo,
-                                    campaignTag: item.note,
-                                  ),
+                              onCallNow: () => AppPhoneCallService.instance
+                                  .dialFollowUpItem(context, item),
                               onSnooze: () => _showSnoozeSheet(context, item),
                               onMarkDone: () => cubit.completeFollowUp(item.id),
                             );

@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../ui/follow_ups/data/model/follow_up_models.dart';
 import '../../ui/leads/data/model/lead_models.dart';
 import '../../ui/leads/presentation/widgets/lead_call_sheets.dart';
 import '../utils/url_dialer_helper.dart';
@@ -44,6 +45,27 @@ class AppPhoneCallService with WidgetsBindingObserver {
     try {
       await _channel.invokeMethod('requestPermissions');
     } catch (_) {}
+  }
+
+  /// Launches the system phone dialer pad for [item] and starts duration tracking.
+  Future<void> dialFollowUpItem(
+    BuildContext context,
+    ExecutiveFollowUpItem item,
+  ) async {
+    final lead = ExecutiveLeadItem(
+      id: item.id,
+      name: item.leadName,
+      initials: item.leadName.isNotEmpty ? item.leadName[0].toUpperCase() : 'L',
+      maskedPhone: item.maskedPhone,
+      fullPhone: item.phone.isNotEmpty ? item.phone : item.maskedPhone,
+      collegeInfo: item.collegeInfo,
+      statusTag: 'Follow-up',
+      statusColor: const Color(0xFFEF8144),
+      statusBg: const Color(0xFFFEF0E6),
+      campaignTag: item.note,
+      followUpTime: item.timeLabel,
+    );
+    await dialLead(context, lead);
   }
 
   /// Launches the system phone dialer pad for [lead] and starts duration tracking.
