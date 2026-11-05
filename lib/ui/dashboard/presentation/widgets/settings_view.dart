@@ -378,39 +378,43 @@ class _SettingsViewState extends State<SettingsView>
                 ),
                 const SizedBox(height: 6),
                 if (isMobile) ...[
-                  TextField(
-                    controller: _nameController,
-                    decoration: InputDecoration(
-                      prefixIcon: const Icon(
-                        Icons.person_outline,
-                        size: 18,
-                        color: _muted,
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 10,
-                      ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: const BorderSide(color: _border),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: const BorderSide(color: _border),
+                  SizedBox(
+                    height: 48,
+                    child: TextField(
+                      controller: _nameController,
+                      decoration: InputDecoration(
+                        prefixIcon: const Icon(
+                          Icons.person_outline,
+                          size: 18,
+                          color: _muted,
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 12,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: const BorderSide(color: _border),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: const BorderSide(color: _border),
+                        ),
                       ),
                     ),
                   ),
                   const SizedBox(height: 12),
                   SizedBox(
                     width: double.infinity,
+                    height: 48,
                     child: ElevatedButton(
                       onPressed: _isSavingName ? null : _updateDisplayName,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: _primary,
                         foregroundColor: Colors.white,
+                        minimumSize: const Size(0, 48),
                         padding: const EdgeInsets.symmetric(
                           horizontal: 20,
-                          vertical: 13,
                         ),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
@@ -418,67 +422,86 @@ class _SettingsViewState extends State<SettingsView>
                       ),
                       child: _isSavingName
                           ? const SizedBox(
-                              width: 16,
-                              height: 16,
+                              width: 18,
+                              height: 18,
                               child: CircularProgressIndicator(
                                 strokeWidth: 2,
                                 color: Colors.white,
                               ),
                             )
-                          : const Text('Save Name'),
+                          : const Text(
+                              'Save Name',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
                     ),
                   ),
                 ] else ...[
                   Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Expanded(
-                        child: TextField(
-                          controller: _nameController,
-                          decoration: InputDecoration(
-                            prefixIcon: const Icon(
-                              Icons.person_outline,
-                              size: 18,
-                              color: _muted,
-                            ),
-                            contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 10,
-                            ),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide: const BorderSide(color: _border),
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide: const BorderSide(color: _border),
+                        child: SizedBox(
+                          height: 48,
+                          child: TextField(
+                            controller: _nameController,
+                            decoration: InputDecoration(
+                              prefixIcon: const Icon(
+                                Icons.person_outline,
+                                size: 18,
+                                color: _muted,
+                              ),
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 12,
+                              ),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                borderSide: const BorderSide(color: _border),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                borderSide: const BorderSide(color: _border),
+                              ),
                             ),
                           ),
                         ),
                       ),
                       const SizedBox(width: 12),
-                      ElevatedButton(
-                        onPressed: _isSavingName ? null : _updateDisplayName,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: _primary,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 20,
-                            vertical: 14,
+                      SizedBox(
+                        height: 48,
+                        child: ElevatedButton(
+                          onPressed: _isSavingName ? null : _updateDisplayName,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: _primary,
+                            foregroundColor: Colors.white,
+                            minimumSize: const Size(0, 48),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 22,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
                           ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                        ),
-                        child: _isSavingName
-                            ? const SizedBox(
-                                width: 16,
-                                height: 16,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: Colors.white,
+                          child: _isSavingName
+                              ? const SizedBox(
+                                  width: 18,
+                                  height: 18,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.white,
+                                  ),
+                                )
+                              : const Text(
+                                  'Save Name',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                  ),
                                 ),
-                              )
-                            : const Text('Save Name'),
+                        ),
                       ),
                     ],
                   ),
@@ -575,14 +598,15 @@ class _SettingsViewState extends State<SettingsView>
                 const SizedBox(height: 16),
                 SizedBox(
                   width: isMobile ? double.infinity : null,
+                  height: 48,
                   child: ElevatedButton(
                     onPressed: _isSavingEmail ? null : _updateEmail,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: _primary,
                       foregroundColor: Colors.white,
+                      minimumSize: const Size(0, 48),
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 20,
-                        vertical: 12,
+                        horizontal: 24,
                       ),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
@@ -590,14 +614,20 @@ class _SettingsViewState extends State<SettingsView>
                     ),
                     child: _isSavingEmail
                         ? const SizedBox(
-                            width: 16,
-                            height: 16,
+                            width: 18,
+                            height: 18,
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
                               color: Colors.white,
                             ),
                           )
-                        : const Text('Update Email'),
+                        : const Text(
+                            'Update Email',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
                   ),
                 ),
               ],
@@ -873,14 +903,15 @@ class _SettingsViewState extends State<SettingsView>
                 const SizedBox(height: 16),
                 SizedBox(
                   width: isMobile ? double.infinity : null,
+                  height: 48,
                   child: ElevatedButton(
                     onPressed: _isSavingPassword ? null : _updatePassword,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: _primary,
                       foregroundColor: Colors.white,
+                      minimumSize: const Size(0, 48),
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 20,
-                        vertical: 12,
+                        horizontal: 24,
                       ),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
@@ -888,14 +919,20 @@ class _SettingsViewState extends State<SettingsView>
                     ),
                     child: _isSavingPassword
                         ? const SizedBox(
-                            width: 16,
-                            height: 16,
+                            width: 18,
+                            height: 18,
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
                               color: Colors.white,
                             ),
                           )
-                        : const Text('Update Password'),
+                        : const Text(
+                            'Update Password',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
                   ),
                 ),
               ],
