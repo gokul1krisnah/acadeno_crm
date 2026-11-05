@@ -161,7 +161,7 @@ class LeadCallSheets {
                         16,
                         12,
                         16,
-                        16 + MediaQuery.of(ctx).viewInsets.bottom,
+                        24 + MediaQuery.of(ctx).viewInsets.bottom,
                       ),
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
@@ -393,10 +393,12 @@ class LeadCallSheets {
                               ),
                               focusedBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
-                                borderSide: const BorderSide(color: Color(0xFFEF8144), width: 1.5),
+                                borderSide: const BorderSide(color: Color(0xFF4F46E5), width: 1.5),
                               ),
                             ),
                           ),
+
+                          const SizedBox(height: 20),
 
                           // Save & next call Button
                           SizedBox(
@@ -428,7 +430,7 @@ class LeadCallSheets {
                                 }
                               },
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFFEF8144),
+                                backgroundColor: const Color(0xFF4F46E5),
                                 foregroundColor: Colors.white,
                                 elevation: 0,
                                 shape: RoundedRectangleBorder(
@@ -472,7 +474,7 @@ class LeadCallSheets {
           color: Colors.white,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: selected ? const Color(0xFFEF8144) : const Color(0xFFE2E8F0),
+            color: selected ? const Color(0xFF4F46E5) : const Color(0xFFE2E8F0),
             width: selected ? 1.5 : 1.0,
           ),
         ),
@@ -481,7 +483,7 @@ class LeadCallSheets {
           style: TextStyle(
             fontSize: 12.5,
             fontWeight: selected ? FontWeight.w700 : FontWeight.w600,
-            color: selected ? const Color(0xFFEF8144) : const Color(0xFF334155),
+            color: selected ? const Color(0xFF4F46E5) : const Color(0xFF334155),
           ),
         ),
       ),
