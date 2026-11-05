@@ -260,7 +260,7 @@ class _TeamManagementViewState extends State<TeamManagementView> {
                     // Header Section (Responsive Layout)
                     LayoutBuilder(
                       builder: (context, c) {
-                        final isMobile = c.maxWidth < 680;
+                        final isMobile = MediaQuery.of(context).size.width < 768 || c.maxWidth < 680;
                         final titleCol = Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: const [
@@ -412,7 +412,7 @@ class _TeamManagementViewState extends State<TeamManagementView> {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        final isMobile = constraints.maxWidth < 600;
+        final isMobile = MediaQuery.of(context).size.width < 768 || constraints.maxWidth < 600;
         final stats = [
           (
             'Total Assigned',

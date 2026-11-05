@@ -50,7 +50,7 @@ class _ImportLeadsBodyState extends State<_ImportLeadsBody> {
       builder: (context, state) {
         return LayoutBuilder(
           builder: (context, constraints) {
-            final isMobile = constraints.maxWidth < 720;
+            final isMobile = MediaQuery.of(context).size.width < 768 || constraints.maxWidth < 720;
 
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -378,8 +378,11 @@ class _ImportLeadsBodyState extends State<_ImportLeadsBody> {
                     ),
                   ],
                 )
-              : Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              : Wrap(
+                  spacing: 12,
+                  runSpacing: 8,
+                  alignment: WrapAlignment.spaceBetween,
+                  crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
                     const Text(
                       '2. Upload CSV or Excel file',

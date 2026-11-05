@@ -896,7 +896,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
             // Top Header - Rigorously aligned to the far right top
             LayoutBuilder(
               builder: (context, c) {
-                final isNarrow = c.maxWidth < 760;
+                final isNarrow = MediaQuery.of(context).size.width < 768 || c.maxWidth < 760;
                 final titleCol = Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -1225,7 +1225,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
             // Dark Bulk Selection & Assignment Bar (Responsive mobile-friendly layout)
             LayoutBuilder(
               builder: (context, barC) {
-                final isMobileBar = barC.maxWidth < 640;
+                final isMobileBar = MediaQuery.of(context).size.width < 768 || barC.maxWidth < 640;
 
                 final execDropdown = Container(
                   height: 38,

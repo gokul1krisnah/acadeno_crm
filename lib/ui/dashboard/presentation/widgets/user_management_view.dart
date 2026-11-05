@@ -648,7 +648,7 @@ class _UserManagementViewState extends State<UserManagementView> {
             // Top Header & Action Buttons (Responsive Layout)
             LayoutBuilder(
               builder: (context, c) {
-                final isMobile = c.maxWidth < 680;
+                final isMobile = MediaQuery.of(context).size.width < 768 || c.maxWidth < 680;
                 final titleCol = Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: const [

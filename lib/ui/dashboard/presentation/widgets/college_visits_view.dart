@@ -499,7 +499,7 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
           children: [
             LayoutBuilder(
               builder: (context, c) {
-                final isMobile = c.maxWidth < 640;
+                final isMobile = MediaQuery.of(context).size.width < 768 || c.maxWidth < 640;
                 final titleCol = Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -548,11 +548,7 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
                 if (isMobile) {
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      titleCol,
-                      const SizedBox(height: 12),
-                      planBtn,
-                    ],
+                    children: [titleCol, const SizedBox(height: 12), planBtn],
                   );
                 }
 
@@ -578,11 +574,17 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
               return Container(
                 width: double.infinity,
                 margin: const EdgeInsets.only(bottom: 16),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 16,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: const Color(0xFFF1F5F9), width: 1.2),
+                  border: Border.all(
+                    color: const Color(0xFFF1F5F9),
+                    width: 1.2,
+                  ),
                   boxShadow: const [
                     BoxShadow(
                       color: Color(0x04000000),
@@ -678,7 +680,9 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
                                   backgroundColor: Colors.white,
                                 ),
                                 child: Text(
-                                  isCompleted ? 'Update outcome' : 'Log outcome',
+                                  isCompleted
+                                      ? 'Update outcome'
+                                      : 'Log outcome',
                                   style: const TextStyle(
                                     fontSize: 13,
                                     fontWeight: FontWeight.w600,
@@ -789,9 +793,7 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
                             const TextSpan(text: ' '),
                             TextSpan(
                               text: visit.outcomeNotes,
-                              style: const TextStyle(
-                                color: Color(0xFF64748B),
-                              ),
+                              style: const TextStyle(color: Color(0xFF64748B)),
                             ),
                           ],
                         ],

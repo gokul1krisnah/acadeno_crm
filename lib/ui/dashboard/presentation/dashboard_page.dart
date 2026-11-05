@@ -265,7 +265,7 @@ class _DashboardViewState extends State<_DashboardView> {
               builder: (context, c) {
                 final showSidebar = c.maxWidth >= 960;
                 final wide = c.maxWidth >= 960;
-                final isMobile = c.maxWidth < 680;
+                final isMobile = MediaQuery.of(context).size.width < 768 || c.maxWidth < 680;
                 final pad = context.devicePadding;
 
                 return Scaffold(

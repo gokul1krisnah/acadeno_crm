@@ -272,7 +272,7 @@ class _FollowUpsViewState extends State<FollowUpsView> {
 
             return LayoutBuilder(
               builder: (context, constraints) {
-                final isMobile = constraints.maxWidth < 720;
+                final isMobile = MediaQuery.of(context).size.width < 768 || constraints.maxWidth < 720;
 
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -646,6 +646,187 @@ class _FollowUpsViewState extends State<FollowUpsView> {
   ) {
     final isOverdue = item.isOverdue;
 
+    final assignedBadge = Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: 14,
+        vertical: 8,
+      ),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+      ),
+      child: Text(
+        'Assigned: ${item.assignedExec}',
+        style: const TextStyle(
+          fontSize: 12.5,
+          fontWeight: FontWeight.w600,
+          color: Color(0xFF475467),
+        ),
+      ),
+    );
+
+    final reassignBtn = OutlinedButton(
+      style: OutlinedButton.styleFrom(
+        foregroundColor: const Color(0xFF4338CA),
+        side: const BorderSide(color: Color(0xFF4338CA)),
+        padding: const EdgeInsets.symmetric(
+          horizontal: 18,
+          vertical: 10,
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+        ),
+      ),
+      onPressed: () => _reassignSingle(item, executives),
+      child: const Text(
+        'Reassign',
+        style: TextStyle(
+          fontSize: 13,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+    );
+
+    final markDoneBtn = ElevatedButton(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: const Color(0xFF059669),
+        foregroundColor: Colors.white,
+        elevation: 0,
+        padding: const EdgeInsets.symmetric(
+          horizontal: 18,
+          vertical: 10,
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+        ),
+      ),
+      onPressed: () => _markCompleted(item.id, item.studentName),
+      child: const Text(
+        'Mark Done',
+        style: TextStyle(
+          fontSize: 13,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+    );
+
+    final iconWidget = Container(
+      width: 40,
+      height: 40,
+      decoration: BoxDecoration(
+        color: isOverdue ? const Color(0xFFFFF7ED) : const Color(0xFFEFF6FF),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      alignment: Alignment.center,
+      child: Icon(
+        isOverdue ? Icons.warning_rounded : CupertinoIcons.clock,
+        color: isOverdue ? const Color(0xFFEA580C) : const Color(0xFF2563EB),
+        size: 21,
+      ),
+    );
+
+    final studentInfoWidget = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Wrap(
+          spacing: 8,
+          runSpacing: 4,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: [
+            Text(
+              item.studentName,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF0F172A),
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 8,
+                vertical: 3,
+              ),
+              decoration: BoxDecoration(
+                color: isOverdue
+                    ? const Color(0xFFFFEDD5)
+                    : const Color(0xFFEFF6FF),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                item.dueLabel.toUpperCase(),
+                style: TextStyle(
+                  fontSize: 10.5,
+                  fontWeight: FontWeight.w800,
+                  color: isOverdue
+                      ? const Color(0xFFC2410C)
+                      : const Color(0xFF2563EB),
+                  letterSpacing: 0.2,
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 4),
+        Text(
+          '${item.phone} · ${item.collegeBranch}',
+          style: const TextStyle(
+            fontSize: 13,
+            color: Color(0xFF475467),
+          ),
+        ),
+        if (item.note.isNotEmpty) ...[
+          const SizedBox(height: 5),
+          Text(
+            'Note: ${item.note}',
+            style: const TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+              color: Color(0xFF334155),
+            ),
+          ),
+        ],
+      ],
+    );
+
+    if (isMobile) {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: isOverdue ? const Color(0xFFFED7AA) : const Color(0xFFE2E8F0),
+            width: isOverdue ? 1.2 : 1.0,
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                iconWidget,
+                const SizedBox(width: 12),
+                Expanded(child: studentInfoWidget),
+              ],
+            ),
+            const SizedBox(height: 14),
+            Row(children: [assignedBadge]),
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                Expanded(child: reassignBtn),
+                const SizedBox(width: 10),
+                Expanded(child: markDoneBtn),
+              ],
+            ),
+          ],
+        ),
+      );
+    }
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(18),
@@ -659,199 +840,22 @@ class _FollowUpsViewState extends State<FollowUpsView> {
           width: isOverdue ? 1.2 : 1.0,
         ),
       ),
-      child: Wrap(
-        spacing: 16,
-        runSpacing: 14,
-        alignment: WrapAlignment.spaceBetween,
-        crossAxisAlignment: WrapCrossAlignment.center,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
+          iconWidget,
+          const SizedBox(width: 14),
+          Expanded(child: studentInfoWidget),
+          const SizedBox(width: 16),
           Row(
             mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: isOverdue
-                      ? const Color(0xFFFFF7ED)
-                      : const Color(0xFFEFF6FF),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                alignment: Alignment.center,
-                child: Icon(
-                  isOverdue
-                      ? Icons.warning_rounded
-                      : CupertinoIcons.clock,
-                  color: isOverdue
-                      ? const Color(0xFFEA580C)
-                      : const Color(0xFF2563EB),
-                  size: 21,
-                ),
-              ),
-              const SizedBox(width: 14),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 4,
-                    crossAxisAlignment: WrapCrossAlignment.center,
-                    children: [
-                      Text(
-                        item.studentName,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                          color: Color(0xFF0F172A),
-                        ),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 3,
-                        ),
-                        decoration: BoxDecoration(
-                          color: isOverdue
-                              ? const Color(0xFFFFEDD5)
-                              : const Color(0xFFEFF6FF),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Text(
-                          item.dueLabel.toUpperCase(),
-                          style: TextStyle(
-                            fontSize: 10.5,
-                            fontWeight: FontWeight.w800,
-                            color: isOverdue
-                                ? const Color(0xFFC2410C)
-                                : const Color(0xFF2563EB),
-                            letterSpacing: 0.2,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    '${item.phone} · ${item.collegeBranch}',
-                    style: const TextStyle(
-                      fontSize: 13,
-                      color: Color(0xFF475467),
-                    ),
-                  ),
-                  const SizedBox(height: 5),
-                  Text(
-                    'Note: ${item.note}',
-                    style: const TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w500,
-                      color: Color(0xFF334155),
-                    ),
-                  ),
-                ],
-              ),
+              assignedBadge,
+              const SizedBox(width: 10),
+              reassignBtn,
+              const SizedBox(width: 10),
+              markDoneBtn,
             ],
-          ),
-          LayoutBuilder(
-            builder: (context, actionC) {
-              final isMobileCard = actionC.maxWidth < 560;
-
-              final assignedBadge = Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 14,
-                  vertical: 8,
-                ),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF8FAFC),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: const Color(0xFFE2E8F0)),
-                ),
-                child: Text(
-                  'Assigned: ${item.assignedExec}',
-                  style: const TextStyle(
-                    fontSize: 12.5,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF475467),
-                  ),
-                ),
-              );
-
-              final reassignBtn = OutlinedButton(
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: const Color(0xFF4338CA),
-                  side: const BorderSide(color: Color(0xFF4338CA)),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 18,
-                    vertical: 10,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-                onPressed: () => _reassignSingle(item, executives),
-                child: const Text(
-                  'Reassign',
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              );
-
-              final markDoneBtn = ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF059669),
-                  foregroundColor: Colors.white,
-                  elevation: 0,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 18,
-                    vertical: 10,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-                onPressed: () => _markCompleted(item.id, item.studentName),
-                child: const Text(
-                  'Mark Done',
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              );
-
-              if (isMobileCard) {
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    const SizedBox(height: 10),
-                    Row(
-                      children: [assignedBadge],
-                    ),
-                    const SizedBox(height: 10),
-                    Row(
-                      children: [
-                        Expanded(child: reassignBtn),
-                        const SizedBox(width: 10),
-                        Expanded(child: markDoneBtn),
-                      ],
-                    ),
-                  ],
-                );
-              }
-
-              return Wrap(
-                spacing: 12,
-                runSpacing: 10,
-                crossAxisAlignment: WrapCrossAlignment.center,
-                children: [
-                  assignedBadge,
-                  reassignBtn,
-                  markDoneBtn,
-                ],
-              );
-            },
           ),
         ],
       ),
