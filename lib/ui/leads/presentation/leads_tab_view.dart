@@ -583,7 +583,11 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                             const SizedBox(height: 22),
 
                             // 5. TODAY'S CALLS Header with Pending / Completed switcher
-                            Row(
+                            Wrap(
+                              spacing: 12,
+                              runSpacing: 8,
+                              alignment: WrapAlignment.spaceBetween,
+                              crossAxisAlignment: WrapCrossAlignment.center,
                               children: [
                                 Text(
                                   state.showingPendingCalls
@@ -596,7 +600,6 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                     color: Color(0xFF94A3B8),
                                   ),
                                 ),
-                                const Spacer(),
                                 Container(
                                   decoration: BoxDecoration(
                                     color: const Color(0xFFE2E8F0).withValues(alpha: 0.6),
@@ -898,22 +901,28 @@ class _MetricBox extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(
-              value,
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.w800,
-                color: valueColor,
-                letterSpacing: -0.5,
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                value,
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w800,
+                  color: valueColor,
+                  letterSpacing: -0.5,
+                ),
               ),
             ),
             const SizedBox(height: 4),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-                color: labelColor,
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                label,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                  color: labelColor,
+                ),
               ),
             ),
           ],
@@ -1046,12 +1055,16 @@ class _TodayLeadCard extends StatelessWidget {
                           color: Color(0xFFB45309),
                         ),
                         const SizedBox(width: 4),
-                        Text(
-                          item.lockedMessage!,
-                          style: const TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w700,
-                            color: Color(0xFFB45309),
+                        Expanded(
+                          child: Text(
+                            item.lockedMessage!,
+                            style: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFFB45309),
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
                       ],

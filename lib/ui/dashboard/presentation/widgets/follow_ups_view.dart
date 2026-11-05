@@ -272,7 +272,7 @@ class _FollowUpsViewState extends State<FollowUpsView> {
 
             return LayoutBuilder(
               builder: (context, constraints) {
-                final isMobile = MediaQuery.of(context).size.width < 640;
+                final isMobile = MediaQuery.of(context).size.width < 768 || constraints.maxWidth < 720;
 
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -663,6 +663,8 @@ class _FollowUpsViewState extends State<FollowUpsView> {
           fontWeight: FontWeight.w600,
           color: Color(0xFF475467),
         ),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
       ),
     );
 
@@ -679,11 +681,14 @@ class _FollowUpsViewState extends State<FollowUpsView> {
         ),
       ),
       onPressed: () => _reassignSingle(item, executives),
-      child: const Text(
-        'Reassign',
-        style: TextStyle(
-          fontSize: 13,
-          fontWeight: FontWeight.w700,
+      child: const FittedBox(
+        fit: BoxFit.scaleDown,
+        child: Text(
+          'Reassign',
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w700,
+          ),
         ),
       ),
     );
@@ -702,11 +707,14 @@ class _FollowUpsViewState extends State<FollowUpsView> {
         ),
       ),
       onPressed: () => _markCompleted(item.id, item.studentName),
-      child: const Text(
-        'Mark Done',
-        style: TextStyle(
-          fontSize: 13,
-          fontWeight: FontWeight.w700,
+      child: const FittedBox(
+        fit: BoxFit.scaleDown,
+        child: Text(
+          'Mark Done',
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w700,
+          ),
         ),
       ),
     );
@@ -819,7 +827,7 @@ class _FollowUpsViewState extends State<FollowUpsView> {
               ],
             ),
             const SizedBox(height: 14),
-            Row(children: [assignedBadge]),
+            Row(children: [Flexible(child: assignedBadge)]),
             const SizedBox(height: 10),
             Row(
               children: [
