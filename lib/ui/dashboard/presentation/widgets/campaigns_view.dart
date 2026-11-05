@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 
 import '../../../../shared/extensions/build_context_extension.dart';
 import '../../../../shared/snackbar_alerts/snack_alert.dart';
-import '../../../../shared/theme/app_colors.dart';
 
 class _CampaignReason {
   final String label;

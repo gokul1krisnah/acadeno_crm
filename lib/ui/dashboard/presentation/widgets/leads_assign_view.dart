@@ -1267,7 +1267,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                               return DropdownMenuItem<String>(
                                 value: exec.uid,
                                 child: Text(
-                                  '\ (\ today)',
+                                  '${exec.name} ($count today)',
                                   overflow: TextOverflow.ellipsis,
                                 ),
                               );
@@ -1395,7 +1395,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                         : () => _openReviewAssignmentDialog(context, state),
                     child: Text(
                       isMobileBar && state.selectedLeadIds.isNotEmpty
-                          ? 'Assign \ Selected Leads'
+                          ? 'Assign ${state.selectedLeadIds.length} Selected Leads'
                           : 'Assign',
                       style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
                     ),
@@ -1421,7 +1421,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         Text(
-                          '\ leads selected',
+                          '${state.selectedLeadIds.length} leads selected',
                           style: const TextStyle(
                             color: Colors.white,
                             fontSize: 14.5,
@@ -1464,7 +1464,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                     runSpacing: 12,
                     children: [
                       Text(
-                        '\ leads selected',
+                        '${state.selectedLeadIds.length} leads selected',
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 14.5,
