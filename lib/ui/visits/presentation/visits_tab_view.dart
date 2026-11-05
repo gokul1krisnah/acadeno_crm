@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import 'package:acadeno_crm/shared/utilities/link_launcher.dart';
 import 'package:acadeno_crm/shared/widgets/college_selector_field.dart';
@@ -127,7 +128,12 @@ class VisitsTabView extends StatelessWidget {
                       ...recent.map(
                         (visit) => Padding(
                           padding: const EdgeInsets.only(bottom: 12),
-                          child: _RecentVisitCard(visit: visit),
+                          child: _RecentVisitCard(
+                            visit: visit,
+                            onDirections: () => _handleDirections(context, visit),
+                            onRecordOutcome: () =>
+                                _showRecordOutcomeSheet(context, visit),
+                          ),
                         ),
                       ),
                     ],
@@ -1003,334 +1009,431 @@ class _UpcomingVisitCard extends StatelessWidget {
 
 class _RecentVisitCard extends StatelessWidget {
   final ExecutiveCollegeVisit visit;
+  final VoidCallback? onDirections;
+  final VoidCallback? onRecordOutcome;
 
-  const _RecentVisitCard({required this.visit});
+  const _RecentVisitCard({
+    required this.visit,
+    this.onDirections,
+    this.onRecordOutcome,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final isCancelled = visit.statusLabel.toLowerCase() == 'cancelled';
-    final month = visit.monthShort.isNotEmpty ? visit.monthShort : 'NOV';
-    final day = visit.dayNumber.isNotEmpty
-        ? (visit.dayNumber.length == 1
-            ? '0${visit.dayNumber}'
-            : visit.dayNumber)
-        : '04';
+    return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+      stream: FirebaseFirestore.instance.collection('leads').snapshots(),
+      builder: (context, snapshot) {
+        final allDocs = snapshot.data?.docs ?? const [];
+        final collegeQuery = visit.collegeName.trim().toLowerCase();
 
-    final title = visit.collegeName.isNotEmpty
-        ? visit.collegeName
-        : 'IT Department';
-    final subtitle = visit.subtitle.isNotEmpty
-        ? visit.subtitle
-        : 'Wed · 10:30 AM';
-    final leads = visit.leadsCollected > 0 ? visit.leadsCollected : 54;
-    final interested = visit.interestedCount > 0 ? visit.interestedCount : 14;
-    final met = visit.metSummary.isNotEmpty
-        ? visit.metSummary
-        : 'HOD CSE, Placement officer.';
-    final next = visit.nextActionSummary.isNotEmpty
-        ? visit.nextActionSummary
-        : 'Share workshop registration QR by Friday.';
+        final matchedDocs = allDocs.where((doc) {
+          final data = doc.data();
+          final leadCollege = (data['collegeBranchYear'] ??
+                  data['college'] ??
+                  data['collegeName'] ??
+                  '')
+              .toString()
+              .toLowerCase();
+          return collegeQuery.isNotEmpty &&
+              (leadCollege.contains(collegeQuery) ||
+                  collegeQuery.contains(leadCollege));
+        }).toList();
 
-    return Center(
-      child: Container(
-        constraints: const BoxConstraints(maxWidth: 377, minHeight: 263.19),
-        width: double.infinity,
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: const Color(0xFFF1F5F9), width: 1),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Top Row: Date Badge + Title/Subtitle/Status + Direction Button
-            Row(
+        final matchedInterested = matchedDocs.where((doc) {
+          final data = doc.data();
+          final outcome =
+              (data['outcome'] ?? data['status'] ?? '').toString().toLowerCase();
+          final score = (data['score'] as num?)?.toInt() ?? 0;
+          return outcome.contains('interest') ||
+              outcome.contains('callback') ||
+              score >= 70;
+        }).toList();
+
+        final int leads = visit.leadsCollected > 0
+            ? visit.leadsCollected
+            : (matchedDocs.isNotEmpty ? matchedDocs.length : 0);
+
+        final int interested = visit.interestedCount > 0
+            ? visit.interestedCount
+            : (matchedInterested.isNotEmpty ? matchedInterested.length : 0);
+
+        final isCancelled = visit.statusLabel.toLowerCase() == 'cancelled';
+        final month = visit.monthShort.isNotEmpty ? visit.monthShort : 'NOV';
+        final day = visit.dayNumber.isNotEmpty
+            ? (visit.dayNumber.length == 1
+                ? '0${visit.dayNumber}'
+                : visit.dayNumber)
+            : '04';
+
+        final title = visit.collegeName.isNotEmpty
+            ? visit.collegeName
+            : 'Campus Visit';
+        final subtitle = visit.subtitle.isNotEmpty
+            ? visit.subtitle
+            : '';
+        final met = visit.metSummary.isNotEmpty
+            ? visit.metSummary
+            : (isCancelled
+                ? 'Visit cancelled by executive'
+                : 'Meeting completed with college coordinators.');
+        final next = visit.nextActionSummary.isNotEmpty
+            ? visit.nextActionSummary
+            : (isCancelled
+                ? 'None'
+                : 'Follow up with faculty & registered students.');
+
+        return Center(
+          child: Container(
+            constraints: const BoxConstraints(maxWidth: 377, minHeight: 263.19),
+            width: double.infinity,
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(color: const Color(0xFFF1F5F9), width: 1),
+            ),
+            child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
-                // Date Badge
+                // Top Row: Date Badge + Title/Subtitle/Status + Action Buttons
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Date Badge
+                    Container(
+                      width: 56,
+                      height: 56,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF0FDF4),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: const Color(0xFFBBF7D0),
+                          width: 1,
+                        ),
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            month,
+                            style: const TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 0.5,
+                              color: Color(0xFF166534),
+                            ),
+                          ),
+                          const SizedBox(height: 1),
+                          Text(
+                            day,
+                            style: const TextStyle(
+                              fontSize: 21,
+                              fontWeight: FontWeight.w800,
+                              color: Color(0xFF166534),
+                              height: 1.1,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 14),
+
+                    // Title, Subtitle & Status
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            title,
+                            style: const TextStyle(
+                              fontSize: 17,
+                              fontWeight: FontWeight.w800,
+                              color: Color(0xFF0F172A),
+                              letterSpacing: -0.2,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          if (subtitle.isNotEmpty) ...[
+                            const SizedBox(height: 3),
+                            Text(
+                              subtitle,
+                              style: const TextStyle(
+                                fontSize: 12.5,
+                                fontWeight: FontWeight.w500,
+                                color: Color(0xFF64748B),
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                          const SizedBox(height: 5),
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Container(
+                                width: 6,
+                                height: 6,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: isCancelled
+                                      ? const Color(0xFFDC2626)
+                                      : const Color(0xFF047857),
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                isCancelled ? 'CANCELLED' : 'COMPLETED',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: 0.5,
+                                  color: isCancelled
+                                      ? const Color(0xFFDC2626)
+                                      : const Color(0xFF047857),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+
+                    // Direction & Outcome Buttons
+                    Wrap(
+                      spacing: 6,
+                      runSpacing: 4,
+                      children: [
+                        Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            onTap: onDirections ??
+                                () => LinkLauncher.launchCollegeMapsDirections(
+                                      visit.collegeName,
+                                      locationHint: visit.subtitle,
+                                    ),
+                            borderRadius: BorderRadius.circular(10),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 6,
+                              ),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFEEF2FF),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: const Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    Icons.directions_rounded,
+                                    size: 14,
+                                    color: Color(0xFF4F46E5),
+                                  ),
+                                  SizedBox(width: 4),
+                                  Text(
+                                    'Direction',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w700,
+                                      color: Color(0xFF4F46E5),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                        if (onRecordOutcome != null)
+                          Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              onTap: onRecordOutcome,
+                              borderRadius: BorderRadius.circular(10),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 9,
+                                  vertical: 6,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFF1F5F9),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: const Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      Icons.edit_note_rounded,
+                                      size: 14,
+                                      color: Color(0xFF334155),
+                                    ),
+                                    SizedBox(width: 3),
+                                    Text(
+                                      'Outcome',
+                                      style: TextStyle(
+                                        fontSize: 11.5,
+                                        fontWeight: FontWeight.w700,
+                                        color: Color(0xFF334155),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+
+                // Middle Box: Actual Real Data $leads LEADS | $interested INTERESTED
+                InkWell(
+                  onTap: onRecordOutcome,
+                  borderRadius: BorderRadius.circular(12),
+                  child: Container(
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF8FAFC),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: const Color(0xFFF1F5F9),
+                        width: 1,
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                '$leads',
+                                style: const TextStyle(
+                                  fontSize: 17,
+                                  fontWeight: FontWeight.w800,
+                                  color: Color(0xFF0F172A),
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                              const Text(
+                                'LEADS',
+                                style: TextStyle(
+                                  fontSize: 11.5,
+                                  fontWeight: FontWeight.w700,
+                                  color: Color(0xFF64748B),
+                                  letterSpacing: 0.4,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Container(
+                          width: 1,
+                          height: 18,
+                          color: const Color(0xFFE2E8F0),
+                        ),
+                        Expanded(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                '$interested',
+                                style: const TextStyle(
+                                  fontSize: 17,
+                                  fontWeight: FontWeight.w800,
+                                  color: Color(0xFF0F172A),
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                              const Text(
+                                'INTERESTED',
+                                style: TextStyle(
+                                  fontSize: 11.5,
+                                  fontWeight: FontWeight.w700,
+                                  color: Color(0xFF64748B),
+                                  letterSpacing: 0.4,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                // Bottom Met Box (Exact Figma Spec)
                 Container(
-                  width: 56,
-                  height: 56,
+                  width: double.infinity,
+                  constraints: const BoxConstraints(minHeight: 80.19),
+                  padding: const EdgeInsets.fromLTRB(16, 15, 16, 16),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFF0FDF4),
+                    color: const Color(0x80FFF7ED), // #FFF7ED80
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(
-                      color: const Color(0xFFBBF7D0),
+                      color: const Color(0xFFFFF7ED),
                       width: 1,
                     ),
                   ),
                   child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text(
-                        month,
-                        style: const TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: 0.5,
-                          color: Color(0xFF166534),
+                      RichText(
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        text: TextSpan(
+                          style: const TextStyle(
+                            fontSize: 13,
+                            color: Color(0xFF334155),
+                            height: 1.3,
+                          ),
+                          children: [
+                            const TextSpan(
+                              text: 'Met: ',
+                              style: TextStyle(
+                                fontWeight: FontWeight.w800,
+                                color: Color(0xFF0F172A),
+                              ),
+                            ),
+                            TextSpan(text: met),
+                          ],
                         ),
                       ),
-                      const SizedBox(height: 1),
-                      Text(
-                        day,
-                        style: const TextStyle(
-                          fontSize: 21,
-                          fontWeight: FontWeight.w800,
-                          color: Color(0xFF166534),
-                          height: 1.1,
+                      const SizedBox(height: 6),
+                      RichText(
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        text: TextSpan(
+                          style: const TextStyle(
+                            fontSize: 13,
+                            color: Color(0xFF334155),
+                            height: 1.3,
+                          ),
+                          children: [
+                            const TextSpan(
+                              text: 'Next: ',
+                              style: TextStyle(
+                                fontWeight: FontWeight.w800,
+                                color: Color(0xFF0F172A),
+                              ),
+                            ),
+                            TextSpan(text: next),
+                          ],
                         ),
                       ),
                     ],
-                  ),
-                ),
-                const SizedBox(width: 14),
-
-                // Title, Subtitle & Status
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        title,
-                        style: const TextStyle(
-                          fontSize: 17,
-                          fontWeight: FontWeight.w800,
-                          color: Color(0xFF0F172A),
-                          letterSpacing: -0.2,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 3),
-                      Text(
-                        subtitle,
-                        style: const TextStyle(
-                          fontSize: 12.5,
-                          fontWeight: FontWeight.w500,
-                          color: Color(0xFF64748B),
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 5),
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Container(
-                            width: 6,
-                            height: 6,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: isCancelled
-                                  ? const Color(0xFFDC2626)
-                                  : const Color(0xFF047857),
-                            ),
-                          ),
-                          const SizedBox(width: 6),
-                          Text(
-                            isCancelled ? 'CANCELLED' : 'COMPLETED',
-                            style: TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w800,
-                              letterSpacing: 0.5,
-                              color: isCancelled
-                                  ? const Color(0xFFDC2626)
-                                  : const Color(0xFF047857),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 8),
-
-                // Direction Button
-                Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    onTap: () => LinkLauncher.launchCollegeMapsDirections(
-                      visit.collegeName,
-                      locationHint: visit.subtitle,
-                    ),
-                    borderRadius: BorderRadius.circular(10),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 7,
-                      ),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFEEF2FF),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: const Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.directions_rounded,
-                            size: 15,
-                            color: Color(0xFF4F46E5),
-                          ),
-                          SizedBox(width: 5),
-                          Text(
-                            'Direction',
-                            style: TextStyle(
-                              fontSize: 12.5,
-                              fontWeight: FontWeight.w700,
-                              color: Color(0xFF4F46E5),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 16),
-
-            // Middle Box: 54 LEADS | 14 INTERESTED
-            Container(
-              height: 44,
-              decoration: BoxDecoration(
-                color: const Color(0xFFF8FAFC),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: const Color(0xFFF1F5F9),
-                  width: 1,
-                ),
-              ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          '$leads',
-                          style: const TextStyle(
-                            fontSize: 17,
-                            fontWeight: FontWeight.w800,
-                            color: Color(0xFF0F172A),
-                          ),
-                        ),
-                        const SizedBox(width: 6),
-                        const Text(
-                          'LEADS',
-                          style: TextStyle(
-                            fontSize: 11.5,
-                            fontWeight: FontWeight.w700,
-                            color: Color(0xFF64748B),
-                            letterSpacing: 0.4,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Container(
-                    width: 1,
-                    height: 18,
-                    color: const Color(0xFFE2E8F0),
-                  ),
-                  Expanded(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          '$interested',
-                          style: const TextStyle(
-                            fontSize: 17,
-                            fontWeight: FontWeight.w800,
-                            color: Color(0xFF0F172A),
-                          ),
-                        ),
-                        const SizedBox(width: 6),
-                        const Text(
-                          'INTERESTED',
-                          style: TextStyle(
-                            fontSize: 11.5,
-                            fontWeight: FontWeight.w700,
-                            color: Color(0xFF64748B),
-                            letterSpacing: 0.4,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-
-            // Bottom Met Box (Exact Figma Spec)
-            Container(
-              width: double.infinity,
-              constraints: const BoxConstraints(minHeight: 80.19),
-              padding: const EdgeInsets.fromLTRB(16, 15, 16, 16),
-              decoration: BoxDecoration(
-                color: const Color(0x80FFF7ED), // #FFF7ED80
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                  color: const Color(0xFFFFF7ED),
-                  width: 1,
-                ),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  RichText(
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    text: TextSpan(
-                      style: const TextStyle(
-                        fontSize: 13,
-                        color: Color(0xFF334155),
-                        height: 1.3,
-                      ),
-                      children: [
-                        const TextSpan(
-                          text: 'Met: ',
-                          style: TextStyle(
-                            fontWeight: FontWeight.w800,
-                            color: Color(0xFF0F172A),
-                          ),
-                        ),
-                        TextSpan(text: met),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  RichText(
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    text: TextSpan(
-                      style: const TextStyle(
-                        fontSize: 13,
-                        color: Color(0xFF334155),
-                        height: 1.3,
-                      ),
-                      children: [
-                        const TextSpan(
-                          text: 'Next: ',
-                          style: TextStyle(
-                            fontWeight: FontWeight.w800,
-                            color: Color(0xFF0F172A),
-                          ),
-                        ),
-                        TextSpan(text: next),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }
