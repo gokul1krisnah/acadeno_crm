@@ -115,6 +115,30 @@ class _CampaignData {
     required this.score70Plus,
     required this.assignedCount,
   });
+
+  _CampaignData copyWith({
+    String? id,
+    String? title,
+    String? badge,
+    String? topics,
+    String? branches,
+    String? years,
+    String? matchingLeads,
+    String? score70Plus,
+    int? assignedCount,
+  }) {
+    return _CampaignData(
+      id: id ?? this.id,
+      title: title ?? this.title,
+      badge: badge ?? this.badge,
+      topics: topics ?? this.topics,
+      branches: branches ?? this.branches,
+      years: years ?? this.years,
+      matchingLeads: matchingLeads ?? this.matchingLeads,
+      score70Plus: score70Plus ?? this.score70Plus,
+      assignedCount: assignedCount ?? this.assignedCount,
+    );
+  }
 }
 
 class CampaignsView extends StatefulWidget {
@@ -131,33 +155,10 @@ class _CampaignsViewState extends State<CampaignsView> {
   bool _showAllCampaigns = false;
   int _activeCampaignIndex = 0;
 
-  final List<String> _allExecutives = [
-    'Anjali R',
-    'Rahul M',
-    'Shilpa K',
-    'Ajmal P',
-    'Neethu S',
-  ];
-
-  final Set<String> _selectedExecutives = {
-    'Anjali R',
-    'Rahul M',
-    'Shilpa K',
-    'Ajmal P',
-  };
+  final List<String> _allExecutives = [];
+  final Set<String> _selectedExecutives = {};
 
   static final List<_CampaignData> _defaultCampaigns = [
-    _CampaignData(
-      id: 'cmp_default_2',
-      title: 'Full Stack Web Bootcamp',
-      badge: 'Starts 22 Nov',
-      topics: 'web, react, node',
-      branches: 'CSE, IT, BCA',
-      years: '3rd, 4th',
-      matchingLeads: '1410',
-      score70Plus: '248',
-      assignedCount: 267,
-    ),
     _CampaignData(
       id: 'cmp_default_1',
       title: 'AI & Machine Learning Workshop',
@@ -165,9 +166,20 @@ class _CampaignsViewState extends State<CampaignsView> {
       topics: 'ai, python, ml',
       branches: 'CSE, IT, ECE',
       years: '2nd, 3rd',
-      matchingLeads: '1942',
-      score70Plus: '312',
-      assignedCount: 120,
+      matchingLeads: '0',
+      score70Plus: '0',
+      assignedCount: 0,
+    ),
+    _CampaignData(
+      id: 'cmp_default_2',
+      title: 'Full Stack Web Bootcamp',
+      badge: 'Starts 22 Nov',
+      topics: 'web, react, node',
+      branches: 'CSE, IT, BCA',
+      years: '3rd, 4th',
+      matchingLeads: '0',
+      score70Plus: '0',
+      assignedCount: 0,
     ),
     _CampaignData(
       id: 'cmp_default_3',
@@ -176,119 +188,17 @@ class _CampaignsViewState extends State<CampaignsView> {
       topics: 'iot, robotics, embedded',
       branches: 'ECE, EEE, MECH',
       years: '2nd, 3rd, 4th',
-      matchingLeads: '980',
-      score70Plus: '194',
-      assignedCount: 60,
+      matchingLeads: '0',
+      score70Plus: '0',
+      assignedCount: 0,
     ),
   ];
 
   late List<_CampaignData> _campaigns = List.from(_defaultCampaigns);
-
-  static final List<_CampaignLead> _fallbackLeads = [
-    _CampaignLead(
-      id: 'fblead_1',
-      rank: 1,
-      name: 'Gopika Das',
-      collegeBranchYear: 'MES College · CSE · 3rd yr',
-      score: 95,
-      scoreBarColor: const Color(0xFF15803D),
-      reasons: [
-        _CampaignReason.blue,
-        _CampaignReason.interest,
-        _CampaignReason.attended,
-        _CampaignReason.targetYr,
-      ],
-      lastContact: 'Never',
-    ),
-    _CampaignLead(
-      id: 'fblead_2',
-      rank: 2,
-      name: 'Sneha Joseph',
-      collegeBranchYear: 'Farook College · BCA · 3rd yr',
-      score: 80,
-      scoreBarColor: const Color(0xFF15803D),
-      reasons: [
-        _CampaignReason.interest,
-        _CampaignReason.attended,
-        _CampaignReason.warm,
-      ],
-      lastContact: 'Mon',
-    ),
-    _CampaignLead(
-      id: 'fblead_3',
-      rank: 3,
-      name: 'Nandana P',
-      collegeBranchYear: 'GEC Kozhikode · CSE · 2nd yr',
-      score: 75,
-      scoreBarColor: const Color(0xFF15803D),
-      reasons: [
-        _CampaignReason.blue,
-        _CampaignReason.interest,
-        _CampaignReason.targetYr,
-        _CampaignReason.recent,
-      ],
-      lastContact: '24 Oct',
-    ),
-    _CampaignLead(
-      id: 'fblead_4',
-      rank: 4,
-      name: 'Adithya Krishnan',
-      collegeBranchYear: 'NIT Calicut · ECE · 3rd yr',
-      score: 70,
-      scoreBarColor: const Color(0xFF15803D),
-      reasons: [
-        _CampaignReason.blue,
-        _CampaignReason.attended,
-        _CampaignReason.targetYr,
-      ],
-      lastContact: '2 Oct',
-    ),
-    _CampaignLead(
-      id: 'fblead_5',
-      rank: 5,
-      name: 'Lekshmi Raj',
-      collegeBranchYear: 'MES College · IT · 4th yr',
-      score: 60,
-      scoreBarColor: const Color(0xFF2563EB),
-      reasons: [
-        _CampaignReason.blue,
-        _CampaignReason.interest,
-        _CampaignReason.pastCustomer,
-      ],
-      lastContact: '18 Oct',
-    ),
-    _CampaignLead(
-      id: 'fblead_6',
-      rank: 6,
-      name: 'Arun Kumar',
-      collegeBranchYear: 'NIT Calicut · CSE · 3rd yr',
-      score: 55,
-      scoreBarColor: const Color(0xFF2563EB),
-      reasons: [
-        _CampaignReason.blue,
-        _CampaignReason.interest,
-        _CampaignReason.warm,
-        _CampaignReason.calledRecent,
-      ],
-      lastContact: 'Yesterday',
-    ),
-    _CampaignLead(
-      id: 'fblead_7',
-      rank: 7,
-      name: 'Hiba Fathima',
-      collegeBranchYear: 'KMCT · CSE · 2nd yr',
-      score: 45,
-      scoreBarColor: const Color(0xFF94A3B8),
-      reasons: [
-        _CampaignReason.blue,
-        _CampaignReason.targetYr,
-        _CampaignReason.recent,
-      ],
-      lastContact: 'Never',
-    ),
-  ];
-
-  late List<_CampaignLead> _rankedLeads = List.from(_fallbackLeads);
+  List<_CampaignLead> _rankedLeads = [];
+  List<QueryDocumentSnapshot<Map<String, dynamic>>> _liveLeadDocs = [];
+  StreamSubscription? _leadsSubscription;
+  StreamSubscription? _campaignsSubscription;
 
   @override
   void initState() {
@@ -300,12 +210,15 @@ class _CampaignsViewState extends State<CampaignsView> {
 
   @override
   void dispose() {
+    _leadsSubscription?.cancel();
+    _campaignsSubscription?.cancel();
     _splitCountController.dispose();
     super.dispose();
   }
 
   void _listenLiveCampaigns() {
-    FirebaseFirestore.instance.collection('campaigns').snapshots().listen((
+    _campaignsSubscription?.cancel();
+    _campaignsSubscription = FirebaseFirestore.instance.collection('campaigns').snapshots().listen((
       snap,
     ) {
       if (snap.docs.isEmpty) {
@@ -332,6 +245,9 @@ class _CampaignsViewState extends State<CampaignsView> {
               _activeCampaignIndex = 0;
             }
           });
+          if (_liveLeadDocs.isNotEmpty) {
+            _recalculateAllCampaignsAndActiveRanking();
+          }
         }
       }
     });
@@ -347,9 +263,9 @@ class _CampaignsViewState extends State<CampaignsView> {
         'topics': c.topics,
         'branches': c.branches,
         'years': c.years,
-        'matchingLeads': c.matchingLeads,
-        'score70Plus': c.score70Plus,
-        'assignedCount': c.assignedCount,
+        'matchingLeads': '0',
+        'score70Plus': '0',
+        'assignedCount': 0,
         'createdAt': FieldValue.serverTimestamp(),
         'updatedAt': FieldValue.serverTimestamp(),
       });
@@ -358,107 +274,166 @@ class _CampaignsViewState extends State<CampaignsView> {
   }
 
   void _listenLiveLeadsAndRank() {
-    FirebaseFirestore.instance.collection('leads').snapshots().listen((snap) {
-      if (snap.docs.isNotEmpty) {
-        final currentCampaign = _campaigns.isNotEmpty
-            ? _campaigns[_activeCampaignIndex]
-            : null;
-        final targetBranches = (currentCampaign?.branches ?? 'CSE, IT, ECE')
-            .toUpperCase();
-        final targetTopics = (currentCampaign?.topics ?? 'ai, python, ml')
-            .toLowerCase();
-
-        final scoredList = <_CampaignLead>[];
-        for (var i = 0; i < snap.docs.length; i++) {
-          final doc = snap.docs[i];
-          final d = doc.data();
-          final name = (d['name'] ?? 'Lead ${i + 1}').toString();
-          final college = (d['college'] ?? d['collegeBranch'] ?? 'College')
-              .toString();
-          final branch = (d['branch'] ?? '').toString().toUpperCase();
-          final year = (d['year'] ?? '').toString();
-          final course = (d['course'] ?? d['source'] ?? '')
-              .toString()
-              .toLowerCase();
-          final status = (d['status'] ?? 'New').toString();
-
-          int score = 40;
-          final reasons = <_CampaignReason>[];
-
-          if (branch.isNotEmpty && targetBranches.contains(branch)) {
-            score += 25;
-            reasons.add(_CampaignReason.blue);
-          }
-          if (course.isNotEmpty &&
-              (course.contains('ai') ||
-                  course.contains('python') ||
-                  course.contains('workshop') ||
-                  targetTopics.contains(course))) {
-            score += 20;
-            reasons.add(_CampaignReason.interest);
-          }
-          if (status.toLowerCase().contains('interest')) {
-            score += 15;
-            reasons.add(_CampaignReason.warm);
-          } else if (status.toLowerCase().contains('new') ||
-              status.toLowerCase().contains('assigned')) {
-            score += 10;
-            reasons.add(_CampaignReason.recent);
-          }
-          if (year.contains('2') || year.contains('3')) {
-            reasons.add(_CampaignReason.targetYr);
-          }
-
-          score = score.clamp(20, 98);
-          final barColor = score >= 70
-              ? const Color(0xFF15803D)
-              : (score >= 50
-                    ? const Color(0xFF2563EB)
-                    : const Color(0xFF94A3B8));
-
-          final collegeBranchYear = [
-            college,
-            if (branch.isNotEmpty) branch,
-            if (year.isNotEmpty) year,
-          ].join(' · ');
-
-          scoredList.add(
-            _CampaignLead(
-              id: doc.id,
-              rank: i + 1,
-              name: name,
-              collegeBranchYear: collegeBranchYear,
-              score: score,
-              scoreBarColor: barColor,
-              reasons: reasons.isEmpty ? [_CampaignReason.recent] : reasons,
-              lastContact: LeadDateHelper.formatLastContact(
-                lastContactAt: d['lastContactAt'],
-                lastCalledAt: d['lastCalledAt'],
-                rawLastContact: d['lastContact'],
-                updatedAt: d['updatedAt'],
-                createdAt: d['createdAt'],
-                status: (d['status'] ?? '').toString(),
-                timeline: (d['timeline'] as List?)?.toList(),
-              ),
-              assignedExec: (d['assignedToName'] ?? d['assignedTo'])
-                  ?.toString(),
-            ),
-          );
-        }
-
-        scoredList.sort((a, b) => b.score.compareTo(a.score));
-        final ranked = <_CampaignLead>[];
-        for (var i = 0; i < scoredList.length; i++) {
-          ranked.add(scoredList[i].copyWith(rank: i + 1));
-        }
-
-        if (mounted && ranked.isNotEmpty) {
-          setState(() {
-            _rankedLeads = ranked;
-          });
-        }
-      }
+    _leadsSubscription?.cancel();
+    _leadsSubscription = FirebaseFirestore.instance.collection('leads').snapshots().listen((snap) {
+      _liveLeadDocs = snap.docs;
+      _recalculateAllCampaignsAndActiveRanking();
     });
+  }
+
+  void _recalculateAllCampaignsAndActiveRanking() {
+    if (_campaigns.isEmpty) return;
+
+    // 1. Recalculate actual matching leads, score 70+, and assigned count for every campaign
+    final updatedCampaigns = <_CampaignData>[];
+    for (var idx = 0; idx < _campaigns.length; idx++) {
+      final camp = _campaigns[idx];
+      final targetBranches = camp.branches.toUpperCase();
+      final targetTopics = camp.topics.toLowerCase();
+
+      int matching = 0;
+      int score70 = 0;
+      int assigned = 0;
+
+      for (final doc in _liveLeadDocs) {
+        final d = doc.data();
+        final branch = (d['branch'] ?? '').toString().toUpperCase();
+        final course = (d['course'] ?? d['source'] ?? '').toString().toLowerCase();
+        final status = (d['status'] ?? 'New').toString();
+        final assignedTo = (d['assignedToName'] ?? d['assignedTo'])?.toString().trim();
+
+        final isAssigned = assignedTo != null &&
+            assignedTo.isNotEmpty &&
+            assignedTo != 'null' &&
+            assignedTo != 'Unassigned';
+        if (isAssigned) assigned++;
+
+        int s = 40;
+        if (branch.isNotEmpty && targetBranches.contains(branch)) s += 25;
+        if (course.isNotEmpty &&
+            (course.contains('ai') ||
+                course.contains('python') ||
+                course.contains('workshop') ||
+                targetTopics.contains(course))) {
+          s += 20;
+        }
+        if (status.toLowerCase().contains('interest')) s += 15;
+        s = s.clamp(20, 98);
+
+        matching++;
+        if (s >= 70) score70++;
+      }
+
+      updatedCampaigns.add(camp.copyWith(
+        matchingLeads: '$matching',
+        score70Plus: '$score70',
+        assignedCount: assigned,
+      ));
+    }
+
+    // 2. Score and rank leads for the active campaign
+    final activeCamp = updatedCampaigns[_activeCampaignIndex];
+    final activeBranches = activeCamp.branches.toUpperCase();
+    final activeTopics = activeCamp.topics.toLowerCase();
+
+    final scoredList = <_CampaignLead>[];
+    for (var i = 0; i < _liveLeadDocs.length; i++) {
+      final doc = _liveLeadDocs[i];
+      final d = doc.data();
+      final name = (d['name'] ?? 'Lead ${i + 1}').toString();
+      final college = (d['college'] ?? d['collegeBranch'] ?? 'College').toString();
+      final branch = (d['branch'] ?? '').toString().toUpperCase();
+      final year = (d['year'] ?? '').toString();
+      final course = (d['course'] ?? d['source'] ?? '').toString().toLowerCase();
+      final status = (d['status'] ?? 'New').toString();
+      final assignedTo = (d['assignedToName'] ?? d['assignedTo'])?.toString().trim();
+
+      int score = 40;
+      final reasons = <_CampaignReason>[];
+
+      if (branch.isNotEmpty && activeBranches.contains(branch)) {
+        score += 25;
+        reasons.add(_CampaignReason.blue);
+      }
+      if (course.isNotEmpty &&
+          (course.contains('ai') ||
+              course.contains('python') ||
+              course.contains('workshop') ||
+              activeTopics.contains(course))) {
+        score += 20;
+        reasons.add(_CampaignReason.interest);
+      }
+      if (status.toLowerCase().contains('interest')) {
+        score += 15;
+        reasons.add(_CampaignReason.warm);
+      } else if (status.toLowerCase().contains('new') ||
+          status.toLowerCase().contains('assigned')) {
+        score += 10;
+        reasons.add(_CampaignReason.recent);
+      }
+      if (year.contains('2') || year.contains('3')) {
+        reasons.add(_CampaignReason.targetYr);
+      }
+
+      score = score.clamp(20, 98);
+      final barColor = score >= 70
+          ? const Color(0xFF15803D)
+          : (score >= 50
+                ? const Color(0xFF2563EB)
+                : const Color(0xFF94A3B8));
+
+      final collegeBranchYear = [
+        college,
+        if (branch.isNotEmpty) branch,
+        if (year.isNotEmpty) year,
+      ].join(' · ');
+
+      scoredList.add(
+        _CampaignLead(
+          id: doc.id,
+          rank: i + 1,
+          name: name,
+          collegeBranchYear: collegeBranchYear,
+          score: score,
+          scoreBarColor: barColor,
+          reasons: reasons.isEmpty ? [_CampaignReason.recent] : reasons,
+          lastContact: LeadDateHelper.formatLastContact(
+            lastContactAt: d['lastContactAt'],
+            lastCalledAt: d['lastCalledAt'],
+            rawLastContact: d['lastContact'],
+            updatedAt: d['updatedAt'],
+            createdAt: d['createdAt'],
+            status: (d['status'] ?? '').toString(),
+            timeline: (d['timeline'] as List?)?.toList(),
+          ),
+          assignedExec: (assignedTo != null && assignedTo.isNotEmpty && assignedTo != 'null' && assignedTo != 'Unassigned')
+              ? assignedTo
+              : null,
+        ),
+      );
+    }
+
+    scoredList.sort((a, b) => b.score.compareTo(a.score));
+    final ranked = <_CampaignLead>[];
+    for (var i = 0; i < scoredList.length; i++) {
+      ranked.add(scoredList[i].copyWith(rank: i + 1));
+    }
+
+    if (mounted) {
+      setState(() {
+        _campaigns = updatedCampaigns;
+        _rankedLeads = ranked;
+      });
+    }
+
+    // Persist real live counts to Firestore so stale dummy numbers are erased permanently
+    if (activeCamp.id.isNotEmpty && !activeCamp.id.startsWith('cmp_default_')) {
+      FirebaseFirestore.instance.collection('campaigns').doc(activeCamp.id).update({
+        'matchingLeads': activeCamp.matchingLeads,
+        'score70Plus': activeCamp.score70Plus,
+        'assignedCount': activeCamp.assignedCount,
+      }).catchError((_) {});
+    }
   }
 
   void _fetchLiveExecutives() async {
@@ -1244,7 +1219,22 @@ class _CampaignsViewState extends State<CampaignsView> {
             ],
           ),
         ),
-        ListView.separated(
+        if (_rankedLeads.isEmpty)
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 40),
+            child: Center(
+              child: Text(
+                'No leads found in database. Import or add leads to see ranked campaign candidates.',
+                style: TextStyle(
+                  fontSize: 13.5,
+                  fontWeight: FontWeight.w500,
+                  color: Color(0xFF667085),
+                ),
+              ),
+            ),
+          )
+        else
+          ListView.separated(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
           itemCount: _rankedLeads.length,
@@ -1393,6 +1383,22 @@ class _CampaignsViewState extends State<CampaignsView> {
   }
 
   Widget _buildMobileRankedList() {
+    if (_rankedLeads.isEmpty) {
+      return const Padding(
+        padding: EdgeInsets.symmetric(vertical: 40),
+        child: Center(
+          child: Text(
+            'No leads found in database. Import or add leads to see ranked campaign candidates.',
+            style: TextStyle(
+              fontSize: 13.5,
+              fontWeight: FontWeight.w500,
+              color: Color(0xFF667085),
+            ),
+          ),
+        ),
+      );
+    }
+
     return ListView.separated(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
@@ -1663,7 +1669,7 @@ class _CampaignsViewState extends State<CampaignsView> {
                               _activeCampaignIndex = index;
                               _showAllCampaigns = false;
                             });
-                            _listenLiveLeadsAndRank();
+                            _recalculateAllCampaignsAndActiveRanking();
                           },
                           child: const Text('View ranked leads'),
                         ),
@@ -1726,7 +1732,7 @@ class _CampaignsViewState extends State<CampaignsView> {
                             _activeCampaignIndex = index;
                             _showAllCampaigns = false;
                           });
-                          _listenLiveLeadsAndRank();
+                          _recalculateAllCampaignsAndActiveRanking();
                         },
                         child: const Text('View ranked leads'),
                       ),
