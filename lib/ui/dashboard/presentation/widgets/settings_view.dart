@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:acadeno_crm/shared/snackbar_alerts/snack_alert.dart';
 import 'package:acadeno_crm/shared/widgets/acadeno_dropdown.dart';
 
-const _primary = Color(0xFF4338CA);
+const _primary = Color(0xFFEF8144);
 const _border = Color(0xFFE5E7EB);
 const _muted = Color(0xFF6B7280);
 const _text = Color(0xFF111827);

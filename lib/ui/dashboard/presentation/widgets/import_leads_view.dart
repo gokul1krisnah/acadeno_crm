@@ -424,7 +424,7 @@ class _ImportLeadsBodyState extends State<_ImportLeadsBody> {
                         const SizedBox(height: 14),
                         ElevatedButton.icon(
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF4338CA),
+                            backgroundColor: const Color(0xFFEF8144),
                             foregroundColor: Colors.white,
                             elevation: 0,
                             padding: const EdgeInsets.symmetric(
@@ -675,7 +675,7 @@ class _ImportLeadsBodyState extends State<_ImportLeadsBody> {
                       ? null
                       : () => _showImportConfirmation(context, state),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF4338CA),
+                    backgroundColor: const Color(0xFFEF8144),
                     foregroundColor: Colors.white,
                     elevation: 0,
                     padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -1134,7 +1134,7 @@ class _ImportLeadsBodyState extends State<_ImportLeadsBody> {
               ),
               ElevatedButton.icon(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF4338CA),
+                  backgroundColor: const Color(0xFFEF8144),
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(
                     horizontal: 22,
@@ -1311,7 +1311,7 @@ class _ImportLeadsBodyState extends State<_ImportLeadsBody> {
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF4338CA),
+              backgroundColor: const Color(0xFFEF8144),
               foregroundColor: Colors.white,
             ),
             onPressed: () {
@@ -1392,7 +1392,7 @@ class _ImportLeadsBodyState extends State<_ImportLeadsBody> {
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF4338CA),
+              backgroundColor: const Color(0xFFEF8144),
               foregroundColor: Colors.white,
             ),
             onPressed: () {

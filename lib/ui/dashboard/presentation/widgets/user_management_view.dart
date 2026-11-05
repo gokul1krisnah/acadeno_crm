@@ -28,7 +28,7 @@ class _UserManagementViewState extends State<UserManagementView> {
     _usersStream ??= context.read<DashboardCubit>().watchAllUsers();
   }
 
-  static const _primaryColor = Color(0xFF4338CA);
+  static const _primaryColor = Color(0xFFEF8144);
   static const _textDark = Color(0xFF0F172A);
   static const _textMuted = Color(0xFF64748B);
   static const _borderColor = Color(0xFFE2E8F0);

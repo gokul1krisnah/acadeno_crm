@@ -177,7 +177,7 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
 
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF4338CA),
+              backgroundColor: const Color(0xFFEF8144),
 
               foregroundColor: Colors.white,
             ),
@@ -535,7 +535,7 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
                       icon: const Icon(Icons.add, size: 16),
                       label: const Text('Plan college visit'),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF4338CA),
+                        backgroundColor: const Color(0xFFEF8144),
                         foregroundColor: Colors.white,
                         elevation: 0,
                         padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),

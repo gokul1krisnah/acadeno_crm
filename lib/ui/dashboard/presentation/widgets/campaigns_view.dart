@@ -645,7 +645,7 @@ class _CampaignsViewState extends State<CampaignsView> {
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
+              backgroundColor: const Color(0xFFEF8144),
               foregroundColor: Colors.white,
             ),
             onPressed: () async {
@@ -735,7 +735,7 @@ class _CampaignsViewState extends State<CampaignsView> {
                   icon: const Icon(Icons.add, size: 18),
                   label: const Text('New Campaign'),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF4F46E5),
+                    backgroundColor: const Color(0xFFEF8144),
                     foregroundColor: Colors.white,
                     elevation: 0,
                     padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
@@ -902,7 +902,7 @@ class _CampaignsViewState extends State<CampaignsView> {
                         child: ElevatedButton(
                           onPressed: _assignCampaignLeads,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF4F46E5),
+                            backgroundColor: const Color(0xFFEF8144),
                             foregroundColor: Colors.white,
                             elevation: 0,
                             padding: const EdgeInsets.symmetric(horizontal: 18),
@@ -1453,7 +1453,7 @@ class _CampaignsViewState extends State<CampaignsView> {
               icon: const Icon(Icons.add, size: 16),
               label: const Text('New campaign'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF4F46E5),
+                backgroundColor: const Color(0xFFEF8144),
                 foregroundColor: Colors.white,
               ),
             ),

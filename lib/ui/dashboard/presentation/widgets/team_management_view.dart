@@ -104,7 +104,7 @@ class _TeamManagementViewState extends State<TeamManagementView> {
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF4338CA),
+                backgroundColor: const Color(0xFFEF8144),
                 foregroundColor: Colors.white,
               ),
               onPressed: () {

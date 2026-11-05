@@ -2141,13 +2141,13 @@ class _OverdueFollowUps extends StatelessWidget {
                     vertical: 6,
                   ),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFEEF2FF),
+                    color: const Color(0xFFFFF7ED),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: const Text(
                     'Manage in Leads',
                     style: TextStyle(
-                      color: _primary,
+                      color: Color(0xFFEF8144),
                       fontSize: 12,
                       fontWeight: FontWeight.w700,
                     ),
@@ -2237,12 +2237,13 @@ class _OverdueFollowUps extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(width: 10),
-                      OutlinedButton(
+                      ElevatedButton(
                         onPressed: onReassign,
-                        style: OutlinedButton.styleFrom(
-                          side: const BorderSide(color: Color(0xFFCBD5E1)),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFEF8144),
+                          foregroundColor: Colors.white,
+                          elevation: 0,
                           shape: const StadiumBorder(),
-                          foregroundColor: const Color(0xFF334155),
                           padding: const EdgeInsets.symmetric(
                             horizontal: 14,
                             vertical: 6,
@@ -2253,7 +2254,7 @@ class _OverdueFollowUps extends StatelessWidget {
                           'Re Assign',
                           style: TextStyle(
                             fontSize: 12,
-                            fontWeight: FontWeight.w600,
+                            fontWeight: FontWeight.w700,
                           ),
                         ),
                       ),
@@ -2319,13 +2320,13 @@ class _CollegeVisits extends StatelessWidget {
                     vertical: 6,
                   ),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFEEF2FF),
+                    color: const Color(0xFFFFF7ED),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: const Text(
                     'Plan Visit',
                     style: TextStyle(
-                      color: _primary,
+                      color: Color(0xFFEF8144),
                       fontSize: 12,
                       fontWeight: FontWeight.w700,
                     ),

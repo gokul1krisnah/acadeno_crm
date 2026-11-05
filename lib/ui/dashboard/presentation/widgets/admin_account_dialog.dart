@@ -285,7 +285,7 @@ class _AdminAccountDialogState extends State<AdminAccountDialog>
 
   @override
   Widget build(BuildContext context) {
-    const primary = Color(0xFF4338CA);
+    const primary = Color(0xFFEF8144);
     const border = Color(0xFFE2E8F0);
     const textDark = Color(0xFF0F172A);
     const textMuted = Color(0xFF64748B);
