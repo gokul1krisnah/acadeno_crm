@@ -1201,7 +1201,12 @@ class _CampaignsViewState extends State<CampaignsView> {
                 flex: 2,
                 child: Text('LAST CONTACT', style: headerStyle),
               ),
-              Expanded(flex: 2, child: Text('ASSIGNED', style: headerStyle)),
+              Expanded(
+                flex: 2,
+                child: Center(
+                  child: Text('ASSIGNED', style: headerStyle),
+                ),
+              ),
             ],
           ),
         ),
@@ -1333,29 +1338,33 @@ class _CampaignsViewState extends State<CampaignsView> {
                   Expanded(
                     flex: 2,
                     child: lead.assignedExec != null
-                        ? Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 3,
-                            ),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFEEF0FF),
-                              borderRadius: BorderRadius.circular(6),
-                            ),
-                            child: Text(
-                              lead.assignedExec!,
-                              style: const TextStyle(
-                                fontSize: 11.5,
-                                fontWeight: FontWeight.w600,
-                                color: Color(0xFF4338CA),
+                        ? Center(
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 4,
+                              ),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFEEF0FF),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Text(
+                                lead.assignedExec!,
+                                style: const TextStyle(
+                                  fontSize: 11.5,
+                                  fontWeight: FontWeight.w600,
+                                  color: Color(0xFF4338CA),
+                                ),
                               ),
                             ),
                           )
-                        : const Text(
-                            '—',
-                            style: TextStyle(
-                              fontSize: 12.5,
-                              color: Color(0xFF98A2B3),
+                        : const Center(
+                            child: Text(
+                              '—',
+                              style: TextStyle(
+                                fontSize: 12.5,
+                                color: Color(0xFF98A2B3),
+                              ),
                             ),
                           ),
                   ),
