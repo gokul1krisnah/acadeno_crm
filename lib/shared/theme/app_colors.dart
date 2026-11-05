@@ -4,10 +4,10 @@ abstract class AppColors {
   // ---------------------------------------------------------------------------
   // Acadeno CRM Brand Colors
   // ---------------------------------------------------------------------------
-  static const Color primary = Color(0xFFEF8144); // Primary Vibrant Orange
+  static const Color primary = Color(0xFF443BCD); // Indigo (Primary)
   static const Color indigo = Color(0xFF443BCD); // Primary
   static const Color blue = Color(0xFF3380D9); // Info, charts
-  static const Color orange = Color(0xFFEF8144); // Attention / Primary
+  static const Color orange = Color(0xFFEB7346); // Attention
   static const Color amber = Color(0xFFF9B23E); // Highlight
   static const Color coral = Color(0xFFDF5464); // Brand accent / Error
 

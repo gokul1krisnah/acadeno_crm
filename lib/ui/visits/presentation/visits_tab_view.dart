@@ -21,7 +21,7 @@ class VisitsTabView extends StatelessWidget {
         final recent = state.recentVisits;
 
         return RefreshIndicator(
-          color: const Color(0xFFEF8144),
+          color: const Color(0xFF4338CA),
           backgroundColor: Colors.white,
           onRefresh: () async {
             await Future.delayed(const Duration(milliseconds: 500));
@@ -68,7 +68,7 @@ class VisitsTabView extends StatelessWidget {
                             ),
                           ),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFFEF8144),
+                            backgroundColor: const Color(0xFFD95D24),
                             foregroundColor: Colors.white,
                             elevation: 0,
                             padding: const EdgeInsets.symmetric(horizontal: 14),
@@ -350,7 +350,7 @@ class VisitsTabView extends StatelessWidget {
                         icon: const Icon(Icons.navigation_rounded, size: 17),
                         label: const Text('Start Navigation'),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFEF8144),
+                          backgroundColor: const Color(0xFF4338CA),
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(vertical: 12),
                           shape: RoundedRectangleBorder(
@@ -731,7 +731,7 @@ class VisitsTabView extends StatelessWidget {
                           Navigator.pop(ctx);
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFEF8144),
+                          backgroundColor: const Color(0xFF4338CA),
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(vertical: 13),
                           shape: RoundedRectangleBorder(
@@ -886,7 +886,7 @@ class _UpcomingVisitCard extends StatelessWidget {
                       width: 28,
                       height: 28,
                       decoration: BoxDecoration(
-                        color: const Color(0xFFEF8144),
+                        color: const Color(0xFF4338CA),
                         shape: BoxShape.circle,
                         border: Border.all(color: Colors.white, width: 1.5),
                       ),
@@ -976,7 +976,7 @@ class _UpcomingVisitCard extends StatelessWidget {
                   child: ElevatedButton(
                     onPressed: onRecordOutcome,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFEF8144),
+                      backgroundColor: const Color(0xFF4338CA),
                       foregroundColor: Colors.white,
                       elevation: 0,
                       shape: RoundedRectangleBorder(
@@ -1055,7 +1055,7 @@ class _RecentVisitCard extends StatelessWidget {
                   height: 56,
                   decoration: BoxDecoration(
                     color: const Color(0xFFF0FDF4),
-                    borderRadius: BorderRadius.circular(24),
+                    borderRadius: BorderRadius.circular(16),
                     border: Border.all(
                       color: const Color(0xFFBBF7D0),
                       width: 1,
@@ -1272,7 +1272,7 @@ class _RecentVisitCard extends StatelessWidget {
               padding: const EdgeInsets.fromLTRB(16, 15, 16, 16),
               decoration: BoxDecoration(
                 color: const Color(0x80FFF7ED), // #FFF7ED80
-                borderRadius: BorderRadius.circular(24),
+                borderRadius: BorderRadius.circular(16),
                 border: Border.all(
                   color: const Color(0xFFFFF7ED),
                   width: 1,

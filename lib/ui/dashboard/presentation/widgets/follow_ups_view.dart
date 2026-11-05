@@ -97,7 +97,7 @@ class _FollowUpsViewState extends State<FollowUpsView> {
                       ? Icons.radio_button_checked
                       : Icons.radio_button_off,
                   size: 18,
-                  color: const Color(0xFFEF8144),
+                  color: const Color(0xFF4338CA),
                 ),
                 const SizedBox(width: 10),
                 Text(exec, style: const TextStyle(fontWeight: FontWeight.w600)),
@@ -320,7 +320,7 @@ class _FollowUpsViewState extends State<FollowUpsView> {
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(14),
                         border: Border.all(
-                          color: const Color(0xFFEF8144),
+                          color: const Color(0xFF4338CA),
                           width: 1.4,
                         ),
                       ),
@@ -337,7 +337,7 @@ class _FollowUpsViewState extends State<FollowUpsView> {
                             children: [
                               const Icon(
                                 CupertinoIcons.shuffle,
-                                color: Color(0xFFEF8144),
+                                color: Color(0xFF4338CA),
                                 size: 20,
                               ),
                               const Text(
@@ -501,11 +501,11 @@ class _FollowUpsViewState extends State<FollowUpsView> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFFEF8144) : Colors.white,
+          color: isSelected ? const Color(0xFF3F37C9) : Colors.white,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
             color: isSelected
-                ? const Color(0xFFEF8144)
+                ? const Color(0xFF3F37C9)
                 : const Color(0xFFE2E8F0),
           ),
         ),

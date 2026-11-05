@@ -83,7 +83,7 @@ class _ImportLeadsBodyState extends State<_ImportLeadsBody> {
                     if (state.currentStep == 2 || state.currentStep == 3)
                       OutlinedButton.icon(
                         style: OutlinedButton.styleFrom(
-                          foregroundColor: const Color(0xFFEF8144),
+                          foregroundColor: const Color(0xFF4338CA),
                           side: const BorderSide(color: Color(0xFFC7D2FE)),
                         ),
                         onPressed: () =>
@@ -184,7 +184,7 @@ class _ImportLeadsBodyState extends State<_ImportLeadsBody> {
       circleBg = const Color(0xFF15803D);
       circleChild = const Icon(Icons.check, size: 15, color: Colors.white);
     } else if (isActive) {
-      circleBg = const Color(0xFFEF8144);
+      circleBg = const Color(0xFF4338CA);
       circleChild = Text(
         '$stepNumber',
         style: const TextStyle(
@@ -335,7 +335,7 @@ class _ImportLeadsBodyState extends State<_ImportLeadsBody> {
                 children: [
                   TextButton.icon(
                     style: TextButton.styleFrom(
-                      foregroundColor: const Color(0xFFEF8144),
+                      foregroundColor: const Color(0xFF4338CA),
                       padding: const EdgeInsets.symmetric(
                         horizontal: 10,
                         vertical: 6,
@@ -397,7 +397,7 @@ class _ImportLeadsBodyState extends State<_ImportLeadsBody> {
                           child: const Icon(
                             Icons.upload_file_outlined,
                             size: 32,
-                            color: Color(0xFFEF8144),
+                            color: Color(0xFF4338CA),
                           ),
                         ),
                         const SizedBox(height: 12),
@@ -619,7 +619,7 @@ class _ImportLeadsBodyState extends State<_ImportLeadsBody> {
                   const SizedBox(width: 8),
                   Switch(
                     value: _skipExisting,
-                    activeThumbColor: const Color(0xFFEF8144),
+                    activeThumbColor: const Color(0xFF4338CA),
                     onChanged: (val) => setState(() => _skipExisting = val),
                   ),
                 ],
@@ -735,7 +735,7 @@ class _ImportLeadsBodyState extends State<_ImportLeadsBody> {
         fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
         color: isSelected ? Colors.white : const Color(0xFF475467),
       ),
-      selectedColor: const Color(0xFFEF8144),
+      selectedColor: const Color(0xFF4338CA),
       backgroundColor: const Color(0xFFF2F4F7),
       onSelected: (_) => context.read<LeadImportCubit>().setFilter(key),
     );
@@ -941,7 +941,7 @@ class _ImportLeadsBodyState extends State<_ImportLeadsBody> {
                         const SizedBox(width: 6),
                         Checkbox(
                           value: !item.isExcluded,
-                          activeColor: const Color(0xFFEF8144),
+                          activeColor: const Color(0xFF4338CA),
                           onChanged: (_) => context
                               .read<LeadImportCubit>()
                               .toggleExcludeRow(item.rowNumber),
@@ -1009,7 +1009,7 @@ class _ImportLeadsBodyState extends State<_ImportLeadsBody> {
                   ),
                   Checkbox(
                     value: !item.isExcluded,
-                    activeColor: const Color(0xFFEF8144),
+                    activeColor: const Color(0xFF4338CA),
                     onChanged: (_) => context
                         .read<LeadImportCubit>()
                         .toggleExcludeRow(item.rowNumber),
@@ -1118,7 +1118,7 @@ class _ImportLeadsBodyState extends State<_ImportLeadsBody> {
             children: [
               OutlinedButton.icon(
                 style: OutlinedButton.styleFrom(
-                  foregroundColor: const Color(0xFFEF8144),
+                  foregroundColor: const Color(0xFF4338CA),
                   side: const BorderSide(color: Color(0xFFC7D2FE)),
                   padding: const EdgeInsets.symmetric(
                     horizontal: 18,

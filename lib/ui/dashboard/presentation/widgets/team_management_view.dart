@@ -395,7 +395,7 @@ class _TeamManagementViewState extends State<TeamManagementView> {
                 ? '$totalAssigned leads'
                 : '${leads.length} total',
             Icons.assignment_ind_outlined,
-            const Color(0xFFEF8144),
+            const Color(0xFF4338CA),
             '${leads.length} total in pool',
           ),
           (
@@ -877,7 +877,7 @@ class _TeamManagementViewState extends State<TeamManagementView> {
                               style: const TextStyle(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w700,
-                                color: Color(0xFFEF8144),
+                                color: Color(0xFF4338CA),
                               ),
                             ),
                           ),
@@ -905,7 +905,7 @@ class _TeamManagementViewState extends State<TeamManagementView> {
                                     fontSize: 10.5,
                                     fontWeight: FontWeight.w600,
                                     color: user.isAdminRole
-                                        ? const Color(0xFFEF8144)
+                                        ? const Color(0xFF4338CA)
                                         : const Color(0xFF0284C7),
                                   ),
                                 ),
@@ -995,7 +995,7 @@ class _TeamManagementViewState extends State<TeamManagementView> {
                             style: const TextStyle(
                               fontSize: 10.5,
                               fontWeight: FontWeight.w700,
-                              color: Color(0xFFEF8144),
+                              color: Color(0xFF4338CA),
                             ),
                           ),
                         ),

@@ -119,7 +119,7 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
                         return Theme(
                           data: Theme.of(context).copyWith(
                             colorScheme: const ColorScheme.light(
-                              primary: Color(0xFFEF8144),
+                              primary: Color(0xFF4338CA),
                               onPrimary: Colors.white,
                               onSurface: Color(0xFF0F172A),
                             ),
@@ -137,7 +137,7 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
                     suffixIcon: Icon(
                       Icons.calendar_today_rounded,
                       size: 18,
-                      color: Color(0xFFEF8144),
+                      color: Color(0xFF4338CA),
                     ),
                   ),
                 ),
@@ -612,14 +612,14 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
                                 icon: const Icon(
                                   Icons.near_me_rounded,
                                   size: 14,
-                                  color: Color(0xFFEF8144),
+                                  color: Color(0xFF4F46E5),
                                 ),
                                 label: const Text(
                                   'Directions',
                                   style: TextStyle(
                                     fontSize: 13,
                                     fontWeight: FontWeight.w600,
-                                    color: Color(0xFFEF8144),
+                                    color: Color(0xFF4F46E5),
                                   ),
                                 ),
                                 style: OutlinedButton.styleFrom(
