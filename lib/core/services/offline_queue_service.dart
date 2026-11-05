@@ -394,8 +394,9 @@ class OfflineQueueService {
   Future<void> syncPendingQueue() async {
     if (isSyncingNotifier.value ||
         _box == null ||
-        pendingCountNotifier.value == 0)
+        pendingCountNotifier.value == 0) {
       return;
+    }
     isSyncingNotifier.value = true;
 
     final initialItemsCount = pendingCountNotifier.value;

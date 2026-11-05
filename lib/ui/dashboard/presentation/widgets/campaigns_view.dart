@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:acadeno_crm/ui/leads/data/model/lead_models.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -23,11 +24,6 @@ class _CampaignReason {
     Color(0xFFE8F1FD),
     Color(0xFF1D4ED8),
   );
-  static const attended = _CampaignReason(
-    'Attended similar event',
-    Color(0xFFE8F1FD),
-    Color(0xFF1D4ED8),
-  );
   static const targetYr = _CampaignReason(
     'Target year',
     Color(0xFFE8F1FD),
@@ -42,16 +38,6 @@ class _CampaignReason {
     'Warm lead',
     Color(0xFFE6F4EA),
     Color(0xFF15803D),
-  );
-  static const pastCustomer = _CampaignReason(
-    'Past customer',
-    Color(0xFFE6F4EA),
-    Color(0xFF15803D),
-  );
-  static const calledRecent = _CampaignReason(
-    'Called in last 7 days',
-    Color(0xFFFEF0E6),
-    Color(0xFF9A3412),
   );
 }
 

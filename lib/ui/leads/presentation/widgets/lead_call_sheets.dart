@@ -33,31 +33,41 @@ class LeadCallSheets {
     for (final prog in acadenoPrograms) {
       if (prog.toLowerCase() == lower) return prog;
     }
-    if (lower.contains('flutter') || lower.contains('mobile'))
+    if (lower.contains('flutter') || lower.contains('mobile')) {
       return 'Flutter Mobile App';
+    }
     if (lower.contains('mern') ||
         lower.contains('react') ||
-        lower.contains('node'))
+        lower.contains('node')) {
       return 'MERN Stack Development';
-    if (lower.contains('data science')) return 'Data Science & AI';
-    if (lower.contains('data analytic') || lower.contains('analytics'))
+    }
+    if (lower.contains('data science')) {
+      return 'Data Science & AI';
+    }
+    if (lower.contains('data analytic') || lower.contains('analytics')) {
       return 'Data Analytics';
-    if (lower.contains('robot') || lower.contains('iot'))
+    }
+    if (lower.contains('robot') || lower.contains('iot')) {
       return 'Robotics & IoT';
+    }
     if (lower.contains('cyber') ||
         lower.contains('security') ||
-        lower.contains('ethical'))
+        lower.contains('ethical')) {
       return 'Cyber Security';
-    if (lower.contains('digital market') || lower.contains('marketing'))
+    }
+    if (lower.contains('digital market') || lower.contains('marketing')) {
       return 'Digital Marketing';
+    }
     if (lower.contains('machine learning') ||
         lower.contains('ai') ||
-        lower.contains('ml'))
+        lower.contains('ml')) {
       return 'Python AI & Machine Learning';
+    }
     if (lower.contains('python') ||
         lower.contains('full stack') ||
-        lower.contains('fullstack'))
+        lower.contains('fullstack')) {
       return 'Python Full Stack';
+    }
     return acadenoPrograms.first;
   }
 

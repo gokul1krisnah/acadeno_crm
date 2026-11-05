@@ -965,8 +965,9 @@ class _SettingsViewState extends State<SettingsView>
                   value: _overdueEscalationHours,
                   items: const ['12', '24', '48', '72'],
                   onChanged: (val) {
-                    if (val != null)
+                    if (val != null) {
                       setState(() => _overdueEscalationHours = val);
+                    }
                   },
                 ),
                 const SizedBox(height: 16),

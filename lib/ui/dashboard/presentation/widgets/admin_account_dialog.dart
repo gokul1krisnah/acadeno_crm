@@ -180,9 +180,12 @@ class _AdminAccountDialogState extends State<AdminAccountDialog>
     } on FirebaseAuthException catch (e) {
       if (mounted) {
         String msg = e.message ?? 'Failed to update email';
-        if (e.code == 'wrong-password') msg = 'Incorrect current password';
-        if (e.code == 'email-already-in-use')
+        if (e.code == 'wrong-password') {
+          msg = 'Incorrect current password';
+        }
+        if (e.code == 'email-already-in-use') {
           msg = 'This email is already in use by another account';
+        }
         SnackBarAlert.showToast(
           context: context,
           message: msg,

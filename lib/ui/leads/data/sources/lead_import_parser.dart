@@ -382,8 +382,9 @@ Mohammed R,9847033333,mohammed.r@outlook.com,GEC Thrissur,ME,2nd Year,Robotics &
       if (candidateMap.containsKey('phone')) score += 5;
       if (candidateMap.containsKey('email')) score += 2;
       if (candidateMap.containsKey('college') ||
-          candidateMap.containsKey('college_branch'))
+          candidateMap.containsKey('college_branch')) {
         score += 2;
+      }
 
       if (score > bestScore) {
         bestScore = score;
@@ -604,7 +605,7 @@ Mohammed R,9847033333,mohammed.r@outlook.com,GEC Thrissur,ME,2nd Year,Robotics &
           (alias) =>
               rawHeader == alias ||
               rawHeader.startsWith('${alias}_') ||
-              rawHeader.endsWith('_${alias}') ||
+              rawHeader.endsWith('_$alias') ||
               rawHeader == '${alias}no' ||
               rawHeader == '${alias}num' ||
               rawHeader == '${alias}number',
@@ -713,10 +714,15 @@ Mohammed R,9847033333,mohammed.r@outlook.com,GEC Thrissur,ME,2nd Year,Robotics &
       pipes += '|'.allMatches(line).length;
     }
 
-    if (semicolons > commas && semicolons > tabs && semicolons > pipes)
+    if (semicolons > commas && semicolons > tabs && semicolons > pipes) {
       return ';';
-    if (tabs > commas && tabs > semicolons && tabs > pipes) return '\t';
-    if (pipes > commas && pipes > semicolons && pipes > tabs) return '|';
+    }
+    if (tabs > commas && tabs > semicolons && tabs > pipes) {
+      return '\t';
+    }
+    if (pipes > commas && pipes > semicolons && pipes > tabs) {
+      return '|';
+    }
     return ',';
   }
 
