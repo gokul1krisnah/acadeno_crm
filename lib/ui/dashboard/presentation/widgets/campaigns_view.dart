@@ -702,7 +702,7 @@ class _CampaignsViewState extends State<CampaignsView> {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        final isMobile = constraints.maxWidth < 760;
+        final isMobile = constraints.maxWidth < 800;
 
         if (_showAllCampaigns) {
           return _buildAllCampaignsList(isMobile);
@@ -778,151 +778,220 @@ class _CampaignsViewState extends State<CampaignsView> {
             const SizedBox(height: 14),
 
             // Split Top Leads Bar (Indigo border)
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: const Color(0xFFC7D2FE), width: 1.2),
-              ),
-              child: Wrap(
-                spacing: 12,
-                runSpacing: 12,
-                crossAxisAlignment: WrapCrossAlignment.center,
-                alignment: WrapAlignment.spaceBetween,
-                children: [
-                  Wrap(
-                    spacing: 10,
-                    runSpacing: 10,
-                    crossAxisAlignment: WrapCrossAlignment.center,
-                    children: [
-                      const Text(
-                        'Split Top',
-                        style: TextStyle(
-                          fontSize: 13.5,
-                          fontWeight: FontWeight.w700,
-                          color: Color(0xFF0F172A),
-                        ),
+            // Split Top Leads Bar (Responsive Indigo border)
+            LayoutBuilder(
+              builder: (context, barC) {
+                final isMobileBar = barC.maxWidth < 640;
+
+                final splitInputRow = Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text(
+                      'Split Top',
+                      style: TextStyle(
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF0F172A),
                       ),
-                      Container(
-                        width: 60,
-                        height: 36,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: const Color(0xFFD1D5DB)),
-                        ),
-                        alignment: Alignment.center,
-                        child: TextField(
-                          controller: _splitCountController,
-                          keyboardType: TextInputType.number,
-                          textAlign: TextAlign.center,
-                          onChanged: (_) => setState(() {}),
-                          style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w700,
-                            color: Color(0xFF0F172A),
-                          ),
-                          decoration: const InputDecoration(
-                            isDense: true,
-                            border: InputBorder.none,
-                            contentPadding: EdgeInsets.zero,
-                          ),
-                        ),
+                    ),
+                    const SizedBox(width: 8),
+                    Container(
+                      width: 54,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: const Color(0xFFD1D5DB)),
                       ),
-                      const Text(
-                        'Leads Evenly Across',
-                        style: TextStyle(
-                          fontSize: 13.5,
-                          fontWeight: FontWeight.w700,
-                          color: Color(0xFF0F172A),
-                        ),
-                      ),
-                      ..._allExecutives.map((exec) {
-                        final isSelected = _selectedExecutives.contains(exec);
-                        return InkWell(
-                          onTap: () {
-                            setState(() {
-                              if (isSelected &&
-                                  _selectedExecutives.length > 1) {
-                                _selectedExecutives.remove(exec);
-                              } else {
-                                _selectedExecutives.add(exec);
-                              }
-                            });
-                          },
-                          borderRadius: BorderRadius.circular(20),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 14,
-                              vertical: 7,
-                            ),
-                            decoration: BoxDecoration(
-                              color: isSelected
-                                  ? const Color(0xFFEEF0FF)
-                                  : Colors.white,
-                              borderRadius: BorderRadius.circular(20),
-                              border: Border.all(
-                                color: isSelected
-                                    ? const Color(0xFF4F46E5)
-                                    : const Color(0xFFD0D5DD),
-                                width: isSelected ? 1.3 : 1.0,
-                              ),
-                            ),
-                            child: Text(
-                              exec,
-                              style: TextStyle(
-                                fontSize: 12.5,
-                                fontWeight: FontWeight.w600,
-                                color: isSelected
-                                    ? const Color(0xFF4F46E5)
-                                    : const Color(0xFF475467),
-                              ),
-                            ),
-                          ),
-                        );
-                      }),
-                    ],
-                  ),
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        '$_perExecCount each',
+                      alignment: Alignment.center,
+                      child: TextField(
+                        controller: _splitCountController,
+                        keyboardType: TextInputType.number,
+                        textAlign: TextAlign.center,
+                        onChanged: (_) => setState(() {}),
                         style: const TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w500,
-                          color: Color(0xFF475467),
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF0F172A),
+                        ),
+                        decoration: const InputDecoration(
+                          isDense: true,
+                          border: InputBorder.none,
+                          contentPadding: EdgeInsets.zero,
                         ),
                       ),
-                      const SizedBox(width: 14),
-                      SizedBox(
-                        height: 38,
-                        child: ElevatedButton(
-                          onPressed: _assignCampaignLeads,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFFEF8144),
-                            foregroundColor: Colors.white,
-                            elevation: 0,
-                            padding: const EdgeInsets.symmetric(horizontal: 18),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(9),
-                            ),
-                          ),
-                          child: const Text(
-                            'Assign For Tomorrow',
-                            style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                            ),
+                    ),
+                    const SizedBox(width: 8),
+                    const Text(
+                      'Leads Evenly Across',
+                      style: TextStyle(
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF0F172A),
+                      ),
+                    ),
+                  ],
+                );
+
+                final execPills = Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: _allExecutives.map((exec) {
+                    final isSelected = _selectedExecutives.contains(exec);
+                    return InkWell(
+                      onTap: () {
+                        setState(() {
+                          if (isSelected && _selectedExecutives.length > 1) {
+                            _selectedExecutives.remove(exec);
+                          } else {
+                            _selectedExecutives.add(exec);
+                          }
+                        });
+                      },
+                      borderRadius: BorderRadius.circular(20),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 7,
+                        ),
+                        decoration: BoxDecoration(
+                          color: isSelected
+                              ? const Color(0xFFEEF0FF)
+                              : Colors.white,
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: isSelected
+                                ? const Color(0xFF4F46E5)
+                                : const Color(0xFFD0D5DD),
+                            width: isSelected ? 1.3 : 1.0,
                           ),
                         ),
+                        child: Text(
+                          exec,
+                          style: TextStyle(
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.w600,
+                            color: isSelected
+                                ? const Color(0xFF4F46E5)
+                                : const Color(0xFF475467),
+                          ),
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                );
+
+                final assignBtn = SizedBox(
+                  height: 38,
+                  width: isMobileBar ? double.infinity : null,
+                  child: ElevatedButton(
+                    onPressed: _assignCampaignLeads,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFEF8144),
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      padding: const EdgeInsets.symmetric(horizontal: 18),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(9),
+                      ),
+                    ),
+                    child: const Text(
+                      'Assign For Tomorrow',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                );
+
+                if (isMobileBar) {
+                  return Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(
+                        color: const Color(0xFFC7D2FE),
+                        width: 1.2,
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            splitInputRow,
+                            Text(
+                              '$_perExecCount each',
+                              style: const TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: Color(0xFF475467),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        execPills,
+                        const SizedBox(height: 12),
+                        assignBtn,
+                      ],
+                    ),
+                  );
+                }
+
+                return Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 14,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(
+                      color: const Color(0xFFC7D2FE),
+                      width: 1.2,
+                    ),
+                  ),
+                  child: Wrap(
+                    spacing: 12,
+                    runSpacing: 12,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    alignment: WrapAlignment.spaceBetween,
+                    children: [
+                      Wrap(
+                        spacing: 10,
+                        runSpacing: 10,
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        children: [
+                          splitInputRow,
+                          execPills,
+                        ],
+                      ),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            '$_perExecCount each',
+                            style: const TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w500,
+                              color: Color(0xFF475467),
+                            ),
+                          ),
+                          const SizedBox(width: 14),
+                          assignBtn,
+                        ],
                       ),
                     ],
                   ),
-                ],
-              ),
+                );
+              },
             ),
             const SizedBox(height: 14),
 

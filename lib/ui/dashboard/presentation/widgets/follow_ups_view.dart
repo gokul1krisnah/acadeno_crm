@@ -310,89 +310,186 @@ class _FollowUpsViewState extends State<FollowUpsView> {
                     const SizedBox(height: 18),
 
                     // Bulk Reassign Bar (FR-4.6 / RL-3)
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 20,
-                        vertical: 14,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(14),
-                        border: Border.all(
-                          color: const Color(0xFF4338CA),
-                          width: 1.4,
-                        ),
-                      ),
-                      child: Wrap(
-                        spacing: 12,
-                        runSpacing: 12,
-                        crossAxisAlignment: WrapCrossAlignment.center,
-                        alignment: WrapAlignment.spaceBetween,
-                        children: [
-                          Wrap(
-                            spacing: 10,
-                            runSpacing: 10,
+                    // Bulk Reassign Bar (FR-4.6 / RL-3 - Responsive)
+                    LayoutBuilder(
+                      builder: (context, c) {
+                        final isMobile = c.maxWidth < 640;
+                        if (isMobile) {
+                          return Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(14),
+                              border: Border.all(
+                                color: const Color(0xFF4338CA),
+                                width: 1.4,
+                              ),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                const Row(
+                                  children: [
+                                    Icon(
+                                      CupertinoIcons.shuffle,
+                                      color: Color(0xFF4338CA),
+                                      size: 18,
+                                    ),
+                                    SizedBox(width: 8),
+                                    Text(
+                                      'Move all open follow-ups',
+                                      style: TextStyle(
+                                        fontSize: 13.5,
+                                        fontWeight: FontWeight.w700,
+                                        color: Color(0xFF0F172A),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 12),
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: _buildExecDropdown(
+                                        _fromExec,
+                                        executives,
+                                        (v) => setState(() => _fromExec = v),
+                                      ),
+                                    ),
+                                    const Padding(
+                                      padding: EdgeInsets.symmetric(horizontal: 8),
+                                      child: Text(
+                                        'to',
+                                        style: TextStyle(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w700,
+                                          color: Color(0xFF64748B),
+                                        ),
+                                      ),
+                                    ),
+                                    Expanded(
+                                      child: _buildExecDropdown(
+                                        _toExec,
+                                        executives,
+                                        (v) => setState(() => _toExec = v),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 12),
+                                SizedBox(
+                                  height: 40,
+                                  child: ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: const Color(0xFFEF8144),
+                                      foregroundColor: Colors.white,
+                                      elevation: 0,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                    ),
+                                    onPressed: () =>
+                                        _bulkMoveExecutiveFollowUps(followUps),
+                                    child: const Text(
+                                      'Re Assign in Fire Store',
+                                      style: TextStyle(
+                                        fontSize: 13.5,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        }
+
+                        return Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 14,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(
+                              color: const Color(0xFF4338CA),
+                              width: 1.4,
+                            ),
+                          ),
+                          child: Wrap(
+                            spacing: 12,
+                            runSpacing: 12,
                             crossAxisAlignment: WrapCrossAlignment.center,
+                            alignment: WrapAlignment.spaceBetween,
                             children: [
-                              const Icon(
-                                CupertinoIcons.shuffle,
-                                color: Color(0xFF4338CA),
-                                size: 20,
+                              Wrap(
+                                spacing: 10,
+                                runSpacing: 10,
+                                crossAxisAlignment: WrapCrossAlignment.center,
+                                children: [
+                                  const Icon(
+                                    CupertinoIcons.shuffle,
+                                    color: Color(0xFF4338CA),
+                                    size: 20,
+                                  ),
+                                  const Text(
+                                    'Move all open follow-ups from',
+                                    style: TextStyle(
+                                      fontSize: 13.5,
+                                      fontWeight: FontWeight.w700,
+                                      color: Color(0xFF0F172A),
+                                    ),
+                                  ),
+                                  _buildExecDropdown(
+                                    _fromExec,
+                                    executives,
+                                    (v) => setState(() => _fromExec = v),
+                                  ),
+                                  const Text(
+                                    'to',
+                                    style: TextStyle(
+                                      fontSize: 13.5,
+                                      fontWeight: FontWeight.w700,
+                                      color: Color(0xFF0F172A),
+                                    ),
+                                  ),
+                                  _buildExecDropdown(
+                                    _toExec,
+                                    executives,
+                                    (v) => setState(() => _toExec = v),
+                                  ),
+                                ],
                               ),
-                              const Text(
-                                'Move all open follow-ups from',
-                                style: TextStyle(
-                                  fontSize: 13.5,
-                                  fontWeight: FontWeight.w700,
-                                  color: Color(0xFF0F172A),
+                              ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFFEF8144),
+                                  foregroundColor: Colors.white,
+                                  elevation: 0,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 20,
+                                    vertical: 12,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
                                 ),
-                              ),
-                              _buildExecDropdown(
-                                _fromExec,
-                                executives,
-                                (v) => setState(() => _fromExec = v),
-                              ),
-                              const Text(
-                                'to',
-                                style: TextStyle(
-                                  fontSize: 13.5,
-                                  fontWeight: FontWeight.w700,
-                                  color: Color(0xFF0F172A),
+                                onPressed: () =>
+                                    _bulkMoveExecutiveFollowUps(followUps),
+                                child: const Text(
+                                  'Re Assign in Fire Store',
+                                  style: TextStyle(
+                                    fontSize: 13.5,
+                                    fontWeight: FontWeight.w600,
+                                  ),
                                 ),
-                              ),
-                              _buildExecDropdown(
-                                _toExec,
-                                executives,
-                                (v) => setState(() => _toExec = v),
                               ),
                             ],
                           ),
-                          ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFFEF8144),
-                              foregroundColor: Colors.white,
-                              elevation: 0,
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 20,
-                                vertical: 12,
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                            ),
-                            onPressed: () =>
-                                _bulkMoveExecutiveFollowUps(followUps),
-                            child: const Text(
-                              'Re Assign in Fire Store',
-                              style: TextStyle(
-                                fontSize: 13.5,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
+                        );
+                      },
                     ),
                     const SizedBox(height: 16),
 
@@ -650,12 +747,11 @@ class _FollowUpsViewState extends State<FollowUpsView> {
               ),
             ],
           ),
-          Wrap(
-            spacing: 12,
-            runSpacing: 10,
-            crossAxisAlignment: WrapCrossAlignment.center,
-            children: [
-              Container(
+          LayoutBuilder(
+            builder: (context, actionC) {
+              final isMobileCard = actionC.maxWidth < 560;
+
+              final assignedBadge = Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 14,
                   vertical: 8,
@@ -672,6 +768,86 @@ class _FollowUpsViewState extends State<FollowUpsView> {
                     fontWeight: FontWeight.w600,
                     color: Color(0xFF475467),
                   ),
+                ),
+              );
+
+              final reassignBtn = OutlinedButton(
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: const Color(0xFF4338CA),
+                  side: const BorderSide(color: Color(0xFF4338CA)),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 18,
+                    vertical: 10,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                onPressed: () => _reassignSingle(item, executives),
+                child: const Text(
+                  'Reassign',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              );
+
+              final markDoneBtn = ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF059669),
+                  foregroundColor: Colors.white,
+                  elevation: 0,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 18,
+                    vertical: 10,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                onPressed: () => _markCompleted(item.id, item.studentName),
+                child: const Text(
+                  'Mark Done',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              );
+
+              if (isMobileCard) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const SizedBox(height: 10),
+                    Row(
+                      children: [assignedBadge],
+                    ),
+                    const SizedBox(height: 10),
+                    Row(
+                      children: [
+                        Expanded(child: reassignBtn),
+                        const SizedBox(width: 10),
+                        Expanded(child: markDoneBtn),
+                      ],
+                    ),
+                  ],
+                );
+              }
+
+              return Wrap(
+                spacing: 12,
+                runSpacing: 10,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                children: [
+                  assignedBadge,
+                  reassignBtn,
+                  markDoneBtn,
+                ],
+              );
+            },
+          ),
                 ),
               ),
               OutlinedButton(

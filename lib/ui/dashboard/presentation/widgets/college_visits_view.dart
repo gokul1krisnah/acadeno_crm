@@ -497,56 +497,78 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
           crossAxisAlignment: CrossAxisAlignment.start,
 
           children: [
-                        SizedBox(
-              width: double.infinity,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'College visits',
-                          style: TextStyle(
-                            fontSize: 28,
-                            fontWeight: FontWeight.w800,
-                            color: Color(0xFF0F172A),
-                            letterSpacing: -0.5,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'Plan campus outreach, log HOD/faculty meetings, and track $totalLeads leads ($totalConversions conversions) generated',
-                          style: const TextStyle(
-                            fontSize: 13,
-                            color: Color(0xFF667085),
-                          ),
-                        ),
-                      ],
+            LayoutBuilder(
+              builder: (context, c) {
+                final isMobile = c.maxWidth < 640;
+                final titleCol = Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'College visits',
+                      style: TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.w800,
+                        color: Color(0xFF0F172A),
+                        letterSpacing: -0.5,
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 16),
-                  SizedBox(
-                    height: 40,
-                    child: ElevatedButton.icon(
-                      onPressed: _showPlanVisitDialog,
-                      icon: const Icon(Icons.add, size: 16),
-                      label: const Text('Plan college visit'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFEF8144),
-                        foregroundColor: Colors.white,
-                        elevation: 0,
-                        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Plan campus outreach, log HOD/faculty meetings, and track $totalLeads leads ($totalConversions conversions) generated',
+                      style: const TextStyle(
+                        fontSize: 13,
+                        color: Color(0xFF667085),
+                      ),
+                    ),
+                  ],
+                );
+
+                final planBtn = SizedBox(
+                  height: 40,
+                  width: isMobile ? double.infinity : null,
+                  child: ElevatedButton.icon(
+                    onPressed: _showPlanVisitDialog,
+                    icon: const Icon(Icons.add, size: 16),
+                    label: const Text('Plan college visit'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFEF8144),
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 18,
+                        vertical: 12,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
                       ),
                     ),
                   ),
-                ],
-              ),
+                );
+
+                if (isMobile) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      titleCol,
+                      const SizedBox(height: 12),
+                      planBtn,
+                    ],
+                  );
+                }
+
+                return SizedBox(
+                  width: double.infinity,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Expanded(child: titleCol),
+                      const SizedBox(width: 16),
+                      planBtn,
+                    ],
+                  ),
+                );
+              },
             ),
             const SizedBox(height: 18),
 
@@ -556,7 +578,7 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
               return Container(
                 width: double.infinity,
                 margin: const EdgeInsets.only(bottom: 16),
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(16),
