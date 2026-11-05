@@ -55,10 +55,9 @@ class _ImportLeadsBodyState extends State<_ImportLeadsBody> {
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Column(
+                Builder(
+                  builder: (_) {
+                    final titleCol = Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: const [
                         Text(
@@ -79,22 +78,48 @@ class _ImportLeadsBodyState extends State<_ImportLeadsBody> {
                           ),
                         ),
                       ],
-                    ),
-                    if (state.currentStep == 2 || state.currentStep == 3)
-                      OutlinedButton.icon(
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: const Color(0xFF4338CA),
-                          side: const BorderSide(color: Color(0xFFC7D2FE)),
-                        ),
-                        onPressed: () =>
-                            context.read<LeadImportCubit>().reset(),
-                        icon: const Icon(Icons.refresh_rounded, size: 16),
-                        label: const Text(
-                          'Start New Import',
-                          style: TextStyle(fontSize: 12.5),
-                        ),
-                      ),
-                  ],
+                    );
+
+                    final resetBtn = (state.currentStep == 2 || state.currentStep == 3)
+                        ? OutlinedButton.icon(
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: const Color(0xFF4338CA),
+                              side: const BorderSide(color: Color(0xFFC7D2FE)),
+                            ),
+                            onPressed: () => context.read<LeadImportCubit>().reset(),
+                            icon: const Icon(Icons.refresh_rounded, size: 16),
+                            label: const Text(
+                              'Start New Import',
+                              style: TextStyle(fontSize: 12.5),
+                            ),
+                          )
+                        : null;
+
+                    if (isMobile) {
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          titleCol,
+                          if (resetBtn != null) ...[
+                            const SizedBox(height: 10),
+                            resetBtn,
+                          ],
+                        ],
+                      );
+                    }
+
+                    return Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Expanded(child: titleCol),
+                        if (resetBtn != null) ...[
+                          const SizedBox(width: 16),
+                          resetBtn,
+                        ],
+                      ],
+                    );
+                  },
                 ),
                 const SizedBox(height: 18),
 
@@ -451,40 +476,85 @@ class _ImportLeadsBodyState extends State<_ImportLeadsBody> {
           ),
           const SizedBox(height: 18),
 
-          // Quick testing helper banner
+          // Quick testing helper banner (Responsive)
           Container(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
               color: const Color(0xFFF0FDF4),
               borderRadius: BorderRadius.circular(10),
               border: Border.all(color: const Color(0xFFBBF7D0)),
             ),
-            child: Row(
-              children: [
-                const Icon(
-                  Icons.bolt_rounded,
-                  size: 20,
-                  color: Color(0xFF16A34A),
-                ),
-                const SizedBox(width: 10),
-                const Expanded(
-                  child: Text(
-                    'Want to test right now? Load our pre-configured ACADENO Webinar lead batch (includes valid, existing, duplicates, and format errors).',
-                    style: TextStyle(fontSize: 12.5, color: Color(0xFF166534)),
+            child: isMobile
+                ? Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          const Icon(
+                            Icons.bolt_rounded,
+                            size: 20,
+                            color: Color(0xFF16A34A),
+                          ),
+                          const SizedBox(width: 8),
+                          const Expanded(
+                            child: Text(
+                              'Want to test right now?',
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFF166534),
+                              ),
+                            ),
+                          ),
+                          TextButton(
+                            onPressed: () => cubit.loadSampleData(),
+                            style: TextButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                              visualDensity: VisualDensity.compact,
+                            ),
+                            child: const Text(
+                              'Load Demo Batch',
+                              style: TextStyle(
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFF15803D),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      const Text(
+                        'Load our pre-configured ACADENO Webinar lead batch (includes valid, existing, duplicates, and format errors).',
+                        style: TextStyle(fontSize: 12, color: Color(0xFF166534)),
+                      ),
+                    ],
+                  )
+                : Row(
+                    children: [
+                      const Icon(
+                        Icons.bolt_rounded,
+                        size: 20,
+                        color: Color(0xFF16A34A),
+                      ),
+                      const SizedBox(width: 10),
+                      const Expanded(
+                        child: Text(
+                          'Want to test right now? Load our pre-configured ACADENO Webinar lead batch (includes valid, existing, duplicates, and format errors).',
+                          style: TextStyle(fontSize: 12.5, color: Color(0xFF166534)),
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: () => cubit.loadSampleData(),
+                        child: const Text(
+                          'Load Demo Batch',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFF15803D),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-                TextButton(
-                  onPressed: () => cubit.loadSampleData(),
-                  child: const Text(
-                    'Load Demo Batch',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w700,
-                      color: Color(0xFF15803D),
-                    ),
-                  ),
-                ),
-              ],
-            ),
           ),
         ],
       ),

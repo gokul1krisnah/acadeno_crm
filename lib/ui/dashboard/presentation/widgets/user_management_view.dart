@@ -645,38 +645,36 @@ class _UserManagementViewState extends State<UserManagementView> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Top Header & Action Buttons
-                        SizedBox(
-              width: double.infinity,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  const Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'User Management',
-                          style: TextStyle(
-                            fontSize: 28,
-                            fontWeight: FontWeight.w800,
-                            color: _textDark,
-                            letterSpacing: -0.5,
-                          ),
-                        ),
-                        SizedBox(height: 4),
-                        Text(
-                          'Add new team accounts, assign roles, and manage system access.',
-                          style: TextStyle(fontSize: 13, color: _textMuted),
-                        ),
-                      ],
+            // Top Header & Action Buttons (Responsive Layout)
+            LayoutBuilder(
+              builder: (context, c) {
+                final isMobile = c.maxWidth < 680;
+                final titleCol = Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: const [
+                    Text(
+                      'User Management',
+                      style: TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.w800,
+                        color: _textDark,
+                        letterSpacing: -0.5,
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 16),
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      OutlinedButton.icon(
+                    SizedBox(height: 4),
+                    Text(
+                      'Add new team accounts, assign roles, and manage system access.',
+                      style: TextStyle(fontSize: 13, color: _textMuted),
+                    ),
+                  ],
+                );
+
+                final actionBtns = Row(
+                  mainAxisSize: isMobile ? MainAxisSize.max : MainAxisSize.min,
+                  children: [
+                    Expanded(
+                      flex: isMobile ? 1 : 0,
+                      child: OutlinedButton.icon(
                         onPressed: () => _openAddUserDialog(byUid: true),
                         icon: const Icon(Icons.key_outlined, size: 16, color: Color(0xFF475467)),
                         label: const Text(
@@ -699,13 +697,13 @@ class _UserManagementViewState extends State<UserManagementView> {
                           ),
                         ),
                       ),
-                      const SizedBox(width: 10),
-                      ElevatedButton.icon(
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      flex: isMobile ? 1 : 0,
+                      child: ElevatedButton.icon(
                         onPressed: () => _openAddUserDialog(byUid: false),
-                        icon: const Icon(
-                          Icons.add,
-                          size: 18,
-                        ),
+                        icon: const Icon(Icons.add, size: 18),
                         label: const Text(
                           'Add User',
                           style: TextStyle(
@@ -717,6 +715,7 @@ class _UserManagementViewState extends State<UserManagementView> {
                           backgroundColor: const Color(0xFFEF8144),
                           foregroundColor: Colors.white,
                           elevation: 0,
+                          side: BorderSide.none,
                           padding: const EdgeInsets.symmetric(
                             horizontal: 18,
                             vertical: 10,
@@ -726,10 +725,34 @@ class _UserManagementViewState extends State<UserManagementView> {
                           ),
                         ),
                       ),
+                    ),
+                  ],
+                );
+
+                if (isMobile) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      titleCol,
+                      const SizedBox(height: 12),
+                      actionBtns,
+                    ],
+                  );
+                }
+
+                return SizedBox(
+                  width: double.infinity,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Expanded(child: titleCol),
+                      const SizedBox(width: 16),
+                      actionBtns,
                     ],
                   ),
-                ],
-              ),
+                );
+              },
             ),
             const SizedBox(height: 20),
 

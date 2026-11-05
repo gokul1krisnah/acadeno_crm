@@ -690,7 +690,10 @@ class _FollowUpsViewState extends State<FollowUpsView> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 4,
+                    crossAxisAlignment: WrapCrossAlignment.center,
                     children: [
                       Text(
                         item.studentName,
@@ -700,7 +703,6 @@ class _FollowUpsViewState extends State<FollowUpsView> {
                           color: Color(0xFF0F172A),
                         ),
                       ),
-                      const SizedBox(width: 8),
                       Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 8,

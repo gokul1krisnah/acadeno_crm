@@ -257,39 +257,37 @@ class _TeamManagementViewState extends State<TeamManagementView> {
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Header Section
-                                        SizedBox(
-                      width: double.infinity,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          const Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Team Management',
-                                  style: TextStyle(
-                                    fontSize: 28,
-                                    fontWeight: FontWeight.w800,
-                                    color: Color(0xFF0F172A),
-                                    letterSpacing: -0.5,
-                                  ),
-                                ),
-                                SizedBox(height: 4),
-                                Text(
-                                  'Real-time team analytics, live conversion tracking, and member performance (FR-6.3)',
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    color: Color(0xFF667085),
-                                  ),
-                                ),
-                              ],
+                    // Header Section (Responsive Layout)
+                    LayoutBuilder(
+                      builder: (context, c) {
+                        final isMobile = c.maxWidth < 680;
+                        final titleCol = Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: const [
+                            Text(
+                              'Team Management',
+                              style: TextStyle(
+                                fontSize: 28,
+                                fontWeight: FontWeight.w800,
+                                color: Color(0xFF0F172A),
+                                letterSpacing: -0.5,
+                              ),
                             ),
-                          ),
-                          const SizedBox(width: 16),
-                          OutlinedButton.icon(
+                            SizedBox(height: 4),
+                            Text(
+                              'Real-time team analytics, live conversion tracking, and member performance (FR-6.3)',
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: Color(0xFF667085),
+                              ),
+                            ),
+                          ],
+                        );
+
+                        final exportBtn = SizedBox(
+                          height: 40,
+                          width: isMobile ? double.infinity : null,
+                          child: OutlinedButton.icon(
                             onPressed: () => _showWatermarkedExportModal(
                               activeUsers,
                               filteredLeads,
@@ -315,8 +313,32 @@ class _TeamManagementViewState extends State<TeamManagementView> {
                               ),
                             ),
                           ),
-                        ],
-                      ),
+                        );
+
+                        if (isMobile) {
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              titleCol,
+                              const SizedBox(height: 12),
+                              exportBtn,
+                            ],
+                          );
+                        }
+
+                        return SizedBox(
+                          width: double.infinity,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Expanded(child: titleCol),
+                              const SizedBox(width: 16),
+                              exportBtn,
+                            ],
+                          ),
+                        );
+                      },
                     ),
                     const SizedBox(height: 20),
 
