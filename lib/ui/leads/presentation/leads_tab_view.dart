@@ -494,139 +494,160 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                             const SizedBox(height: 18),
 
                             // Quick Actions: Add Walk-in Lead & My Record (Exact match to Figma spec)
-                            Row(
-                              children: [
-                                InkWell(
-                                  onTap: () =>
-                                      LeadCallSheets.showPhoneLookupAndWalkInSheet(
-                                        context,
-                                      ),
-                                  borderRadius: BorderRadius.circular(16),
-                                  child: Container(
-                                    height: 34,
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 14,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      borderRadius: BorderRadius.circular(16),
-                                      border: Border.all(
-                                        color: const Color(0xFFF3F4F6),
-                                        width: 1,
-                                      ),
-                                      boxShadow: const [
-                                        BoxShadow(
-                                          color: Color(0x0D000000),
-                                          blurRadius: 2,
-                                          offset: Offset(0, 1),
+                            FittedBox(
+                              fit: BoxFit.scaleDown,
+                              alignment: Alignment.centerLeft,
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  InkWell(
+                                    onTap: () =>
+                                        LeadCallSheets.showPhoneLookupAndWalkInSheet(
+                                          context,
                                         ),
-                                      ],
-                                    ),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        SvgPicture.asset(
-                                          AppSvgs.addWalkInLead,
-                                          width: 14,
-                                          height: 14,
+                                    borderRadius: BorderRadius.circular(16),
+                                    child: Container(
+                                      height: 34,
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 14,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        borderRadius: BorderRadius.circular(16),
+                                        border: Border.all(
+                                          color: const Color(0xFFF3F4F6),
+                                          width: 1,
                                         ),
-                                        const SizedBox(width: 7),
-                                        const Text(
-                                          'Add Walk-in Lead',
-                                          style: TextStyle(
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.w600,
-                                            color: Color(0xFF334155),
+                                        boxShadow: const [
+                                          BoxShadow(
+                                            color: Color(0x0D000000),
+                                            blurRadius: 2,
+                                            offset: Offset(0, 1),
                                           ),
-                                        ),
-                                      ],
+                                        ],
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          SvgPicture.asset(
+                                            AppSvgs.addWalkInLead,
+                                            width: 14,
+                                            height: 14,
+                                          ),
+                                          const SizedBox(width: 7),
+                                          const Text(
+                                            'Add Walk-in Lead',
+                                            style: TextStyle(
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w600,
+                                              color: Color(0xFF334155),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
                                     ),
                                   ),
-                                ),
-                                const SizedBox(width: 10),
-                                InkWell(
-                                  onTap: () =>
-                                      LeadCallSheets.showMyRecordSheet(context),
-                                  borderRadius: BorderRadius.circular(16),
-                                  child: Container(
-                                    height: 34,
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 14,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      borderRadius: BorderRadius.circular(16),
-                                      border: Border.all(
-                                        color: const Color(0xFFF3F4F6),
-                                        width: 1,
+                                  const SizedBox(width: 10),
+                                  InkWell(
+                                    onTap: () =>
+                                        LeadCallSheets.showMyRecordSheet(context),
+                                    borderRadius: BorderRadius.circular(16),
+                                    child: Container(
+                                      height: 34,
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 14,
                                       ),
-                                      boxShadow: const [
-                                        BoxShadow(
-                                          color: Color(0x0D000000),
-                                          blurRadius: 2,
-                                          offset: Offset(0, 1),
+                                      decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        borderRadius: BorderRadius.circular(16),
+                                        border: Border.all(
+                                          color: const Color(0xFFF3F4F6),
+                                          width: 1,
                                         ),
-                                      ],
-                                    ),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        SvgPicture.asset(
-                                          AppSvgs.myRecord,
-                                          width: 14,
-                                          height: 14,
-                                        ),
-                                        const SizedBox(width: 7),
-                                        const Text(
-                                          'My Record',
-                                          style: TextStyle(
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.w600,
-                                            color: Color(0xFF334155),
+                                        boxShadow: const [
+                                          BoxShadow(
+                                            color: Color(0x0D000000),
+                                            blurRadius: 2,
+                                            offset: Offset(0, 1),
                                           ),
-                                        ),
-                                      ],
+                                        ],
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          SvgPicture.asset(
+                                            AppSvgs.myRecord,
+                                            width: 14,
+                                            height: 14,
+                                          ),
+                                          const SizedBox(width: 7),
+                                          const Text(
+                                            'My Record',
+                                            style: TextStyle(
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w600,
+                                              color: Color(0xFF334155),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
                                     ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
                             const SizedBox(height: 22),
 
                             // 5. TODAY'S CALLS Header with Pending / Completed switcher
                             Row(
                               children: [
-                                const Text(
-                                  "TODAY'S CALLS",
-                                  style: TextStyle(
-                                    fontSize: 11.5,
-                                    fontWeight: FontWeight.w700,
-                                    letterSpacing: 0.8,
-                                    color: Color(0xFF94A3B8),
+                                const Flexible(
+                                  child: FittedBox(
+                                    fit: BoxFit.scaleDown,
+                                    alignment: Alignment.centerLeft,
+                                    child: Text(
+                                      "TODAY'S CALLS",
+                                      style: TextStyle(
+                                        fontSize: 11.5,
+                                        fontWeight: FontWeight.w700,
+                                        letterSpacing: 0.8,
+                                        color: Color(0xFF94A3B8),
+                                      ),
+                                    ),
                                   ),
                                 ),
-                                const Spacer(),
-                                Container(
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFFE2E8F0).withValues(alpha: 0.6),
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                  padding: const EdgeInsets.all(3),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      _CallTabPill(
-                                        label: 'Pending (${state.pendingLeads.length})',
-                                        isSelected: state.showingPendingCalls,
-                                        onTap: () => cubit.togglePendingOrDoneCalls(true),
+                                const SizedBox(width: 8),
+                                Flexible(
+                                  flex: 3,
+                                  child: Align(
+                                    alignment: Alignment.centerRight,
+                                    child: FittedBox(
+                                      fit: BoxFit.scaleDown,
+                                      alignment: Alignment.centerRight,
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFFE2E8F0).withValues(alpha: 0.6),
+                                          borderRadius: BorderRadius.circular(10),
+                                        ),
+                                        padding: const EdgeInsets.all(3),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            _CallTabPill(
+                                              label: 'Pending (${state.pendingLeads.length})',
+                                              isSelected: state.showingPendingCalls,
+                                              onTap: () => cubit.togglePendingOrDoneCalls(true),
+                                            ),
+                                            const SizedBox(width: 4),
+                                            _CallTabPill(
+                                              label: 'Completed (${state.doneLeads.length})',
+                                              isSelected: !state.showingPendingCalls,
+                                              onTap: () => cubit.togglePendingOrDoneCalls(false),
+                                            ),
+                                          ],
+                                        ),
                                       ),
-                                      const SizedBox(width: 4),
-                                      _CallTabPill(
-                                        label: 'Completed (${state.doneLeads.length})',
-                                        isSelected: !state.showingPendingCalls,
-                                        onTap: () => cubit.togglePendingOrDoneCalls(false),
-                                      ),
-                                    ],
+                                    ),
                                   ),
                                 ),
                               ],
@@ -725,7 +746,10 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                     maxWidth: 335,
                                     minHeight: 285,
                                   ),
-                                  padding: const EdgeInsets.all(32),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 20,
+                                    vertical: 28,
+                                  ),
                                   decoration: BoxDecoration(
                                     color: Colors.white,
                                     borderRadius: BorderRadius.circular(16),
@@ -794,6 +818,7 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                       FittedBox(
                                         fit: BoxFit.scaleDown,
                                         child: Row(
+                                          mainAxisSize: MainAxisSize.min,
                                           mainAxisAlignment:
                                               MainAxisAlignment.center,
                                           children: [
@@ -838,12 +863,14 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                                       elevation: 0,
                                                       shadowColor:
                                                           Colors.transparent,
+                                                      minimumSize: Size.zero,
+                                                      tapTargetSize:
+                                                          MaterialTapTargetSize
+                                                              .shrinkWrap,
                                                       padding:
-                                                          const EdgeInsets.fromLTRB(
-                                                            16,
-                                                            6,
-                                                            14,
-                                                            6,
+                                                          const EdgeInsets.symmetric(
+                                                            horizontal: 10,
+                                                            vertical: 4,
                                                           ),
                                                       shape: RoundedRectangleBorder(
                                                         borderRadius:
@@ -852,27 +879,32 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                                             ),
                                                       ),
                                                     ),
-                                                    child: Row(
-                                                      mainAxisAlignment:
-                                                          MainAxisAlignment
-                                                              .center,
-                                                      children: [
-                                                        SvgPicture.asset(
-                                                          AppSvgs.arrowLeft,
-                                                          width: 15,
-                                                          height: 15,
-                                                          colorFilter:
-                                                              const ColorFilter.mode(
-                                                                Colors.white,
-                                                                BlendMode.srcIn,
-                                                              ),
-                                                        ),
-                                                        const SizedBox(
-                                                          width: 8,
-                                                        ),
-                                                        const Flexible(
-                                                          child: Text(
+                                                    child: FittedBox(
+                                                      fit: BoxFit.scaleDown,
+                                                      child: Row(
+                                                        mainAxisSize:
+                                                            MainAxisSize.min,
+                                                        mainAxisAlignment:
+                                                            MainAxisAlignment
+                                                                .center,
+                                                        children: [
+                                                          SvgPicture.asset(
+                                                            AppSvgs.arrowLeft,
+                                                            width: 15,
+                                                            height: 15,
+                                                            colorFilter:
+                                                                const ColorFilter.mode(
+                                                                  Colors.white,
+                                                                  BlendMode.srcIn,
+                                                                ),
+                                                          ),
+                                                          const SizedBox(
+                                                            width: 8,
+                                                          ),
+                                                          const Text(
                                                             'Back to Pending\nCalls',
+                                                            textAlign:
+                                                                TextAlign.left,
                                                             style: TextStyle(
                                                               fontSize: 12,
                                                               fontWeight:
@@ -883,8 +915,8 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                                               height: 1.15,
                                                             ),
                                                           ),
-                                                        ),
-                                                      ],
+                                                        ],
+                                                      ),
                                                     ),
                                                   ),
                                                 ),
@@ -907,10 +939,14 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                                     color: Color(0xFFE2E8F0),
                                                     width: 1,
                                                   ),
+                                                  minimumSize: Size.zero,
+                                                  tapTargetSize:
+                                                      MaterialTapTargetSize
+                                                          .shrinkWrap,
                                                   padding:
                                                       const EdgeInsets.symmetric(
-                                                        horizontal: 14,
-                                                        vertical: 10,
+                                                        horizontal: 10,
+                                                        vertical: 4,
                                                       ),
                                                   shape: RoundedRectangleBorder(
                                                     borderRadius:
@@ -919,33 +955,38 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                                         ),
                                                   ),
                                                 ),
-                                                child: Row(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.center,
-                                                  children: [
-                                                    SvgPicture.asset(
-                                                      AppSvgs.refresh,
-                                                      width: 15,
-                                                      height: 15,
-                                                      colorFilter:
-                                                          const ColorFilter.mode(
-                                                            Color(0xFF475467),
-                                                            BlendMode.srcIn,
+                                                child: FittedBox(
+                                                  fit: BoxFit.scaleDown,
+                                                  child: Row(
+                                                    mainAxisSize:
+                                                        MainAxisSize.min,
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment.center,
+                                                    children: [
+                                                      SvgPicture.asset(
+                                                        AppSvgs.refresh,
+                                                        width: 15,
+                                                        height: 15,
+                                                        colorFilter:
+                                                            const ColorFilter.mode(
+                                                              Color(0xFF475467),
+                                                              BlendMode.srcIn,
+                                                            ),
+                                                      ),
+                                                      const SizedBox(width: 7),
+                                                      const Text(
+                                                        'Refresh',
+                                                        style: TextStyle(
+                                                          fontSize: 13,
+                                                          fontWeight:
+                                                              FontWeight.w700,
+                                                          color: Color(
+                                                            0xFF334155,
                                                           ),
-                                                    ),
-                                                    const SizedBox(width: 7),
-                                                    const Text(
-                                                      'Refresh',
-                                                      style: TextStyle(
-                                                        fontSize: 13,
-                                                        fontWeight:
-                                                            FontWeight.w700,
-                                                        color: Color(
-                                                          0xFF334155,
                                                         ),
                                                       ),
-                                                    ),
-                                                  ],
+                                                    ],
+                                                  ),
                                                 ),
                                               ),
                                             ),
