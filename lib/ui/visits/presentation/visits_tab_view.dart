@@ -1202,9 +1202,8 @@ class _RecentVisitCard extends StatelessWidget {
                     const SizedBox(width: 8),
 
                     // Direction & Outcome Buttons
-                    Wrap(
-                      spacing: 6,
-                      runSpacing: 4,
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
                         Material(
                           color: Colors.transparent,
@@ -1246,7 +1245,8 @@ class _RecentVisitCard extends StatelessWidget {
                             ),
                           ),
                         ),
-                        if (onRecordOutcome != null)
+                        if (onRecordOutcome != null) ...[
+                          const SizedBox(height: 6),
                           Material(
                             color: Colors.transparent,
                             child: InkWell(
@@ -1283,6 +1283,7 @@ class _RecentVisitCard extends StatelessWidget {
                               ),
                             ),
                           ),
+                        ],
                       ],
                     ),
                   ],
@@ -1290,78 +1291,86 @@ class _RecentVisitCard extends StatelessWidget {
                 const SizedBox(height: 16),
 
                 // Middle Box: Actual Real Data $leads LEADS | $interested INTERESTED
-                InkWell(
-                  onTap: onRecordOutcome,
-                  borderRadius: BorderRadius.circular(12),
-                  child: Container(
-                    height: 44,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFF8FAFC),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: const Color(0xFFF1F5F9),
-                        width: 1,
+                Container(
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF8FAFC),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: const Color(0xFFF1F5F9),
+                      width: 1,
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 8),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  '$leads',
+                                  style: const TextStyle(
+                                    fontSize: 17,
+                                    fontWeight: FontWeight.w800,
+                                    color: Color(0xFF0F172A),
+                                  ),
+                                ),
+                                const SizedBox(width: 6),
+                                const Text(
+                                  'LEADS',
+                                  style: TextStyle(
+                                    fontSize: 11.5,
+                                    fontWeight: FontWeight.w700,
+                                    color: Color(0xFF64748B),
+                                    letterSpacing: 0.4,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
                       ),
-                    ),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                '$leads',
-                                style: const TextStyle(
-                                  fontSize: 17,
-                                  fontWeight: FontWeight.w800,
-                                  color: Color(0xFF0F172A),
+                      Container(
+                        width: 1,
+                        height: 18,
+                        color: const Color(0xFFE2E8F0),
+                      ),
+                      Expanded(
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 8),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  '$interested',
+                                  style: const TextStyle(
+                                    fontSize: 17,
+                                    fontWeight: FontWeight.w800,
+                                    color: Color(0xFF0F172A),
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(width: 6),
-                              const Text(
-                                'LEADS',
-                                style: TextStyle(
-                                  fontSize: 11.5,
-                                  fontWeight: FontWeight.w700,
-                                  color: Color(0xFF64748B),
-                                  letterSpacing: 0.4,
+                                const SizedBox(width: 6),
+                                const Text(
+                                  'INTERESTED',
+                                  style: TextStyle(
+                                    fontSize: 11.5,
+                                    fontWeight: FontWeight.w700,
+                                    color: Color(0xFF64748B),
+                                    letterSpacing: 0.4,
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
-                        Container(
-                          width: 1,
-                          height: 18,
-                          color: const Color(0xFFE2E8F0),
-                        ),
-                        Expanded(
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                '$interested',
-                                style: const TextStyle(
-                                  fontSize: 17,
-                                  fontWeight: FontWeight.w800,
-                                  color: Color(0xFF0F172A),
-                                ),
-                              ),
-                              const SizedBox(width: 6),
-                              const Text(
-                                'INTERESTED',
-                                style: TextStyle(
-                                  fontSize: 11.5,
-                                  fontWeight: FontWeight.w700,
-                                  color: Color(0xFF64748B),
-                                  letterSpacing: 0.4,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
                 const SizedBox(height: 16),

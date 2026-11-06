@@ -10,16 +10,50 @@ import 'package:acadeno_crm/ui/follow_ups/application/follow_ups_cubit.dart';
 import 'package:acadeno_crm/ui/follow_ups/application/follow_ups_state.dart';
 import 'package:acadeno_crm/ui/follow_ups/data/model/follow_up_models.dart';
 
-class FollowUpsTabView extends StatelessWidget {
+class FollowUpsTabView extends StatefulWidget {
   const FollowUpsTabView({super.key});
 
   @override
+  State<FollowUpsTabView> createState() => _FollowUpsTabViewState();
+}
+
+class _FollowUpsTabViewState extends State<FollowUpsTabView> {
+  late final PageController _pageController;
+
+  @override
+  void initState() {
+    super.initState();
+    final initialIndex = context
+        .read<FollowUpsCubit>()
+        .state
+        .selectedFollowUpBucket
+        .index;
+    _pageController = PageController(initialPage: initialIndex);
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return BlocBuilder<FollowUpsCubit, FollowUpsState>(
+    return BlocConsumer<FollowUpsCubit, FollowUpsState>(
+      listener: (context, state) {
+        final targetPage = state.selectedFollowUpBucket.index;
+        if (_pageController.hasClients &&
+            _pageController.page?.round() != targetPage) {
+          _pageController.animateToPage(
+            targetPage,
+            duration: const Duration(milliseconds: 280),
+            curve: Curves.easeInOut,
+          );
+        }
+      },
       builder: (context, state) {
         final cubit = context.read<FollowUpsCubit>();
         final pad = context.devicePadding;
-        final items = state.activeBucketFollowUps;
 
         return Container(
           color: const Color(0xFFF8FAFC),
@@ -45,35 +79,55 @@ class FollowUpsTabView extends StatelessWidget {
                     ),
                     const SizedBox(height: 18),
 
-                    // Flat Tab Headers: OVERDUE | TODAY | UPCOMING
+                    // Flat Tab Headers: OVERDUE | TODAY | UPCOMING (Equally distributed)
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        _TabItem(
-                          title: 'OVERDUE',
-                          isSelected:
-                              state.selectedFollowUpBucket ==
-                              FollowUpBucket.overdue,
-                          onTap: () => cubit.selectFollowUpBucket(
-                            FollowUpBucket.overdue,
+                        Expanded(
+                          child: _TabItem(
+                            title: 'OVERDUE',
+                            isSelected:
+                                state.selectedFollowUpBucket ==
+                                FollowUpBucket.overdue,
+                            onTap: () {
+                              cubit.selectFollowUpBucket(FollowUpBucket.overdue);
+                              _pageController.animateToPage(
+                                0,
+                                duration: const Duration(milliseconds: 280),
+                                curve: Curves.easeInOut,
+                              );
+                            },
                           ),
                         ),
-                        _TabItem(
-                          title: 'TODAY',
-                          isSelected:
-                              state.selectedFollowUpBucket ==
-                              FollowUpBucket.today,
-                          onTap: () => cubit.selectFollowUpBucket(
-                            FollowUpBucket.today,
+                        Expanded(
+                          child: _TabItem(
+                            title: 'TODAY',
+                            isSelected:
+                                state.selectedFollowUpBucket ==
+                                FollowUpBucket.today,
+                            onTap: () {
+                              cubit.selectFollowUpBucket(FollowUpBucket.today);
+                              _pageController.animateToPage(
+                                1,
+                                duration: const Duration(milliseconds: 280),
+                                curve: Curves.easeInOut,
+                              );
+                            },
                           ),
                         ),
-                        _TabItem(
-                          title: 'UPCOMING',
-                          isSelected:
-                              state.selectedFollowUpBucket ==
-                              FollowUpBucket.upcoming,
-                          onTap: () => cubit.selectFollowUpBucket(
-                            FollowUpBucket.upcoming,
+                        Expanded(
+                          child: _TabItem(
+                            title: 'UPCOMING',
+                            isSelected:
+                                state.selectedFollowUpBucket ==
+                                FollowUpBucket.upcoming,
+                            onTap: () {
+                              cubit.selectFollowUpBucket(FollowUpBucket.upcoming);
+                              _pageController.animateToPage(
+                                2,
+                                duration: const Duration(milliseconds: 280),
+                                curve: Curves.easeInOut,
+                              );
+                            },
                           ),
                         ),
                       ],
@@ -82,57 +136,97 @@ class FollowUpsTabView extends StatelessWidget {
                 ),
               ),
 
-              // Scrollable Cards List
+              // Horizontal Swipe PageView (Gesture Support between Overdue, Today, Upcoming)
               Expanded(
-                child: RefreshIndicator(
-                  color: const Color(0xFFE86938),
-                  backgroundColor: Colors.white,
-                  onRefresh: () async {
-                    await context.read<FollowUpsCubit>().refresh();
+                child: PageView(
+                  controller: _pageController,
+                  physics: const AlwaysScrollableScrollPhysics(
+                    parent: BouncingScrollPhysics(),
+                  ),
+                  onPageChanged: (pageIndex) {
+                    final bucket = FollowUpBucket.values[pageIndex];
+                    cubit.selectFollowUpBucket(bucket);
                   },
-                  child: items.isEmpty
-                      ? ListView(
-                          physics: const AlwaysScrollableScrollPhysics(),
-                          children: const [
-                            Padding(
-                              padding: EdgeInsets.all(32),
-                              child: Center(
-                                child: Text(
-                                  'All follow-ups in this tab are completed!',
-                                  style: TextStyle(
-                                    fontSize: 13.5,
-                                    color: Color(0xFF667085),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        )
-                      : ListView.separated(
-                          physics: const AlwaysScrollableScrollPhysics(
-                            parent: BouncingScrollPhysics(),
-                          ),
-                          padding: EdgeInsets.fromLTRB(pad, 14, pad, 24),
-                          itemCount: items.length,
-                          separatorBuilder: (_, _) => const SizedBox(height: 12),
-                          itemBuilder: (context, index) {
-                            final item = items[index];
-                            return _FollowUpCard(
-                              key: ValueKey(item.id),
-                              item: item,
-                              onCallNow: () => AppPhoneCallService.instance
-                                  .dialFollowUpItem(context, item),
-                              onSnooze: () => _showSnoozeSheet(context, item),
-                              onMarkDone: () => cubit.completeFollowUp(item.id),
-                            );
-                          },
-                        ),
+                  children: [
+                    _buildBucketList(
+                      context: context,
+                      items: state.overdueFollowUps,
+                      cubit: cubit,
+                      pad: pad,
+                    ),
+                    _buildBucketList(
+                      context: context,
+                      items: state.todayFollowUps,
+                      cubit: cubit,
+                      pad: pad,
+                    ),
+                    _buildBucketList(
+                      context: context,
+                      items: state.upcomingFollowUps,
+                      cubit: cubit,
+                      pad: pad,
+                    ),
+                  ],
                 ),
               ),
             ],
           ),
         );
       },
+    );
+  }
+
+  Widget _buildBucketList({
+    required BuildContext context,
+    required List<ExecutiveFollowUpItem> items,
+    required FollowUpsCubit cubit,
+    required double pad,
+  }) {
+    return RefreshIndicator(
+      color: const Color(0xFFE86938),
+      backgroundColor: Colors.white,
+      onRefresh: () async {
+        await cubit.refresh();
+      },
+      child: items.isEmpty
+          ? ListView(
+              physics: const AlwaysScrollableScrollPhysics(
+                parent: BouncingScrollPhysics(),
+              ),
+              children: const [
+                Padding(
+                  padding: EdgeInsets.all(32),
+                  child: Center(
+                    child: Text(
+                      'All follow-ups in this tab are completed!',
+                      style: TextStyle(
+                        fontSize: 13.5,
+                        color: Color(0xFF667085),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            )
+          : ListView.separated(
+              physics: const AlwaysScrollableScrollPhysics(
+                parent: BouncingScrollPhysics(),
+              ),
+              padding: EdgeInsets.fromLTRB(pad, 14, pad, 24),
+              itemCount: items.length,
+              separatorBuilder: (_, _) => const SizedBox(height: 12),
+              itemBuilder: (context, index) {
+                final item = items[index];
+                return _FollowUpCard(
+                  key: ValueKey(item.id),
+                  item: item,
+                  onCallNow: () => AppPhoneCallService.instance
+                      .dialFollowUpItem(context, item),
+                  onSnooze: () => _showSnoozeSheet(context, item),
+                  onMarkDone: () => cubit.completeFollowUp(item.id),
+                );
+              },
+            ),
     );
   }
 
@@ -260,7 +354,8 @@ class _TabItem extends StatelessWidget {
           const SizedBox(height: 8),
           Container(
             height: 3,
-            width: 76,
+            width: double.infinity,
+            margin: const EdgeInsets.symmetric(horizontal: 16),
             decoration: BoxDecoration(
               color: isSelected ? const Color(0xFFE86938) : Colors.transparent,
               borderRadius: BorderRadius.circular(2),
@@ -370,16 +465,24 @@ class _FollowUpCard extends StatelessWidget {
                       backgroundColor: const Color(0xFFE86938),
                       foregroundColor: Colors.white,
                       elevation: 0,
+                      minimumSize: Size.zero,
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                       padding: EdgeInsets.zero,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                    child: const Text(
-                      'Call Now',
-                      style: TextStyle(
-                        fontSize: 13.5,
-                        fontWeight: FontWeight.w700,
+                    child: const FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 4),
+                        child: Text(
+                          'Call Now',
+                          style: TextStyle(
+                            fontSize: 13.5,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
                       ),
                     ),
                   ),
@@ -396,16 +499,24 @@ class _FollowUpCard extends StatelessWidget {
                       backgroundColor: const Color(0xFFF0F6FA),
                       foregroundColor: const Color(0xFF334155),
                       elevation: 0,
+                      minimumSize: Size.zero,
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                       padding: EdgeInsets.zero,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                    child: const Text(
-                      'Snooze',
-                      style: TextStyle(
-                        fontSize: 13.5,
-                        fontWeight: FontWeight.w700,
+                    child: const FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 4),
+                        child: Text(
+                          'Snooze',
+                          style: TextStyle(
+                            fontSize: 13.5,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
                       ),
                     ),
                   ),
@@ -422,6 +533,8 @@ class _FollowUpCard extends StatelessWidget {
                       backgroundColor: const Color(0xFFF0F6FA),
                       foregroundColor: const Color(0xFF64748B),
                       elevation: 0,
+                      minimumSize: Size.zero,
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                       padding: EdgeInsets.zero,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),

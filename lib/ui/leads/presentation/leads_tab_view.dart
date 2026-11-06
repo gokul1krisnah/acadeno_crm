@@ -354,8 +354,11 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                 builder: (_) {
                                   final due = state.dueNowLead!;
                                   return InkWell(
-                                    onTap: () => AppPhoneCallService.instance
-                                        .dialLead(context, due),
+                                    onTap: () =>
+                                        LeadCallSheets.showLeadDetailSheet(
+                                          context,
+                                          lead: due,
+                                        ),
                                     borderRadius: BorderRadius.circular(16),
                                     child: Container(
                                       padding: const EdgeInsets.all(20),
@@ -418,25 +421,33 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                             ),
                                           ),
                                           const SizedBox(width: 14),
-                                          Container(
-                                            width: 52,
-                                            height: 52,
-                                            decoration: BoxDecoration(
-                                              color: const Color(0xFFEF8144),
-                                              shape: BoxShape.circle,
-                                              boxShadow: [
-                                                BoxShadow(
-                                                  color: const Color(0xFFEF8144)
-                                                      .withValues(alpha: 0.38),
-                                                  blurRadius: 18,
-                                                  offset: const Offset(0, 6),
-                                                ),
-                                              ],
-                                            ),
-                                            child: const Icon(
-                                              CupertinoIcons.phone_fill,
-                                              color: Colors.white,
-                                              size: 22,
+                                          InkWell(
+                                            onTap: () => AppPhoneCallService
+                                                .instance
+                                                .dialLead(context, due),
+                                            borderRadius:
+                                                BorderRadius.circular(26),
+                                            child: Container(
+                                              width: 52,
+                                              height: 52,
+                                              decoration: BoxDecoration(
+                                                color: const Color(0xFFEF8144),
+                                                shape: BoxShape.circle,
+                                                boxShadow: [
+                                                  BoxShadow(
+                                                    color: const Color(
+                                                      0xFFEF8144,
+                                                    ).withValues(alpha: 0.38),
+                                                    blurRadius: 18,
+                                                    offset: const Offset(0, 6),
+                                                  ),
+                                                ],
+                                              ),
+                                              child: const Icon(
+                                                CupertinoIcons.phone_fill,
+                                                color: Colors.white,
+                                                size: 22,
+                                              ),
                                             ),
                                           ),
                                         ],
@@ -583,23 +594,18 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                             const SizedBox(height: 22),
 
                             // 5. TODAY'S CALLS Header with Pending / Completed switcher
-                            Wrap(
-                              spacing: 12,
-                              runSpacing: 8,
-                              alignment: WrapAlignment.spaceBetween,
-                              crossAxisAlignment: WrapCrossAlignment.center,
+                            Row(
                               children: [
-                                Text(
-                                  state.showingPendingCalls
-                                      ? "TODAY'S CALLS · PENDING"
-                                      : "TODAY'S CALLS · COMPLETED",
-                                  style: const TextStyle(
+                                const Text(
+                                  "TODAY'S CALLS",
+                                  style: TextStyle(
                                     fontSize: 11.5,
                                     fontWeight: FontWeight.w700,
                                     letterSpacing: 0.8,
                                     color: Color(0xFF94A3B8),
                                   ),
                                 ),
+                                const Spacer(),
                                 Container(
                                   decoration: BoxDecoration(
                                     color: const Color(0xFFE2E8F0).withValues(alpha: 0.6),
