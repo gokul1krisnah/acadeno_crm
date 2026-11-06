@@ -2149,13 +2149,13 @@ class _OverdueFollowUps extends StatelessWidget {
                     vertical: 6,
                   ),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFFFF7ED),
+                    color: const Color(0xFFEEF2FF),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: const Text(
                     'Manage in Leads',
                     style: TextStyle(
-                      color: Color(0xFFEF8144),
+                      color: _primary,
                       fontSize: 12,
                       fontWeight: FontWeight.w700,
                     ),
@@ -2331,13 +2331,13 @@ class _CollegeVisits extends StatelessWidget {
                     vertical: 6,
                   ),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFFFF7ED),
+                    color: const Color(0xFFEEF2FF),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: const Text(
                     'Plan Visit',
                     style: TextStyle(
-                      color: Color(0xFFEF8144),
+                      color: _primary,
                       fontSize: 12,
                       fontWeight: FontWeight.w700,
                     ),
