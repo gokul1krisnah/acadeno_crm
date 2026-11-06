@@ -2245,27 +2245,33 @@ class _OverdueFollowUps extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(width: 10),
-                      OutlinedButton(
-                        onPressed: onReassign,
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: const Color(0xFF4338CA),
-                          side: const BorderSide(color: Color(0xFF4338CA)),
-
-
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
+                      SizedBox(
+                        width: 102,
+                        height: 34,
+                        child: OutlinedButton(
+                          onPressed: onReassign,
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: const Color(0xFF4338CA),
+                            side: const BorderSide(
+                              color: Color(0xFF4338CA),
+                              width: 1,
+                            ),
+                            shape: const StadiumBorder(),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 6,
+                            ),
+                            visualDensity: VisualDensity.compact,
                           ),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 14,
-                            vertical: 6,
-                          ),
-                          visualDensity: VisualDensity.compact,
-                        ),
-                        child: const Text(
-                          'Reassign',
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w700,
+                          child: const FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Text(
+                              'Reassign',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
                           ),
                         ),
                       ),

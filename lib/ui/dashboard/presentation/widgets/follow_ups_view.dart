@@ -671,14 +671,12 @@ class _FollowUpsViewState extends State<FollowUpsView> {
     final reassignBtn = OutlinedButton(
       style: OutlinedButton.styleFrom(
         foregroundColor: const Color(0xFF4338CA),
-        side: const BorderSide(color: Color(0xFF4338CA)),
+        side: const BorderSide(color: Color(0xFF4338CA), width: 1),
         padding: const EdgeInsets.symmetric(
-          horizontal: 14,
-          vertical: 8,
+          horizontal: 16,
+          vertical: 6,
         ),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
+        shape: const StadiumBorder(),
       ),
       onPressed: () => _reassignSingle(item, executives),
       child: const FittedBox(
@@ -686,7 +684,7 @@ class _FollowUpsViewState extends State<FollowUpsView> {
         child: Text(
           'Reassign',
           style: TextStyle(
-            fontSize: 13,
+            fontSize: 12.5,
             fontWeight: FontWeight.w700,
           ),
         ),
@@ -699,12 +697,10 @@ class _FollowUpsViewState extends State<FollowUpsView> {
         foregroundColor: Colors.white,
         elevation: 0,
         padding: const EdgeInsets.symmetric(
-          horizontal: 14,
-          vertical: 8,
+          horizontal: 16,
+          vertical: 6,
         ),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
+        shape: const StadiumBorder(),
       ),
       onPressed: () => _markCompleted(item.id, item.studentName),
       child: const FittedBox(
@@ -712,7 +708,7 @@ class _FollowUpsViewState extends State<FollowUpsView> {
         child: Text(
           'Mark Done',
           style: TextStyle(
-            fontSize: 13,
+            fontSize: 12.5,
             fontWeight: FontWeight.w700,
           ),
         ),
@@ -831,9 +827,9 @@ class _FollowUpsViewState extends State<FollowUpsView> {
             const SizedBox(height: 10),
             Row(
               children: [
-                Expanded(child: reassignBtn),
+                Expanded(child: SizedBox(height: 34, child: reassignBtn)),
                 const SizedBox(width: 10),
-                Expanded(child: markDoneBtn),
+                Expanded(child: SizedBox(height: 34, child: markDoneBtn)),
               ],
             ),
           ],
@@ -866,9 +862,9 @@ class _FollowUpsViewState extends State<FollowUpsView> {
             children: [
               assignedBadge,
               const SizedBox(width: 8),
-              reassignBtn,
+              SizedBox(width: 102, height: 34, child: reassignBtn),
               const SizedBox(width: 8),
-              markDoneBtn,
+              SizedBox(height: 34, child: markDoneBtn),
             ],
           ),
         ],
