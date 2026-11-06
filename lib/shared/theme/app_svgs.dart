@@ -10,4 +10,7 @@ abstract class AppSvgs {
   static const String addWalkInLead = 'assets/svgs/addwalkinlead.svg';
   static const String myRecord = 'assets/svgs/myrecord.svg';
   static const String tick = 'assets/svgs/tick.svg';
+  static const String clipboardCheck = 'assets/svgs/clipboard_check.svg';
+  static const String refresh = 'assets/svgs/refresh.svg';
+  static const String arrowLeft = 'assets/svgs/arrow_left.svg';
 }
