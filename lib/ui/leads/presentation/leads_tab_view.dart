@@ -493,23 +493,21 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                               ),
                             const SizedBox(height: 18),
 
-                            // Quick Actions: Add Walk-in Lead & My Record (Exact match to Figma spec)
-                            FittedBox(
-                              fit: BoxFit.scaleDown,
-                              alignment: Alignment.centerLeft,
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  InkWell(
+                            // Quick Actions: Add Walk-in Lead & My Record (Responsive flex boxes)
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: InkWell(
                                     onTap: () =>
                                         LeadCallSheets.showPhoneLookupAndWalkInSheet(
                                           context,
                                         ),
                                     borderRadius: BorderRadius.circular(16),
                                     child: Container(
-                                      height: 34,
+                                      height: 38,
+                                      alignment: Alignment.center,
                                       padding: const EdgeInsets.symmetric(
-                                        horizontal: 14,
+                                        horizontal: 10,
                                       ),
                                       decoration: BoxDecoration(
                                         color: Colors.white,
@@ -526,36 +524,43 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                           ),
                                         ],
                                       ),
-                                      child: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          SvgPicture.asset(
-                                            AppSvgs.addWalkInLead,
-                                            width: 14,
-                                            height: 14,
-                                          ),
-                                          const SizedBox(width: 7),
-                                          const Text(
-                                            'Add Walk-in Lead',
-                                            style: TextStyle(
-                                              fontSize: 12,
-                                              fontWeight: FontWeight.w600,
-                                              color: Color(0xFF334155),
+                                      child: FittedBox(
+                                        fit: BoxFit.scaleDown,
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            SvgPicture.asset(
+                                              AppSvgs.addWalkInLead,
+                                              width: 14,
+                                              height: 14,
                                             ),
-                                          ),
-                                        ],
+                                            const SizedBox(width: 7),
+                                            const Text(
+                                              'Add Walk-in Lead',
+                                              style: TextStyle(
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.w600,
+                                                color: Color(0xFF334155),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
                                       ),
                                     ),
                                   ),
-                                  const SizedBox(width: 10),
-                                  InkWell(
+                                ),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: InkWell(
                                     onTap: () =>
                                         LeadCallSheets.showMyRecordSheet(context),
                                     borderRadius: BorderRadius.circular(16),
                                     child: Container(
-                                      height: 34,
+                                      height: 38,
+                                      alignment: Alignment.center,
                                       padding: const EdgeInsets.symmetric(
-                                        horizontal: 14,
+                                        horizontal: 10,
                                       ),
                                       decoration: BoxDecoration(
                                         color: Colors.white,
@@ -572,29 +577,33 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                           ),
                                         ],
                                       ),
-                                      child: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          SvgPicture.asset(
-                                            AppSvgs.myRecord,
-                                            width: 14,
-                                            height: 14,
-                                          ),
-                                          const SizedBox(width: 7),
-                                          const Text(
-                                            'My Record',
-                                            style: TextStyle(
-                                              fontSize: 12,
-                                              fontWeight: FontWeight.w600,
-                                              color: Color(0xFF334155),
+                                      child: FittedBox(
+                                        fit: BoxFit.scaleDown,
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            SvgPicture.asset(
+                                              AppSvgs.myRecord,
+                                              width: 14,
+                                              height: 14,
                                             ),
-                                          ),
-                                        ],
+                                            const SizedBox(width: 7),
+                                            const Text(
+                                              'My Record',
+                                              style: TextStyle(
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.w600,
+                                                color: Color(0xFF334155),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
                                       ),
                                     ),
                                   ),
-                                ],
-                              ),
+                                ),
+                              ],
                             ),
                             const SizedBox(height: 22),
 
@@ -739,262 +748,254 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                 ),
                               )
                             else if (displayedLeads.isEmpty)
-                              Center(
-                                child: Container(
-                                  width: double.infinity,
-                                  constraints: const BoxConstraints(
-                                    maxWidth: 335,
-                                    minHeight: 285,
+                              Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 20,
+                                  vertical: 32,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(
+                                    color: const Color(0xFFF3F4F6),
+                                    width: 1,
                                   ),
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 20,
-                                    vertical: 28,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(16),
-                                    border: Border.all(
-                                      color: const Color(0xFFF3F4F6),
-                                      width: 1,
+                                ),
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.center,
+                                  children: [
+                                    // Top Icon Container
+                                    Container(
+                                      width: 48,
+                                      height: 48,
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFF9FAFB),
+                                        borderRadius:
+                                            BorderRadius.circular(12),
+                                      ),
+                                      alignment: Alignment.center,
+                                      child: SvgPicture.asset(
+                                        AppSvgs.clipboardCheck,
+                                        width: 20,
+                                        height: 25,
+                                        colorFilter: const ColorFilter.mode(
+                                          Color(0xFF9CA3AF),
+                                          BlendMode.srcIn,
+                                        ),
+                                      ),
                                     ),
-                                  ),
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
-                                    children: [
-                                      // Top Icon Container
-                                      Container(
-                                        width: 48,
-                                        height: 48,
-                                        decoration: BoxDecoration(
-                                          color: const Color(0xFFF9FAFB),
-                                          borderRadius:
-                                              BorderRadius.circular(12),
-                                        ),
-                                        alignment: Alignment.center,
-                                        child: SvgPicture.asset(
-                                          AppSvgs.clipboardCheck,
-                                          width: 20,
-                                          height: 25,
-                                          colorFilter: const ColorFilter.mode(
-                                            Color(0xFF9CA3AF),
-                                            BlendMode.srcIn,
-                                          ),
-                                        ),
+                                    const SizedBox(height: 20),
+
+                                    // Title
+                                    Text(
+                                      state.showingPendingCalls
+                                          ? 'No pending leads assigned to you for today'
+                                          : 'No completed calls recorded yet today',
+                                      textAlign: TextAlign.center,
+                                      style: const TextStyle(
+                                        fontSize: 16.5,
+                                        fontWeight: FontWeight.w700,
+                                        color: Color(0xFF0F172A),
+                                        letterSpacing: -0.2,
+                                        height: 1.3,
                                       ),
-                                      const SizedBox(height: 20),
+                                    ),
+                                    const SizedBox(height: 8),
 
-                                      // Title
-                                      Text(
-                                        state.showingPendingCalls
-                                            ? 'No pending leads assigned to you for today'
-                                            : 'No completed calls recorded yet today',
-                                        textAlign: TextAlign.center,
-                                        style: const TextStyle(
-                                          fontSize: 16.5,
-                                          fontWeight: FontWeight.w700,
-                                          color: Color(0xFF0F172A),
-                                          letterSpacing: -0.2,
-                                          height: 1.3,
-                                        ),
+                                    // Subtitle
+                                    const Text(
+                                      'New leads assigned by your Admin will\nappear here automatically.',
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w400,
+                                        color: Color(0xFF94A3B8),
+                                        height: 1.4,
                                       ),
-                                      const SizedBox(height: 8),
+                                    ),
+                                    const SizedBox(height: 24),
 
-                                      // Subtitle
-                                      const Text(
-                                        'New leads assigned by your Admin will\nappear here automatically.',
-                                        textAlign: TextAlign.center,
-                                        style: TextStyle(
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.w400,
-                                          color: Color(0xFF94A3B8),
-                                          height: 1.4,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 24),
-
-                                      // Action Buttons
-                                      FittedBox(
-                                        fit: BoxFit.scaleDown,
-                                        child: Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: [
-                                            if (!state.showingPendingCalls) ...[
-                                              // Back to Pending Calls Button (Figma: width 157, height 44, radius 12, #D35501)
-                                              SizedBox(
-                                                width: 157,
-                                                height: 44,
-                                                child: DecoratedBox(
-                                                  decoration: BoxDecoration(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                          12,
-                                                        ),
-                                                    boxShadow: [
-                                                      BoxShadow(
-                                                        color: const Color(
-                                                          0xFFD35501,
-                                                        ).withValues(
-                                                          alpha: 0.32,
-                                                        ),
-                                                        blurRadius: 16,
-                                                        offset: const Offset(
-                                                          0,
-                                                          6,
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                  child: ElevatedButton(
-                                                    onPressed: () => cubit
-                                                        .togglePendingOrDoneCalls(
-                                                          true,
-                                                        ),
-                                                    style: ElevatedButton.styleFrom(
-                                                      backgroundColor:
-                                                          const Color(
-                                                            0xFFD35501,
-                                                          ),
-                                                      foregroundColor:
-                                                          Colors.white,
-                                                      elevation: 0,
-                                                      shadowColor:
-                                                          Colors.transparent,
-                                                      minimumSize: Size.zero,
-                                                      tapTargetSize:
-                                                          MaterialTapTargetSize
-                                                              .shrinkWrap,
-                                                      padding:
-                                                          const EdgeInsets.symmetric(
-                                                            horizontal: 10,
-                                                            vertical: 4,
-                                                          ),
-                                                      shape: RoundedRectangleBorder(
-                                                        borderRadius:
-                                                            BorderRadius.circular(
-                                                              12,
-                                                            ),
-                                                      ),
-                                                    ),
-                                                    child: FittedBox(
-                                                      fit: BoxFit.scaleDown,
-                                                      child: Row(
-                                                        mainAxisSize:
-                                                            MainAxisSize.min,
-                                                        mainAxisAlignment:
-                                                            MainAxisAlignment
-                                                                .center,
-                                                        children: [
-                                                          SvgPicture.asset(
-                                                            AppSvgs.arrowLeft,
-                                                            width: 15,
-                                                            height: 15,
-                                                            colorFilter:
-                                                                const ColorFilter.mode(
-                                                                  Colors.white,
-                                                                  BlendMode.srcIn,
-                                                                ),
-                                                          ),
-                                                          const SizedBox(
-                                                            width: 8,
-                                                          ),
-                                                          const Text(
-                                                            'Back to Pending\nCalls',
-                                                            textAlign:
-                                                                TextAlign.left,
-                                                            style: TextStyle(
-                                                              fontSize: 12,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w700,
-                                                              color:
-                                                                  Colors.white,
-                                                              height: 1.15,
-                                                            ),
-                                                          ),
-                                                        ],
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                              const SizedBox(width: 12),
-                                            ],
-
-                                            // Refresh Button (Figma: width 100, height 44, radius 12, border 1px #F3F4F6)
-                                            SizedBox(
-                                              width: 100,
+                                    // Action Buttons (Responsive flex row)
+                                    Row(
+                                      children: [
+                                        if (!state.showingPendingCalls) ...[
+                                          // Back to Pending Calls Button (Figma: flex 8, height 44, radius 12, #D35501)
+                                          Expanded(
+                                            flex: 8,
+                                            child: SizedBox(
                                               height: 44,
-                                              child: OutlinedButton(
-                                                onPressed: cubit.refresh,
-                                                style: OutlinedButton.styleFrom(
-                                                  backgroundColor: Colors.white,
-                                                  foregroundColor: const Color(
-                                                    0xFF334155,
-                                                  ),
-                                                  side: const BorderSide(
-                                                    color: Color(0xFFE2E8F0),
-                                                    width: 1,
-                                                  ),
-                                                  minimumSize: Size.zero,
-                                                  tapTargetSize:
-                                                      MaterialTapTargetSize
-                                                          .shrinkWrap,
-                                                  padding:
-                                                      const EdgeInsets.symmetric(
-                                                        horizontal: 10,
-                                                        vertical: 4,
+                                              child: DecoratedBox(
+                                                decoration: BoxDecoration(
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                        12,
                                                       ),
-                                                  shape: RoundedRectangleBorder(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                          12,
-                                                        ),
-                                                  ),
+                                                  boxShadow: [
+                                                    BoxShadow(
+                                                      color: const Color(
+                                                        0xFFD35501,
+                                                      ).withValues(
+                                                        alpha: 0.32,
+                                                      ),
+                                                      blurRadius: 16,
+                                                      offset: const Offset(
+                                                        0,
+                                                        6,
+                                                      ),
+                                                    ),
+                                                  ],
                                                 ),
-                                                child: FittedBox(
-                                                  fit: BoxFit.scaleDown,
-                                                  child: Row(
-                                                    mainAxisSize:
-                                                        MainAxisSize.min,
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment.center,
-                                                    children: [
-                                                      SvgPicture.asset(
-                                                        AppSvgs.refresh,
-                                                        width: 15,
-                                                        height: 15,
-                                                        colorFilter:
-                                                            const ColorFilter.mode(
-                                                              Color(0xFF475467),
-                                                              BlendMode.srcIn,
-                                                            ),
+                                                child: ElevatedButton(
+                                                  onPressed: () => cubit
+                                                      .togglePendingOrDoneCalls(
+                                                        true,
                                                       ),
-                                                      const SizedBox(width: 7),
-                                                      const Text(
-                                                        'Refresh',
-                                                        style: TextStyle(
-                                                          fontSize: 13,
-                                                          fontWeight:
-                                                              FontWeight.w700,
-                                                          color: Color(
-                                                            0xFF334155,
+                                                  style: ElevatedButton.styleFrom(
+                                                    backgroundColor:
+                                                        const Color(
+                                                          0xFFD35501,
+                                                        ),
+                                                    foregroundColor:
+                                                        Colors.white,
+                                                    elevation: 0,
+                                                    shadowColor:
+                                                        Colors.transparent,
+                                                    minimumSize: Size.zero,
+                                                    tapTargetSize:
+                                                        MaterialTapTargetSize
+                                                            .shrinkWrap,
+                                                    padding:
+                                                        const EdgeInsets.symmetric(
+                                                          horizontal: 10,
+                                                          vertical: 4,
+                                                        ),
+                                                    shape: RoundedRectangleBorder(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                            12,
+                                                          ),
+                                                    ),
+                                                  ),
+                                                  child: FittedBox(
+                                                    fit: BoxFit.scaleDown,
+                                                    child: Row(
+                                                      mainAxisSize:
+                                                          MainAxisSize.min,
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment
+                                                              .center,
+                                                      children: [
+                                                        SvgPicture.asset(
+                                                          AppSvgs.arrowLeft,
+                                                          width: 15,
+                                                          height: 15,
+                                                          colorFilter:
+                                                              const ColorFilter.mode(
+                                                                Colors.white,
+                                                                BlendMode.srcIn,
+                                                              ),
+                                                        ),
+                                                        const SizedBox(
+                                                          width: 8,
+                                                        ),
+                                                        const Text(
+                                                          'Back to Pending\nCalls',
+                                                          textAlign:
+                                                              TextAlign.left,
+                                                          style: TextStyle(
+                                                            fontSize: 12,
+                                                            fontWeight:
+                                                                FontWeight
+                                                                    .w700,
+                                                            color:
+                                                                Colors.white,
+                                                            height: 1.15,
                                                           ),
                                                         ),
-                                                      ),
-                                                    ],
+                                                      ],
+                                                    ),
                                                   ),
                                                 ),
                                               ),
                                             ),
-                                          ],
+                                          ),
+                                          const SizedBox(width: 10),
+                                        ],
+
+                                        // Refresh Button (Figma: flex 5, height 44, radius 12, border 1px #F3F4F6)
+                                        Expanded(
+                                          flex: state.showingPendingCalls ? 1 : 5,
+                                          child: SizedBox(
+                                            height: 44,
+                                            child: OutlinedButton(
+                                              onPressed: cubit.refresh,
+                                              style: OutlinedButton.styleFrom(
+                                                backgroundColor: Colors.white,
+                                                foregroundColor: const Color(
+                                                  0xFF334155,
+                                                ),
+                                                side: const BorderSide(
+                                                  color: Color(0xFFE2E8F0),
+                                                  width: 1,
+                                                ),
+                                                minimumSize: Size.zero,
+                                                tapTargetSize:
+                                                    MaterialTapTargetSize
+                                                        .shrinkWrap,
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                      horizontal: 10,
+                                                      vertical: 4,
+                                                    ),
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                        12,
+                                                      ),
+                                                ),
+                                              ),
+                                              child: FittedBox(
+                                                fit: BoxFit.scaleDown,
+                                                child: Row(
+                                                  mainAxisSize:
+                                                      MainAxisSize.min,
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.center,
+                                                  children: [
+                                                    SvgPicture.asset(
+                                                      AppSvgs.refresh,
+                                                      width: 15,
+                                                      height: 15,
+                                                      colorFilter:
+                                                          const ColorFilter.mode(
+                                                            Color(0xFF475467),
+                                                            BlendMode.srcIn,
+                                                          ),
+                                                    ),
+                                                    const SizedBox(width: 7),
+                                                    const Text(
+                                                      'Refresh',
+                                                      style: TextStyle(
+                                                        fontSize: 13,
+                                                        fontWeight:
+                                                            FontWeight.w700,
+                                                        color: Color(
+                                                          0xFF334155,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ),
+                                          ),
                                         ),
-                                      ),
-                                    ],
-                                  ),
+                                      ],
+                                    ),
+                                  ],
                                 ),
                               )
                             else
