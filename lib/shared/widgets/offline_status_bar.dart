@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../../core/services/offline_queue_service.dart';
 
@@ -107,7 +108,7 @@ class OfflineStatusBar extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(
-                    Icons.refresh_rounded,
+                    CupertinoIcons.refresh,
                     color: Color(0xFFFDE68A),
                     size: 14,
                   ),

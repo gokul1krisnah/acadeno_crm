@@ -29,6 +29,17 @@ class LeadsTabView extends StatefulWidget {
 
 class _LeadsTabViewState extends State<LeadsTabView> {
   double _scrollProgress = 0.0;
+  bool _isRefreshing = false;
+
+  Future<void> _performRefresh() async {
+    if (_isRefreshing) return;
+    setState(() => _isRefreshing = true);
+    context.read<LeadsCubit>().refresh();
+    await Future.delayed(const Duration(seconds: 2));
+    if (mounted) {
+      setState(() => _isRefreshing = false);
+    }
+  }
 
   void _confirmLogout(BuildContext context) {
     showCupertinoModalPopup<void>(
@@ -316,538 +327,133 @@ class _LeadsTabViewState extends State<LeadsTabView> {
             Expanded(
               child: Stack(
                 children: [
-                  RefreshIndicator(
-                    color: const Color(0xFF4338CA),
-                    backgroundColor: Colors.white,
-                    displacement: 24,
-                    onRefresh: () async {
-                      cubit.refresh();
-                      await Future.delayed(const Duration(milliseconds: 600));
-                    },
-                    child: NotificationListener<ScrollNotification>(
-                      onNotification: _handleScroll,
-                      child: SingleChildScrollView(
-                        physics: const AlwaysScrollableScrollPhysics(
-                          parent: BouncingScrollPhysics(),
-                        ),
-                        padding: EdgeInsets.fromLTRB(pad, 18, pad, 24),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // 4. DUE NOW Section
-                            const Text(
-                              'DUE NOW',
-                              style: TextStyle(
-                                fontSize: 11.5,
-                                fontWeight: FontWeight.w700,
-                                letterSpacing: 0.8,
-                                color: Color(0xFF94A3B8),
+                  Theme(
+                    data: Theme.of(
+                      context,
+                    ).copyWith(platform: TargetPlatform.iOS),
+                    child: RefreshIndicator.adaptive(
+                      color: const Color(0xFF4338CA),
+                      backgroundColor: Colors.white,
+                      displacement: 24,
+                      onRefresh: _performRefresh,
+                      child: NotificationListener<ScrollNotification>(
+                        onNotification: _handleScroll,
+                        child: SingleChildScrollView(
+                          physics: const AlwaysScrollableScrollPhysics(
+                            parent: BouncingScrollPhysics(),
+                          ),
+                          padding: EdgeInsets.fromLTRB(pad, 18, pad, 24),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // 4. DUE NOW Section
+                              const Text(
+                                'DUE NOW',
+                                style: TextStyle(
+                                  fontSize: 11.5,
+                                  fontWeight: FontWeight.w700,
+                                  letterSpacing: 0.8,
+                                  color: Color(0xFF94A3B8),
+                                ),
                               ),
-                            ),
-                            const SizedBox(height: 10),
-                            if (state.dueNowLead != null)
-                              Builder(
-                                builder: (_) {
-                                  final due = state.dueNowLead!;
-                                  return InkWell(
-                                    onTap: () =>
-                                        LeadCallSheets.showLeadDetailSheet(
-                                          context,
-                                          lead: due,
+                              const SizedBox(height: 10),
+                              if (state.dueNowLead != null)
+                                Builder(
+                                  builder: (_) {
+                                    final due = state.dueNowLead!;
+                                    return InkWell(
+                                      onTap: () =>
+                                          LeadCallSheets.showLeadDetailSheet(
+                                            context,
+                                            lead: due,
+                                          ),
+                                      borderRadius: BorderRadius.circular(16),
+                                      child: Container(
+                                        padding: const EdgeInsets.all(20),
+                                        decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          borderRadius: BorderRadius.circular(
+                                            16,
+                                          ),
+                                          border: Border.all(
+                                            color: const Color(0x4DF97316),
+                                            width: 2,
+                                          ),
                                         ),
-                                    borderRadius: BorderRadius.circular(16),
-                                    child: Container(
-                                      padding: const EdgeInsets.all(20),
-                                      decoration: BoxDecoration(
-                                        color: Colors.white,
-                                        borderRadius: BorderRadius.circular(16),
-                                        border: Border.all(
-                                          color: const Color(0x4DF97316),
-                                          width: 2,
-                                        ),
-                                      ),
-                                      child: Row(
-                                        children: [
-                                          Expanded(
-                                            child: Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                Row(
-                                                  children: [
-                                                    const Icon(
-                                                      CupertinoIcons.clock,
-                                                      size: 15,
-                                                      color: Color(0xFFEA580C),
-                                                    ),
-                                                    const SizedBox(width: 6),
-                                                    Text(
-                                                      '${due.statusTag} · Due Today',
-                                                      style: const TextStyle(
-                                                        fontSize: 13,
-                                                        fontWeight:
-                                                            FontWeight.w700,
+                                        child: Row(
+                                          children: [
+                                            Expanded(
+                                              child: Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  Row(
+                                                    children: [
+                                                      const Icon(
+                                                        CupertinoIcons.clock,
+                                                        size: 15,
                                                         color: Color(
                                                           0xFFEA580C,
                                                         ),
                                                       ),
+                                                      const SizedBox(width: 6),
+                                                      Text(
+                                                        '${due.statusTag} · Due Today',
+                                                        style: const TextStyle(
+                                                          fontSize: 13,
+                                                          fontWeight:
+                                                              FontWeight.w700,
+                                                          color: Color(
+                                                            0xFFEA580C,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  const SizedBox(height: 8),
+                                                  Text(
+                                                    due.name,
+                                                    style: const TextStyle(
+                                                      fontSize: 19,
+                                                      fontWeight:
+                                                          FontWeight.w800,
+                                                      color: Color(0xFF0F172A),
+                                                      letterSpacing: -0.3,
                                                     ),
-                                                  ],
-                                                ),
-                                                const SizedBox(height: 8),
-                                                Text(
-                                                  due.name,
-                                                  style: const TextStyle(
-                                                    fontSize: 19,
-                                                    fontWeight: FontWeight.w800,
-                                                    color: Color(0xFF0F172A),
-                                                    letterSpacing: -0.3,
                                                   ),
-                                                ),
-                                                const SizedBox(height: 6),
-                                                Text(
-                                                  '${due.collegeInfo} · ${due.campaignTag}',
-                                                  style: const TextStyle(
-                                                    fontSize: 13.5,
-                                                    color: Color(0xFF64748B),
-                                                    height: 1.4,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                          const SizedBox(width: 14),
-                                          InkWell(
-                                            onTap: () => AppPhoneCallService
-                                                .instance
-                                                .dialLead(context, due),
-                                            borderRadius: BorderRadius.circular(
-                                              26,
-                                            ),
-                                            child: Container(
-                                              width: 52,
-                                              height: 52,
-                                              decoration: BoxDecoration(
-                                                color: const Color(0xFFEF8144),
-                                                shape: BoxShape.circle,
-                                                boxShadow: [
-                                                  BoxShadow(
-                                                    color: const Color(
-                                                      0xFFEF8144,
-                                                    ).withValues(alpha: 0.38),
-                                                    blurRadius: 18,
-                                                    offset: const Offset(0, 6),
+                                                  const SizedBox(height: 6),
+                                                  Text(
+                                                    '${due.collegeInfo} · ${due.campaignTag}',
+                                                    style: const TextStyle(
+                                                      fontSize: 13.5,
+                                                      color: Color(0xFF64748B),
+                                                      height: 1.4,
+                                                    ),
                                                   ),
                                                 ],
                                               ),
-                                              child: const Icon(
-                                                CupertinoIcons.phone_fill,
-                                                color: Colors.white,
-                                                size: 22,
-                                              ),
                                             ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  );
-                                },
-                              )
-                            else
-                              Container(
-                                width: double.infinity,
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                  vertical: 14,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(
-                                    color: const Color(0xFFEAECF0),
-                                  ),
-                                ),
-                                child: const Row(
-                                  children: [
-                                    Icon(
-                                      CupertinoIcons.checkmark_circle,
-                                      color: Color(0xFF15803D),
-                                      size: 20,
-                                    ),
-                                    SizedBox(width: 10),
-                                    Expanded(
-                                      child: Text(
-                                        'No urgent pending calls right now',
-                                        style: TextStyle(
-                                          fontSize: 13.5,
-                                          fontWeight: FontWeight.w600,
-                                          color: Color(0xFF475467),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            const SizedBox(height: 18),
-
-                            // Quick Actions: Add Walk-in Lead & My Record (Responsive flex boxes)
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: InkWell(
-                                    onTap: () =>
-                                        LeadCallSheets.showPhoneLookupAndWalkInSheet(
-                                          context,
-                                        ),
-                                    borderRadius: BorderRadius.circular(16),
-                                    child: Container(
-                                      height: 38,
-                                      alignment: Alignment.center,
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 10,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: Colors.white,
-                                        borderRadius: BorderRadius.circular(16),
-                                        border: Border.all(
-                                          color: const Color(0xFFF3F4F6),
-                                          width: 1,
-                                        ),
-                                        boxShadow: const [
-                                          BoxShadow(
-                                            color: Color(0x0D000000),
-                                            blurRadius: 2,
-                                            offset: Offset(0, 1),
-                                          ),
-                                        ],
-                                      ),
-                                      child: FittedBox(
-                                        fit: BoxFit.scaleDown,
-                                        child: Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: [
-                                            SvgPicture.asset(
-                                              AppSvgs.addWalkInLead,
-                                              width: 14,
-                                              height: 14,
-                                            ),
-                                            const SizedBox(width: 7),
-                                            const Text(
-                                              'Add Walk-in Lead',
-                                              style: TextStyle(
-                                                fontSize: 12,
-                                                fontWeight: FontWeight.w600,
-                                                color: Color(0xFF334155),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(width: 10),
-                                Expanded(
-                                  child: InkWell(
-                                    onTap: () =>
-                                        LeadCallSheets.showMyRecordSheet(
-                                          context,
-                                        ),
-                                    borderRadius: BorderRadius.circular(16),
-                                    child: Container(
-                                      height: 38,
-                                      alignment: Alignment.center,
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 10,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: Colors.white,
-                                        borderRadius: BorderRadius.circular(16),
-                                        border: Border.all(
-                                          color: const Color(0xFFF3F4F6),
-                                          width: 1,
-                                        ),
-                                        boxShadow: const [
-                                          BoxShadow(
-                                            color: Color(0x0D000000),
-                                            blurRadius: 2,
-                                            offset: Offset(0, 1),
-                                          ),
-                                        ],
-                                      ),
-                                      child: FittedBox(
-                                        fit: BoxFit.scaleDown,
-                                        child: Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: [
-                                            SvgPicture.asset(
-                                              AppSvgs.myRecord,
-                                              width: 14,
-                                              height: 14,
-                                            ),
-                                            const SizedBox(width: 7),
-                                            const Text(
-                                              'My Record',
-                                              style: TextStyle(
-                                                fontSize: 12,
-                                                fontWeight: FontWeight.w600,
-                                                color: Color(0xFF334155),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 22),
-
-                            // 5. TODAY'S CALLS Header with Pending / Completed switcher
-                            Row(
-                              children: [
-                                const Flexible(
-                                  child: FittedBox(
-                                    fit: BoxFit.scaleDown,
-                                    alignment: Alignment.centerLeft,
-                                    child: Text(
-                                      "TODAY'S CALLS",
-                                      style: TextStyle(
-                                        fontSize: 11.5,
-                                        fontWeight: FontWeight.w700,
-                                        letterSpacing: 0.8,
-                                        color: Color(0xFF94A3B8),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(width: 8),
-                                Flexible(
-                                  flex: 3,
-                                  child: Align(
-                                    alignment: Alignment.centerRight,
-                                    child: FittedBox(
-                                      fit: BoxFit.scaleDown,
-                                      alignment: Alignment.centerRight,
-                                      child: Container(
-                                        decoration: BoxDecoration(
-                                          color: const Color(
-                                            0xFFE2E8F0,
-                                          ).withValues(alpha: 0.6),
-                                          borderRadius: BorderRadius.circular(
-                                            10,
-                                          ),
-                                        ),
-                                        padding: const EdgeInsets.all(3),
-                                        child: Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            _CallTabPill(
-                                              label:
-                                                  'Pending (${state.pendingLeads.length})',
-                                              isSelected:
-                                                  state.showingPendingCalls,
-                                              onTap: () => cubit
-                                                  .togglePendingOrDoneCalls(
-                                                    true,
-                                                  ),
-                                            ),
-                                            const SizedBox(width: 4),
-                                            _CallTabPill(
-                                              label:
-                                                  'Completed (${state.doneLeads.length})',
-                                              isSelected:
-                                                  !state.showingPendingCalls,
-                                              onTap: () => cubit
-                                                  .togglePendingOrDoneCalls(
-                                                    false,
-                                                  ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 12),
-
-                            // 6. Call Cards List (Loading, Error/Permission, Empty, or Assigned Leads)
-                            if (state.isLoading)
-                              Container(
-                                width: double.infinity,
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 36,
-                                  horizontal: 16,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(
-                                    color: const Color(0xFFEAECF0),
-                                  ),
-                                ),
-                                child: const Column(
-                                  children: [
-                                    CircularProgressIndicator(
-                                      color: Color(0xFF4338CA),
-                                    ),
-                                    SizedBox(height: 12),
-                                    Text(
-                                      'Loading your assigned calls for today...',
-                                      style: TextStyle(
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.w600,
-                                        color: Color(0xFF667085),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              )
-                            else if (state.errorMessage != null)
-                              Container(
-                                width: double.infinity,
-                                padding: const EdgeInsets.all(20),
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(
-                                    color: const Color(0xFFFEE4E2),
-                                  ),
-                                ),
-                                child: Column(
-                                  children: [
-                                    Icon(
-                                      state.isPermissionDenied
-                                          ? CupertinoIcons.lock
-                                          : Icons.error_outline_rounded,
-                                      color: const Color(0xFFB42318),
-                                      size: 32,
-                                    ),
-                                    const SizedBox(height: 8),
-                                    Text(
-                                      state.isPermissionDenied
-                                          ? 'Access Restricted'
-                                          : 'Could not load assigned leads',
-                                      style: const TextStyle(
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.w700,
-                                        color: Color(0xFF0F172A),
-                                      ),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      state.errorMessage!,
-                                      textAlign: TextAlign.center,
-                                      style: const TextStyle(
-                                        fontSize: 12.5,
-                                        color: Color(0xFF667085),
-                                      ),
-                                    ),
-                                    const SizedBox(height: 12),
-                                    OutlinedButton.icon(
-                                      onPressed: cubit.refresh,
-                                      icon: const Icon(
-                                        CupertinoIcons.refresh,
-                                        size: 16,
-                                      ),
-                                      label: const Text('Retry'),
-                                    ),
-                                  ],
-                                ),
-                              )
-                            else if (displayedLeads.isEmpty)
-                              Container(
-                                width: double.infinity,
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 20,
-                                  vertical: 32,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(
-                                    color: const Color(0xFFF3F4F6),
-                                    width: 1,
-                                  ),
-                                ),
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    // Top Icon Container
-                                    Container(
-                                      width: 48,
-                                      height: 48,
-                                      decoration: BoxDecoration(
-                                        color: const Color(0xFFF9FAFB),
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                      alignment: Alignment.center,
-                                      child: SvgPicture.asset(
-                                        AppSvgs.clipboardCheck,
-                                        width: 20,
-                                        height: 25,
-                                        colorFilter: const ColorFilter.mode(
-                                          Color(0xFF9CA3AF),
-                                          BlendMode.srcIn,
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(height: 20),
-
-                                    // Title
-                                    Text(
-                                      state.showingPendingCalls
-                                          ? 'No pending leads assigned to you for today'
-                                          : 'No completed calls recorded yet today',
-                                      textAlign: TextAlign.center,
-                                      style: const TextStyle(
-                                        fontSize: 16.5,
-                                        fontWeight: FontWeight.w700,
-                                        color: Color(0xFF0F172A),
-                                        letterSpacing: -0.2,
-                                        height: 1.3,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 8),
-
-                                    // Subtitle
-                                    const Text(
-                                      'New leads assigned by your Admin will\nappear here automatically.',
-                                      textAlign: TextAlign.center,
-                                      style: TextStyle(
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.w400,
-                                        color: Color(0xFF94A3B8),
-                                        height: 1.4,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 24),
-
-                                    // Action Buttons (Responsive flex row)
-                                    Row(
-                                      children: [
-                                        if (!state.showingPendingCalls) ...[
-                                          // Back to Pending Calls Button (Figma: flex 8, height 44, radius 12, #D35501)
-                                          Expanded(
-                                            flex: 8,
-                                            child: SizedBox(
-                                              height: 44,
-                                              child: DecoratedBox(
+                                            const SizedBox(width: 14),
+                                            InkWell(
+                                              onTap: () => AppPhoneCallService
+                                                  .instance
+                                                  .dialLead(context, due),
+                                              borderRadius:
+                                                  BorderRadius.circular(26),
+                                              child: Container(
+                                                width: 52,
+                                                height: 52,
                                                 decoration: BoxDecoration(
-                                                  borderRadius:
-                                                      BorderRadius.circular(12),
+                                                  color: const Color(
+                                                    0xFFEF8144,
+                                                  ),
+                                                  shape: BoxShape.circle,
                                                   boxShadow: [
                                                     BoxShadow(
                                                       color: const Color(
-                                                        0xFFD35501,
-                                                      ).withValues(alpha: 0.32),
-                                                      blurRadius: 16,
+                                                        0xFFEF8144,
+                                                      ).withValues(alpha: 0.38),
+                                                      blurRadius: 18,
                                                       offset: const Offset(
                                                         0,
                                                         6,
@@ -855,176 +461,612 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                                     ),
                                                   ],
                                                 ),
-                                                child: ElevatedButton(
-                                                  onPressed: () => cubit
-                                                      .togglePendingOrDoneCalls(
-                                                        true,
-                                                      ),
-                                                  style: ElevatedButton.styleFrom(
-                                                    backgroundColor:
-                                                        const Color(0xFFD35501),
-                                                    foregroundColor:
-                                                        Colors.white,
-                                                    elevation: 0,
-                                                    shadowColor:
-                                                        Colors.transparent,
-                                                    minimumSize: Size.zero,
-                                                    tapTargetSize:
-                                                        MaterialTapTargetSize
-                                                            .shrinkWrap,
-                                                    padding:
-                                                        const EdgeInsets.symmetric(
-                                                          horizontal: 10,
-                                                          vertical: 4,
-                                                        ),
-                                                    shape: RoundedRectangleBorder(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                            12,
-                                                          ),
-                                                    ),
-                                                  ),
-                                                  child: FittedBox(
-                                                    fit: BoxFit.scaleDown,
-                                                    child: Row(
-                                                      mainAxisSize:
-                                                          MainAxisSize.min,
-                                                      mainAxisAlignment:
-                                                          MainAxisAlignment
-                                                              .center,
-                                                      children: [
-                                                        SvgPicture.asset(
-                                                          AppSvgs.arrowLeft,
-                                                          width: 15,
-                                                          height: 15,
-                                                          colorFilter:
-                                                              const ColorFilter.mode(
-                                                                Colors.white,
-                                                                BlendMode.srcIn,
-                                                              ),
-                                                        ),
-                                                        const SizedBox(
-                                                          width: 8,
-                                                        ),
-                                                        const Text(
-                                                          'Back to Pending\nCalls',
-                                                          textAlign:
-                                                              TextAlign.left,
-                                                          style: TextStyle(
-                                                            fontSize: 12,
-                                                            fontWeight:
-                                                                FontWeight.w700,
-                                                            color: Colors.white,
-                                                            height: 1.15,
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ),
+                                                child: const Icon(
+                                                  CupertinoIcons.phone_fill,
+                                                  color: Colors.white,
+                                                  size: 22,
                                                 ),
                                               ),
                                             ),
-                                          ),
-                                          const SizedBox(width: 10),
-                                        ],
-
-                                        // Refresh Button (Figma: flex 5, height 44, radius 12, border 1px #F3F4F6)
-                                        Expanded(
-                                          flex: state.showingPendingCalls
-                                              ? 1
-                                              : 5,
-                                          child: SizedBox(
-                                            height: 44,
-                                            child: OutlinedButton(
-                                              onPressed: cubit.refresh,
-                                              style: OutlinedButton.styleFrom(
-                                                backgroundColor: Colors.white,
-                                                foregroundColor: const Color(
-                                                  0xFF334155,
-                                                ),
-                                                side: const BorderSide(
-                                                  color: Color(0xFFE2E8F0),
-                                                  width: 1,
-                                                ),
-                                                minimumSize: Size.zero,
-                                                tapTargetSize:
-                                                    MaterialTapTargetSize
-                                                        .shrinkWrap,
-                                                padding:
-                                                    const EdgeInsets.symmetric(
-                                                      horizontal: 10,
-                                                      vertical: 4,
-                                                    ),
-                                                shape: RoundedRectangleBorder(
-                                                  borderRadius:
-                                                      BorderRadius.circular(12),
-                                                ),
-                                              ),
-                                              child: FittedBox(
-                                                fit: BoxFit.scaleDown,
-                                                child: Row(
-                                                  mainAxisSize:
-                                                      MainAxisSize.min,
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.center,
-                                                  children: [
-                                                    SvgPicture.asset(
-                                                      AppSvgs.refresh,
-                                                      width: 15,
-                                                      height: 15,
-                                                      colorFilter:
-                                                          const ColorFilter.mode(
-                                                            Color(0xFF475467),
-                                                            BlendMode.srcIn,
-                                                          ),
-                                                    ),
-                                                    const SizedBox(width: 7),
-                                                    const Text(
-                                                      'Refresh',
-                                                      style: TextStyle(
-                                                        fontSize: 13,
-                                                        fontWeight:
-                                                            FontWeight.w700,
-                                                        color: Color(
-                                                          0xFF334155,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                            ),
-                                          ),
+                                          ],
                                         ),
-                                      ],
+                                      ),
+                                    );
+                                  },
+                                )
+                              else
+                                Container(
+                                  width: double.infinity,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 14,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(16),
+                                    border: Border.all(
+                                      color: const Color(0xFFEAECF0),
                                     ),
-                                  ],
-                                ),
-                              )
-                            else
-                              ListView.separated(
-                                shrinkWrap: true,
-                                physics: const NeverScrollableScrollPhysics(),
-                                itemCount: displayedLeads.length,
-                                separatorBuilder: (_, _) =>
-                                    const SizedBox(height: 10),
-                                itemBuilder: (context, index) {
-                                  final item = displayedLeads[index];
-                                  return _TodayLeadCard(
-                                    item: item,
-                                    onTapCard: () =>
-                                        LeadCallSheets.showLeadDetailSheet(
-                                          context,
-                                          lead: item,
+                                  ),
+                                  child: const Row(
+                                    children: [
+                                      Icon(
+                                        CupertinoIcons.checkmark_circle,
+                                        color: Color(0xFF15803D),
+                                        size: 20,
+                                      ),
+                                      SizedBox(width: 10),
+                                      Expanded(
+                                        child: Text(
+                                          'No urgent pending calls right now',
+                                          style: TextStyle(
+                                            fontSize: 13.5,
+                                            fontWeight: FontWeight.w600,
+                                            color: Color(0xFF475467),
+                                          ),
                                         ),
-                                    onTapCall: () => AppPhoneCallService
-                                        .instance
-                                        .dialLead(context, item),
-                                  );
-                                },
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              const SizedBox(height: 18),
+
+                              // Quick Actions: Add Walk-in Lead & My Record (Responsive flex boxes)
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: InkWell(
+                                      onTap: () =>
+                                          LeadCallSheets.showPhoneLookupAndWalkInSheet(
+                                            context,
+                                          ),
+                                      borderRadius: BorderRadius.circular(16),
+                                      child: Container(
+                                        height: 38,
+                                        alignment: Alignment.center,
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 10,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          borderRadius: BorderRadius.circular(
+                                            16,
+                                          ),
+                                          border: Border.all(
+                                            color: const Color(0xFFF3F4F6),
+                                            width: 1,
+                                          ),
+                                          boxShadow: const [
+                                            BoxShadow(
+                                              color: Color(0x0D000000),
+                                              blurRadius: 2,
+                                              offset: Offset(0, 1),
+                                            ),
+                                          ],
+                                        ),
+                                        child: FittedBox(
+                                          fit: BoxFit.scaleDown,
+                                          child: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              SvgPicture.asset(
+                                                AppSvgs.addWalkInLead,
+                                                width: 14,
+                                                height: 14,
+                                              ),
+                                              const SizedBox(width: 7),
+                                              const Text(
+                                                'Add Walk-in Lead',
+                                                style: TextStyle(
+                                                  fontSize: 12,
+                                                  fontWeight: FontWeight.w600,
+                                                  color: Color(0xFF334155),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 10),
+                                  Expanded(
+                                    child: InkWell(
+                                      onTap: () =>
+                                          LeadCallSheets.showMyRecordSheet(
+                                            context,
+                                          ),
+                                      borderRadius: BorderRadius.circular(16),
+                                      child: Container(
+                                        height: 38,
+                                        alignment: Alignment.center,
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 10,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          borderRadius: BorderRadius.circular(
+                                            16,
+                                          ),
+                                          border: Border.all(
+                                            color: const Color(0xFFF3F4F6),
+                                            width: 1,
+                                          ),
+                                          boxShadow: const [
+                                            BoxShadow(
+                                              color: Color(0x0D000000),
+                                              blurRadius: 2,
+                                              offset: Offset(0, 1),
+                                            ),
+                                          ],
+                                        ),
+                                        child: FittedBox(
+                                          fit: BoxFit.scaleDown,
+                                          child: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              SvgPicture.asset(
+                                                AppSvgs.myRecord,
+                                                width: 14,
+                                                height: 14,
+                                              ),
+                                              const SizedBox(width: 7),
+                                              const Text(
+                                                'My Record',
+                                                style: TextStyle(
+                                                  fontSize: 12,
+                                                  fontWeight: FontWeight.w600,
+                                                  color: Color(0xFF334155),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
-                            const SizedBox(height: 16),
-                          ],
+                              const SizedBox(height: 22),
+
+                              // 5. TODAY'S CALLS Header with Pending / Completed switcher
+                              Row(
+                                children: [
+                                  const Flexible(
+                                    child: FittedBox(
+                                      fit: BoxFit.scaleDown,
+                                      alignment: Alignment.centerLeft,
+                                      child: Text(
+                                        "TODAY'S CALLS",
+                                        style: TextStyle(
+                                          fontSize: 11.5,
+                                          fontWeight: FontWeight.w700,
+                                          letterSpacing: 0.8,
+                                          color: Color(0xFF94A3B8),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Flexible(
+                                    flex: 3,
+                                    child: Align(
+                                      alignment: Alignment.centerRight,
+                                      child: FittedBox(
+                                        fit: BoxFit.scaleDown,
+                                        alignment: Alignment.centerRight,
+                                        child: Container(
+                                          decoration: BoxDecoration(
+                                            color: const Color(
+                                              0xFFE2E8F0,
+                                            ).withValues(alpha: 0.6),
+                                            borderRadius: BorderRadius.circular(
+                                              10,
+                                            ),
+                                          ),
+                                          padding: const EdgeInsets.all(3),
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              _CallTabPill(
+                                                label:
+                                                    'Pending (${state.pendingLeads.length})',
+                                                isSelected:
+                                                    state.showingPendingCalls,
+                                                onTap: () => cubit
+                                                    .togglePendingOrDoneCalls(
+                                                      true,
+                                                    ),
+                                              ),
+                                              const SizedBox(width: 4),
+                                              _CallTabPill(
+                                                label:
+                                                    'Completed (${state.doneLeads.length})',
+                                                isSelected:
+                                                    !state.showingPendingCalls,
+                                                onTap: () => cubit
+                                                    .togglePendingOrDoneCalls(
+                                                      false,
+                                                    ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 12),
+
+                              // 6. Call Cards List (Loading, Error/Permission, Empty, or Assigned Leads)
+                              if (state.isLoading)
+                                Container(
+                                  width: double.infinity,
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 36,
+                                    horizontal: 16,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(16),
+                                    border: Border.all(
+                                      color: const Color(0xFFEAECF0),
+                                    ),
+                                  ),
+                                  child: const Column(
+                                    children: [
+                                      CircularProgressIndicator(
+                                        color: Color(0xFF4338CA),
+                                      ),
+                                      SizedBox(height: 12),
+                                      Text(
+                                        'Loading your assigned calls for today...',
+                                        style: TextStyle(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w600,
+                                          color: Color(0xFF667085),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                )
+                              else if (state.errorMessage != null)
+                                Container(
+                                  width: double.infinity,
+                                  padding: const EdgeInsets.all(20),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(16),
+                                    border: Border.all(
+                                      color: const Color(0xFFFEE4E2),
+                                    ),
+                                  ),
+                                  child: Column(
+                                    children: [
+                                      Icon(
+                                        state.isPermissionDenied
+                                            ? CupertinoIcons.lock
+                                            : Icons.error_outline_rounded,
+                                        color: const Color(0xFFB42318),
+                                        size: 32,
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Text(
+                                        state.isPermissionDenied
+                                            ? 'Access Restricted'
+                                            : 'Could not load assigned leads',
+                                        style: const TextStyle(
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.w700,
+                                          color: Color(0xFF0F172A),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        state.errorMessage!,
+                                        textAlign: TextAlign.center,
+                                        style: const TextStyle(
+                                          fontSize: 12.5,
+                                          color: Color(0xFF667085),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 12),
+                                      OutlinedButton.icon(
+                                        onPressed: cubit.refresh,
+                                        icon: const Icon(
+                                          CupertinoIcons.refresh,
+                                          size: 16,
+                                        ),
+                                        label: const Text('Retry'),
+                                      ),
+                                    ],
+                                  ),
+                                )
+                              else if (displayedLeads.isEmpty)
+                                Container(
+                                  width: double.infinity,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 20,
+                                    vertical: 32,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(16),
+                                    border: Border.all(
+                                      color: const Color(0xFFF3F4F6),
+                                      width: 1,
+                                    ),
+                                  ),
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
+                                    children: [
+                                      // Top Icon Container
+                                      Container(
+                                        width: 48,
+                                        height: 48,
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFFF9FAFB),
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
+                                        ),
+                                        alignment: Alignment.center,
+                                        child: SvgPicture.asset(
+                                          AppSvgs.clipboardCheck,
+                                          width: 20,
+                                          height: 25,
+                                          colorFilter: const ColorFilter.mode(
+                                            Color(0xFF9CA3AF),
+                                            BlendMode.srcIn,
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 20),
+
+                                      // Title
+                                      Text(
+                                        state.showingPendingCalls
+                                            ? 'No pending leads assigned to you for today'
+                                            : 'No completed calls recorded yet today',
+                                        textAlign: TextAlign.center,
+                                        style: const TextStyle(
+                                          fontSize: 16.5,
+                                          fontWeight: FontWeight.w700,
+                                          color: Color(0xFF0F172A),
+                                          letterSpacing: -0.2,
+                                          height: 1.3,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 8),
+
+                                      // Subtitle
+                                      const Text(
+                                        'New leads assigned by your Admin will\nappear here automatically.',
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w400,
+                                          color: Color(0xFF94A3B8),
+                                          height: 1.4,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 24),
+
+                                      // Action Buttons (Responsive flex row)
+                                      Row(
+                                        children: [
+                                          if (!state.showingPendingCalls) ...[
+                                            // Back to Pending Calls Button (Figma: flex 8, height 44, radius 12, #D35501)
+                                            Expanded(
+                                              flex: 8,
+                                              child: SizedBox(
+                                                height: 44,
+                                                child: DecoratedBox(
+                                                  decoration: BoxDecoration(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                          12,
+                                                        ),
+                                                    boxShadow: [
+                                                      BoxShadow(
+                                                        color:
+                                                            const Color(
+                                                              0xFFD35501,
+                                                            ).withValues(
+                                                              alpha: 0.32,
+                                                            ),
+                                                        blurRadius: 16,
+                                                        offset: const Offset(
+                                                          0,
+                                                          6,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  child: ElevatedButton(
+                                                    onPressed: () => cubit
+                                                        .togglePendingOrDoneCalls(
+                                                          true,
+                                                        ),
+                                                    style: ElevatedButton.styleFrom(
+                                                      backgroundColor:
+                                                          const Color(
+                                                            0xFFD35501,
+                                                          ),
+                                                      foregroundColor:
+                                                          Colors.white,
+                                                      elevation: 0,
+                                                      shadowColor:
+                                                          Colors.transparent,
+                                                      minimumSize: Size.zero,
+                                                      tapTargetSize:
+                                                          MaterialTapTargetSize
+                                                              .shrinkWrap,
+                                                      padding:
+                                                          const EdgeInsets.symmetric(
+                                                            horizontal: 10,
+                                                            vertical: 4,
+                                                          ),
+                                                      shape: RoundedRectangleBorder(
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                              12,
+                                                            ),
+                                                      ),
+                                                    ),
+                                                    child: FittedBox(
+                                                      fit: BoxFit.scaleDown,
+                                                      child: Row(
+                                                        mainAxisSize:
+                                                            MainAxisSize.min,
+                                                        mainAxisAlignment:
+                                                            MainAxisAlignment
+                                                                .center,
+                                                        children: [
+                                                          SvgPicture.asset(
+                                                            AppSvgs.arrowLeft,
+                                                            width: 15,
+                                                            height: 15,
+                                                            colorFilter:
+                                                                const ColorFilter.mode(
+                                                                  Colors.white,
+                                                                  BlendMode
+                                                                      .srcIn,
+                                                                ),
+                                                          ),
+                                                          const SizedBox(
+                                                            width: 8,
+                                                          ),
+                                                          const Text(
+                                                            'Back to Pending\nCalls',
+                                                            textAlign:
+                                                                TextAlign.left,
+                                                            style: TextStyle(
+                                                              fontSize: 12,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w700,
+                                                              color:
+                                                                  Colors.white,
+                                                              height: 1.15,
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                            const SizedBox(width: 10),
+                                          ],
+
+                                          // Refresh Button (Figma: flex 5, height 44, radius 12, border 1px #F3F4F6)
+                                          Expanded(
+                                            flex: state.showingPendingCalls
+                                                ? 1
+                                                : 5,
+                                            child: SizedBox(
+                                              height: 44,
+                                              child: OutlinedButton(
+                                                onPressed: cubit.refresh,
+                                                style: OutlinedButton.styleFrom(
+                                                  backgroundColor: Colors.white,
+                                                  foregroundColor: const Color(
+                                                    0xFF334155,
+                                                  ),
+                                                  side: const BorderSide(
+                                                    color: Color(0xFFE2E8F0),
+                                                    width: 1,
+                                                  ),
+                                                  minimumSize: Size.zero,
+                                                  tapTargetSize:
+                                                      MaterialTapTargetSize
+                                                          .shrinkWrap,
+                                                  padding:
+                                                      const EdgeInsets.symmetric(
+                                                        horizontal: 10,
+                                                        vertical: 4,
+                                                      ),
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                          12,
+                                                        ),
+                                                  ),
+                                                ),
+                                                child: FittedBox(
+                                                  fit: BoxFit.scaleDown,
+                                                  child: Row(
+                                                    mainAxisSize:
+                                                        MainAxisSize.min,
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .center,
+                                                    children: [
+                                                      SvgPicture.asset(
+                                                        AppSvgs.refresh,
+                                                        width: 15,
+                                                        height: 15,
+                                                        colorFilter:
+                                                            const ColorFilter.mode(
+                                                              Color(0xFF475467),
+                                                              BlendMode.srcIn,
+                                                            ),
+                                                      ),
+                                                      const SizedBox(width: 7),
+                                                      const Text(
+                                                        'Refresh',
+                                                        style: TextStyle(
+                                                          fontSize: 13,
+                                                          fontWeight:
+                                                              FontWeight.w700,
+                                                          color: Color(
+                                                            0xFF334155,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                )
+                              else
+                                ListView.separated(
+                                  shrinkWrap: true,
+                                  physics: const NeverScrollableScrollPhysics(),
+                                  itemCount: displayedLeads.length,
+                                  separatorBuilder: (_, _) =>
+                                      const SizedBox(height: 10),
+                                  itemBuilder: (context, index) {
+                                    final item = displayedLeads[index];
+                                    return _TodayLeadCard(
+                                      item: item,
+                                      onTapCard: () =>
+                                          LeadCallSheets.showLeadDetailSheet(
+                                            context,
+                                            lead: item,
+                                          ),
+                                      onTapCall: () => AppPhoneCallService
+                                          .instance
+                                          .dialLead(context, item),
+                                    );
+                                  },
+                                ),
+                              const SizedBox(height: 16),
+                            ],
+                          ),
                         ),
                       ),
                     ),

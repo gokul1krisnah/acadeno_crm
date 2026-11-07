@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:acadeno_crm/shared/widgets/acadeno_dropdown.dart';
 import '../../../../core/utils/native_file_picker.dart';
 import '../../../../core/utils/file_download_helper.dart';
@@ -100,7 +101,7 @@ class _ImportLeadsBodyState extends State<_ImportLeadsBody> {
                             onPressed: () =>
                                 context.read<LeadImportCubit>().reset(),
                             icon: const Icon(
-                              Icons.sync_rounded,
+                              CupertinoIcons.refresh,
                               size: 16,
                               color: Color(0xFF344054),
                             ),

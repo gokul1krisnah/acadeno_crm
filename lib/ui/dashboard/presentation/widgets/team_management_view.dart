@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -247,7 +248,7 @@ class _TeamManagementViewState extends State<TeamManagementView> {
                                 _leadsStream = cubit.watchAllLeads();
                               });
                             },
-                            icon: const Icon(Icons.refresh, size: 16),
+                            icon: const Icon(CupertinoIcons.refresh, size: 16),
                             label: const Text('Retry Loading Team'),
                           ),
                         ],

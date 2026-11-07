@@ -23,187 +23,190 @@ class AlertsTabView extends StatelessWidget {
         final yesterdayList = state.yesterdayAlerts;
         final earlierList = state.earlierAlerts;
 
-        return RefreshIndicator(
-          color: const Color(0xFF4338CA),
-          backgroundColor: Colors.white,
-          onRefresh: () async {
-            await Future.delayed(const Duration(milliseconds: 500));
-          },
-          child: SingleChildScrollView(
-            physics: const AlwaysScrollableScrollPhysics(
-              parent: BouncingScrollPhysics(),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Clean header matching Figma (seamless white background)
-                Container(
-                  width: double.infinity,
-                  color: Colors.white,
-                  padding: EdgeInsets.fromLTRB(pad, 16, pad, 12),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Image.asset(
-                            AppImages.acadenoALogo,
-                            width: 28,
-                            height: 28,
-                            fit: BoxFit.contain,
-                          ),
-                          const SizedBox(width: 10),
-                          Text(
-                            'Alerts',
-                            style: GoogleFonts.inter(
-                              fontSize: 24,
-                              fontWeight: FontWeight.w800,
-                              color: const Color(0xFF0F172A),
-                              letterSpacing: -0.4,
+        return Theme(
+          data: Theme.of(context).copyWith(platform: TargetPlatform.iOS),
+          child: RefreshIndicator.adaptive(
+            color: const Color(0xFF4338CA),
+            backgroundColor: Colors.white,
+            onRefresh: () async {
+              await Future.delayed(const Duration(seconds: 2));
+            },
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(
+                parent: BouncingScrollPhysics(),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Clean header matching Figma (seamless white background)
+                  Container(
+                    width: double.infinity,
+                    color: Colors.white,
+                    padding: EdgeInsets.fromLTRB(pad, 16, pad, 12),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Image.asset(
+                              AppImages.acadenoALogo,
+                              width: 28,
+                              height: 28,
+                              fit: BoxFit.contain,
                             ),
-                          ),
-                        ],
-                      ),
-                      InkWell(
-                        onTap: cubit.markAllAlertsRead,
-                        borderRadius: BorderRadius.circular(8),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 6,
-                            vertical: 4,
-                          ),
-                          child: Text(
-                            'Mark all read',
-                            style: GoogleFonts.inter(
-                              fontSize: 13.5,
-                              fontWeight: FontWeight.w700,
-                              color: const Color(0xFF4338CA),
+                            const SizedBox(width: 10),
+                            Text(
+                              'Alerts',
+                              style: GoogleFonts.inter(
+                                fontSize: 24,
+                                fontWeight: FontWeight.w800,
+                                color: const Color(0xFF0F172A),
+                                letterSpacing: -0.4,
+                              ),
+                            ),
+                          ],
+                        ),
+                        InkWell(
+                          onTap: cubit.markAllAlertsRead,
+                          borderRadius: BorderRadius.circular(8),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 4,
+                            ),
+                            child: Text(
+                              'Mark all read',
+                              style: GoogleFonts.inter(
+                                fontSize: 13.5,
+                                fontWeight: FontWeight.w700,
+                                color: const Color(0xFF4338CA),
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
 
-                // Body Content
-                Padding(
-                  padding: EdgeInsets.fromLTRB(pad, 12, pad, 24),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      if (todayList.isEmpty &&
-                          yesterdayList.isEmpty &&
-                          earlierList.isEmpty)
-                        Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.symmetric(
-                            vertical: 48,
-                            horizontal: 20,
-                          ),
-                          alignment: Alignment.center,
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Icon(
-                                Icons.check_circle_outline_rounded,
-                                size: 48,
-                                color: Color(0xFF10B981),
+                  // Body Content
+                  Padding(
+                    padding: EdgeInsets.fromLTRB(pad, 12, pad, 24),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (todayList.isEmpty &&
+                            yesterdayList.isEmpty &&
+                            earlierList.isEmpty)
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.symmetric(
+                              vertical: 48,
+                              horizontal: 20,
+                            ),
+                            alignment: Alignment.center,
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(
+                                  Icons.check_circle_outline_rounded,
+                                  size: 48,
+                                  color: Color(0xFF10B981),
+                                ),
+                                const SizedBox(height: 12),
+                                Text(
+                                  'All caught up!',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w700,
+                                    color: const Color(0xFF0F172A),
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'No pending alerts or overdue tasks right now.',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 13,
+                                    color: const Color(0xFF64748B),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          )
+                        else ...[
+                          // 1. TODAY Section
+                          if (todayList.isNotEmpty) ...[
+                            Text(
+                              'TODAY',
+                              style: GoogleFonts.inter(
+                                fontSize: 11.5,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: 0.8,
+                                color: const Color(0xFF8E8EA9),
                               ),
-                              const SizedBox(height: 12),
-                              Text(
-                                'All caught up!',
-                                style: GoogleFonts.inter(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w700,
-                                  color: const Color(0xFF0F172A),
+                            ),
+                            const SizedBox(height: 10),
+                            for (final item in todayList)
+                              Padding(
+                                padding: const EdgeInsets.only(bottom: 12),
+                                child: _AlertCard(
+                                  item: item,
+                                  onTap: () => _handleAlertTap(context, item),
                                 ),
                               ),
-                              const SizedBox(height: 4),
-                              Text(
-                                'No pending alerts or overdue tasks right now.',
-                                style: GoogleFonts.inter(
-                                  fontSize: 13,
-                                  color: const Color(0xFF64748B),
+                            const SizedBox(height: 12),
+                          ],
+
+                          // 2. YESTERDAY Section
+                          if (yesterdayList.isNotEmpty) ...[
+                            Text(
+                              'YESTERDAY',
+                              style: GoogleFonts.inter(
+                                fontSize: 11.5,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: 0.8,
+                                color: const Color(0xFF8E8EA9),
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            for (final item in yesterdayList)
+                              Padding(
+                                padding: const EdgeInsets.only(bottom: 12),
+                                child: _AlertCard(
+                                  item: item,
+                                  onTap: () => _handleAlertTap(context, item),
                                 ),
                               ),
-                            ],
-                          ),
-                        )
-                      else ...[
-                        // 1. TODAY Section
-                        if (todayList.isNotEmpty) ...[
-                          Text(
-                            'TODAY',
-                            style: GoogleFonts.inter(
-                              fontSize: 11.5,
-                              fontWeight: FontWeight.w700,
-                              letterSpacing: 0.8,
-                              color: const Color(0xFF8E8EA9),
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          for (final item in todayList)
-                            Padding(
-                              padding: const EdgeInsets.only(bottom: 12),
-                              child: _AlertCard(
-                                item: item,
-                                onTap: () => _handleAlertTap(context, item),
-                              ),
-                            ),
-                          const SizedBox(height: 12),
-                        ],
+                            const SizedBox(height: 12),
+                          ],
 
-                        // 2. YESTERDAY Section
-                        if (yesterdayList.isNotEmpty) ...[
-                          Text(
-                            'YESTERDAY',
-                            style: GoogleFonts.inter(
-                              fontSize: 11.5,
-                              fontWeight: FontWeight.w700,
-                              letterSpacing: 0.8,
-                              color: const Color(0xFF8E8EA9),
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          for (final item in yesterdayList)
-                            Padding(
-                              padding: const EdgeInsets.only(bottom: 12),
-                              child: _AlertCard(
-                                item: item,
-                                onTap: () => _handleAlertTap(context, item),
+                          // 3. EARLIER Section
+                          if (earlierList.isNotEmpty) ...[
+                            Text(
+                              'EARLIER',
+                              style: GoogleFonts.inter(
+                                fontSize: 11.5,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: 0.8,
+                                color: const Color(0xFF8E8EA9),
                               ),
                             ),
-                          const SizedBox(height: 12),
-                        ],
-
-                        // 3. EARLIER Section
-                        if (earlierList.isNotEmpty) ...[
-                          Text(
-                            'EARLIER',
-                            style: GoogleFonts.inter(
-                              fontSize: 11.5,
-                              fontWeight: FontWeight.w700,
-                              letterSpacing: 0.8,
-                              color: const Color(0xFF8E8EA9),
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          for (final item in earlierList)
-                            Padding(
-                              padding: const EdgeInsets.only(bottom: 12),
-                              child: _AlertCard(
-                                item: item,
-                                onTap: () => _handleAlertTap(context, item),
+                            const SizedBox(height: 10),
+                            for (final item in earlierList)
+                              Padding(
+                                padding: const EdgeInsets.only(bottom: 12),
+                                child: _AlertCard(
+                                  item: item,
+                                  onTap: () => _handleAlertTap(context, item),
+                                ),
                               ),
-                            ),
+                          ],
                         ],
                       ],
-                    ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         );

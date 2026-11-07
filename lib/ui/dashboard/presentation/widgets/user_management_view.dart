@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:acadeno_crm/shared/widgets/acadeno_dropdown.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
@@ -1035,7 +1036,7 @@ class _UserManagementViewState extends State<UserManagementView> {
                                 _usersStream = cubit.watchAllUsers();
                               });
                             },
-                            icon: const Icon(Icons.refresh, size: 16),
+                            icon: const Icon(CupertinoIcons.refresh, size: 16),
                             label: const Text('Retry Loading Users'),
                           ),
                         ],

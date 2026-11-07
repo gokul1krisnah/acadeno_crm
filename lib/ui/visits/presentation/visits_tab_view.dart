@@ -21,128 +21,135 @@ class VisitsTabView extends StatelessWidget {
         final upcoming = state.upcomingVisits;
         final recent = state.recentVisits;
 
-        return RefreshIndicator(
-          color: const Color(0xFF4338CA),
-          backgroundColor: Colors.white,
-          onRefresh: () async {
-            await Future.delayed(const Duration(milliseconds: 500));
-          },
-          child: SingleChildScrollView(
-            physics: const AlwaysScrollableScrollPhysics(
-              parent: BouncingScrollPhysics(),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Top White Header
-                Container(
-                  width: double.infinity,
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                    border: Border(
-                      bottom: BorderSide(color: Color(0xFFEAECF0)),
+        return Theme(
+          data: Theme.of(context).copyWith(platform: TargetPlatform.iOS),
+          child: RefreshIndicator.adaptive(
+            color: const Color(0xFF4338CA),
+            backgroundColor: Colors.white,
+            onRefresh: () async {
+              await Future.delayed(const Duration(seconds: 2));
+            },
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(
+                parent: BouncingScrollPhysics(),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Top White Header
+                  Container(
+                    width: double.infinity,
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      border: Border(
+                        bottom: BorderSide(color: Color(0xFFEAECF0)),
+                      ),
+                    ),
+                    padding: EdgeInsets.fromLTRB(pad, 16, pad, 16),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'College visits',
+                          style: TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.w800,
+                            color: Color(0xFF0F172A),
+                            letterSpacing: -0.4,
+                          ),
+                        ),
+                        SizedBox(
+                          height: 40,
+                          child: ElevatedButton.icon(
+                            onPressed: () => _showLogVisitModal(context),
+                            icon: const Icon(Icons.add, size: 17),
+                            label: const Text(
+                              'Log visit',
+                              style: TextStyle(
+                                fontSize: 13.5,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFFD95D24),
+                              foregroundColor: Colors.white,
+                              elevation: 0,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 14,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  padding: EdgeInsets.fromLTRB(pad, 16, pad, 16),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        'College visits',
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.w800,
-                          color: Color(0xFF0F172A),
-                          letterSpacing: -0.4,
-                        ),
-                      ),
-                      SizedBox(
-                        height: 40,
-                        child: ElevatedButton.icon(
-                          onPressed: () => _showLogVisitModal(context),
-                          icon: const Icon(Icons.add, size: 17),
-                          label: const Text(
-                            'Log visit',
-                            style: TextStyle(
-                              fontSize: 13.5,
-                              fontWeight: FontWeight.w700,
-                            ),
+
+                  // Body Content
+                  Padding(
+                    padding: EdgeInsets.fromLTRB(pad, 18, pad, 24),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // UPCOMING · ASSIGNED TO YOU
+                        const Text(
+                          'UPCOMING · ASSIGNED TO YOU',
+                          style: TextStyle(
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 0.7,
+                            color: Color(0xFF667085),
                           ),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFFD95D24),
-                            foregroundColor: Colors.white,
-                            elevation: 0,
-                            padding: const EdgeInsets.symmetric(horizontal: 14),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
+                        ),
+                        const SizedBox(height: 10),
+                        ...upcoming.map(
+                          (visit) => Padding(
+                            padding: const EdgeInsets.only(bottom: 14),
+                            child: _UpcomingVisitCard(
+                              visit: visit,
+                              onDirections: () =>
+                                  _handleDirections(context, visit),
+                              onRecordOutcome: () =>
+                                  _showRecordOutcomeSheet(context, visit),
+                              onDelete: () =>
+                                  _confirmDeleteVisit(context, visit),
                             ),
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-                ),
+                        const SizedBox(height: 10),
 
-                // Body Content
-                Padding(
-                  padding: EdgeInsets.fromLTRB(pad, 18, pad, 24),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // UPCOMING · ASSIGNED TO YOU
-                      const Text(
-                        'UPCOMING · ASSIGNED TO YOU',
-                        style: TextStyle(
-                          fontSize: 11.5,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: 0.7,
-                          color: Color(0xFF667085),
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      ...upcoming.map(
-                        (visit) => Padding(
-                          padding: const EdgeInsets.only(bottom: 14),
-                          child: _UpcomingVisitCard(
-                            visit: visit,
-                            onDirections: () =>
-                                _handleDirections(context, visit),
-                            onRecordOutcome: () =>
-                                _showRecordOutcomeSheet(context, visit),
-                            onDelete: () => _confirmDeleteVisit(context, visit),
+                        // RECENT
+                        const Text(
+                          'RECENT',
+                          style: TextStyle(
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 0.7,
+                            color: Color(0xFF667085),
                           ),
                         ),
-                      ),
-                      const SizedBox(height: 10),
-
-                      // RECENT
-                      const Text(
-                        'RECENT',
-                        style: TextStyle(
-                          fontSize: 11.5,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: 0.7,
-                          color: Color(0xFF667085),
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      ...recent.map(
-                        (visit) => Padding(
-                          padding: const EdgeInsets.only(bottom: 12),
-                          child: _RecentVisitCard(
-                            visit: visit,
-                            onDirections: () =>
-                                _handleDirections(context, visit),
-                            onRecordOutcome: () =>
-                                _showRecordOutcomeSheet(context, visit),
-                            onDelete: () => _confirmDeleteVisit(context, visit),
+                        const SizedBox(height: 10),
+                        ...recent.map(
+                          (visit) => Padding(
+                            padding: const EdgeInsets.only(bottom: 12),
+                            child: _RecentVisitCard(
+                              visit: visit,
+                              onDirections: () =>
+                                  _handleDirections(context, visit),
+                              onRecordOutcome: () =>
+                                  _showRecordOutcomeSheet(context, visit),
+                              onDelete: () =>
+                                  _confirmDeleteVisit(context, visit),
+                            ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         );

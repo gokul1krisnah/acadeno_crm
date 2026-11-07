@@ -187,51 +187,55 @@ class _FollowUpsTabViewState extends State<FollowUpsTabView> {
     required FollowUpsCubit cubit,
     required double pad,
   }) {
-    return RefreshIndicator(
-      color: const Color(0xFFE86938),
-      backgroundColor: Colors.white,
-      onRefresh: () async {
-        await cubit.refresh();
-      },
-      child: items.isEmpty
-          ? ListView(
-              physics: const AlwaysScrollableScrollPhysics(
-                parent: BouncingScrollPhysics(),
-              ),
-              children: const [
-                Padding(
-                  padding: EdgeInsets.all(32),
-                  child: Center(
-                    child: Text(
-                      'All follow-ups in this tab are completed!',
-                      style: TextStyle(
-                        fontSize: 13.5,
-                        color: Color(0xFF667085),
+    return Theme(
+      data: Theme.of(context).copyWith(platform: TargetPlatform.iOS),
+      child: RefreshIndicator.adaptive(
+        color: const Color(0xFFE86938),
+        backgroundColor: Colors.white,
+        onRefresh: () async {
+          cubit.refresh();
+          await Future.delayed(const Duration(seconds: 2));
+        },
+        child: items.isEmpty
+            ? ListView(
+                physics: const AlwaysScrollableScrollPhysics(
+                  parent: BouncingScrollPhysics(),
+                ),
+                children: const [
+                  Padding(
+                    padding: EdgeInsets.all(32),
+                    child: Center(
+                      child: Text(
+                        'All follow-ups in this tab are completed!',
+                        style: TextStyle(
+                          fontSize: 13.5,
+                          color: Color(0xFF667085),
+                        ),
                       ),
                     ),
                   ),
+                ],
+              )
+            : ListView.separated(
+                physics: const AlwaysScrollableScrollPhysics(
+                  parent: BouncingScrollPhysics(),
                 ),
-              ],
-            )
-          : ListView.separated(
-              physics: const AlwaysScrollableScrollPhysics(
-                parent: BouncingScrollPhysics(),
+                padding: EdgeInsets.fromLTRB(pad, 14, pad, 24),
+                itemCount: items.length,
+                separatorBuilder: (_, _) => const SizedBox(height: 12),
+                itemBuilder: (context, index) {
+                  final item = items[index];
+                  return _FollowUpCard(
+                    key: ValueKey(item.id),
+                    item: item,
+                    onCallNow: () => AppPhoneCallService.instance
+                        .dialFollowUpItem(context, item),
+                    onSnooze: () => _showSnoozeSheet(context, item),
+                    onMarkDone: () => cubit.completeFollowUp(item.id),
+                  );
+                },
               ),
-              padding: EdgeInsets.fromLTRB(pad, 14, pad, 24),
-              itemCount: items.length,
-              separatorBuilder: (_, _) => const SizedBox(height: 12),
-              itemBuilder: (context, index) {
-                final item = items[index];
-                return _FollowUpCard(
-                  key: ValueKey(item.id),
-                  item: item,
-                  onCallNow: () => AppPhoneCallService.instance
-                      .dialFollowUpItem(context, item),
-                  onSnooze: () => _showSnoozeSheet(context, item),
-                  onMarkDone: () => cubit.completeFollowUp(item.id),
-                );
-              },
-            ),
+      ),
     );
   }
 

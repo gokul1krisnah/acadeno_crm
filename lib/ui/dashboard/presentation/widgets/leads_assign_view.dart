@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:acadeno_crm/shared/widgets/college_selector_field.dart';
 import 'package:acadeno_crm/shared/widgets/acadeno_dropdown.dart';
 import 'package:acadeno_crm/shared/extensions/build_context_extension.dart';
@@ -935,7 +936,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                         ),
                         onPressed: cubit.refresh,
                         icon: const Icon(
-                          Icons.refresh_rounded,
+                          CupertinoIcons.refresh,
                           size: 16,
                           color: Color(0xFF475467),
                         ),
@@ -1682,7 +1683,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
               const SizedBox(height: 14),
               OutlinedButton.icon(
                 onPressed: cubit.refresh,
-                icon: const Icon(Icons.refresh_rounded, size: 16),
+                icon: const Icon(CupertinoIcons.refresh, size: 16),
                 label: const Text('Retry'),
               ),
             ],
