@@ -957,10 +957,10 @@ class FirestoreLeadsBackend implements LeadsBackend {
         ? ' +${leadNamesList.length - 3} more'
         : '';
     final alertTitle = reassignedCount > 0 && newlyAssignedCount > 0
-        ? '📞 $newlyAssignedCount New & $reassignedCount Reassigned Leads'
+        ? '$newlyAssignedCount New & $reassignedCount Reassigned Leads'
         : reassignedCount > 0
-        ? '🔄 $reassignedCount Leads Reassigned to You'
-        : '📞 $leadCount Leads Assigned for $dateLabel';
+        ? '$reassignedCount ${reassignedCount == 1 ? "Lead" : "Leads"} Reassigned to You'
+        : '$leadCount ${leadCount == 1 ? "Lead" : "Leads"} Assigned for $dateLabel';
     final alertSubtitle =
         'Assigned by ${actor.name} · ($leadNamesPreview$leadNamesSuffix)';
 

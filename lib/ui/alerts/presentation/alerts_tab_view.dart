@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:acadeno_crm/shared/extensions/build_context_extension.dart';
 import 'package:acadeno_crm/shared/theme/app_images.dart';
 import 'package:acadeno_crm/ui/alerts/application/alerts_cubit.dart';
@@ -34,15 +36,11 @@ class AlertsTabView extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // Clean header matching Figma (seamless white background)
                 Container(
                   width: double.infinity,
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                    border: Border(
-                      bottom: BorderSide(color: Color(0xFFEAECF0)),
-                    ),
-                  ),
-                  padding: EdgeInsets.fromLTRB(pad, 16, pad, 16),
+                  color: Colors.white,
+                  padding: EdgeInsets.fromLTRB(pad, 16, pad, 12),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -56,12 +54,12 @@ class AlertsTabView extends StatelessWidget {
                             fit: BoxFit.contain,
                           ),
                           const SizedBox(width: 10),
-                          const Text(
+                          Text(
                             'Alerts',
-                            style: TextStyle(
+                            style: GoogleFonts.inter(
                               fontSize: 24,
                               fontWeight: FontWeight.w800,
-                              color: Color(0xFF0F172A),
+                              color: const Color(0xFF0F172A),
                               letterSpacing: -0.4,
                             ),
                           ),
@@ -70,17 +68,17 @@ class AlertsTabView extends StatelessWidget {
                       InkWell(
                         onTap: cubit.markAllAlertsRead,
                         borderRadius: BorderRadius.circular(8),
-                        child: const Padding(
-                          padding: EdgeInsets.symmetric(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
                             horizontal: 6,
                             vertical: 4,
                           ),
                           child: Text(
                             'Mark all read',
-                            style: TextStyle(
+                            style: GoogleFonts.inter(
                               fontSize: 13.5,
                               fontWeight: FontWeight.w700,
-                              color: Color(0xFF4338CA),
+                              color: const Color(0xFF4338CA),
                             ),
                           ),
                         ),
@@ -91,7 +89,7 @@ class AlertsTabView extends StatelessWidget {
 
                 // Body Content
                 Padding(
-                  padding: EdgeInsets.fromLTRB(pad, 18, pad, 24),
+                  padding: EdgeInsets.fromLTRB(pad, 12, pad, 24),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -105,104 +103,101 @@ class AlertsTabView extends StatelessWidget {
                             horizontal: 20,
                           ),
                           alignment: Alignment.center,
-                          child: const Column(
+                          child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(
+                              const Icon(
                                 Icons.check_circle_outline_rounded,
                                 size: 48,
                                 color: Color(0xFF10B981),
                               ),
-                              SizedBox(height: 12),
+                              const SizedBox(height: 12),
                               Text(
                                 'All caught up!',
-                                style: TextStyle(
+                                style: GoogleFonts.inter(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w700,
-                                  color: Color(0xFF0F172A),
+                                  color: const Color(0xFF0F172A),
                                 ),
                               ),
-                              SizedBox(height: 4),
+                              const SizedBox(height: 4),
                               Text(
                                 'No pending alerts or overdue tasks right now.',
-                                style: TextStyle(
+                                style: GoogleFonts.inter(
                                   fontSize: 13,
-                                  color: Color(0xFF64748B),
+                                  color: const Color(0xFF64748B),
                                 ),
                               ),
                             ],
                           ),
                         )
                       else ...[
-                        // 1. TODAY Section (Strictly today's notifications, newest first)
+                        // 1. TODAY Section
                         if (todayList.isNotEmpty) ...[
-                          const Text(
+                          Text(
                             'TODAY',
-                            style: TextStyle(
+                            style: GoogleFonts.inter(
                               fontSize: 11.5,
                               fontWeight: FontWeight.w700,
-                              letterSpacing: 0.7,
-                              color: Color(0xFF667085),
+                              letterSpacing: 0.8,
+                              color: const Color(0xFF8E8EA9),
                             ),
                           ),
                           const SizedBox(height: 10),
-                          ...todayList.map(
-                            (item) => Padding(
-                              padding: const EdgeInsets.only(bottom: 10),
+                          for (final item in todayList)
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 12),
                               child: _AlertCard(
                                 item: item,
                                 onTap: () => _handleAlertTap(context, item),
                               ),
                             ),
-                          ),
                           const SizedBox(height: 12),
                         ],
 
-                        // 2. YESTERDAY Section (Strictly yesterday's notifications, newest first)
+                        // 2. YESTERDAY Section
                         if (yesterdayList.isNotEmpty) ...[
-                          const Text(
+                          Text(
                             'YESTERDAY',
-                            style: TextStyle(
+                            style: GoogleFonts.inter(
                               fontSize: 11.5,
                               fontWeight: FontWeight.w700,
-                              letterSpacing: 0.7,
-                              color: Color(0xFF667085),
+                              letterSpacing: 0.8,
+                              color: const Color(0xFF8E8EA9),
                             ),
                           ),
                           const SizedBox(height: 10),
-                          ...yesterdayList.map(
-                            (item) => Padding(
-                              padding: const EdgeInsets.only(bottom: 10),
+                          for (final item in yesterdayList)
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 12),
                               child: _AlertCard(
                                 item: item,
                                 onTap: () => _handleAlertTap(context, item),
                               ),
                             ),
-                          ),
                           const SizedBox(height: 12),
                         ],
 
-                        // 3. EARLIER Section (Past notifications, newest first)
+                        // 3. EARLIER Section
                         if (earlierList.isNotEmpty) ...[
-                          const Text(
+                          Text(
                             'EARLIER',
-                            style: TextStyle(
+                            style: GoogleFonts.inter(
                               fontSize: 11.5,
                               fontWeight: FontWeight.w700,
-                              letterSpacing: 0.7,
-                              color: Color(0xFF667085),
+                              letterSpacing: 0.8,
+                              color: const Color(0xFF8E8EA9),
                             ),
                           ),
                           const SizedBox(height: 10),
-                          ...earlierList.map(
-                            (item) => Padding(
-                              padding: const EdgeInsets.only(bottom: 10),
+                          for (final item in earlierList)
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 12),
                               child: _AlertCard(
                                 item: item,
                                 onTap: () => _handleAlertTap(context, item),
                               ),
                             ),
-                          ),
                         ],
                       ],
                     ],
@@ -237,120 +232,110 @@ class _AlertCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final (iconData, iconBg, iconFg) = switch (item.iconType) {
-      AlertIconType.clock => (
-        Icons.access_time_rounded,
-        const Color(0xFFFDECE3),
-        const Color(0xFFB45309),
-      ),
-      AlertIconType.list => (
-        Icons.format_list_bulleted_rounded,
-        const Color(0xFFEEEDFD),
-        const Color(0xFF4338CA),
-      ),
-      AlertIconType.sun => (
-        Icons.wb_sunny_outlined,
-        const Color(0xFFEEEDFD),
-        const Color(0xFF4338CA),
-      ),
-      AlertIconType.warning => (
-        Icons.warning_amber_rounded,
-        const Color(0xFFFEE4E2),
-        const Color(0xFFB42318),
-      ),
-    };
-
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
-      child: Container(
-        padding: const EdgeInsets.all(15),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: const Color(0xFFEAECF0)),
-        ),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Rounded square container with Acadeno logo for greeting or contextual icon
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: iconBg,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              padding: item.iconType == AlertIconType.sun
-                  ? const EdgeInsets.all(7)
-                  : EdgeInsets.zero,
-              alignment: Alignment.center,
-              child: item.iconType == AlertIconType.sun
-                  ? Image.asset(AppImages.acadenoALogo, fit: BoxFit.contain)
-                  : Icon(iconData, color: iconFg, size: 20),
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 395),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(20),
+          child: Container(
+            width: double.infinity,
+            height: 80,
+            decoration: BoxDecoration(
+              color: const Color(0xFFE9E9F0),
+              borderRadius: BorderRadius.circular(20),
             ),
-            const SizedBox(width: 12),
-
-            // Title + Time + Orange Dot + Subtitle
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                // Category SVG Icon Container (Figma design: 48x48 rounded square #D1D1E0)
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFD1D1E0),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  alignment: Alignment.center,
+                  child: _buildCategorySvg(item.iconType),
+                ),
+                const SizedBox(width: 12), // gap: 12px
+                // Text column: Heading & Subtitle
+                Expanded(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Expanded(
-                        child: Text(
-                          item.title,
-                          style: const TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w800,
-                            color: Color(0xFF0F172A),
-                            height: 1.25,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
+                      // Heading row: Title & Time
                       Row(
-                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          Text(
-                            item.timeLabel,
-                            style: const TextStyle(
-                              fontSize: 12,
-                              color: Color(0xFF667085),
-                            ),
-                          ),
-                          if (item.isUnread) ...[
-                            const SizedBox(width: 6),
-                            Container(
-                              width: 8,
-                              height: 8,
-                              decoration: const BoxDecoration(
-                                color: Color(0xFFD95D24),
-                                shape: BoxShape.circle,
+                          Expanded(
+                            child: Text(
+                              item.title,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: GoogleFonts.inter(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w500,
+                                height: 18.75 / 15,
+                                letterSpacing: 15 * 0.001,
+                                color: const Color(0xFF0F172A),
                               ),
                             ),
-                          ],
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            item.timeLabel,
+                            style: GoogleFonts.inter(
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.w400,
+                              color: const Color(0xFF8C8CA1),
+                            ),
+                          ),
                         ],
+                      ),
+                      const SizedBox(height: 2),
+                      // Subtitle text
+                      Text(
+                        item.subtitle,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.inter(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w400,
+                          height: 20 / 12,
+                          letterSpacing: 0,
+                          color: const Color(0xFF64748B),
+                        ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    item.subtitle,
-                    style: const TextStyle(
-                      fontSize: 13,
-                      color: Color(0xFF475467),
-                      height: 1.35,
-                    ),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
+    );
+  }
+
+  Widget _buildCategorySvg(AlertIconType type) {
+    final assetPath = switch (type) {
+      AlertIconType.phone ||
+      AlertIconType.list => 'assets/svgs/alert_phone.svg',
+      AlertIconType.reassign => 'assets/svgs/alert_reassign.svg',
+      AlertIconType.sun => 'assets/svgs/alert_sun.svg',
+      AlertIconType.clock => 'assets/svgs/alert_clock.svg',
+      AlertIconType.warning => 'assets/svgs/alert_warning.svg',
+    };
+
+    return SvgPicture.asset(
+      assetPath,
+      width: 22,
+      height: 22,
+      fit: BoxFit.contain,
     );
   }
 }

@@ -1,4 +1,4 @@
-enum AlertIconType { clock, list, sun, warning }
+enum AlertIconType { phone, reassign, sun, clock, warning, list }
 
 class ExecutiveAlertItem {
   final String id;

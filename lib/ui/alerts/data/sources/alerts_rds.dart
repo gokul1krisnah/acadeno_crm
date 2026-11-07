@@ -41,9 +41,6 @@ class AlertsRds {
           final liveAlerts = <ExecutiveAlertItem>[];
           final now = DateTime.now();
           final startOfToday = DateTime(now.year, now.month, now.day);
-          final startOfYesterday = startOfToday.subtract(
-            const Duration(days: 1),
-          );
 
           for (final doc in snap.docs) {
             final data = doc.data();
@@ -73,29 +70,48 @@ class AlertsRds {
             final isToday =
                 itemDay.isAtSameMomentAs(startOfToday) ||
                 itemDay.isAfter(startOfToday);
-            final isYesterday = itemDay.isAtSameMomentAs(startOfYesterday);
 
             final timeStr = DateFormat('hh:mm a').format(createdAt);
-            String timeLabel;
-            if (isToday) {
-              timeLabel = timeStr;
-            } else if (isYesterday) {
-              timeLabel = 'Yesterday, $timeStr';
-            } else {
-              final dateStr = DateFormat('dd MMM').format(createdAt);
-              timeLabel = '$dateStr, $timeStr';
-            }
+            final timeLabel = timeStr;
 
-            AlertIconType icon = AlertIconType.list;
-            if (category == 'assignment') icon = AlertIconType.list;
-            if (category == 'followup') icon = AlertIconType.clock;
-            if (category == 'overdue') icon = AlertIconType.warning;
-            if (category == 'greeting') icon = AlertIconType.sun;
+            String cleanTitle = title
+                .replaceFirst(RegExp(r'^(📞|🔄|⚠️|🔔)\s*'), '')
+                .trim();
+            // Fix grammar: '1 Leads Assigned' -> '1 Lead Assigned'
+            cleanTitle = cleanTitle.replaceAll(
+              RegExp(r'\b1\s+Leads\b', caseSensitive: false),
+              '1 Lead',
+            );
+
+            AlertIconType icon = AlertIconType.phone;
+            final catLower = category.toLowerCase();
+            final titleLower = cleanTitle.toLowerCase();
+
+            if (catLower.contains('reassign') ||
+                titleLower.contains('re assign') ||
+                titleLower.contains('reassign')) {
+              icon = AlertIconType.reassign;
+            } else if (catLower.contains('greeting') ||
+                titleLower.contains('good morning') ||
+                titleLower.contains('morning')) {
+              icon = AlertIconType.sun;
+            } else if (catLower.contains('followup') ||
+                titleLower.contains('follow-up') ||
+                titleLower.contains('followup')) {
+              icon = AlertIconType.clock;
+            } else if (catLower.contains('overdue') ||
+                catLower.contains('warning') ||
+                titleLower.contains('overdue') ||
+                titleLower.contains('escalat')) {
+              icon = AlertIconType.warning;
+            } else {
+              icon = AlertIconType.phone;
+            }
 
             liveAlerts.add(
               ExecutiveAlertItem(
                 id: doc.id,
-                title: title,
+                title: cleanTitle,
                 subtitle: subtitle,
                 timeLabel: timeLabel,
                 iconType: icon,
