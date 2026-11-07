@@ -1,68 +1,76 @@
-// ignore_for_file: avoid_web_libraries_in_flutter
 import 'dart:async';
-import 'dart:html' as html;
+import 'dart:js_interop';
 import 'dart:typed_data';
+import 'package:web/web.dart' as web;
 
 Future<({Uint8List bytes, String name})?> pickFileImpl() async {
   final completer = Completer<({Uint8List bytes, String name})?>();
-  final uploadInput = html.FileUploadInputElement();
-  uploadInput.accept =
-      '.csv, .xlsx, .xls, .txt, text/csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
-  uploadInput.style.display = 'none';
+  final uploadInput = web.HTMLInputElement()
+    ..type = 'file'
+    ..accept =
+        '.csv, .xlsx, .xls, .txt, text/csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    ..style.display = 'none';
 
-  html.document.body?.children.add(uploadInput);
+  web.document.body?.appendChild(uploadInput);
 
-  uploadInput.onChange.listen((e) {
+  web.EventListener? focusListener;
+
+  void cleanup() {
+    uploadInput.remove();
+    if (focusListener != null) {
+      web.window.removeEventListener('focus', focusListener);
+    }
+  }
+
+  uploadInput.onchange = ((web.Event e) {
     final files = uploadInput.files;
-    if (files == null || files.isEmpty) {
-      uploadInput.remove();
+    if (files == null || files.length == 0) {
+      cleanup();
       if (!completer.isCompleted) completer.complete(null);
       return;
     }
 
-    final file = files[0];
-    final reader = html.FileReader();
-    reader.onLoadEnd.listen((_) {
-      uploadInput.remove();
+    final file = files.item(0);
+    if (file == null) {
+      cleanup();
+      if (!completer.isCompleted) completer.complete(null);
+      return;
+    }
+
+    final reader = web.FileReader();
+    reader.onloadend = ((web.ProgressEvent _) {
+      cleanup();
       final res = reader.result;
-      if (res is Uint8List) {
+      if (res != null && res.isA<JSArrayBuffer>()) {
+        final buffer = (res as JSArrayBuffer).toDart;
         if (!completer.isCompleted) {
-          completer.complete((bytes: res, name: file.name));
-        }
-      } else if (res is ByteBuffer) {
-        if (!completer.isCompleted) {
-          completer.complete((bytes: res.asUint8List(), name: file.name));
-        }
-      } else if (res is List<int>) {
-        if (!completer.isCompleted) {
-          completer.complete((bytes: Uint8List.fromList(res), name: file.name));
+          completer.complete((bytes: buffer.asUint8List(), name: file.name));
         }
       } else {
         if (!completer.isCompleted) completer.complete(null);
       }
-    });
+    }).toJS;
 
-    reader.onError.listen((_) {
-      uploadInput.remove();
+    reader.onerror = ((web.ProgressEvent _) {
+      cleanup();
       if (!completer.isCompleted) completer.complete(null);
-    });
+    }).toJS;
 
     reader.readAsArrayBuffer(file);
-  });
+  }).toJS;
 
   // Handle dialog cancel when focus returns to the window
-  html.EventListener? focusListener;
-  focusListener = (html.Event _) {
+  focusListener = ((web.Event _) {
     Future.delayed(const Duration(milliseconds: 800), () {
       if (!completer.isCompleted &&
-          (uploadInput.files == null || uploadInput.files!.isEmpty)) {
-        uploadInput.remove();
-        html.window.removeEventListener('focus', focusListener);
+          (uploadInput.files == null || uploadInput.files!.length == 0)) {
+        cleanup();
         completer.complete(null);
       }
     });
-  };
-  html.window.addEventListener('focus', focusListener);
+  }).toJS;
+
+  web.window.addEventListener('focus', focusListener);
 
   uploadInput.click();
   return completer.future;

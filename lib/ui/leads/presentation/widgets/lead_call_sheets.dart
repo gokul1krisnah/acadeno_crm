@@ -91,27 +91,18 @@ class LeadCallSheets {
     final notesCtrl = TextEditingController();
 
     const outcomeRows = [
-      [
-        ('Interested', Color(0xFF15803D)),
-        ('Follow-up', Color(0xFFEF8144)),
-      ],
-      [
-        ('No answer', Color(0xFF64748B)),
-        ('Busy', Color(0xFF64748B)),
-      ],
-      [
-        ('Switched off', Color(0xFF64748B)),
-        ('Converted', Color(0xFF4338CA)),
-      ],
+      [('Interested', Color(0xFF15803D)), ('Follow-up', Color(0xFFEF8144))],
+      [('No answer', Color(0xFF64748B)), ('Busy', Color(0xFF64748B))],
+      [('Switched off', Color(0xFF64748B)), ('Converted', Color(0xFF4338CA))],
       [
         ('Not interested', Color(0xFFDC2626)),
         ('Wrong number', Color(0xFF64748B)),
       ],
     ];
 
-    final displayDuration = (initialDuration.isNotEmpty && initialDuration != '0s')
-        ? initialDuration
-        : '3m 12s';
+    final displayDuration = initialDuration.trim().isNotEmpty
+        ? initialDuration.trim()
+        : '0s';
 
     showModalBottomSheet(
       context: context,
@@ -134,7 +125,9 @@ class LeadCallSheets {
                       padding: const EdgeInsets.fromLTRB(20, 24, 20, 16),
                       decoration: const BoxDecoration(
                         color: Color(0xFF181A22),
-                        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                        borderRadius: BorderRadius.vertical(
+                          top: Radius.circular(20),
+                        ),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -165,7 +158,9 @@ class LeadCallSheets {
                     Container(
                       decoration: const BoxDecoration(
                         color: Colors.white,
-                        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+                        borderRadius: BorderRadius.vertical(
+                          top: Radius.circular(24),
+                        ),
                       ),
                       child: SafeArea(
                         top: false,
@@ -180,292 +175,337 @@ class LeadCallSheets {
                             mainAxisSize: MainAxisSize.min,
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                          // Drag handle
-                          Center(
-                            child: Container(
-                              width: 38,
-                              height: 4,
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFE2E8F0),
-                                borderRadius: BorderRadius.circular(2),
+                              // Drag handle
+                              Center(
+                                child: Container(
+                                  width: 38,
+                                  height: 4,
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFE2E8F0),
+                                    borderRadius: BorderRadius.circular(2),
+                                  ),
+                                ),
                               ),
-                            ),
-                          ),
-                          const SizedBox(height: 14),
+                              const SizedBox(height: 14),
 
-                          // Title
-                          const Text(
-                            'How did the call go?',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w800,
-                              color: Color(0xFF0F172A),
-                              letterSpacing: -0.3,
-                            ),
-                          ),
-                          const SizedBox(height: 14),
+                              // Title
+                              const Text(
+                                'How did the call go?',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w800,
+                                  color: Color(0xFF0F172A),
+                                  letterSpacing: -0.3,
+                                ),
+                              ),
+                              const SizedBox(height: 14),
 
-                          // 2x4 Outcomes Grid
-                          ...outcomeRows.map((row) {
-                            return Padding(
-                              padding: const EdgeInsets.only(bottom: 10),
-                              child: Row(
-                                children: row.map((item) {
-                                  final name = item.$1;
-                                  final dotColor = item.$2;
-                                  final isSelected = selectedOutcome == name;
-                                  final selectedBgColor = dotColor;
+                              // 2x4 Outcomes Grid
+                              ...outcomeRows.map((row) {
+                                return Padding(
+                                  padding: const EdgeInsets.only(bottom: 10),
+                                  child: Row(
+                                    children: row.map((item) {
+                                      final name = item.$1;
+                                      final dotColor = item.$2;
+                                      final isSelected =
+                                          selectedOutcome == name;
+                                      final selectedBgColor = dotColor;
 
-                                  return Expanded(
-                                    child: Padding(
-                                      padding: EdgeInsets.only(
-                                        right: item == row.first ? 5 : 0,
-                                        left: item == row.last ? 5 : 0,
-                                      ),
-                                      child: InkWell(
-                                        onTap: () {
-                                          setSheetState(() => selectedOutcome = name);
-                                        },
-                                        borderRadius: BorderRadius.circular(12),
-                                        child: Container(
-                                          height: 46,
-                                          decoration: BoxDecoration(
-                                            color: isSelected
-                                                ? selectedBgColor
-                                                : Colors.white,
-                                            borderRadius: BorderRadius.circular(12),
-                                            border: Border.all(
-                                              color: isSelected
-                                                  ? selectedBgColor
-                                                  : const Color(0xFFE2E8F0),
+                                      return Expanded(
+                                        child: Padding(
+                                          padding: EdgeInsets.only(
+                                            right: item == row.first ? 5 : 0,
+                                            left: item == row.last ? 5 : 0,
+                                          ),
+                                          child: InkWell(
+                                            onTap: () {
+                                              setSheetState(
+                                                () => selectedOutcome = name,
+                                              );
+                                            },
+                                            borderRadius: BorderRadius.circular(
+                                              12,
+                                            ),
+                                            child: Container(
+                                              height: 46,
+                                              decoration: BoxDecoration(
+                                                color: isSelected
+                                                    ? selectedBgColor
+                                                    : Colors.white,
+                                                borderRadius:
+                                                    BorderRadius.circular(12),
+                                                border: Border.all(
+                                                  color: isSelected
+                                                      ? selectedBgColor
+                                                      : const Color(0xFFE2E8F0),
+                                                ),
+                                              ),
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    horizontal: 14,
+                                                  ),
+                                              child: Row(
+                                                children: [
+                                                  Container(
+                                                    width: 8,
+                                                    height: 8,
+                                                    decoration: BoxDecoration(
+                                                      color: isSelected
+                                                          ? Colors.white
+                                                          : dotColor,
+                                                      shape: BoxShape.circle,
+                                                    ),
+                                                  ),
+                                                  const SizedBox(width: 9),
+                                                  Expanded(
+                                                    child: Text(
+                                                      name,
+                                                      style: TextStyle(
+                                                        fontSize: 13.5,
+                                                        fontWeight:
+                                                            FontWeight.w700,
+                                                        color: isSelected
+                                                            ? Colors.white
+                                                            : const Color(
+                                                                0xFF0F172A,
+                                                              ),
+                                                      ),
+                                                      overflow:
+                                                          TextOverflow.ellipsis,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
                                             ),
                                           ),
-                                          padding: const EdgeInsets.symmetric(horizontal: 14),
-                                          child: Row(
-                                            children: [
-                                              Container(
-                                                width: 8,
-                                                height: 8,
-                                                decoration: BoxDecoration(
-                                                  color: isSelected
-                                                      ? Colors.white
-                                                      : dotColor,
-                                                  shape: BoxShape.circle,
-                                                ),
-                                              ),
-                                              const SizedBox(width: 9),
-                                              Expanded(
-                                                child: Text(
-                                                  name,
-                                                  style: TextStyle(
-                                                    fontSize: 13.5,
-                                                    fontWeight: FontWeight.w700,
-                                                    color: isSelected
-                                                        ? Colors.white
-                                                        : const Color(0xFF0F172A),
-                                                  ),
-                                                  overflow: TextOverflow.ellipsis,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
                                         ),
+                                      );
+                                    }).toList(),
+                                  ),
+                                );
+                              }),
+
+                              const SizedBox(height: 6),
+
+                              // Follow up when?
+                              const Text(
+                                'Follow up when?',
+                                style: TextStyle(
+                                  fontSize: 13.5,
+                                  fontWeight: FontWeight.w700,
+                                  color: Color(0xFF0F172A),
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+
+                              Wrap(
+                                spacing: 8,
+                                runSpacing: 8,
+                                children: [
+                                  _buildSlotPill(
+                                    label: 'Today 5 PM',
+                                    selected:
+                                        selectedFollowUpSlot == 'Today 5 PM',
+                                    onTap: () => setSheetState(
+                                      () => selectedFollowUpSlot = 'Today 5 PM',
+                                    ),
+                                  ),
+                                  _buildSlotPill(
+                                    label: 'Tomorrow 10:30',
+                                    selected:
+                                        selectedFollowUpSlot ==
+                                        'Tomorrow 10:30',
+                                    onTap: () => setSheetState(
+                                      () => selectedFollowUpSlot =
+                                          'Tomorrow 10:30',
+                                    ),
+                                  ),
+                                  _buildSlotPill(
+                                    label: 'In 3 days',
+                                    selected:
+                                        selectedFollowUpSlot == 'In 3 days',
+                                    onTap: () => setSheetState(
+                                      () => selectedFollowUpSlot = 'In 3 days',
+                                    ),
+                                  ),
+                                  _buildSlotPill(
+                                    label:
+                                        selectedFollowUpSlot.startsWith(
+                                              'Pick',
+                                            ) ||
+                                            [
+                                              'Today 5 PM',
+                                              'Tomorrow 10:30',
+                                              'In 3 days',
+                                            ].contains(selectedFollowUpSlot)
+                                        ? 'Pick date...'
+                                        : selectedFollowUpSlot,
+                                    selected: ![
+                                      'Today 5 PM',
+                                      'Tomorrow 10:30',
+                                      'In 3 days',
+                                    ].contains(selectedFollowUpSlot),
+                                    onTap: () async {
+                                      final now = DateTime.now();
+                                      final pickedDate = await showDatePicker(
+                                        context: ctx,
+                                        initialDate: now.add(
+                                          const Duration(days: 1),
+                                        ),
+                                        firstDate: now,
+                                        lastDate: now.add(
+                                          const Duration(days: 90),
+                                        ),
+                                      );
+                                      if (pickedDate != null && ctx.mounted) {
+                                        final pickedTime = await showTimePicker(
+                                          context: ctx,
+                                          initialTime: const TimeOfDay(
+                                            hour: 10,
+                                            minute: 30,
+                                          ),
+                                        );
+                                        if (pickedTime != null && ctx.mounted) {
+                                          final dt = DateTime(
+                                            pickedDate.year,
+                                            pickedDate.month,
+                                            pickedDate.day,
+                                            pickedTime.hour,
+                                            pickedTime.minute,
+                                          );
+                                          setSheetState(() {
+                                            selectedFollowUpSlot = DateFormat(
+                                              'EEE, d MMM · h:mm a',
+                                            ).format(dt);
+                                          });
+                                        }
+                                      }
+                                    },
+                                  ),
+                                ],
+                              ),
+
+                              const SizedBox(height: 14),
+
+                              // Notes (optional)
+                              RichText(
+                                text: const TextSpan(
+                                  children: [
+                                    TextSpan(
+                                      text: 'Notes ',
+                                      style: TextStyle(
+                                        fontSize: 13.5,
+                                        fontWeight: FontWeight.w700,
+                                        color: Color(0xFF0F172A),
                                       ),
                                     ),
-                                  );
-                                }).toList(),
-                              ),
-                            );
-                          }),
-
-                          const SizedBox(height: 6),
-
-                          // Follow up when?
-                          const Text(
-                            'Follow up when?',
-                            style: TextStyle(
-                              fontSize: 13.5,
-                              fontWeight: FontWeight.w700,
-                              color: Color(0xFF0F172A),
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-
-                          Wrap(
-                            spacing: 8,
-                            runSpacing: 8,
-                            children: [
-                              _buildSlotPill(
-                                label: 'Today 5 PM',
-                                selected: selectedFollowUpSlot == 'Today 5 PM',
-                                onTap: () => setSheetState(
-                                  () => selectedFollowUpSlot = 'Today 5 PM',
+                                    TextSpan(
+                                      text: '(optional)',
+                                      style: TextStyle(
+                                        fontSize: 13.5,
+                                        fontWeight: FontWeight.w400,
+                                        color: Color(0xFF64748B),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
-                              _buildSlotPill(
-                                label: 'Tomorrow 10:30',
-                                selected: selectedFollowUpSlot == 'Tomorrow 10:30',
-                                onTap: () => setSheetState(
-                                  () => selectedFollowUpSlot = 'Tomorrow 10:30',
+                              const SizedBox(height: 8),
+
+                              TextField(
+                                controller: notesCtrl,
+                                maxLines: 2,
+                                style: const TextStyle(
+                                  fontSize: 13.5,
+                                  color: Color(0xFF0F172A),
+                                ),
+                                decoration: InputDecoration(
+                                  hintText:
+                                      'Wants fee details and batch timings. Prefers WhatsApp.',
+                                  hintStyle: const TextStyle(
+                                    color: Color(0xFF94A3B8),
+                                    fontSize: 13,
+                                  ),
+                                  contentPadding: const EdgeInsets.all(12),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: const BorderSide(
+                                      color: Color(0xFFE2E8F0),
+                                    ),
+                                  ),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: const BorderSide(
+                                      color: Color(0xFFE2E8F0),
+                                    ),
+                                  ),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: const BorderSide(
+                                      color: Color(0xFF4F46E5),
+                                      width: 1.5,
+                                    ),
+                                  ),
                                 ),
                               ),
-                              _buildSlotPill(
-                                label: 'In 3 days',
-                                selected: selectedFollowUpSlot == 'In 3 days',
-                                onTap: () => setSheetState(
-                                  () => selectedFollowUpSlot = 'In 3 days',
-                                ),
-                              ),
-                              _buildSlotPill(
-                                label: selectedFollowUpSlot.startsWith('Pick') ||
-                                        ['Today 5 PM', 'Tomorrow 10:30', 'In 3 days'].contains(selectedFollowUpSlot)
-                                    ? 'Pick date...'
-                                    : selectedFollowUpSlot,
-                                selected: !['Today 5 PM', 'Tomorrow 10:30', 'In 3 days']
-                                    .contains(selectedFollowUpSlot),
-                                onTap: () async {
-                                  final now = DateTime.now();
-                                  final pickedDate = await showDatePicker(
-                                    context: ctx,
-                                    initialDate: now.add(const Duration(days: 1)),
-                                    firstDate: now,
-                                    lastDate: now.add(const Duration(days: 90)),
-                                  );
-                                  if (pickedDate != null && ctx.mounted) {
-                                    final pickedTime = await showTimePicker(
-                                      context: ctx,
-                                      initialTime: const TimeOfDay(hour: 10, minute: 30),
-                                    );
-                                    if (pickedTime != null && ctx.mounted) {
-                                      final dt = DateTime(
-                                        pickedDate.year,
-                                        pickedDate.month,
-                                        pickedDate.day,
-                                        pickedTime.hour,
-                                        pickedTime.minute,
-                                      );
-                                      setSheetState(() {
-                                        selectedFollowUpSlot =
-                                            DateFormat('EEE, d MMM · h:mm a').format(dt);
-                                      });
+
+                              const SizedBox(height: 24),
+
+                              // Save & next call Button
+                              SizedBox(
+                                width: double.infinity,
+                                height: 50,
+                                child: ElevatedButton(
+                                  onPressed: () async {
+                                    if (ctx.mounted) {
+                                      Navigator.pop(ctx);
                                     }
-                                  }
-                                },
+                                    try {
+                                      final result = await cubit
+                                          .recordCallOutcome(
+                                            leadId: leadId,
+                                            leadName: leadName,
+                                            outcome: selectedOutcome,
+                                            duration: displayDuration,
+                                            notes: notesCtrl.text.trim(),
+                                            followUpTime: selectedFollowUpSlot,
+                                          );
+                                      followUpsCubit.addFromCallOutcome(
+                                        leadName: leadName,
+                                        collegeInfo: result.collegeInfo,
+                                        outcome: selectedOutcome,
+                                        notes: notesCtrl.text.trim(),
+                                        followUpTimeLabel: selectedFollowUpSlot,
+                                      );
+                                    } catch (e) {
+                                      debugPrint('recordCallOutcome error: $e');
+                                    }
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: const Color(0xFF4F46E5),
+                                    foregroundColor: Colors.white,
+                                    elevation: 0,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(14),
+                                    ),
+                                  ),
+                                  child: const Text(
+                                    'Save & next call',
+                                    style: TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w700,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ),
                               ),
                             ],
                           ),
-
-                          const SizedBox(height: 14),
-
-                          // Notes (optional)
-                          RichText(
-                            text: const TextSpan(
-                              children: [
-                                TextSpan(
-                                  text: 'Notes ',
-                                  style: TextStyle(
-                                    fontSize: 13.5,
-                                    fontWeight: FontWeight.w700,
-                                    color: Color(0xFF0F172A),
-                                  ),
-                                ),
-                                TextSpan(
-                                  text: '(optional)',
-                                  style: TextStyle(
-                                    fontSize: 13.5,
-                                    fontWeight: FontWeight.w400,
-                                    color: Color(0xFF64748B),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-
-                          TextField(
-                            controller: notesCtrl,
-                            maxLines: 2,
-                            style: const TextStyle(
-                              fontSize: 13.5,
-                              color: Color(0xFF0F172A),
-                            ),
-                            decoration: InputDecoration(
-                              hintText: 'Wants fee details and batch timings. Prefers WhatsApp.',
-                              hintStyle: const TextStyle(
-                                color: Color(0xFF94A3B8),
-                                fontSize: 13,
-                              ),
-                              contentPadding: const EdgeInsets.all(12),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-                              ),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: const BorderSide(color: Color(0xFF4F46E5), width: 1.5),
-                              ),
-                            ),
-                          ),
-
-                          const SizedBox(height: 24),
-
-                          // Save & next call Button
-                          SizedBox(
-                            width: double.infinity,
-                            height: 50,
-                            child: ElevatedButton(
-                              onPressed: () async {
-                                if (ctx.mounted) {
-                                  Navigator.pop(ctx);
-                                }
-                                try {
-                                  final result = await cubit.recordCallOutcome(
-                                    leadId: leadId,
-                                    leadName: leadName,
-                                    outcome: selectedOutcome,
-                                    duration: displayDuration,
-                                    notes: notesCtrl.text.trim(),
-                                    followUpTime: selectedFollowUpSlot,
-                                  );
-                                  followUpsCubit.addFromCallOutcome(
-                                    leadName: leadName,
-                                    collegeInfo: result.collegeInfo,
-                                    outcome: selectedOutcome,
-                                    notes: notesCtrl.text.trim(),
-                                    followUpTimeLabel: selectedFollowUpSlot,
-                                  );
-                                } catch (e) {
-                                  debugPrint('recordCallOutcome error: $e');
-                                }
-                              },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF4F46E5),
-                                foregroundColor: Colors.white,
-                                elevation: 0,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(14),
-                                ),
-                              ),
-                              child: const Text(
-                                'Save & next call',
-                                style: TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w700,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
+                        ),
                       ),
                     ),
-                  ),
-                ),
-              ],
+                  ],
                 ),
               ),
             ),
@@ -512,11 +552,9 @@ class LeadCallSheets {
     BuildContext context, {
     required ExecutiveLeadItem lead,
   }) {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (ctx) => LeadDetailPage(lead: lead),
-      ),
-    );
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (ctx) => LeadDetailPage(lead: lead)));
   }
 
   // WhatsApp Templates Quick Action Sheet
@@ -569,102 +607,108 @@ class LeadCallSheets {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                Center(
-                  child: Container(
-                    width: 38,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFE2E8F0),
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                const Text(
-                  'WhatsApp Quick Templates',
-                  style: TextStyle(
-                    fontSize: 17,
-                    fontWeight: FontWeight.w800,
-                    color: Color(0xFF0F172A),
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  'Choose a pre-filled template to send to ${lead.name}',
-                  style: const TextStyle(fontSize: 12.5, color: Color(0xFF64748B)),
-                ),
-                const SizedBox(height: 14),
-                ...templates.map((tpl) {
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 10),
-                    child: InkWell(
-                      onTap: () {
-                        Navigator.pop(ctx);
-                        cubit.logWhatsAppTemplateSent(
-                          leadName: lead.name,
-                          templateTitle: tpl.$1,
-                        );
-                      },
-                      borderRadius: BorderRadius.circular(12),
+                    Center(
                       child: Container(
-                        padding: const EdgeInsets.all(12),
+                        width: 38,
+                        height: 4,
                         decoration: BoxDecoration(
-                          color: const Color(0xFFF8FAFC),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: const Color(0xFFE2E8F0)),
-                        ),
-                        child: Row(
-                          children: [
-                            const Icon(
-                              Icons.chat_bubble_outline_rounded,
-                              size: 18,
-                              color: Color(0xFF15803D),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    tpl.$1,
-                                    style: const TextStyle(
-                                      fontSize: 13.5,
-                                      fontWeight: FontWeight.w700,
-                                      color: Color(0xFF0F172A),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    tpl.$2,
-                                    style: const TextStyle(
-                                      fontSize: 12,
-                                      color: Color(0xFF64748B),
-                                    ),
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const Icon(
-                              Icons.chevron_right_rounded,
-                              size: 20,
-                              color: Color(0xFF94A3B8),
-                            ),
-                          ],
+                          color: const Color(0xFFE2E8F0),
+                          borderRadius: BorderRadius.circular(2),
                         ),
                       ),
                     ),
-                  );
-                }),
-              ],
+                    const SizedBox(height: 16),
+                    const Text(
+                      'WhatsApp Quick Templates',
+                      style: TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.w800,
+                        color: Color(0xFF0F172A),
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      'Choose a pre-filled template to send to ${lead.name}',
+                      style: const TextStyle(
+                        fontSize: 12.5,
+                        color: Color(0xFF64748B),
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                    ...templates.map((tpl) {
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 10),
+                        child: InkWell(
+                          onTap: () {
+                            Navigator.pop(ctx);
+                            cubit.logWhatsAppTemplateSent(
+                              leadName: lead.name,
+                              templateTitle: tpl.$1,
+                            );
+                          },
+                          borderRadius: BorderRadius.circular(12),
+                          child: Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF8FAFC),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: const Color(0xFFE2E8F0),
+                              ),
+                            ),
+                            child: Row(
+                              children: [
+                                const Icon(
+                                  Icons.chat_bubble_outline_rounded,
+                                  size: 18,
+                                  color: Color(0xFF15803D),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        tpl.$1,
+                                        style: const TextStyle(
+                                          fontSize: 13.5,
+                                          fontWeight: FontWeight.w700,
+                                          color: Color(0xFF0F172A),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 2),
+                                      Text(
+                                        tpl.$2,
+                                        style: const TextStyle(
+                                          fontSize: 12,
+                                          color: Color(0xFF64748B),
+                                        ),
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const Icon(
+                                  Icons.chevron_right_rounded,
+                                  size: 20,
+                                  color: Color(0xFF94A3B8),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
+                    }),
+                  ],
+                ),
+              ),
             ),
           ),
         ),
       ),
-    ),
-  ),
-);
+    );
   }
 
   // ---------------------------------------------------------------------------

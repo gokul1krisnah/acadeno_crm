@@ -109,6 +109,7 @@ class VisitsTabView extends StatelessWidget {
                                 _handleDirections(context, visit),
                             onRecordOutcome: () =>
                                 _showRecordOutcomeSheet(context, visit),
+                            onDelete: () => _confirmDeleteVisit(context, visit),
                           ),
                         ),
                       ),
@@ -130,9 +131,11 @@ class VisitsTabView extends StatelessWidget {
                           padding: const EdgeInsets.only(bottom: 12),
                           child: _RecentVisitCard(
                             visit: visit,
-                            onDirections: () => _handleDirections(context, visit),
+                            onDirections: () =>
+                                _handleDirections(context, visit),
                             onRecordOutcome: () =>
                                 _showRecordOutcomeSheet(context, visit),
+                            onDelete: () => _confirmDeleteVisit(context, visit),
                           ),
                         ),
                       ),
@@ -373,6 +376,67 @@ class VisitsTabView extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Future<void> _confirmDeleteVisit(
+    BuildContext context,
+    ExecutiveCollegeVisit visit,
+  ) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text(
+          'Delete Visit',
+          style: TextStyle(
+            fontWeight: FontWeight.w800,
+            fontSize: 18,
+            color: Color(0xFF0F172A),
+          ),
+        ),
+        content: Text(
+          'Are you sure you want to remove the visit to ${visit.collegeName}?',
+          style: const TextStyle(
+            fontSize: 14,
+            color: Color(0xFF475467),
+            height: 1.4,
+          ),
+        ),
+        actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text(
+              'Cancel',
+              style: TextStyle(
+                color: Color(0xFF64748B),
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFDC2626),
+              foregroundColor: Colors.white,
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            child: const Text(
+              'Delete',
+              style: TextStyle(fontWeight: FontWeight.w700),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && context.mounted) {
+      await context.read<VisitsCubit>().deleteCollegeVisit(visit.id);
+    }
   }
 
   void _showRecordOutcomeSheet(
@@ -765,11 +829,13 @@ class _UpcomingVisitCard extends StatelessWidget {
   final ExecutiveCollegeVisit visit;
   final VoidCallback onDirections;
   final VoidCallback onRecordOutcome;
+  final VoidCallback? onDelete;
 
   const _UpcomingVisitCard({
     required this.visit,
     required this.onDirections,
     required this.onRecordOutcome,
+    this.onDelete,
   });
 
   @override
@@ -945,62 +1011,91 @@ class _UpcomingVisitCard extends StatelessWidget {
           ),
           const SizedBox(height: 14),
 
-          // Action Buttons Row: Directions | Record outcome
-          Row(
-            children: [
-              Expanded(
-                child: SizedBox(
-                  height: 42,
-                  child: OutlinedButton.icon(
-                    onPressed: onDirections,
-                    icon: const Icon(
-                      Icons.location_on_outlined,
-                      size: 17,
-                      color: Color(0xFF0F172A),
-                    ),
-                    label: const Text(
-                      'Directions',
-                      style: TextStyle(
-                        fontSize: 13.5,
-                        fontWeight: FontWeight.w700,
+          // Action Buttons Row: Delete if Cancelled, otherwise Directions | Record outcome
+          if (visit.statusLabel.toLowerCase() == 'cancelled')
+            SizedBox(
+              height: 42,
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: onDelete,
+                icon: const Icon(
+                  Icons.delete_outline_rounded,
+                  size: 17,
+                  color: Color(0xFFDC2626),
+                ),
+                label: const Text(
+                  'Delete visit',
+                  style: TextStyle(
+                    fontSize: 13.5,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFFDC2626),
+                  ),
+                ),
+                style: OutlinedButton.styleFrom(
+                  backgroundColor: const Color(0xFFFEF2F2),
+                  side: const BorderSide(color: Color(0xFFFECACA)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(11),
+                  ),
+                ),
+              ),
+            )
+          else
+            Row(
+              children: [
+                Expanded(
+                  child: SizedBox(
+                    height: 42,
+                    child: OutlinedButton.icon(
+                      onPressed: onDirections,
+                      icon: const Icon(
+                        Icons.location_on_outlined,
+                        size: 17,
                         color: Color(0xFF0F172A),
                       ),
-                    ),
-                    style: OutlinedButton.styleFrom(
-                      side: const BorderSide(color: Color(0xFFD0D5DD)),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(11),
+                      label: const Text(
+                        'Directions',
+                        style: TextStyle(
+                          fontSize: 13.5,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF0F172A),
+                        ),
+                      ),
+                      style: OutlinedButton.styleFrom(
+                        side: const BorderSide(color: Color(0xFFD0D5DD)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(11),
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: SizedBox(
-                  height: 42,
-                  child: ElevatedButton(
-                    onPressed: onRecordOutcome,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF4338CA),
-                      foregroundColor: Colors.white,
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(11),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: SizedBox(
+                    height: 42,
+                    child: ElevatedButton(
+                      onPressed: onRecordOutcome,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF4338CA),
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(11),
+                        ),
                       ),
-                    ),
-                    child: const Text(
-                      'Record outcome',
-                      style: TextStyle(
-                        fontSize: 13.5,
-                        fontWeight: FontWeight.w700,
+                      child: const Text(
+                        'Record outcome',
+                        style: TextStyle(
+                          fontSize: 13.5,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
-            ],
-          ),
+              ],
+            ),
         ],
       ),
     );
@@ -1011,11 +1106,13 @@ class _RecentVisitCard extends StatelessWidget {
   final ExecutiveCollegeVisit visit;
   final VoidCallback? onDirections;
   final VoidCallback? onRecordOutcome;
+  final VoidCallback? onDelete;
 
   const _RecentVisitCard({
     required this.visit,
     this.onDirections,
     this.onRecordOutcome,
+    this.onDelete,
   });
 
   @override
@@ -1028,12 +1125,13 @@ class _RecentVisitCard extends StatelessWidget {
 
         final matchedDocs = allDocs.where((doc) {
           final data = doc.data();
-          final leadCollege = (data['collegeBranchYear'] ??
-                  data['college'] ??
-                  data['collegeName'] ??
-                  '')
-              .toString()
-              .toLowerCase();
+          final leadCollege =
+              (data['collegeBranchYear'] ??
+                      data['college'] ??
+                      data['collegeName'] ??
+                      '')
+                  .toString()
+                  .toLowerCase();
           return collegeQuery.isNotEmpty &&
               (leadCollege.contains(collegeQuery) ||
                   collegeQuery.contains(leadCollege));
@@ -1041,8 +1139,9 @@ class _RecentVisitCard extends StatelessWidget {
 
         final matchedInterested = matchedDocs.where((doc) {
           final data = doc.data();
-          final outcome =
-              (data['outcome'] ?? data['status'] ?? '').toString().toLowerCase();
+          final outcome = (data['outcome'] ?? data['status'] ?? '')
+              .toString()
+              .toLowerCase();
           final score = (data['score'] as num?)?.toInt() ?? 0;
           return outcome.contains('interest') ||
               outcome.contains('callback') ||
@@ -1058,29 +1157,30 @@ class _RecentVisitCard extends StatelessWidget {
             : (matchedInterested.isNotEmpty ? matchedInterested.length : 0);
 
         final isCancelled = visit.statusLabel.toLowerCase() == 'cancelled';
+        final isCompleted =
+            visit.statusLabel.toLowerCase().contains('complete') ||
+            visit.statusLabel.toLowerCase() == 'done';
         final month = visit.monthShort.isNotEmpty ? visit.monthShort : 'NOV';
         final day = visit.dayNumber.isNotEmpty
             ? (visit.dayNumber.length == 1
-                ? '0${visit.dayNumber}'
-                : visit.dayNumber)
+                  ? '0${visit.dayNumber}'
+                  : visit.dayNumber)
             : '04';
 
         final title = visit.collegeName.isNotEmpty
             ? visit.collegeName
             : 'Campus Visit';
-        final subtitle = visit.subtitle.isNotEmpty
-            ? visit.subtitle
-            : '';
+        final subtitle = visit.subtitle.isNotEmpty ? visit.subtitle : '';
         final met = visit.metSummary.isNotEmpty
             ? visit.metSummary
             : (isCancelled
-                ? 'Visit cancelled by executive'
-                : 'Meeting completed with college coordinators.');
+                  ? 'Visit cancelled by executive'
+                  : 'Meeting completed with college coordinators.');
         final next = visit.nextActionSummary.isNotEmpty
             ? visit.nextActionSummary
             : (isCancelled
-                ? 'None'
-                : 'Follow up with faculty & registered students.');
+                  ? 'None'
+                  : 'Follow up with faculty & registered students.');
 
         return Center(
           child: Container(
@@ -1201,81 +1301,125 @@ class _RecentVisitCard extends StatelessWidget {
                     ),
                     const SizedBox(width: 8),
 
-                    // Direction & Outcome Buttons
+                    // Direction & Outcome or Delete Button
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
-                        Material(
-                          color: Colors.transparent,
-                          child: InkWell(
-                            onTap: onDirections ??
-                                () => LinkLauncher.launchCollegeMapsDirections(
-                                      visit.collegeName,
-                                      locationHint: visit.subtitle,
-                                    ),
-                            borderRadius: BorderRadius.circular(10),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 10,
-                                vertical: 6,
-                              ),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFEEF2FF),
+                        if (isCancelled) ...[
+                          if (onDelete != null)
+                            Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                onTap: onDelete,
                                 borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: const Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(
-                                    Icons.directions_rounded,
-                                    size: 14,
-                                    color: Color(0xFF4F46E5),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 10,
+                                    vertical: 6,
                                   ),
-                                  SizedBox(width: 4),
-                                  Text(
-                                    'Direction',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w700,
-                                      color: Color(0xFF4F46E5),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFFEF2F2),
+                                    borderRadius: BorderRadius.circular(10),
+                                    border: Border.all(
+                                      color: const Color(0xFFFECACA),
                                     ),
                                   ),
-                                ],
+                                  child: const Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        Icons.delete_outline_rounded,
+                                        size: 14,
+                                        color: Color(0xFFDC2626),
+                                      ),
+                                      SizedBox(width: 4),
+                                      Text(
+                                        'Delete',
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w700,
+                                          color: Color(0xFFDC2626),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
                               ),
                             ),
-                          ),
-                        ),
-                        if (onRecordOutcome != null) ...[
-                          const SizedBox(height: 6),
+                        ] else if (isCompleted) ...[
+                          if (onRecordOutcome != null)
+                            Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                onTap: onRecordOutcome,
+                                borderRadius: BorderRadius.circular(10),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 10,
+                                    vertical: 6,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFF1F5F9),
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: const Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        Icons.edit_note_rounded,
+                                        size: 14,
+                                        color: Color(0xFF334155),
+                                      ),
+                                      SizedBox(width: 4),
+                                      Text(
+                                        'Outcome',
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w700,
+                                          color: Color(0xFF334155),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                        ] else ...[
                           Material(
                             color: Colors.transparent,
                             child: InkWell(
-                              onTap: onRecordOutcome,
+                              onTap:
+                                  onDirections ??
+                                  () =>
+                                      LinkLauncher.launchCollegeMapsDirections(
+                                        visit.collegeName,
+                                        locationHint: visit.subtitle,
+                                      ),
                               borderRadius: BorderRadius.circular(10),
                               child: Container(
                                 padding: const EdgeInsets.symmetric(
-                                  horizontal: 9,
+                                  horizontal: 10,
                                   vertical: 6,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFFF1F5F9),
+                                  color: const Color(0xFFEEF2FF),
                                   borderRadius: BorderRadius.circular(10),
                                 ),
                                 child: const Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     Icon(
-                                      Icons.edit_note_rounded,
+                                      Icons.directions_rounded,
                                       size: 14,
-                                      color: Color(0xFF334155),
+                                      color: Color(0xFF4F46E5),
                                     ),
-                                    SizedBox(width: 3),
+                                    SizedBox(width: 4),
                                     Text(
-                                      'Outcome',
+                                      'Direction',
                                       style: TextStyle(
-                                        fontSize: 11.5,
+                                        fontSize: 12,
                                         fontWeight: FontWeight.w700,
-                                        color: Color(0xFF334155),
+                                        color: Color(0xFF4F46E5),
                                       ),
                                     ),
                                   ],
@@ -1283,6 +1427,45 @@ class _RecentVisitCard extends StatelessWidget {
                               ),
                             ),
                           ),
+                          if (onRecordOutcome != null) ...[
+                            const SizedBox(height: 6),
+                            Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                onTap: onRecordOutcome,
+                                borderRadius: BorderRadius.circular(10),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 9,
+                                    vertical: 6,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFF1F5F9),
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: const Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        Icons.edit_note_rounded,
+                                        size: 14,
+                                        color: Color(0xFF334155),
+                                      ),
+                                      SizedBox(width: 3),
+                                      Text(
+                                        'Outcome',
+                                        style: TextStyle(
+                                          fontSize: 11.5,
+                                          fontWeight: FontWeight.w700,
+                                          color: Color(0xFF334155),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
                         ],
                       ],
                     ),

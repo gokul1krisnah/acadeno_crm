@@ -1189,7 +1189,7 @@ class FirestoreLeadsBackend implements LeadsBackend {
             'followUpTime': (followUpTime != null && followUpTime.isNotEmpty)
                 ? followUpTime
                 : 'Tomorrow · 10:30 AM',
-          if (outcome == 'No answer') 'followUpTime': 'Today · 4:30 PM',
+          if (outcome == 'No answer') 'followUpTime': 'Today · 4:00 PM',
           if (outcome == 'Interested')
             'followUpTime': (followUpTime != null && followUpTime.isNotEmpty)
                 ? followUpTime
@@ -1253,7 +1253,7 @@ class FirestoreLeadsBackend implements LeadsBackend {
               else if (outcome == 'Follow-up' || outcome == 'Callback')
                 'followUpTime': 'Tomorrow · 10:30 AM'
               else if (outcome == 'No answer')
-                'followUpTime': 'Today · 4:30 PM'
+                'followUpTime': 'Today · 4:00 PM'
               else if (outcome == 'Interested')
                 'followUpTime': 'Today · 5:30 PM',
               if (notes.trim().isNotEmpty) 'notes': notes.trim(),
@@ -1295,8 +1295,8 @@ class FirestoreLeadsBackend implements LeadsBackend {
             'notes': notes.trim().isEmpty
                 ? 'Logged $outcome outcome'
                 : notes.trim(),
-            if (courseEnrolled != null) 'courseEnrolled': courseEnrolled,
-            if (discountAmount != null) 'discountAmount': discountAmount,
+            'courseEnrolled': ?courseEnrolled,
+            'discountAmount': ?discountAmount,
             'createdAt': FieldValue.serverTimestamp(),
           }, SetOptions(merge: true))
           .timeout(const Duration(milliseconds: 1500));
@@ -1621,5 +1621,3 @@ class FirestoreLeadsBackend implements LeadsBackend {
     );
   }
 }
-
-

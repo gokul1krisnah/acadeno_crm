@@ -161,16 +161,18 @@ class AppNotificationService {
 
       // 4. Retrieve FCM device token with fast timeout so offline startup never hangs
       try {
-        _fcmToken = await _fcm.getToken().timeout(
+        final tokenFuture = _fcm.onRegistered.first;
+        await _fcm.register();
+        _fcmToken = await tokenFuture.timeout(
           const Duration(milliseconds: 1000),
         );
         debugPrint('FCM Device Token: $_fcmToken');
       } catch (e) {
-        debugPrint('FCM getToken notice (offline or skipped): $e');
+        debugPrint('FCM register notice (offline or skipped): $e');
       }
 
       // 5. Listen to token refresh events
-      _fcm.onTokenRefresh.listen((newToken) {
+      _fcm.onRegistered.listen((newToken) {
         _fcmToken = newToken;
         syncCurrentUserToken();
       });
@@ -345,7 +347,15 @@ class AppNotificationService {
   Future<void> syncUserFcmToken(String uid) async {
     if (_fcmToken == null || _fcmToken!.isEmpty) {
       try {
-        _fcmToken = await _fcm.getToken();
+        final tokenFuture = _fcm.onRegistered.first;
+        await _fcm.register();
+        _fcmToken = await tokenFuture.timeout(
+          const Duration(seconds: 3),
+          onTimeout: () => _fcmToken ?? '',
+        );
+        if (_fcmToken?.isEmpty ?? true) {
+          _fcmToken = null;
+        }
       } catch (_) {}
     }
 
@@ -367,7 +377,15 @@ class AppNotificationService {
   /// Forces a fresh FCM device token retrieval and syncs it with Firestore.
   Future<String?> refreshToken() async {
     try {
-      _fcmToken = await _fcm.getToken();
+      final tokenFuture = _fcm.onRegistered.first;
+      await _fcm.register();
+      _fcmToken = await tokenFuture.timeout(
+        const Duration(seconds: 5),
+        onTimeout: () => _fcmToken ?? '',
+      );
+      if (_fcmToken?.isEmpty ?? true) {
+        _fcmToken = null;
+      }
       await syncCurrentUserToken();
       return _fcmToken;
     } catch (e) {

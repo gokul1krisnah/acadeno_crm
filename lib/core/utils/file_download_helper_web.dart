@@ -1,5 +1,5 @@
-// ignore_for_file: avoid_web_libraries_in_flutter
-import 'dart:html' as html;
+import 'dart:js_interop';
+import 'package:web/web.dart' as web;
 
 Future<bool> downloadCsv({
   required String fileName,
@@ -9,16 +9,20 @@ Future<bool> downloadCsv({
     // Prepended UTF-8 BOM string (\uFEFF) ensures Excel natively opens the CSV with proper UTF-8 charset
     // and eliminates binary Blob array-coercion issues across browsers.
     final bomContent = '\uFEFF$content';
-    final blob = html.Blob([bomContent], 'text/csv;charset=utf-8');
-    final url = html.Url.createObjectUrlFromBlob(blob);
-    final anchor = html.AnchorElement(href: url)
+    final blob = web.Blob(
+      [bomContent.toJS].toJS,
+      web.BlobPropertyBag(type: 'text/csv;charset=utf-8'),
+    );
+    final url = web.URL.createObjectURL(blob);
+    final anchor = web.HTMLAnchorElement()
+      ..href = url
       ..setAttribute('download', fileName)
       ..style.display = 'none';
 
-    html.document.body?.children.add(anchor);
+    web.document.body?.appendChild(anchor);
     anchor.click();
-    html.document.body?.children.remove(anchor);
-    html.Url.revokeObjectUrl(url);
+    web.document.body?.removeChild(anchor);
+    web.URL.revokeObjectURL(url);
     return true;
   } catch (e) {
     return false;

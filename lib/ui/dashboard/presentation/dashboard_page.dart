@@ -265,7 +265,8 @@ class _DashboardViewState extends State<_DashboardView> {
               builder: (context, c) {
                 final showSidebar = c.maxWidth >= 960;
                 final wide = c.maxWidth >= 960;
-                final isMobile = MediaQuery.of(context).size.width < 768 || c.maxWidth < 680;
+                final isMobile =
+                    MediaQuery.of(context).size.width < 768 || c.maxWidth < 680;
                 final pad = context.devicePadding;
 
                 return Scaffold(
@@ -334,7 +335,9 @@ class _DashboardViewState extends State<_DashboardView> {
                                           height: 40,
                                           decoration: BoxDecoration(
                                             color: const Color(0xFFF9FAFB),
-                                            borderRadius: BorderRadius.circular(12),
+                                            borderRadius: BorderRadius.circular(
+                                              12,
+                                            ),
                                             border: Border.all(
                                               color: const Color(0xFFF3F4F6),
                                               width: 1,
@@ -497,7 +500,9 @@ class _DashboardViewState extends State<_DashboardView> {
                                 else if (state.selectedNavIndex == 6)
                                   const TeamManagementView()
                                 else if (state.selectedNavIndex == 7)
-                                  const UserManagementView()
+                                  UserManagementView(
+                                    onOpenSettings: () => cubit.selectNav(8),
+                                  )
                                 else if (state.selectedNavIndex == 8)
                                   SettingsView(onLogout: _logout),
                               ],
@@ -727,7 +732,6 @@ class _DashboardViewState extends State<_DashboardView> {
                     ),
                   ),
                 ),
-
               ],
             ),
           ),
@@ -2332,6 +2336,7 @@ class _CollegeVisits extends StatelessWidget {
                 onTap: onPlanVisit,
                 borderRadius: BorderRadius.circular(8),
                 child: Container(
+                  alignment: Alignment.center,
                   padding: const EdgeInsets.symmetric(
                     horizontal: 12,
                     vertical: 6,
@@ -2342,6 +2347,7 @@ class _CollegeVisits extends StatelessWidget {
                   ),
                   child: const Text(
                     'Plan Visit',
+                    textAlign: TextAlign.center,
                     style: TextStyle(
                       color: _primary,
                       fontSize: 12,

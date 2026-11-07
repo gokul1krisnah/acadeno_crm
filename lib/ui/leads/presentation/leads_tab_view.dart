@@ -3,7 +3,6 @@ import 'package:acadeno_crm/shared/theme/app_svgs.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:acadeno_crm/core/services/app_phone_call_service.dart';
 import 'package:acadeno_crm/core/services/offline_queue_service.dart';
-import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -56,11 +55,7 @@ class _LeadsTabViewState extends State<LeadsTabView> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                SvgPicture.asset(
-                  AppSvgs.logout,
-                  width: 18,
-                  height: 18,
-                ),
+                SvgPicture.asset(AppSvgs.logout, width: 18, height: 18),
                 const SizedBox(width: 8),
                 const Text('Log Out'),
               ],
@@ -118,10 +113,10 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                     ? [
                         BoxShadow(
                           color: const Color(
-                            0xFF4338CA,
-                          ).withValues(alpha: 0.08 * _scrollProgress),
-                          blurRadius: 16 * _scrollProgress,
-                          offset: Offset(0, 6 * _scrollProgress),
+                            0xFF0F172A,
+                          ).withValues(alpha: 0.06 * _scrollProgress),
+                          blurRadius: 10 * _scrollProgress,
+                          offset: Offset(0, 3 * _scrollProgress),
                         ),
                       ]
                     : null,
@@ -249,8 +244,9 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                           bgColor: const Color(0xFFEEF2FF),
                           valueColor: const Color(0xFF4338CA),
                           labelColor: const Color(0xFF6366F1),
-                          onTap: () =>
-                              cubit.togglePendingOrDoneCalls(!state.showingPendingCalls ? true : false),
+                          onTap: () => cubit.togglePendingOrDoneCalls(
+                            !state.showingPendingCalls ? true : false,
+                          ),
                         ),
                       ),
                       const SizedBox(width: 10),
@@ -425,8 +421,9 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                             onTap: () => AppPhoneCallService
                                                 .instance
                                                 .dialLead(context, due),
-                                            borderRadius:
-                                                BorderRadius.circular(26),
+                                            borderRadius: BorderRadius.circular(
+                                              26,
+                                            ),
                                             child: Container(
                                               width: 52,
                                               height: 52,
@@ -554,7 +551,9 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                 Expanded(
                                   child: InkWell(
                                     onTap: () =>
-                                        LeadCallSheets.showMyRecordSheet(context),
+                                        LeadCallSheets.showMyRecordSheet(
+                                          context,
+                                        ),
                                     borderRadius: BorderRadius.circular(16),
                                     child: Container(
                                       height: 38,
@@ -635,23 +634,37 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                       alignment: Alignment.centerRight,
                                       child: Container(
                                         decoration: BoxDecoration(
-                                          color: const Color(0xFFE2E8F0).withValues(alpha: 0.6),
-                                          borderRadius: BorderRadius.circular(10),
+                                          color: const Color(
+                                            0xFFE2E8F0,
+                                          ).withValues(alpha: 0.6),
+                                          borderRadius: BorderRadius.circular(
+                                            10,
+                                          ),
                                         ),
                                         padding: const EdgeInsets.all(3),
                                         child: Row(
                                           mainAxisSize: MainAxisSize.min,
                                           children: [
                                             _CallTabPill(
-                                              label: 'Pending (${state.pendingLeads.length})',
-                                              isSelected: state.showingPendingCalls,
-                                              onTap: () => cubit.togglePendingOrDoneCalls(true),
+                                              label:
+                                                  'Pending (${state.pendingLeads.length})',
+                                              isSelected:
+                                                  state.showingPendingCalls,
+                                              onTap: () => cubit
+                                                  .togglePendingOrDoneCalls(
+                                                    true,
+                                                  ),
                                             ),
                                             const SizedBox(width: 4),
                                             _CallTabPill(
-                                              label: 'Completed (${state.doneLeads.length})',
-                                              isSelected: !state.showingPendingCalls,
-                                              onTap: () => cubit.togglePendingOrDoneCalls(false),
+                                              label:
+                                                  'Completed (${state.doneLeads.length})',
+                                              isSelected:
+                                                  !state.showingPendingCalls,
+                                              onTap: () => cubit
+                                                  .togglePendingOrDoneCalls(
+                                                    false,
+                                                  ),
                                             ),
                                           ],
                                         ),
@@ -764,8 +777,7 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                 ),
                                 child: Column(
                                   mainAxisSize: MainAxisSize.min,
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
                                   children: [
                                     // Top Icon Container
                                     Container(
@@ -773,8 +785,7 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                       height: 48,
                                       decoration: BoxDecoration(
                                         color: const Color(0xFFF9FAFB),
-                                        borderRadius:
-                                            BorderRadius.circular(12),
+                                        borderRadius: BorderRadius.circular(12),
                                       ),
                                       alignment: Alignment.center,
                                       child: SvgPicture.asset(
@@ -830,16 +841,12 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                               child: DecoratedBox(
                                                 decoration: BoxDecoration(
                                                   borderRadius:
-                                                      BorderRadius.circular(
-                                                        12,
-                                                      ),
+                                                      BorderRadius.circular(12),
                                                   boxShadow: [
                                                     BoxShadow(
                                                       color: const Color(
                                                         0xFFD35501,
-                                                      ).withValues(
-                                                        alpha: 0.32,
-                                                      ),
+                                                      ).withValues(alpha: 0.32),
                                                       blurRadius: 16,
                                                       offset: const Offset(
                                                         0,
@@ -855,9 +862,7 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                                       ),
                                                   style: ElevatedButton.styleFrom(
                                                     backgroundColor:
-                                                        const Color(
-                                                          0xFFD35501,
-                                                        ),
+                                                        const Color(0xFFD35501),
                                                     foregroundColor:
                                                         Colors.white,
                                                     elevation: 0,
@@ -908,10 +913,8 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                                           style: TextStyle(
                                                             fontSize: 12,
                                                             fontWeight:
-                                                                FontWeight
-                                                                    .w700,
-                                                            color:
-                                                                Colors.white,
+                                                                FontWeight.w700,
+                                                            color: Colors.white,
                                                             height: 1.15,
                                                           ),
                                                         ),
@@ -927,7 +930,9 @@ class _LeadsTabViewState extends State<LeadsTabView> {
 
                                         // Refresh Button (Figma: flex 5, height 44, radius 12, border 1px #F3F4F6)
                                         Expanded(
-                                          flex: state.showingPendingCalls ? 1 : 5,
+                                          flex: state.showingPendingCalls
+                                              ? 1
+                                              : 5,
                                           child: SizedBox(
                                             height: 44,
                                             child: OutlinedButton(
@@ -952,9 +957,7 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                                     ),
                                                 shape: RoundedRectangleBorder(
                                                   borderRadius:
-                                                      BorderRadius.circular(
-                                                        12,
-                                                      ),
+                                                      BorderRadius.circular(12),
                                                 ),
                                               ),
                                               child: FittedBox(
@@ -1026,34 +1029,28 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                       ),
                     ),
                   ),
-                  // Top Frosted Glass Blur & Fade Overlay when scrolling
+                  // Top Ambient Shade Overlay when scrolling (Smooth gradient shade without cutting)
                   if (_scrollProgress > 0.01)
                     Positioned(
                       top: 0,
                       left: 0,
                       right: 0,
-                      height: 26,
+                      height: 24,
                       child: IgnorePointer(
-                        child: ClipRect(
-                          child: BackdropFilter(
-                            filter: ImageFilter.blur(
-                              sigmaX: 6.0 * _scrollProgress,
-                              sigmaY: 6.0 * _scrollProgress,
-                            ),
-                            child: Container(
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  begin: Alignment.topCenter,
-                                  end: Alignment.bottomCenter,
-                                  colors: [
-                                    const Color(
-                                      0xFFF5F6FA,
-                                    ).withValues(alpha: 0.90 * _scrollProgress),
-                                    const Color(
-                                      0xFFF5F6FA,
-                                    ).withValues(alpha: 0.0),
-                                  ],
-                                ),
+                        child: Opacity(
+                          opacity: _scrollProgress.clamp(0.0, 1.0),
+                          child: Container(
+                            decoration: const BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                                stops: [0.0, 0.35, 0.70, 1.0],
+                                colors: [
+                                  Color(0x18000000),
+                                  Color(0x0A000000),
+                                  Color(0x03000000),
+                                  Colors.transparent,
+                                ],
                               ),
                             ),
                           ),
@@ -1068,8 +1065,6 @@ class _LeadsTabViewState extends State<LeadsTabView> {
       },
     );
   }
-
-
 }
 
 class _MetricBox extends StatelessWidget {
@@ -1135,7 +1130,6 @@ class _MetricBox extends StatelessWidget {
     );
   }
 }
-
 
 class _TodayLeadCard extends StatelessWidget {
   final ExecutiveLeadItem item;
@@ -1307,7 +1301,6 @@ class _TodayLeadCard extends StatelessWidget {
   }
 }
 
-
 class _CallTabPill extends StatelessWidget {
   final String label;
   final bool isSelected;
@@ -1345,7 +1338,9 @@ class _CallTabPill extends StatelessWidget {
           style: TextStyle(
             fontSize: 11.5,
             fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
-            color: isSelected ? const Color(0xFF0F172A) : const Color(0xFF64748B),
+            color: isSelected
+                ? const Color(0xFF0F172A)
+                : const Color(0xFF64748B),
           ),
         ),
       ),

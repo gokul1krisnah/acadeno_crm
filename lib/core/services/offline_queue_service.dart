@@ -482,7 +482,7 @@ class OfflineQueueService {
         'lockedMessage': null,
         if (item.outcome == 'Follow-up' || item.outcome == 'Callback')
           'followUpTime': 'Tomorrow · 10:30 AM',
-        if (item.outcome == 'No answer') 'followUpTime': 'Today · 4:30 PM',
+        if (item.outcome == 'No answer') 'followUpTime': 'Today · 4:00 PM',
         if (item.outcome == 'Interested') 'followUpTime': 'Today · 5:30 PM',
         if (item.notes.trim().isNotEmpty) 'notes': item.notes.trim(),
         'updatedAt': FieldValue.serverTimestamp(),

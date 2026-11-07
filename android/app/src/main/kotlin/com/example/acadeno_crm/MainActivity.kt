@@ -178,7 +178,7 @@ class MainActivity : FlutterActivity() {
                     // Only match outgoing calls placed during this dialing session
                     val isOutgoing = (callType == CallLog.Calls.OUTGOING_TYPE)
                     val isRecent = if (afterTimestamp > 0) {
-                        callDate >= (afterTimestamp - 3000L)
+                        callDate >= (afterTimestamp - 15000L)
                     } else {
                         System.currentTimeMillis() - callDate <= 900000L
                     }

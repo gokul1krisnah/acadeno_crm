@@ -442,6 +442,77 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
     );
   }
 
+  Future<void> _confirmDeleteVisit(
+    BuildContext context,
+    _CollegeVisit visit,
+  ) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text(
+          'Delete Visit',
+          style: TextStyle(
+            fontWeight: FontWeight.w800,
+            fontSize: 18,
+            color: Color(0xFF0F172A),
+          ),
+        ),
+        content: Text(
+          'Are you sure you want to remove the visit to ${visit.collegeName}?',
+          style: const TextStyle(
+            fontSize: 14,
+            color: Color(0xFF475467),
+            height: 1.4,
+          ),
+        ),
+        actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text(
+              'Cancel',
+              style: TextStyle(
+                color: Color(0xFF64748B),
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFDC2626),
+              foregroundColor: Colors.white,
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            child: const Text(
+              'Delete',
+              style: TextStyle(fontWeight: FontWeight.w700),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && context.mounted) {
+      try {
+        await _visitsCollection.doc(visit.id).delete();
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Visit to ${visit.collegeName} deleted'),
+              backgroundColor: const Color(0xFFDC2626),
+            ),
+          );
+        }
+      } catch (_) {}
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
@@ -499,7 +570,8 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
           children: [
             LayoutBuilder(
               builder: (context, c) {
-                final isMobile = MediaQuery.of(context).size.width < 768 || c.maxWidth < 640;
+                final isMobile =
+                    MediaQuery.of(context).size.width < 768 || c.maxWidth < 640;
                 final titleCol = Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -529,8 +601,12 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
                   child: ElevatedButton.icon(
                     onPressed: _showPlanVisitDialog,
                     icon: const Icon(Icons.add, size: 16),
-                    label: const Text('Plan college visit'),
+                    label: const Text(
+                      'Plan college visit',
+                      textAlign: TextAlign.center,
+                    ),
                     style: ElevatedButton.styleFrom(
+                      alignment: Alignment.center,
                       backgroundColor: const Color(0xFFEF8144),
                       foregroundColor: Colors.white,
                       elevation: 0,
@@ -570,6 +646,7 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
 
             ...visits.map((visit) {
               final isCompleted = visit.status == 'Completed';
+              final isCancelled = visit.status == 'Cancelled';
 
               return Container(
                 width: double.infinity,
@@ -610,7 +687,9 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
                             decoration: BoxDecoration(
                               color: isCompleted
                                   ? const Color(0xFFECFDF5)
-                                  : const Color(0xFFFFF7ED),
+                                  : (isCancelled
+                                        ? const Color(0xFFFEF2F2)
+                                        : const Color(0xFFFFF7ED)),
                               borderRadius: BorderRadius.circular(20),
                             ),
                             child: Text(
@@ -620,7 +699,9 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
                                 fontWeight: FontWeight.w700,
                                 color: isCompleted
                                     ? const Color(0xFF059669)
-                                    : const Color(0xFFEA580C),
+                                    : (isCancelled
+                                          ? const Color(0xFFDC2626)
+                                          : const Color(0xFFEA580C)),
                               ),
                             ),
                           );
@@ -630,66 +711,99 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
                             runSpacing: 8,
                             crossAxisAlignment: WrapCrossAlignment.center,
                             children: [
-                              OutlinedButton.icon(
-                                onPressed: () =>
-                                    LinkLauncher.launchCollegeMapsDirections(
-                                      visit.collegeName,
+                              if (isCancelled)
+                                OutlinedButton.icon(
+                                  onPressed: () =>
+                                      _confirmDeleteVisit(context, visit),
+                                  icon: const Icon(
+                                    Icons.delete_outline_rounded,
+                                    size: 14,
+                                    color: Color(0xFFDC2626),
+                                  ),
+                                  label: const Text(
+                                    'Delete',
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w600,
+                                      color: Color(0xFFDC2626),
                                     ),
-                                icon: const Icon(
-                                  Icons.near_me_rounded,
-                                  size: 14,
-                                  color: Color(0xFF4F46E5),
-                                ),
-                                label: const Text(
-                                  'Directions',
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w600,
-                                    color: Color(0xFF4F46E5),
+                                  ),
+                                  style: OutlinedButton.styleFrom(
+                                    visualDensity: VisualDensity.compact,
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 16,
+                                      vertical: 10,
+                                    ),
+                                    side: const BorderSide(
+                                      color: Color(0xFFFECACA),
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    backgroundColor: const Color(0xFFFEF2F2),
+                                  ),
+                                )
+                              else ...[
+                                if (!isCompleted)
+                                  OutlinedButton.icon(
+                                    onPressed: () =>
+                                        LinkLauncher.launchCollegeMapsDirections(
+                                          visit.collegeName,
+                                        ),
+                                    icon: const Icon(
+                                      Icons.near_me_rounded,
+                                      size: 14,
+                                      color: Color(0xFF4F46E5),
+                                    ),
+                                    label: const Text(
+                                      'Directions',
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w600,
+                                        color: Color(0xFF4F46E5),
+                                      ),
+                                    ),
+                                    style: OutlinedButton.styleFrom(
+                                      visualDensity: VisualDensity.compact,
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 16,
+                                        vertical: 10,
+                                      ),
+                                      side: const BorderSide(
+                                        color: Color(0xFFE2E8F0),
+                                      ),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(20),
+                                      ),
+                                      backgroundColor: Colors.white,
+                                    ),
+                                  ),
+                                OutlinedButton(
+                                  onPressed: () => _showLogOutcomeDialog(visit),
+                                  style: OutlinedButton.styleFrom(
+                                    visualDensity: VisualDensity.compact,
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 16,
+                                      vertical: 10,
+                                    ),
+                                    side: const BorderSide(
+                                      color: Color(0xFFE2E8F0),
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    backgroundColor: Colors.white,
+                                  ),
+                                  child: Text(
+                                    isCompleted ? 'Outcome' : 'Log outcome',
+                                    style: const TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w600,
+                                      color: Color(0xFF475467),
+                                    ),
                                   ),
                                 ),
-                                style: OutlinedButton.styleFrom(
-                                  visualDensity: VisualDensity.compact,
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 16,
-                                    vertical: 10,
-                                  ),
-                                  side: const BorderSide(
-                                    color: Color(0xFFE2E8F0),
-                                  ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(20),
-                                  ),
-                                  backgroundColor: Colors.white,
-                                ),
-                              ),
-                              OutlinedButton(
-                                onPressed: () => _showLogOutcomeDialog(visit),
-                                style: OutlinedButton.styleFrom(
-                                  visualDensity: VisualDensity.compact,
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 16,
-                                    vertical: 10,
-                                  ),
-                                  side: const BorderSide(
-                                    color: Color(0xFFE2E8F0),
-                                  ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(20),
-                                  ),
-                                  backgroundColor: Colors.white,
-                                ),
-                                child: Text(
-                                  isCompleted
-                                      ? 'Update outcome'
-                                      : 'Log outcome',
-                                  style: const TextStyle(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w600,
-                                    color: Color(0xFF475467),
-                                  ),
-                                ),
-                              ),
+                              ],
                             ],
                           );
 

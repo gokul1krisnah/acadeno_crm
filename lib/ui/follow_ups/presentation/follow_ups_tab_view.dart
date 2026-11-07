@@ -3,6 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:acadeno_crm/shared/theme/app_svgs.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl/intl.dart';
 
 import 'package:acadeno_crm/shared/extensions/build_context_extension.dart';
 import 'package:acadeno_crm/core/services/app_phone_call_service.dart';
@@ -89,7 +90,9 @@ class _FollowUpsTabViewState extends State<FollowUpsTabView> {
                                 state.selectedFollowUpBucket ==
                                 FollowUpBucket.overdue,
                             onTap: () {
-                              cubit.selectFollowUpBucket(FollowUpBucket.overdue);
+                              cubit.selectFollowUpBucket(
+                                FollowUpBucket.overdue,
+                              );
                               _pageController.animateToPage(
                                 0,
                                 duration: const Duration(milliseconds: 280),
@@ -121,7 +124,9 @@ class _FollowUpsTabViewState extends State<FollowUpsTabView> {
                                 state.selectedFollowUpBucket ==
                                 FollowUpBucket.upcoming,
                             onTap: () {
-                              cubit.selectFollowUpBucket(FollowUpBucket.upcoming);
+                              cubit.selectFollowUpBucket(
+                                FollowUpBucket.upcoming,
+                              );
                               _pageController.animateToPage(
                                 2,
                                 duration: const Duration(milliseconds: 280),
@@ -232,6 +237,17 @@ class _FollowUpsTabViewState extends State<FollowUpsTabView> {
 
   void _showSnoozeSheet(BuildContext context, ExecutiveFollowUpItem item) {
     final cubit = context.read<FollowUpsCubit>();
+    final now = DateTime.now();
+    final inOneHour = now.add(const Duration(hours: 1));
+    final oneHourFormatted = DateFormat('h:mm a').format(inOneHour);
+    final inOneHourDay = inOneHour.day == now.day ? 'Today' : 'Tomorrow';
+    final oneHourLabel = '$inOneHourDay · $oneHourFormatted';
+
+    const eveningFormatted = '4:00 PM';
+    const eveningLabel = 'Today · $eveningFormatted';
+
+    const tomorrowLabel = 'Tomorrow · 10:00 AM';
+
     showDialog(
       context: context,
       builder: (ctx) => Dialog(
@@ -265,13 +281,17 @@ class _FollowUpsTabViewState extends State<FollowUpsTabView> {
                     CupertinoIcons.clock,
                     color: Color(0xFFE86938),
                   ),
-                  title: const Text(
-                    'In 1 hour (Today · 4:30 PM)',
-                    style: TextStyle(fontWeight: FontWeight.w600),
+                  title: Text(
+                    'In 1 hour ($oneHourLabel)',
+                    style: const TextStyle(fontWeight: FontWeight.w600),
                   ),
                   onTap: () {
                     Navigator.pop(ctx);
-                    cubit.snoozeFollowUp(item.id, '4:30 PM');
+                    cubit.snoozeFollowUp(
+                      item.id,
+                      oneHourLabel,
+                      moveToUpcoming: inOneHourDay == 'Tomorrow',
+                    );
                   },
                 ),
                 ListTile(
@@ -281,12 +301,12 @@ class _FollowUpsTabViewState extends State<FollowUpsTabView> {
                     color: Color(0xFFE86938),
                   ),
                   title: const Text(
-                    'This evening (Today · 6:30 PM)',
+                    'This evening (Today · 4:00 PM)',
                     style: TextStyle(fontWeight: FontWeight.w600),
                   ),
                   onTap: () {
                     Navigator.pop(ctx);
-                    cubit.snoozeFollowUp(item.id, '6:30 PM');
+                    cubit.snoozeFollowUp(item.id, eveningLabel);
                   },
                 ),
                 ListTile(
@@ -303,7 +323,7 @@ class _FollowUpsTabViewState extends State<FollowUpsTabView> {
                     Navigator.pop(ctx);
                     cubit.snoozeFollowUp(
                       item.id,
-                      'Tomorrow · 10:00 AM',
+                      tomorrowLabel,
                       moveToUpcoming: true,
                     );
                   },
@@ -392,10 +412,7 @@ class _FollowUpCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: const Color(0xFFF1F5F9),
-          width: 1.2,
-        ),
+        border: Border.all(color: const Color(0xFFF1F5F9), width: 1.2),
         boxShadow: const [
           BoxShadow(
             color: Color(0x05000000),
@@ -427,7 +444,9 @@ class _FollowUpCard extends StatelessWidget {
               ),
               const SizedBox(width: 10),
               Text(
-                item.timeLabel.isNotEmpty ? item.timeLabel : 'Today · 5:30 PM',
+                item.timeLabel.isNotEmpty
+                    ? item.timeLabel
+                    : 'Today · ${DateFormat('h:mm a').format(DateTime.now())}',
                 style: const TextStyle(
                   fontSize: 12.5,
                   fontWeight: FontWeight.w700,

@@ -50,7 +50,9 @@ class _ImportLeadsBodyState extends State<_ImportLeadsBody> {
       builder: (context, state) {
         return LayoutBuilder(
           builder: (context, constraints) {
-            final isMobile = MediaQuery.of(context).size.width < 768 || constraints.maxWidth < 720;
+            final isMobile =
+                MediaQuery.of(context).size.width < 768 ||
+                constraints.maxWidth < 720;
 
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -80,17 +82,35 @@ class _ImportLeadsBodyState extends State<_ImportLeadsBody> {
                       ],
                     );
 
-                    final resetBtn = (state.currentStep == 2 || state.currentStep == 3)
+                    final resetBtn =
+                        (state.currentStep == 2 || state.currentStep == 3)
                         ? OutlinedButton.icon(
                             style: OutlinedButton.styleFrom(
-                              foregroundColor: const Color(0xFF4338CA),
-                              side: const BorderSide(color: Color(0xFFC7D2FE)),
+                              foregroundColor: const Color(0xFF344054),
+                              side: const BorderSide(color: Color(0xFFD0D5DD)),
+                              backgroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 10,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20),
+                              ),
                             ),
-                            onPressed: () => context.read<LeadImportCubit>().reset(),
-                            icon: const Icon(Icons.refresh_rounded, size: 16),
+                            onPressed: () =>
+                                context.read<LeadImportCubit>().reset(),
+                            icon: const Icon(
+                              Icons.sync_rounded,
+                              size: 16,
+                              color: Color(0xFF344054),
+                            ),
                             label: const Text(
                               'Start New Import',
-                              style: TextStyle(fontSize: 12.5),
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: Color(0xFF344054),
+                              ),
                             ),
                           )
                         : null;
@@ -206,10 +226,10 @@ class _ImportLeadsBodyState extends State<_ImportLeadsBody> {
     Widget circleChild;
 
     if (isCompleted) {
-      circleBg = const Color(0xFF15803D);
+      circleBg = const Color(0xFF227845);
       circleChild = const Icon(Icons.check, size: 15, color: Colors.white);
     } else if (isActive) {
-      circleBg = const Color(0xFF4338CA);
+      circleBg = const Color(0xFF1E1B8A);
       circleChild = Text(
         '$stepNumber',
         style: const TextStyle(
@@ -219,28 +239,34 @@ class _ImportLeadsBodyState extends State<_ImportLeadsBody> {
         ),
       );
     } else {
-      circleBg = const Color(0xFFE4E7EC);
+      circleBg = const Color(0xFFCBD5E1);
       circleChild = Text(
         '$stepNumber',
         style: const TextStyle(
           fontSize: 12.5,
           fontWeight: FontWeight.w700,
-          color: Color(0xFF475467),
+          color: Color(0xFF64748B),
         ),
       );
     }
 
+    final isInactive = !isCompleted && !isActive;
+
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(14),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: isActive ? const Color(0xFFD0D5DD) : const Color(0xFFE8EAF0),
-          ),
+          color: isInactive ? const Color(0xFFF1F3F6) : Colors.white,
+          borderRadius: BorderRadius.circular(14),
+          border: isInactive
+              ? null
+              : Border.all(
+                  color: isActive
+                      ? const Color(0xFFD0D5DD)
+                      : const Color(0xFFE8EAF0),
+                ),
         ),
         child: Row(
           children: [
@@ -254,15 +280,15 @@ class _ImportLeadsBodyState extends State<_ImportLeadsBody> {
               ),
               child: circleChild,
             ),
-            const SizedBox(width: 10),
+            const SizedBox(width: 12),
             Text(
               label,
               style: TextStyle(
-                fontSize: 13.5,
-                fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
-                color: isActive
-                    ? const Color(0xFF0F172A)
-                    : const Color(0xFF475467),
+                fontSize: 14,
+                fontWeight: isInactive ? FontWeight.w600 : FontWeight.w700,
+                color: isInactive
+                    ? const Color(0xFF64748B)
+                    : const Color(0xFF0F172A),
               ),
             ),
           ],
@@ -284,7 +310,7 @@ class _ImportLeadsBodyState extends State<_ImportLeadsBody> {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(24),
+      padding: EdgeInsets.all(isMobile ? 16 : 24),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
@@ -520,15 +546,13 @@ class _ImportLeadsBodyState extends State<_ImportLeadsBody> {
     LeadImportState state,
     bool isMobile,
   ) {
-    final cubit = context.read<LeadImportCubit>();
-
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(24),
+      padding: EdgeInsets.all(isMobile ? 20 : 24),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE8EAF0)),
+        borderRadius: BorderRadius.circular(isMobile ? 24 : 16),
+        border: Border.all(color: const Color(0xFFE8EAF0), width: 1.2),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -542,20 +566,28 @@ class _ImportLeadsBodyState extends State<_ImportLeadsBody> {
               fg: const Color(0xFF15803D),
             ),
             const SizedBox(height: 10),
-            _buildSummaryBanner(
-              count: '${state.existingLeadsCount}',
-              label: _skipExisting
-                  ? 'Already exist – will be skipped'
-                  : 'Already exist – will enrich blanks',
-              bg: const Color(0xFFE8F1FD),
-              fg: const Color(0xFF1D4ED8),
-            ),
-            const SizedBox(height: 10),
-            _buildSummaryBanner(
-              count: '${state.skippedLeadsCount}',
-              label: 'Invalid / duplicates skipped',
-              bg: const Color(0xFFFEF0E6),
-              fg: const Color(0xFF9A3412),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildSummaryBanner(
+                    count: '${state.skippedLeadsCount}',
+                    label: 'Invalid / duplicates\nskipped',
+                    bg: const Color(0xFFFEF0E6),
+                    fg: const Color(0xFF9A3412),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: _buildSummaryBanner(
+                    count: '${state.existingLeadsCount}',
+                    label: _skipExisting
+                        ? 'Already exist - will be\nskipped'
+                        : 'Already exist - will\nenrich blanks',
+                    bg: const Color(0xFFE8F1FD),
+                    fg: const Color(0xFF1D4ED8),
+                  ),
+                ),
+              ],
             ),
           ] else
             Row(
@@ -602,6 +634,7 @@ class _ImportLeadsBodyState extends State<_ImportLeadsBody> {
             children: [
               Wrap(
                 spacing: 8,
+                runSpacing: 8,
                 children: [
                   _filterChip(
                     context,
@@ -618,196 +651,103 @@ class _ImportLeadsBodyState extends State<_ImportLeadsBody> {
                   _filterChip(
                     context,
                     state,
-                    'existing',
-                    'Existing (${state.existingLeadsCount})',
+                    'issues',
+                    'Issues / Skipped (${state.skippedLeadsCount})',
                   ),
                   _filterChip(
                     context,
                     state,
-                    'issues',
-                    'Issues / Skipped (${state.skippedLeadsCount})',
+                    'existing',
+                    'Existing (${state.existingLeadsCount})',
                   ),
                 ],
               ),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Text(
-                    'Skip already existing leads:',
-                    style: TextStyle(fontSize: 12.5, color: Color(0xFF475467)),
-                  ),
-                  const SizedBox(width: 8),
-                  Switch(
-                    value: _skipExisting,
-                    activeThumbColor: const Color(0xFF4338CA),
-                    onChanged: (val) => setState(() => _skipExisting = val),
-                  ),
-                ],
-              ),
-            ],
-          ),
-          const SizedBox(height: 14),
-
-          // Attention Table
-          Container(
-            width: double.infinity,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: const Color(0xFFEAECF0)),
-            ),
-            child: isMobile
-                ? _buildMobileRows(context, state)
-                : _buildDesktopTable(context, state),
-          ),
-
-          const SizedBox(height: 22),
-
-          // Bottom Action Buttons
-          isMobile
-              ? Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
+              if (!isMobile)
+                Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    SizedBox(
-                      height: 44,
-                      child: ElevatedButton(
-                        onPressed:
-                            state.isImporting ||
-                                state.isVerifying ||
-                                state.importableTotal == 0
-                            ? null
-                            : () => _showImportConfirmation(context, state),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFEF8144),
-                          foregroundColor: Colors.white,
-                          elevation: 0,
-                          padding: const EdgeInsets.symmetric(horizontal: 20),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                        ),
-                        child: state.isImporting
-                            ? Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  const SizedBox(
-                                    width: 16,
-                                    height: 16,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 10),
-                                  Text(
-                                    'Importing (${state.processedCount}/${state.totalCandidates})...',
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ],
-                              )
-                            : Text(
-                                'Import ${state.importableTotal} Leads →',
-                                style: const TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
+                    const Text(
+                      'Skip already existing leads:',
+                      style: TextStyle(
+                        fontSize: 12.5,
+                        color: Color(0xFF475467),
                       ),
                     ),
-                    const SizedBox(height: 10),
-                    SizedBox(
-                      height: 42,
-                      child: OutlinedButton(
-                        onPressed: () => cubit.setStep(1),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: const Color(0xFF0F172A),
-                          side: const BorderSide(color: Color(0xFFD0D5DD)),
-                          padding: const EdgeInsets.symmetric(horizontal: 20),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                        ),
-                        child: const Text(
-                          '← Back to Upload',
-                          style: TextStyle(fontWeight: FontWeight.w600),
-                        ),
-                      ),
-                    ),
-                  ],
-                )
-              : Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    SizedBox(
-                      height: 42,
-                      child: OutlinedButton(
-                        onPressed: () => cubit.setStep(1),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: const Color(0xFF0F172A),
-                          side: const BorderSide(color: Color(0xFFD0D5DD)),
-                          padding: const EdgeInsets.symmetric(horizontal: 20),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                        ),
-                        child: const Text(
-                          '← Back to Upload',
-                          style: TextStyle(fontWeight: FontWeight.w600),
-                        ),
-                      ),
-                    ),
-                    SizedBox(
-                      height: 42,
-                      child: ElevatedButton(
-                        onPressed:
-                            state.isImporting ||
-                                state.isVerifying ||
-                                state.importableTotal == 0
-                            ? null
-                            : () => _showImportConfirmation(context, state),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFEF8144),
-                          foregroundColor: Colors.white,
-                          elevation: 0,
-                          padding: const EdgeInsets.symmetric(horizontal: 24),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                        ),
-                        child: state.isImporting
-                            ? Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  const SizedBox(
-                                    width: 16,
-                                    height: 16,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 10),
-                                  Text(
-                                    'Importing (${state.processedCount}/${state.totalCandidates})...',
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ],
-                              )
-                            : Text(
-                                'Import ${state.importableTotal} Leads →',
-                                style: const TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
-                      ),
+                    const SizedBox(width: 8),
+                    Switch(
+                      value: _skipExisting,
+                      activeThumbColor: const Color(0xFF4338CA),
+                      onChanged: (val) => setState(() => _skipExisting = val),
                     ),
                   ],
                 ),
+            ],
+          ),
+
+          // Attention Table (only shown when rows match filter)
+          if (state.filteredItems.isNotEmpty) ...[
+            const SizedBox(height: 14),
+            Container(
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: const Color(0xFFEAECF0)),
+              ),
+              child: isMobile
+                  ? _buildMobileRows(context, state)
+                  : _buildDesktopTable(context, state),
+            ),
+          ],
+
+          // Bottom Action Button (Import Leads)
+          if (state.importableTotal > 0) ...[
+            const SizedBox(height: 22),
+            SizedBox(
+              height: 44,
+              width: isMobile ? double.infinity : null,
+              child: ElevatedButton(
+                onPressed: state.isImporting || state.isVerifying
+                    ? null
+                    : () => _showImportConfirmation(context, state),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFEF8144),
+                  foregroundColor: Colors.white,
+                  elevation: 0,
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                child: state.isImporting
+                    ? Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Text(
+                            'Importing (${state.processedCount}/${state.totalCandidates})...',
+                            style: const TextStyle(fontWeight: FontWeight.w600),
+                          ),
+                        ],
+                      )
+                    : Text(
+                        'Import ${state.importableTotal} Leads →',
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+              ),
+            ),
+          ],
         ],
       ),
     );
@@ -822,14 +762,21 @@ class _ImportLeadsBodyState extends State<_ImportLeadsBody> {
     final isSelected = state.filter == key;
     return ChoiceChip(
       selected: isSelected,
+      showCheckmark: isSelected,
+      checkmarkColor: Colors.white,
       label: Text(label),
       labelStyle: TextStyle(
         fontSize: 12,
-        fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-        color: isSelected ? Colors.white : const Color(0xFF475467),
+        fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+        color: isSelected ? Colors.white : const Color(0xFF334155),
       ),
-      selectedColor: const Color(0xFF4338CA),
-      backgroundColor: const Color(0xFFF2F4F7),
+      selectedColor: const Color(0xFF1E1B8A),
+      backgroundColor: const Color(0xFFF8FAFC),
+      side: BorderSide(
+        color: isSelected ? const Color(0xFF1E1B8A) : const Color(0xFFE2E8F0),
+      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       onSelected: (_) => context.read<LeadImportCubit>().setFilter(key),
     );
   }
@@ -841,7 +788,7 @@ class _ImportLeadsBodyState extends State<_ImportLeadsBody> {
     required Color fg,
   }) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
         color: bg,
         borderRadius: BorderRadius.circular(12),
@@ -864,6 +811,7 @@ class _ImportLeadsBodyState extends State<_ImportLeadsBody> {
               fontSize: 12.5,
               fontWeight: FontWeight.w500,
               color: fg,
+              height: 1.25,
             ),
           ),
         ],
@@ -1035,6 +983,7 @@ class _ImportLeadsBodyState extends State<_ImportLeadsBody> {
                         Checkbox(
                           value: !item.isExcluded,
                           activeColor: const Color(0xFF4338CA),
+                          checkColor: Colors.white,
                           onChanged: (_) => context
                               .read<LeadImportCubit>()
                               .toggleExcludeRow(item.rowNumber),
@@ -1103,6 +1052,7 @@ class _ImportLeadsBodyState extends State<_ImportLeadsBody> {
                   Checkbox(
                     value: !item.isExcluded,
                     activeColor: const Color(0xFF4338CA),
+                    checkColor: Colors.white,
                     onChanged: (_) => context
                         .read<LeadImportCubit>()
                         .toggleExcludeRow(item.rowNumber),
@@ -1162,7 +1112,7 @@ class _ImportLeadsBodyState extends State<_ImportLeadsBody> {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(32),
+      padding: EdgeInsets.all(isMobile ? 18 : 32),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),

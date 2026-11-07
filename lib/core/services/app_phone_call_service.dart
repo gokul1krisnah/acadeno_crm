@@ -163,21 +163,25 @@ class AppPhoneCallService with WidgetsBindingObserver {
       }
     }
 
+    final elapsedMs = DateTime.now().millisecondsSinceEpoch - startMs;
+    final elapsedSeconds = (elapsedMs / 1000).round();
+
     // Only open the Call Outcome update alert box if the person was actually called!
     // If the executive only navigated to the dialer pad and returned without calling, skip dialog.
     if (!kIsWeb && Platform.isAndroid) {
       if (!permissionDenied && !foundCallLog) {
-        debugPrint(
-          '[AppPhoneCallService] No outgoing call to $cleanPhone detected in CallLog. Skipping outcome dialog.',
-        );
-        return;
+        if (elapsedMs < 3500) {
+          debugPrint(
+            '[AppPhoneCallService] User returned immediately (<3.5s) without call. Skipping outcome dialog.',
+          );
+          return;
+        }
       }
 
       if (permissionDenied) {
-        final elapsedMs = DateTime.now().millisecondsSinceEpoch - startMs;
-        if (elapsedMs < 7000) {
+        if (elapsedMs < 3500) {
           debugPrint(
-            '[AppPhoneCallService] User returned immediately (<7s) without call. Skipping outcome dialog.',
+            '[AppPhoneCallService] User returned immediately (<3.5s) without call. Skipping outcome dialog.',
           );
           return;
         }
@@ -193,13 +197,18 @@ class AppPhoneCallService with WidgetsBindingObserver {
         }
       }
     } else {
-      final elapsedMs = DateTime.now().millisecondsSinceEpoch - startMs;
-      if (elapsedMs < 7000) {
+      if (elapsedMs < 3500) {
         debugPrint(
-          '[AppPhoneCallService] User returned immediately (<7s). Skipping outcome dialog.',
+          '[AppPhoneCallService] User returned immediately (<3.5s). Skipping outcome dialog.',
         );
         return;
       }
+    }
+
+    // If exact carrier talk-time was not found from CallLog (e.g. permission denied or OEM delay),
+    // accurately fallback to the actual measured session duration the user spent away on the call!
+    if (!foundCallLog && elapsedSeconds > 0) {
+      durationSeconds = elapsedSeconds;
     }
 
     // Format duration: e.g. "2m 18s" or "45s" or "0s"

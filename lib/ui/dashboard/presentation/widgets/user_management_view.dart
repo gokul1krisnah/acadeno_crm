@@ -7,16 +7,27 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../shared/snackbar_alerts/snack_alert.dart';
 import '../../application/dashboard_cubit.dart';
 import '../../data/model/dashboard_user_model.dart';
-import 'admin_account_dialog.dart';
 
 class UserManagementView extends StatefulWidget {
-  const UserManagementView({super.key});
+  final VoidCallback? onOpenSettings;
+
+  const UserManagementView({super.key, this.onOpenSettings});
 
   @override
   State<UserManagementView> createState() => _UserManagementViewState();
 }
 
 class _UserManagementViewState extends State<UserManagementView> {
+  void _navigateToSettings() {
+    if (widget.onOpenSettings != null) {
+      widget.onOpenSettings!();
+    } else {
+      try {
+        context.read<DashboardCubit>().selectNav(8);
+      } catch (_) {}
+    }
+  }
+
   String _searchQuery = '';
   String _roleFilter = 'all';
   String _statusFilter = 'all';
@@ -588,8 +599,11 @@ class _UserManagementViewState extends State<UserManagementView> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.error_outline_rounded,
-                      size: 40, color: Color(0xFFDC2626)),
+                  const Icon(
+                    Icons.error_outline_rounded,
+                    size: 40,
+                    color: Color(0xFFDC2626),
+                  ),
                   const SizedBox(height: 12),
                   const Text(
                     'Unable to load users',
@@ -598,8 +612,10 @@ class _UserManagementViewState extends State<UserManagementView> {
                   const SizedBox(height: 8),
                   Text(
                     '',
-                    style:
-                        const TextStyle(fontSize: 12, color: Color(0xFF64748B)),
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: Color(0xFF64748B),
+                    ),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 16),
@@ -648,7 +664,8 @@ class _UserManagementViewState extends State<UserManagementView> {
             // Top Header & Action Buttons (Responsive Layout)
             LayoutBuilder(
               builder: (context, c) {
-                final isMobile = MediaQuery.of(context).size.width < 768 || c.maxWidth < 680;
+                final isMobile =
+                    MediaQuery.of(context).size.width < 768 || c.maxWidth < 680;
                 final titleCol = Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: const [
@@ -671,7 +688,11 @@ class _UserManagementViewState extends State<UserManagementView> {
 
                 final addByUidBtn = OutlinedButton.icon(
                   onPressed: () => _openAddUserDialog(byUid: true),
-                  icon: const Icon(Icons.key_outlined, size: 16, color: Color(0xFF475467)),
+                  icon: const Icon(
+                    Icons.key_outlined,
+                    size: 16,
+                    color: Color(0xFF475467),
+                  ),
                   label: const FittedBox(
                     fit: BoxFit.scaleDown,
                     child: Text(
@@ -1256,25 +1277,29 @@ class _UserManagementViewState extends State<UserManagementView> {
                                 color: user.name.toLowerCase().contains('admin')
                                     ? const Color(0xFFFEF3C7)
                                     : (user.name.toLowerCase().contains('test')
-                                        ? const Color(0xFFF3E8FF)
-                                        : const Color(0xFFEEF2FF)),
+                                          ? const Color(0xFFF3E8FF)
+                                          : const Color(0xFFEEF2FF)),
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               alignment: Alignment.center,
                               child: Text(
                                 user.name.isNotEmpty && user.name != '—'
                                     ? user.name[0].toUpperCase()
-                                    : (user.email.isNotEmpty && user.email != '—'
-                                        ? user.email[0].toUpperCase()
-                                        : 'U'),
+                                    : (user.email.isNotEmpty &&
+                                              user.email != '—'
+                                          ? user.email[0].toUpperCase()
+                                          : 'U'),
                                 style: TextStyle(
                                   fontSize: 13,
                                   fontWeight: FontWeight.w800,
-                                  color: user.name.toLowerCase().contains('admin')
+                                  color:
+                                      user.name.toLowerCase().contains('admin')
                                       ? const Color(0xFFD97706)
-                                      : (user.name.toLowerCase().contains('test')
-                                          ? const Color(0xFF9333EA)
-                                          : const Color(0xFF4F46E5)),
+                                      : (user.name.toLowerCase().contains(
+                                              'test',
+                                            )
+                                            ? const Color(0xFF9333EA)
+                                            : const Color(0xFF4F46E5)),
                                 ),
                               ),
                             ),
@@ -1289,9 +1314,12 @@ class _UserManagementViewState extends State<UserManagementView> {
                                         child: Text(
                                           user.name.isNotEmpty
                                               ? user.name
-                                              : (user.email.isNotEmpty && user.email != '—'
-                                                  ? user.email.split('@').first
-                                                  : user.uid),
+                                              : (user.email.isNotEmpty &&
+                                                        user.email != '—'
+                                                    ? user.email
+                                                          .split('@')
+                                                          .first
+                                                    : user.uid),
                                           maxLines: 1,
                                           overflow: TextOverflow.ellipsis,
                                           style: const TextStyle(
@@ -1590,16 +1618,12 @@ class _UserManagementViewState extends State<UserManagementView> {
                                 minHeight: 32,
                               ),
                               icon: const Icon(
-                                Icons.groups_rounded,
+                                Icons.manage_accounts_outlined,
                                 size: 18,
                                 color: Color(0xFF4F46E5),
                               ),
-                              tooltip: 'Admin Account & Password',
-                              onPressed: () => showAdminAccountDialog(context, {
-                                'name': user.name,
-                                'email': user.email,
-                                'role': user.role,
-                              }),
+                              tooltip: 'Admin Settings',
+                              onPressed: _navigateToSettings,
                             )
                           else
                             IconButton(
@@ -1662,8 +1686,8 @@ class _UserManagementViewState extends State<UserManagementView> {
                             user.name.isNotEmpty && user.name != "—"
                                 ? user.name[0].toUpperCase()
                                 : (user.email.isNotEmpty && user.email != "—"
-                                    ? user.email[0].toUpperCase()
-                                    : "U"),
+                                      ? user.email[0].toUpperCase()
+                                      : "U"),
                             style: const TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w700,
@@ -1680,10 +1704,11 @@ class _UserManagementViewState extends State<UserManagementView> {
                                 isMe
                                     ? '${user.name.isNotEmpty && user.name != "—" ? user.name : (user.email.isNotEmpty && user.email != "—" ? user.email.split("@").first : user.uid)} (YOU)'
                                     : (user.name.isNotEmpty && user.name != "—"
-                                        ? user.name
-                                        : (user.email.isNotEmpty && user.email != "—"
-                                            ? user.email.split("@").first
-                                            : user.uid)),
+                                          ? user.name
+                                          : (user.email.isNotEmpty &&
+                                                    user.email != "—"
+                                                ? user.email.split("@").first
+                                                : user.uid)),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: const TextStyle(
@@ -1694,7 +1719,9 @@ class _UserManagementViewState extends State<UserManagementView> {
                               Text(
                                 user.email.isNotEmpty && user.email != "—"
                                     ? user.email
-                                    : (user.name.contains("@") ? user.name : "—"),
+                                    : (user.name.contains("@")
+                                          ? user.name
+                                          : "—"),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: const TextStyle(
@@ -1898,13 +1925,8 @@ class _UserManagementViewState extends State<UserManagementView> {
                                   size: 20,
                                   color: _primaryColor,
                                 ),
-                                tooltip: 'Admin Account & Password',
-                                onPressed: () =>
-                                    showAdminAccountDialog(context, {
-                                      'name': user.name,
-                                      'email': user.email,
-                                      'role': user.role,
-                                    }),
+                                tooltip: 'Admin Settings',
+                                onPressed: _navigateToSettings,
                               )
                             else
                               IconButton(
