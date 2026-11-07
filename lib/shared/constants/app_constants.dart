@@ -12,7 +12,11 @@ abstract class AppConstants {
 
   static const String englishLocale = 'en';
 
-  static String getFcmTopicKey({String? country, String? state, String? district}) {
+  static String getFcmTopicKey({
+    String? country,
+    String? state,
+    String? district,
+  }) {
     String sanitize(String? value) {
       if (value == null || value.isEmpty) return 'all';
       return value

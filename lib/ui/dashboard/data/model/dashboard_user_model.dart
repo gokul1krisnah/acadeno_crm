@@ -54,7 +54,6 @@ class DashboardUserModel {
     _ => 'HR & Operation Manager',
   };
 
-
   static int _parseInt(dynamic val) {
     if (val is num) return val.toInt();
     if (val is String) return int.tryParse(val.trim()) ?? 0;
@@ -70,42 +69,50 @@ class DashboardUserModel {
       final createdAtField = data['createdAt'];
 
       // Extract original email from all possible Firestore document fields
-      String email = (data['email'] ??
-              data['userEmail'] ??
-              data['gmail'] ??
-              data['mail'] ??
-              data['emailAddress'] ??
-              data['emailId'] ??
-              data['user_email'] ??
-              data['user_mail'] ??
-              '')
-          .toString()
-          .trim();
+      String email =
+          (data['email'] ??
+                  data['userEmail'] ??
+                  data['gmail'] ??
+                  data['mail'] ??
+                  data['emailAddress'] ??
+                  data['emailId'] ??
+                  data['user_email'] ??
+                  data['user_mail'] ??
+                  '')
+              .toString()
+              .trim();
 
       if (email.isEmpty && doc.id.contains('@')) {
         email = doc.id.trim();
       }
 
       final currentAuthUser = FirebaseAuth.instance.currentUser;
-      if (email.isEmpty && currentAuthUser != null && currentAuthUser.uid == doc.id) {
-        if (currentAuthUser.email != null && currentAuthUser.email!.trim().isNotEmpty) {
+      if (email.isEmpty &&
+          currentAuthUser != null &&
+          currentAuthUser.uid == doc.id) {
+        if (currentAuthUser.email != null &&
+            currentAuthUser.email!.trim().isNotEmpty) {
           email = currentAuthUser.email!.trim();
         }
       }
 
       // Extract original name as actually saved in Firestore
-      String name = (data['name'] ??
-              data['displayName'] ??
-              data['fullName'] ??
-              data['userName'] ??
-              data['username'] ??
-              data['name_display'] ??
-              '')
-          .toString()
-          .trim();
+      String name =
+          (data['name'] ??
+                  data['displayName'] ??
+                  data['fullName'] ??
+                  data['userName'] ??
+                  data['username'] ??
+                  data['name_display'] ??
+                  '')
+              .toString()
+              .trim();
 
-      if (name.isEmpty && currentAuthUser != null && currentAuthUser.uid == doc.id) {
-        if (currentAuthUser.displayName != null && currentAuthUser.displayName!.trim().isNotEmpty) {
+      if (name.isEmpty &&
+          currentAuthUser != null &&
+          currentAuthUser.uid == doc.id) {
+        if (currentAuthUser.displayName != null &&
+            currentAuthUser.displayName!.trim().isNotEmpty) {
           name = currentAuthUser.displayName!.trim();
         }
       }
@@ -133,16 +140,18 @@ class DashboardUserModel {
       }
 
       // Device info
-      final deviceName = (data['deviceName'] ??
-              data['boundDeviceModel'] ??
-              data['deviceModel'] ??
-              data['device'] ??
-              (data['deviceBound'] == false
-                  ? 'Pending new phone...'
-                  : 'Registered Android'))
-          .toString();
+      final deviceName =
+          (data['deviceName'] ??
+                  data['boundDeviceModel'] ??
+                  data['deviceModel'] ??
+                  data['device'] ??
+                  (data['deviceBound'] == false
+                      ? 'Pending new phone...'
+                      : 'Registered Android'))
+              .toString();
 
-      final deviceBound = data['deviceBound'] != false &&
+      final deviceBound =
+          data['deviceBound'] != false &&
           !deviceName.toLowerCase().contains('pending');
 
       return DashboardUserModel(
@@ -161,14 +170,19 @@ class DashboardUserModel {
       );
     } catch (_) {
       final currentAuthUser = FirebaseAuth.instance.currentUser;
-      final fallbackEmail = (currentAuthUser != null && currentAuthUser.uid == doc.id && currentAuthUser.email != null)
+      final fallbackEmail =
+          (currentAuthUser != null &&
+              currentAuthUser.uid == doc.id &&
+              currentAuthUser.email != null)
           ? currentAuthUser.email!
           : (doc.id.contains('@') ? doc.id : '—');
       final fallbackName = doc.id.contains('@')
           ? doc.id.split('@').first
           : (fallbackEmail.contains('@')
-              ? fallbackEmail.split('@').first
-              : (doc.id.length > 5 ? 'User (${doc.id.substring(0, 5)})' : 'User (${doc.id})'));
+                ? fallbackEmail.split('@').first
+                : (doc.id.length > 5
+                      ? 'User (${doc.id.substring(0, 5)})'
+                      : 'User (${doc.id})'));
       return DashboardUserModel(
         uid: doc.id,
         name: fallbackName,

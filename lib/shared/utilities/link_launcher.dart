@@ -70,7 +70,9 @@ abstract class LinkLauncher {
           if (launched) return true;
         }
       } catch (e) {
-        debugPrint('Native geoUri launch failed, falling back to webMapsUri: $e');
+        debugPrint(
+          'Native geoUri launch failed, falling back to webMapsUri: $e',
+        );
       }
     }
 

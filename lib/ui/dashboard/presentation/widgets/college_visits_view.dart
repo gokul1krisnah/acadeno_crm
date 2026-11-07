@@ -78,7 +78,7 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
 
         title: const Text(
-          'Plan College Visit (FR-8.1)',
+          'Plan College Visit',
 
           style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
         ),

@@ -12,10 +12,7 @@ import '../widgets/lead_call_sheets.dart';
 class LeadDetailPage extends StatefulWidget {
   final ExecutiveLeadItem lead;
 
-  const LeadDetailPage({
-    super.key,
-    required this.lead,
-  });
+  const LeadDetailPage({super.key, required this.lead});
 
   @override
   State<LeadDetailPage> createState() => _LeadDetailPageState();
@@ -52,11 +49,14 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
 
         try {
           final entry = 'Today · Follow-up rescheduled to $formatted';
-          await FirebaseFirestore.instance.collection('leads').doc(leadId).update({
-            'followUpTime': formatted,
-            'timeline': FieldValue.arrayUnion([entry]),
-            'updatedAt': FieldValue.serverTimestamp(),
-          });
+          await FirebaseFirestore.instance
+              .collection('leads')
+              .doc(leadId)
+              .update({
+                'followUpTime': formatted,
+                'timeline': FieldValue.arrayUnion([entry]),
+                'updatedAt': FieldValue.serverTimestamp(),
+              });
         } catch (_) {}
 
         if (mounted) {
@@ -83,8 +83,8 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
     final rawPhone = phoneToUse.isNotEmpty
         ? phoneToUse
         : (widget.lead.fullPhone.isNotEmpty
-            ? widget.lead.fullPhone
-            : widget.lead.maskedPhone);
+              ? widget.lead.fullPhone
+              : widget.lead.maskedPhone);
     final digits = rawPhone.replaceAll(RegExp(r'\D'), '');
     final cleanPhone = digits.length == 10 ? '91$digits' : digits;
 
@@ -107,65 +107,96 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
     final lead = widget.lead;
 
     return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
-      stream: FirebaseFirestore.instance.collection('leads').doc(lead.id).snapshots(),
+      stream: FirebaseFirestore.instance
+          .collection('leads')
+          .doc(lead.id)
+          .snapshots(),
       builder: (context, snapshot) {
         final snapData = snapshot.hasData && snapshot.data!.exists
             ? snapshot.data!.data()
             : null;
 
-        final rawFollowUp = (snapData != null
-                ? (snapData['followUpTime'] ?? snapData['follow_up_time'] ?? '')
-                : lead.followUpTime)
-            .toString()
-            .trim();
-        final effectiveFollowUp = _rescheduledFollowUp ??
+        final rawFollowUp =
+            (snapData != null
+                    ? (snapData['followUpTime'] ??
+                          snapData['follow_up_time'] ??
+                          '')
+                    : lead.followUpTime)
+                .toString()
+                .trim();
+        final effectiveFollowUp =
+            _rescheduledFollowUp ??
             (rawFollowUp.isNotEmpty ? rawFollowUp : 'Today, 10:30 AM');
 
-        final liveNotes = (snapData != null ? (snapData['notes'] ?? '') : '').toString().trim();
-        final liveCourse = (snapData != null ? (snapData['course'] ?? '') : lead.course).toString().trim();
-        final liveCollegeInfo = (snapData != null
-                ? (snapData['collegeBranch'] ?? snapData['college'] ?? '')
-                : lead.collegeInfo)
+        final liveNotes = (snapData != null ? (snapData['notes'] ?? '') : '')
             .toString()
             .trim();
-        final effectiveCollegeInfo = liveCollegeInfo.isNotEmpty ? liveCollegeInfo : lead.collegeInfo;
+        final liveCourse =
+            (snapData != null ? (snapData['course'] ?? '') : lead.course)
+                .toString()
+                .trim();
+        final liveCollegeInfo =
+            (snapData != null
+                    ? (snapData['collegeBranch'] ?? snapData['college'] ?? '')
+                    : lead.collegeInfo)
+                .toString()
+                .trim();
+        final effectiveCollegeInfo = liveCollegeInfo.isNotEmpty
+            ? liveCollegeInfo
+            : lead.collegeInfo;
 
-        final liveCampaign = (snapData != null
-                ? (snapData['source'] ?? snapData['campaign'] ?? '')
-                : lead.campaignTag)
-            .toString()
-            .trim();
-        final effectiveCampaign = liveCampaign.isNotEmpty ? liveCampaign : lead.campaignTag;
+        final liveCampaign =
+            (snapData != null
+                    ? (snapData['source'] ?? snapData['campaign'] ?? '')
+                    : lead.campaignTag)
+                .toString()
+                .trim();
+        final effectiveCampaign = liveCampaign.isNotEmpty
+            ? liveCampaign
+            : lead.campaignTag;
 
-        final liveStatus = (snapData != null ? (snapData['status'] ?? '') : lead.statusTag).toString().trim();
-        final effectiveStatus = liveStatus.isNotEmpty ? liveStatus : lead.statusTag;
+        final liveStatus =
+            (snapData != null ? (snapData['status'] ?? '') : lead.statusTag)
+                .toString()
+                .trim();
+        final effectiveStatus = liveStatus.isNotEmpty
+            ? liveStatus
+            : lead.statusTag;
 
-        final livePhone = (snapData != null ? (snapData['phone'] ?? '') : lead.fullPhone).toString().trim();
+        final livePhone =
+            (snapData != null ? (snapData['phone'] ?? '') : lead.fullPhone)
+                .toString()
+                .trim();
         final effectivePhone = livePhone.isNotEmpty
             ? livePhone
             : (lead.fullPhone.isNotEmpty ? lead.fullPhone : lead.maskedPhone);
 
-        final liveEmail = (snapData != null ? (snapData['email'] ?? '') : '').toString().trim();
+        final liveEmail = (snapData != null ? (snapData['email'] ?? '') : '')
+            .toString()
+            .trim();
         final effectiveEmail = liveEmail.isNotEmpty
             ? liveEmail
             : '${lead.name.toLowerCase().replaceAll(RegExp(r'\s+'), '')}@example.com';
 
         final rawInterests = snapData != null ? snapData['interests'] : null;
-        final List<String> interests = rawInterests is Iterable && rawInterests.isNotEmpty
+        final List<String> interests =
+            rawInterests is Iterable && rawInterests.isNotEmpty
             ? rawInterests.map((e) => e.toString()).toList()
             : ['AI', 'Python', 'ML'];
 
         final rawTimeline = snapData != null ? snapData['timeline'] : null;
-        final List<String> timelineList = rawTimeline is Iterable && rawTimeline.isNotEmpty
+        final List<String> timelineList =
+            rawTimeline is Iterable && rawTimeline.isNotEmpty
             ? rawTimeline.map((e) => e.toString()).toList()
             : (lead.timeline.isNotEmpty
-                ? lead.timeline
-                : [
-                    if (effectiveStatus.isNotEmpty && effectiveStatus != 'New')
-                      'Today · $effectiveStatus logged by current executive',
-                    '24 Oct, 9:15 AM · Assigned to executive',
-                    '12 Sep · Registered via ${effectiveCampaign.isNotEmpty ? effectiveCampaign : "Campus outreach"} (Consent recorded)',
-                  ]);
+                  ? lead.timeline
+                  : [
+                      if (effectiveStatus.isNotEmpty &&
+                          effectiveStatus != 'New')
+                        'Today · $effectiveStatus logged by current executive',
+                      '24 Oct, 9:15 AM · Assigned to executive',
+                      '12 Sep · Registered via ${effectiveCampaign.isNotEmpty ? effectiveCampaign : "Campus outreach"} (Consent recorded)',
+                    ]);
 
         // Parse college and branch/year
         final parts = effectiveCollegeInfo
@@ -182,7 +213,9 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
             ? '$effectiveCampaign · 12 Sep'
             : 'AI Webinar · 12 Sep';
 
-        final parsedTimeline = timelineList.map((t) => _parseTimelineEntry(t)).toList();
+        final parsedTimeline = timelineList
+            .map((t) => _parseTimelineEntry(t))
+            .toList();
 
         return Scaffold(
           backgroundColor: const Color(0xFFF8FAFC),
@@ -230,7 +263,10 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
                       course: liveCourse,
                     );
                   } else if (value == 'whatsapp_tpl') {
-                    LeadCallSheets.showWhatsAppTemplatesSheet(context, lead: lead);
+                    LeadCallSheets.showWhatsAppTemplatesSheet(
+                      context,
+                      lead: lead,
+                    );
                   }
                 },
                 itemBuilder: (context) => [
@@ -238,9 +274,19 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
                     value: 'outcome',
                     child: Row(
                       children: [
-                        Icon(Icons.assignment_outlined, size: 18, color: Color(0xFFEF8144)),
+                        Icon(
+                          Icons.assignment_outlined,
+                          size: 18,
+                          color: Color(0xFFEF8144),
+                        ),
                         SizedBox(width: 10),
-                        Text('Log Call Outcome', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+                        Text(
+                          'Log Call Outcome',
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -248,9 +294,19 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
                     value: 'whatsapp_tpl',
                     child: Row(
                       children: [
-                        Icon(Icons.chat_bubble_outline_rounded, size: 18, color: Color(0xFF15803D)),
+                        Icon(
+                          Icons.chat_bubble_outline_rounded,
+                          size: 18,
+                          color: Color(0xFF15803D),
+                        ),
                         SizedBox(width: 10),
-                        Text('WhatsApp Templates', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+                        Text(
+                          'WhatsApp Templates',
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -260,17 +316,17 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
             ],
             bottom: PreferredSize(
               preferredSize: const Size.fromHeight(1),
-              child: Container(
-                height: 1,
-                color: const Color(0xFFF1F5F9),
-              ),
+              child: Container(height: 1, color: const Color(0xFFF1F5F9)),
             ),
           ),
           body: Center(
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 520),
               child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 16,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -335,7 +391,9 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
                                           ),
                                           decoration: BoxDecoration(
                                             color: const Color(0xFFFFF7ED),
-                                            borderRadius: BorderRadius.circular(8),
+                                            borderRadius: BorderRadius.circular(
+                                              8,
+                                            ),
                                           ),
                                           child: Text(
                                             effectiveStatus.isNotEmpty
@@ -374,7 +432,10 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
                                   height: 46,
                                   child: ElevatedButton.icon(
                                     onPressed: () {
-                                      AppPhoneCallService.instance.dialLead(context, lead);
+                                      AppPhoneCallService.instance.dialLead(
+                                        context,
+                                        lead,
+                                      );
                                     },
                                     icon: const Icon(
                                       Icons.phone_outlined,
@@ -405,7 +466,8 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
                                 child: SizedBox(
                                   height: 46,
                                   child: OutlinedButton.icon(
-                                    onPressed: () => _openWhatsApp(effectivePhone),
+                                    onPressed: () =>
+                                        _openWhatsApp(effectivePhone),
                                     icon: const Icon(
                                       Icons.chat_bubble_outline_rounded,
                                       size: 18,
@@ -422,7 +484,9 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
                                     style: OutlinedButton.styleFrom(
                                       backgroundColor: Colors.white,
                                       foregroundColor: const Color(0xFF0F172A),
-                                      side: const BorderSide(color: Color(0xFFE2E8F0)),
+                                      side: const BorderSide(
+                                        color: Color(0xFFE2E8F0),
+                                      ),
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(12),
                                       ),
@@ -455,7 +519,9 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
                             decoration: BoxDecoration(
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: const Color(0xFFFED7AA)),
+                              border: Border.all(
+                                color: const Color(0xFFFED7AA),
+                              ),
                             ),
                             child: const Icon(
                               Icons.calendar_today_outlined,
@@ -491,8 +557,8 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
                                   liveNotes.isNotEmpty
                                       ? liveNotes
                                       : (liveCourse.isNotEmpty
-                                          ? 'Send fee details for $liveCourse'
-                                          : 'Send fee details for AI workshop'),
+                                            ? 'Send fee details for $liveCourse'
+                                            : 'Send fee details for AI workshop'),
                                   style: const TextStyle(
                                     fontSize: 12,
                                     fontWeight: FontWeight.w500,
@@ -505,13 +571,16 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
                             ),
                           ),
                           InkWell(
-                            onTap: () => _onReschedule(lead.id, effectiveFollowUp),
+                            onTap: () =>
+                                _onReschedule(lead.id, effectiveFollowUp),
                             borderRadius: BorderRadius.circular(10),
                             child: Container(
                               decoration: BoxDecoration(
                                 color: Colors.white,
                                 borderRadius: BorderRadius.circular(10),
-                                border: Border.all(color: const Color(0xFFFED7AA)),
+                                border: Border.all(
+                                  color: const Color(0xFFFED7AA),
+                                ),
                               ),
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 12,
@@ -805,7 +874,9 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
       }
     } else {
       final lower = mainPart.toLowerCase();
-      if (lower.contains('registered') || lower.contains('created') || lower.contains('direct visit')) {
+      if (lower.contains('registered') ||
+          lower.contains('created') ||
+          lower.contains('direct visit')) {
         title = 'Lead created';
         dotColor = const Color(0xFF2563EB);
         subtitle = mainPart;

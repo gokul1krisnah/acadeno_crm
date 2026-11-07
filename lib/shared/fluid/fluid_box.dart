@@ -38,15 +38,15 @@ class FluidBox extends StatelessWidget {
     required double minSize,
     super.key,
     this.child,
-  })  : maxHeight = maxSize,
-        maxWidth = maxSize,
-        minHeight = minSize,
-        minWidth = minSize;
+  }) : maxHeight = maxSize,
+       maxWidth = maxSize,
+       minHeight = minSize,
+       minWidth = minSize;
 
   @override
   Widget build(BuildContext context) => SizedBox(
-        height: Fluid.fluid(minHeight, maxHeight),
-        width: Fluid.fluid(minWidth, maxWidth),
-        child: child,
-      );
+    height: Fluid.fluid(minHeight, maxHeight),
+    width: Fluid.fluid(minWidth, maxWidth),
+    child: child,
+  );
 }

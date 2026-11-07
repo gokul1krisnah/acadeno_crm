@@ -10,7 +10,7 @@
 
 Following the functional specification and operational requirements, today's implementation delivered native telephony talk-time tracking, curriculum program standardization, live follow-up scheduling, persistent notifications, and a resilient multi-encoding CSV/Excel import engine:
 
-* **Native Dialer Integration & Carrier Talk-Time Duration (FR-3.1 - FR-3.5):**
+* **Native Dialer Integration & Carrier Talk-Time Duration:**
   - Engineered `AppPhoneCallService` and native Android Kotlin `MethodChannel` (`com.acadeno.crm/phone_call`) to launch the native system dialer on Android (`Intent.ACTION_DIAL`) and Web (`tel:`).
   - Queries the Android carrier CallLog (`CallLog.Calls`) with asynchronous retry polling to capture exact talk-time minutes and seconds upon call completion, eliminating inaccurate dialer pad timers.
 

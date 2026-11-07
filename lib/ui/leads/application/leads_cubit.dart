@@ -93,8 +93,8 @@ class LeadsCubit extends Cubit<LeadsState> {
     return _repository.getLeadById(leadId);
   }
 
-  // FR-3.2–3.5: Save mandatory call outcome, apply status rules and append to
-  // the executive's permanent "My Record" (FR-6.2).
+  // Save mandatory call outcome, apply status rules and append to
+  // the executive's permanent "My Record".
   Future<CallOutcomeResult> recordCallOutcome({
     String? leadId,
     required String leadName,
@@ -124,10 +124,10 @@ class LeadsCubit extends Cubit<LeadsState> {
       collegeInfo = lead.collegeInfo;
       campaign = lead.campaignTag;
 
-      // FR-3.5 Status rules: Converted is never overwritten; No answer never erases Interested
+      // Status rules: Converted is never overwritten; No answer never erases Interested
       if (lead.statusTag != 'Converted') {
         if (outcome == 'No answer' && lead.statusTag == 'Interested') {
-          // Keep Interested status per FR-3.5
+          // Keep Interested status
         } else {
           lead.statusTag = outcome;
           final style = _statusBadgeColors(outcome);
@@ -142,7 +142,7 @@ class LeadsCubit extends Cubit<LeadsState> {
 
     final needsApproval = outcome == 'Converted' && (discountAmount ?? 0) > 500;
     final extraMsg = needsApproval
-        ? ' · Discount ₹$discountAmount sent for Manager approval (FR-5.4)'
+        ? ' · Discount ₹$discountAmount sent for Manager approval'
         : '';
 
     updatedRecords.insert(
@@ -196,7 +196,7 @@ class LeadsCubit extends Cubit<LeadsState> {
     );
   }
 
-  // FR-5.1: Log WhatsApp template sent
+  // Log WhatsApp template sent
   void logWhatsAppTemplateSent({
     required String leadName,
     required String templateTitle,
@@ -212,7 +212,7 @@ class LeadsCubit extends Cubit<LeadsState> {
           outcome: 'WhatsApp sent',
           duration: '—',
           timestamp: 'Today · Just now',
-          notes: 'Sent approved template: $templateTitle (FR-5.1)',
+          notes: 'Sent approved template: $templateTitle',
         ),
       );
 
@@ -226,7 +226,7 @@ class LeadsCubit extends Cubit<LeadsState> {
     );
   }
 
-  // PR-2.2 & PR-2.5: 10-digit phone lookup (rate-limited at 40/hour + backend check)
+  // 10-digit phone lookup (rate-limited at 40/hour + backend check)
   Future<({bool found, String message, String? owner, String? status})>
   lookupByPhone(String rawPhone) async {
     final validationErr = LeadPhoneValidator.validate(rawPhone);
@@ -243,7 +243,7 @@ class LeadsCubit extends Cubit<LeadsState> {
       return (
         found: false,
         message:
-            'Access paused: Exceeded 40 phone lookups/hour (PR-2.5). Super Admin alerted.',
+            'Access paused: Exceeded 40 phone lookups/hour. Super Admin alerted.',
         owner: null,
         status: null,
       );
@@ -261,7 +261,7 @@ class LeadsCubit extends Cubit<LeadsState> {
     }
   }
 
-  // FR-1.4: Add a walk-in lead after backend duplicate check
+  // Add a walk-in lead after backend duplicate check
   Future<bool> addWalkInLead({
     required String name,
     required String phone,
@@ -279,8 +279,7 @@ class LeadsCubit extends Cubit<LeadsState> {
       emit(
         state.copyWith(
           showingPendingCalls: true,
-          toastMessage:
-              'Walk-in lead ${name.trim()} added to Today list (FR-1.4)',
+          toastMessage: 'Walk-in lead ${name.trim()} added to Today list',
           isToastError: false,
         ),
       );

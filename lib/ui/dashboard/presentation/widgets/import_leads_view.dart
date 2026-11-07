@@ -320,7 +320,7 @@ class _ImportLeadsBodyState extends State<_ImportLeadsBody> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            '1. Select source event & consent basis (FR-1.1 / DPDP)',
+            '1. Select source event & consent basis',
             style: TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.w700,

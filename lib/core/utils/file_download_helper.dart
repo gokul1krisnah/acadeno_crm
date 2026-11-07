@@ -1,5 +1,6 @@
 import 'file_download_helper_stub.dart'
-    if (dart.library.html) 'file_download_helper_web.dart' as impl;
+    if (dart.library.html) 'file_download_helper_web.dart'
+    as impl;
 
 /// Universal file download helper for CSV and report exports.
 class FileDownloadHelper {
@@ -9,7 +10,5 @@ class FileDownloadHelper {
   static Future<bool> downloadCsv({
     required String fileName,
     required String content,
-  }) =>
-      impl.downloadCsv(fileName: fileName, content: content);
+  }) => impl.downloadCsv(fileName: fileName, content: content);
 }
-

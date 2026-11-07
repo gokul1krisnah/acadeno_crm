@@ -712,7 +712,7 @@ class LeadCallSheets {
   }
 
   // ---------------------------------------------------------------------------
-  // 3. Phone Lookup & Add Walk-In Lead Sheet (FR-1.4 & PR-2.2)
+  // 3. Phone Lookup & Add Walk-In Lead Sheet
   // ---------------------------------------------------------------------------
   static void showPhoneLookupAndWalkInSheet(BuildContext context) {
     final cubit = context.read<LeadsCubit>();
@@ -747,7 +747,7 @@ class LeadCallSheets {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Text(
-                        'Phone Lookup & Add Walk-in Lead (FR-1.4 / PR-2.2)',
+                        'Phone Lookup & Add Walk-in Lead',
                         style: TextStyle(
                           fontSize: 17,
                           fontWeight: FontWeight.w800,
@@ -756,7 +756,7 @@ class LeadCallSheets {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Type a 10-digit phone number to check duplicates before saving. Lookups this hour: ${cubit.state.phoneLookupsThisHour}/40 (PR-2.5).',
+                        'Type a 10-digit phone number to check duplicates before saving. Lookups this hour: ${cubit.state.phoneLookupsThisHour}/40.',
                         style: const TextStyle(
                           fontSize: 12,
                           color: Color(0xFF667085),
@@ -924,7 +924,7 @@ class LeadCallSheets {
   }
 
   // ---------------------------------------------------------------------------
-  // 4. "My Record" & Personal Performance Sheet (FR-6.2 & FR-6.3)
+  // 4. "My Record" & Personal Performance Sheet
   // ---------------------------------------------------------------------------
   static void showMyRecordSheet(BuildContext context) {
     final state = context.read<LeadsCubit>().state;
@@ -956,7 +956,7 @@ class LeadCallSheets {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             const Text(
-                              'My Record & Performance (FR-6.2 / FR-6.3)',
+                              'My Record & Performance',
                               style: TextStyle(
                                 fontSize: 17,
                                 fontWeight: FontWeight.w800,
@@ -1005,7 +1005,7 @@ class LeadCallSheets {
                   ),
                   const SizedBox(height: 14),
                   const Text(
-                    'RECENT PERMANENT CALL LOGS (READ-ONLY · FR-3.7)',
+                    'RECENT PERMANENT CALL LOGS (READ-ONLY)',
                     style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w700,

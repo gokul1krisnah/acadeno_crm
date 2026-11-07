@@ -2,4 +2,3 @@
 Future<bool> openDialer(String phone) async {
   return false;
 }
-

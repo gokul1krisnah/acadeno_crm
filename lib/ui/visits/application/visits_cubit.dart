@@ -34,7 +34,7 @@ class VisitsCubit extends Cubit<VisitsState> {
     }
   }
 
-  // FR-8.1 / FR-8.2: Log new college visit and persist to Firestore
+  // Log new college visit and persist to Firestore
   Future<void> addCollegeVisit({
     required String collegeName,
     required String dayNumber,
@@ -62,7 +62,7 @@ class VisitsCubit extends Cubit<VisitsState> {
     }
   }
 
-  // FR-8.2: Record outcome of an assigned college visit and persist to Firestore
+  // Record outcome of an assigned college visit and persist to Firestore
   Future<void> recordVisitOutcome({
     required String visitId,
     required String metPeople,

@@ -66,7 +66,7 @@ class _TeamManagementViewState extends State<TeamManagementView> {
             vertical: (screenHeight * 0.04).clamp(12.0, 24.0).toDouble(),
           ),
           title: const Text(
-            'Super Admin Watermarked Export (PR-4.2)',
+            'Super Admin Watermarked Export',
             style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
           ),
           content: SizedBox(
@@ -116,7 +116,7 @@ class _TeamManagementViewState extends State<TeamManagementView> {
                       '${users.length} team members · ${leads.length} leads',
                   category: 'export',
                   toastMessage:
-                      'Generated watermarked team report. Logged in security audit trail (PR-4.2).',
+                      'Generated watermarked team report. Logged in security audit trail.',
                 );
                 Navigator.pop(ctx);
               },
@@ -193,8 +193,10 @@ class _TeamManagementViewState extends State<TeamManagementView> {
             return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
               stream: _leadsStream ??= cubit.watchAllLeads(),
               builder: (context, leadsSnap) {
-                if ((usersSnap.connectionState == ConnectionState.waiting && !usersSnap.hasData) ||
-                    (leadsSnap.connectionState == ConnectionState.waiting && !leadsSnap.hasData)) {
+                if ((usersSnap.connectionState == ConnectionState.waiting &&
+                        !usersSnap.hasData) ||
+                    (leadsSnap.connectionState == ConnectionState.waiting &&
+                        !leadsSnap.hasData)) {
                   return const Padding(
                     padding: EdgeInsets.symmetric(vertical: 60),
                     child: Center(
@@ -224,11 +226,18 @@ class _TeamManagementViewState extends State<TeamManagementView> {
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(Icons.error_outline_rounded, color: Color(0xFFDC2626), size: 36),
+                          const Icon(
+                            Icons.error_outline_rounded,
+                            color: Color(0xFFDC2626),
+                            size: 36,
+                          ),
                           const SizedBox(height: 12),
                           Text(
                             'Could not load team data: ${usersSnap.error}',
-                            style: const TextStyle(color: Color(0xFFDC2626), fontSize: 13.5),
+                            style: const TextStyle(
+                              color: Color(0xFFDC2626),
+                              fontSize: 13.5,
+                            ),
                           ),
                           const SizedBox(height: 12),
                           OutlinedButton.icon(
@@ -260,7 +269,9 @@ class _TeamManagementViewState extends State<TeamManagementView> {
                     // Header Section (Responsive Layout)
                     LayoutBuilder(
                       builder: (context, c) {
-                        final isMobile = MediaQuery.of(context).size.width < 768 || c.maxWidth < 680;
+                        final isMobile =
+                            MediaQuery.of(context).size.width < 768 ||
+                            c.maxWidth < 680;
                         final titleCol = Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: const [
@@ -275,7 +286,7 @@ class _TeamManagementViewState extends State<TeamManagementView> {
                             ),
                             SizedBox(height: 4),
                             Text(
-                              'Real-time team analytics, live conversion tracking, and member performance (FR-6.3)',
+                              'Real-time team analytics, live conversion tracking, and member performance',
                               style: TextStyle(
                                 fontSize: 13,
                                 color: Color(0xFF667085),
@@ -292,11 +303,17 @@ class _TeamManagementViewState extends State<TeamManagementView> {
                               activeUsers,
                               filteredLeads,
                             ),
-                            icon: const Icon(Icons.download_rounded, size: 16, color: Color(0xFF334155)),
+                            icon: const Icon(
+                              Icons.download_rounded,
+                              size: 16,
+                              color: Color(0xFF334155),
+                            ),
                             label: FittedBox(
                               fit: BoxFit.scaleDown,
                               child: Text(
-                                isMobile ? 'Watermarked Export' : 'Watermarked Export (Super Admin)',
+                                isMobile
+                                    ? 'Watermarked Export'
+                                    : 'Watermarked Export (Super Admin)',
                                 style: const TextStyle(
                                   fontSize: 13,
                                   fontWeight: FontWeight.w600,
@@ -357,7 +374,7 @@ class _TeamManagementViewState extends State<TeamManagementView> {
                     _buildActiveExecutivesSnapshot(activeUsers),
                     const SizedBox(height: 20),
 
-                    // Append-Only Security & Admin Audit Log (PR-7.1)
+                    // Append-Only Security & Admin Audit Log
                     _buildAuditLogCard(cubit),
                   ],
                 );
@@ -412,7 +429,9 @@ class _TeamManagementViewState extends State<TeamManagementView> {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        final isMobile = MediaQuery.of(context).size.width < 768 || constraints.maxWidth < 600;
+        final isMobile =
+            MediaQuery.of(context).size.width < 768 ||
+            constraints.maxWidth < 600;
         final stats = [
           (
             'Total Assigned',
@@ -559,7 +578,7 @@ class _TeamManagementViewState extends State<TeamManagementView> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Executive Performance Comparison (FR-6.3)',
+                    'Executive Performance Comparison',
                     style: TextStyle(
                       fontSize: 15.5,
                       fontWeight: FontWeight.w700,
@@ -595,10 +614,19 @@ class _TeamManagementViewState extends State<TeamManagementView> {
                       color: Color(0xFF334155),
                     ),
                     items: const [
-                      DropdownMenuItem(value: 'All Time', child: Text('All Time')),
+                      DropdownMenuItem(
+                        value: 'All Time',
+                        child: Text('All Time'),
+                      ),
                       DropdownMenuItem(value: 'Today', child: Text('Today')),
-                      DropdownMenuItem(value: 'This week', child: Text('This week')),
-                      DropdownMenuItem(value: 'This month', child: Text('This month')),
+                      DropdownMenuItem(
+                        value: 'This week',
+                        child: Text('This week'),
+                      ),
+                      DropdownMenuItem(
+                        value: 'This month',
+                        child: Text('This month'),
+                      ),
                     ],
                     onChanged: (v) {
                       if (v != null) setState(() => _selectedDateRange = v);
@@ -623,8 +651,9 @@ class _TeamManagementViewState extends State<TeamManagementView> {
           else
             LayoutBuilder(
               builder: (context, constraints) {
-                final tableWidth =
-                    constraints.maxWidth > 750 ? constraints.maxWidth : 750.0;
+                final tableWidth = constraints.maxWidth > 750
+                    ? constraints.maxWidth
+                    : 750.0;
                 return SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
                   child: SizedBox(
@@ -686,7 +715,10 @@ class _TeamManagementViewState extends State<TeamManagementView> {
                             return assignedUid == user.uid ||
                                 ownerUid == user.uid ||
                                 (assignedName != null &&
-                                    assignedName.toString().trim().toLowerCase() ==
+                                    assignedName
+                                            .toString()
+                                            .trim()
+                                            .toLowerCase() ==
                                         user.name.trim().toLowerCase());
                           }).toList();
 
@@ -711,8 +743,7 @@ class _TeamManagementViewState extends State<TeamManagementView> {
                           final actionsDone = userLeads.where((l) {
                             final isDone = _leadIsDone(l['isDone']);
                             final hasTl = _leadHasTimeline(l['timeline']);
-                            return isDone ||
-                                hasTl;
+                            return isDone || hasTl;
                           }).length;
                           final convertedCount = userLeads.where((l) {
                             final status = (l['status'] ?? '')
@@ -782,7 +813,10 @@ class _TeamManagementViewState extends State<TeamManagementView> {
                                 ),
                                 Expanded(
                                   flex: 12,
-                                  child: Text('$assignedCount', style: _tblCell),
+                                  child: Text(
+                                    '$assignedCount',
+                                    style: _tblCell,
+                                  ),
                                 ),
                                 Expanded(
                                   flex: 16,
@@ -795,7 +829,10 @@ class _TeamManagementViewState extends State<TeamManagementView> {
                                 ),
                                 Expanded(
                                   flex: 14,
-                                  child: Text('$interestedCount', style: _tblCell),
+                                  child: Text(
+                                    '$interestedCount',
+                                    style: _tblCell,
+                                  ),
                                 ),
                                 Expanded(
                                   flex: 15,
@@ -883,7 +920,9 @@ class _TeamManagementViewState extends State<TeamManagementView> {
                   runSpacing: 12,
                   children: activeUsers.map((user) {
                     return Container(
-                      width: isNarrow ? double.infinity : ((c.maxWidth - 24) / 3).clamp(180.0, 500.0),
+                      width: isNarrow
+                          ? double.infinity
+                          : ((c.maxWidth - 24) / 3).clamp(180.0, 500.0),
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
                         color: const Color(0xFFF8FAFC),
@@ -970,7 +1009,7 @@ class _TeamManagementViewState extends State<TeamManagementView> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            'Append-Only Security & Admin Audit Log (PR-7.1)',
+            'Append-Only Security & Admin Audit Log',
             style: TextStyle(
               fontSize: 15.5,
               fontWeight: FontWeight.w700,

@@ -111,7 +111,7 @@ class LeadsRepository {
   lookupByPhone(String rawPhone) => _rds.lookupByPhone(rawPhone);
 
   // ---------------------------------------------------------------------------
-  // Bulk Lead Import Operations (FR-1.1 - FR-1.3)
+  // Bulk Lead Import Operations
   // ---------------------------------------------------------------------------
 
   Future<List<LeadImportItem>> verifyImportAgainstFirestore(

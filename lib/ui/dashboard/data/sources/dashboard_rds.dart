@@ -168,7 +168,7 @@ class DashboardRds {
       'forceLogoutToken': nowMs,
     });
     await appendAuditLog(
-      action: 'Approved new phone binding & signed out old device (PR-5.1)',
+      action: 'Approved new phone binding & signed out old device',
       target: userName,
       category: 'device_reset',
     );
@@ -182,7 +182,7 @@ class DashboardRds {
       'lastForceLogoutBy': userName,
     });
     await appendAuditLog(
-      action: 'Remotely signed out active sessions (PR-5.3)',
+      action: 'Remotely signed out active sessions',
       target: userName,
       category: 'remote_signout',
     );

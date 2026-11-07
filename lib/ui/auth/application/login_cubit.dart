@@ -230,7 +230,7 @@ class LoginCubit extends Cubit<LoginState> {
       _resetRole();
       currentRole = role;
 
-      // PR-5.1 & PR-5.4: Enforce single-phone hardware binding and integrity for Sales Executives
+      // Enforce single-phone hardware binding and integrity for Sales Executives
       if (!offline) {
         final deviceCheckResult =
             await DeviceSecurityService.verifyDeviceBinding(
@@ -245,7 +245,7 @@ class LoginCubit extends Cubit<LoginState> {
       }
     }
 
-    // Start real-time session security listener for PR-5.3 remote deactivation
+    // Start real-time session security listener for remote deactivation
     SessionSecurityService.instance.startListening(
       user.uid,
       initialLogoutToken: data['forceLogoutToken'] as String?,

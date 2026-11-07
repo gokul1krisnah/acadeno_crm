@@ -58,14 +58,11 @@ class _UserManagementViewState extends State<UserManagementView> {
           children: [
             Icon(Icons.phonelink_erase_rounded, color: Color(0xFFD97706)),
             SizedBox(width: 8),
-            Text(
-              'Reset Phone Binding (PR-5.1)',
-              style: TextStyle(fontSize: 16),
-            ),
+            Text('Reset Phone Binding', style: TextStyle(fontSize: 16)),
           ],
         ),
         content: Text(
-          'Reset registered phone for ${user.name}?\n\nThis will remotely sign out their existing phone session and permit them to register a new phone on their next sign-in (PR-5.1).',
+          'Reset registered phone for ${user.name}?\n\nThis will remotely sign out their existing phone session and permit them to register a new phone on their next sign-in.',
           style: const TextStyle(fontSize: 13.5, color: Color(0xFF334155)),
         ),
         actions: [
@@ -105,7 +102,7 @@ class _UserManagementViewState extends State<UserManagementView> {
       builder: (ctx) => AlertDialog(
         title: Text('Force Sign Out ${user.name}?'),
         content: Text(
-          'This will immediately revoke ${user.name}’s active login sessions across all devices (PR-5.3).\n\nTheir app will terminate and return to the login screen.',
+          'This will immediately revoke ${user.name}’s active login sessions across all devices.\n\nTheir app will terminate and return to the login screen.',
           style: const TextStyle(fontSize: 13.5, color: Color(0xFF334155)),
         ),
         actions: [
@@ -1227,7 +1224,7 @@ class _UserManagementViewState extends State<UserManagementView> {
                 flex: 3,
                 child: Padding(
                   padding: EdgeInsets.only(right: 14),
-                  child: Text('DEVICE SECURITY (PR-5.1)', style: _tblHdr),
+                  child: Text('DEVICE SECURITY', style: _tblHdr),
                 ),
               ),
               Expanded(
@@ -1475,7 +1472,7 @@ class _UserManagementViewState extends State<UserManagementView> {
                       ),
                     ),
 
-                    // DEVICE SECURITY (PR-5.1)
+                    // DEVICE SECURITY
                     Expanded(
                       flex: 3,
                       child: Padding(
@@ -1550,7 +1547,7 @@ class _UserManagementViewState extends State<UserManagementView> {
                                 size: 16,
                                 color: Color(0xFFCBD5E1),
                               ),
-                              tooltip: 'Reset Phone Binding (PR-5.1)',
+                              tooltip: 'Reset Phone Binding',
                               onPressed: () =>
                                   _confirmResetDevice(context, cubit, user),
                             ),
@@ -1914,7 +1911,7 @@ class _UserManagementViewState extends State<UserManagementView> {
                           children: [
                             IconButton(
                               icon: const Icon(Icons.logout_rounded, size: 18),
-                              tooltip: 'Remote sign out session (PR-5.3)',
+                              tooltip: 'Remote sign out session',
                               onPressed: () =>
                                   _confirmForceSignOut(context, cubit, user),
                             ),

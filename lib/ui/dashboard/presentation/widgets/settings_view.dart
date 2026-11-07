@@ -413,9 +413,7 @@ class _SettingsViewState extends State<SettingsView>
                         backgroundColor: _primary,
                         foregroundColor: Colors.white,
                         minimumSize: const Size(0, 48),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 20,
-                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
                         ),
@@ -478,9 +476,7 @@ class _SettingsViewState extends State<SettingsView>
                             backgroundColor: _primary,
                             foregroundColor: Colors.white,
                             minimumSize: const Size(0, 48),
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 22,
-                            ),
+                            padding: const EdgeInsets.symmetric(horizontal: 22),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8),
                             ),
@@ -605,9 +601,7 @@ class _SettingsViewState extends State<SettingsView>
                       backgroundColor: _primary,
                       foregroundColor: Colors.white,
                       minimumSize: const Size(0, 48),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 24,
-                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
@@ -770,8 +764,7 @@ class _SettingsViewState extends State<SettingsView>
                               color: _muted,
                             ),
                             onPressed: () => setState(
-                              () => _obscureConfirmPass =
-                                  !_obscureConfirmPass,
+                              () => _obscureConfirmPass = !_obscureConfirmPass,
                             ),
                           ),
                           contentPadding: const EdgeInsets.symmetric(
@@ -910,9 +903,7 @@ class _SettingsViewState extends State<SettingsView>
                       backgroundColor: _primary,
                       foregroundColor: Colors.white,
                       minimumSize: const Size(0, 48),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 24,
-                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
@@ -1031,7 +1022,7 @@ class _SettingsViewState extends State<SettingsView>
                   contentPadding: EdgeInsets.zero,
                   activeThumbColor: _primary,
                   title: const Text(
-                    'Biometric / PIN Screen Lock (PR-5.2)',
+                    'Biometric / PIN Screen Lock',
                     style: TextStyle(
                       fontSize: 13.5,
                       fontWeight: FontWeight.w600,
@@ -1085,14 +1076,14 @@ class _SettingsViewState extends State<SettingsView>
                 const Divider(height: 24),
                 _buildStatusRow(
                   'Screen Privacy & Capture Protection',
-                  'FLAG_SECURE Active (PR-6.1)',
+                  'FLAG_SECURE Active',
                   Icons.verified_user_outlined,
                   _primary,
                 ),
                 const Divider(height: 24),
                 _buildStatusRow(
                   'Offline Storage Engine',
-                  'Hive Local Box & Queue (PR-6.3)',
+                  'Hive Local Box & Queue',
                   Icons.storage_outlined,
                   _primary,
                 ),

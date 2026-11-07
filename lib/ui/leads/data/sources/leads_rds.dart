@@ -19,7 +19,7 @@ abstract class LeadsBackend {
     List<LeadImportItem> items,
   );
 
-  /// Executes bulk import of validated leads using batched Firestore writes (FR-1.2).
+  /// Executes bulk import of validated leads using batched Firestore writes.
   Future<LeadImportSummary> executeBulkImport({
     required List<LeadImportItem> items,
     required String sourceEvent,

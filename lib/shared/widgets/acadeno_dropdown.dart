@@ -43,7 +43,10 @@ class AcadenoDropdown<T> extends StatelessWidget {
     this.prefixIcon,
     this.isExpanded = true,
     this.isDense = true,
-    this.contentPadding = const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+    this.contentPadding = const EdgeInsets.symmetric(
+      horizontal: 12,
+      vertical: 10,
+    ),
     this.validator,
     this.fillColor = Colors.white,
     this.borderColor = const Color(0xFFE5E7EB),
@@ -62,7 +65,10 @@ class AcadenoDropdown<T> extends StatelessWidget {
     Widget? prefixIcon,
     bool isExpanded = true,
     bool isDense = true,
-    EdgeInsetsGeometry? contentPadding = const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+    EdgeInsetsGeometry? contentPadding = const EdgeInsets.symmetric(
+      horizontal: 12,
+      vertical: 10,
+    ),
     String? Function(String?)? validator,
     Color? fillColor = Colors.white,
     Color? borderColor = const Color(0xFFE5E7EB),
@@ -129,7 +135,9 @@ class AcadenoDropdown<T> extends StatelessWidget {
         isDense: isDense,
         contentPadding: contentPadding,
         filled: true,
-        fillColor: enabled ? (fillColor ?? Colors.white) : const Color(0xFFF9FAFB),
+        fillColor: enabled
+            ? (fillColor ?? Colors.white)
+            : const Color(0xFFF9FAFB),
         prefixIcon: prefixIcon,
         border: OutlineInputBorder(
           borderRadius: effectiveRadius,
@@ -158,10 +166,7 @@ class AcadenoDropdown<T> extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              if (item.icon != null) ...[
-                item.icon!,
-                const SizedBox(width: 8),
-              ],
+              if (item.icon != null) ...[item.icon!, const SizedBox(width: 8)],
               Text(
                 item.label,
                 overflow: TextOverflow.ellipsis,

@@ -93,7 +93,7 @@ class FollowUpsCubit extends Cubit<FollowUpsState> {
     }
   }
 
-  // FR-4.1 & FR-4.3: Create follow-up when a call outcome is Follow-up,
+  // Create follow-up when a call outcome is Follow-up,
   // Interested, or No answer (auto-retry up to 3 tries).
   void addFromCallOutcome({
     required String leadName,
@@ -106,7 +106,8 @@ class FollowUpsCubit extends Cubit<FollowUpsState> {
     final updated = List<ExecutiveFollowUpItem>.from(state.followUps);
 
     if (outcome == 'Follow-up' || outcome == 'Interested') {
-      final isDueToday = followUpTimeLabel != null &&
+      final isDueToday =
+          followUpTimeLabel != null &&
           (followUpTimeLabel.toLowerCase().contains('today') ||
               followUpTimeLabel.toLowerCase().contains('5 pm') ||
               followUpTimeLabel.toLowerCase().contains('now'));
@@ -146,7 +147,7 @@ class FollowUpsCubit extends Cubit<FollowUpsState> {
     emit(state.copyWith(followUps: updated));
   }
 
-  // FR-4.5: Snooze follow-up and persist to Firestore
+  // Snooze follow-up and persist to Firestore
   Future<void> snoozeFollowUp(
     String id,
     String newTimeLabel, {
@@ -178,10 +179,10 @@ class FollowUpsCubit extends Cubit<FollowUpsState> {
     );
   }
 
-  // FR-4.2: Complete follow-up directly in Firestore
+  // Complete follow-up directly in Firestore
   Future<void> completeFollowUp(String id) => markCompleted(id);
 
-  // FR-4.2: Mark follow-up as done directly in Firestore
+  // Mark follow-up as done directly in Firestore
   Future<void> markCompleted(String id) async {
     final updated = List<ExecutiveFollowUpItem>.from(state.followUps);
     final idx = updated.indexWhere((f) => f.id == id);

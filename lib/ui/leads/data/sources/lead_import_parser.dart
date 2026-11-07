@@ -5,7 +5,7 @@ import 'dart:typed_data';
 import '../model/lead_import_models.dart';
 import '../model/lead_models.dart';
 
-/// Pure Dart parser for CSV and Excel (.xlsx) lead data files (FR-1.1 - FR-1.3).
+/// Pure Dart parser for CSV and Excel (.xlsx) lead data files.
 class LeadImportParser {
   static const String sampleTemplateCsv =
       '''Name,Phone,Email,College,Branch,Year,Course,Source,Notes,Consent

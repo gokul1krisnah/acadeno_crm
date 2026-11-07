@@ -9,7 +9,7 @@ import '../../ui/leads/data/model/lead_models.dart';
 import '../../ui/leads/presentation/widgets/lead_call_sheets.dart';
 import '../utils/url_dialer_helper.dart';
 
-/// Telephony & Dialer Service for ACADENO CRM (FR-3.1 - FR-3.5).
+/// Telephony & Dialer Service for ACADENO CRM.
 ///
 /// Features:
 /// 1. Native system dialer launch with target lead phone number on Android and Web.

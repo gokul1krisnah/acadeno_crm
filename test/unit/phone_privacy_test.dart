@@ -2,7 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:acadeno_crm/ui/leads/data/model/lead_models.dart';
 
 void main() {
-  group('QA Test Suite: Phone Privacy & Normalization (PR-1.3 & PR-2.3)', () {
+  group('QA Test Suite: Phone Privacy & Normalization', () {
     test('TC-PRIV-001: Masks standard 10-digit Indian phone numbers', () {
       const raw = '9847012345';
       final masked = LeadPhoneValidator.maskPhone(raw);

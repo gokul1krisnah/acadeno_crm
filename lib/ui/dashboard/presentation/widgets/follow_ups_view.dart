@@ -138,7 +138,7 @@ class _FollowUpsViewState extends State<FollowUpsView> {
       SnackBarAlert.showToast(
         context: context,
         message: moved > 0
-            ? 'Moved $moved open follow-ups from $_fromExec to $_toExec (FR-4.6).'
+            ? 'Moved $moved open follow-ups from $_fromExec to $_toExec.'
             : 'No open follow-ups found for $_fromExec.',
       );
     }
@@ -185,7 +185,8 @@ class _FollowUpsViewState extends State<FollowUpsView> {
               final status = (d['status'] ?? '').toString().toLowerCase();
 
               // Follow-up candidates: leads with followUpTime, or follow-up status, callback, overdue, claimed, interested, or with notes/timelines
-              final hasFollowUpTime = (d['followUpTime'] != null &&
+              final hasFollowUpTime =
+                  (d['followUpTime'] != null &&
                   d['followUpTime'].toString().trim().isNotEmpty);
               final isCandidate =
                   hasFollowUpTime ||
@@ -253,11 +254,14 @@ class _FollowUpsViewState extends State<FollowUpsView> {
 
             final openCount = execFollowUps.length;
             final overdueCount = execFollowUps.where((f) => f.isOverdue).length;
-            final dueTodayCount = execFollowUps.where((f) => !f.isOverdue).length;
+            final dueTodayCount = execFollowUps
+                .where((f) => !f.isOverdue)
+                .length;
 
             final totalOpenAll = followUps.where((f) => !f.completed).length;
-            final totalOverdueAll =
-                followUps.where((f) => !f.completed && f.isOverdue).length;
+            final totalOverdueAll = followUps
+                .where((f) => !f.completed && f.isOverdue)
+                .length;
 
             // Filter items based on active pill
             final filteredItems = execFollowUps.where((item) {
@@ -272,7 +276,9 @@ class _FollowUpsViewState extends State<FollowUpsView> {
 
             return LayoutBuilder(
               builder: (context, constraints) {
-                final isMobile = MediaQuery.of(context).size.width < 768 || constraints.maxWidth < 720;
+                final isMobile =
+                    MediaQuery.of(context).size.width < 768 ||
+                    constraints.maxWidth < 720;
 
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -309,8 +315,8 @@ class _FollowUpsViewState extends State<FollowUpsView> {
                     ),
                     const SizedBox(height: 18),
 
-                    // Bulk Reassign Bar (FR-4.6 / RL-3)
-                    // Bulk Reassign Bar (FR-4.6 / RL-3 - Responsive)
+                    // Bulk Reassign Bar
+                    // Bulk Reassign Bar (Responsive)
                     LayoutBuilder(
                       builder: (context, c) {
                         final isMobile = c.maxWidth < 640;
@@ -358,7 +364,9 @@ class _FollowUpsViewState extends State<FollowUpsView> {
                                       ),
                                     ),
                                     const Padding(
-                                      padding: EdgeInsets.symmetric(horizontal: 8),
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: 8,
+                                      ),
                                       child: Text(
                                         'to',
                                         style: TextStyle(
@@ -512,9 +520,7 @@ class _FollowUpsViewState extends State<FollowUpsView> {
                           decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(8),
-                            border: Border.all(
-                              color: const Color(0xFFE2E8F0),
-                            ),
+                            border: Border.all(color: const Color(0xFFE2E8F0)),
                           ),
                           child: DropdownButtonHideUnderline(
                             child: DropdownButton<String>(
@@ -647,10 +653,7 @@ class _FollowUpsViewState extends State<FollowUpsView> {
     final isOverdue = item.isOverdue;
 
     final assignedBadge = Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 12,
-        vertical: 7,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
       decoration: BoxDecoration(
         color: const Color(0xFFF8FAFC),
         borderRadius: BorderRadius.circular(8),
@@ -672,10 +675,7 @@ class _FollowUpsViewState extends State<FollowUpsView> {
       style: OutlinedButton.styleFrom(
         foregroundColor: const Color(0xFF4338CA),
         side: const BorderSide(color: Color(0xFF4338CA), width: 1),
-        padding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 6,
-        ),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
         shape: const StadiumBorder(),
       ),
       onPressed: () => _reassignSingle(item, executives),
@@ -683,10 +683,7 @@ class _FollowUpsViewState extends State<FollowUpsView> {
         fit: BoxFit.scaleDown,
         child: Text(
           'Reassign',
-          style: TextStyle(
-            fontSize: 12.5,
-            fontWeight: FontWeight.w700,
-          ),
+          style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700),
         ),
       ),
     );
@@ -696,10 +693,7 @@ class _FollowUpsViewState extends State<FollowUpsView> {
         backgroundColor: const Color(0xFF059669),
         foregroundColor: Colors.white,
         elevation: 0,
-        padding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 6,
-        ),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
         shape: const StadiumBorder(),
       ),
       onPressed: () => _markCompleted(item.id, item.studentName),
@@ -707,10 +701,7 @@ class _FollowUpsViewState extends State<FollowUpsView> {
         fit: BoxFit.scaleDown,
         child: Text(
           'Mark Done',
-          style: TextStyle(
-            fontSize: 12.5,
-            fontWeight: FontWeight.w700,
-          ),
+          style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700),
         ),
       ),
     );
@@ -749,10 +740,7 @@ class _FollowUpsViewState extends State<FollowUpsView> {
               overflow: TextOverflow.ellipsis,
             ),
             Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 8,
-                vertical: 3,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
               decoration: BoxDecoration(
                 color: isOverdue
                     ? const Color(0xFFFFEDD5)
@@ -776,10 +764,7 @@ class _FollowUpsViewState extends State<FollowUpsView> {
         const SizedBox(height: 4),
         Text(
           '${item.phone} · ${item.collegeBranch}',
-          style: const TextStyle(
-            fontSize: 13,
-            color: Color(0xFF475467),
-          ),
+          style: const TextStyle(fontSize: 13, color: Color(0xFF475467)),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
@@ -807,7 +792,9 @@ class _FollowUpsViewState extends State<FollowUpsView> {
           color: Colors.white,
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
-            color: isOverdue ? const Color(0xFFFED7AA) : const Color(0xFFE2E8F0),
+            color: isOverdue
+                ? const Color(0xFFFED7AA)
+                : const Color(0xFFE2E8F0),
             width: isOverdue ? 1.2 : 1.0,
           ),
         ),
@@ -844,9 +831,7 @@ class _FollowUpsViewState extends State<FollowUpsView> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
-          color: isOverdue
-              ? const Color(0xFFFED7AA)
-              : const Color(0xFFE2E8F0),
+          color: isOverdue ? const Color(0xFFFED7AA) : const Color(0xFFE2E8F0),
           width: isOverdue ? 1.2 : 1.0,
         ),
       ),

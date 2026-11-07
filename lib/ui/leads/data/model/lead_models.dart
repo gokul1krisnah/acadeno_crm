@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
-/// Phone number normalization, validation, and masking utilities (FR-1.2, PR-2.3).
+/// Phone number normalization, validation, and masking utilities.
 abstract final class LeadPhoneValidator {
   /// Extracts the canonical 10-digit mobile number from [raw].
   /// Returns `''` if the input does not contain a valid 10-digit number.
@@ -43,7 +43,7 @@ abstract final class LeadPhoneValidator {
     return trimmed.isEmpty ? '—' : trimmed;
   }
 
-  /// Formats a 10-digit phone as `'98470 •••33'` for Sales Executive privacy (PR-2.3).
+  /// Formats a 10-digit phone as `'98470 •••33'` for Sales Executive privacy.
   static String maskPhone(String raw) {
     final norm = normalize10Digits(raw);
     if (norm.length == 10) {
@@ -1016,7 +1016,7 @@ class AssignmentBatchSummary {
   int get totalCount => assignments.length;
 }
 
-/// Result of saving a mandatory call outcome (FR-3.2–3.5).
+/// Result of saving a mandatory call outcome.
 /// Lets the UI layer forward side-effects to the Follow-ups / Alerts features.
 class CallOutcomeResult {
   final String collegeInfo;

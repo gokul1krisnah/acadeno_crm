@@ -262,7 +262,7 @@ class _FollowUpsTabViewState extends State<FollowUpsTabView> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Snooze follow-up · ${item.leadName} (FR-4.5)',
+                  'Snooze follow-up · ${item.leadName}',
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w800,

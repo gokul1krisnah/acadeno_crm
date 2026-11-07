@@ -14,7 +14,9 @@ class AppDetailsService {
   String? _cachedDeviceId;
 
   /// Get full details in JSON format
-  Future<Map<String, dynamic>> getAllDetails({Map<String, dynamic>? user}) async {
+  Future<Map<String, dynamic>> getAllDetails({
+    Map<String, dynamic>? user,
+  }) async {
     final appInfo = await getAppInfo();
     final deviceInfo = await getDeviceInfo();
     final networkInfo = await getNetworkInfo();

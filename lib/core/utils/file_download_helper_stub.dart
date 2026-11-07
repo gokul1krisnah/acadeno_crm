@@ -8,7 +8,12 @@ Future<bool> downloadCsv({
   required String content,
 }) async {
   try {
-    final rawBytes = Uint8List.fromList([0xEF, 0xBB, 0xBF, ...utf8.encode(content)]);
+    final rawBytes = Uint8List.fromList([
+      0xEF,
+      0xBB,
+      0xBF,
+      ...utf8.encode(content),
+    ]);
     if (Platform.isWindows || Platform.isMacOS || Platform.isLinux) {
       final saved = await FilePicker.saveFile(
         dialogTitle: 'Save CSV Export',

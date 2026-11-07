@@ -8,7 +8,10 @@ abstract class FileConverter {
     return byteData.buffer.asUint8List();
   }
 
-  static Future<File?> saveBytesToTempFile(Uint8List bytes, String filename) async {
+  static Future<File?> saveBytesToTempFile(
+    Uint8List bytes,
+    String filename,
+  ) async {
     try {
       final tempDir = Directory.systemTemp;
       final file = File('${tempDir.path}/$filename');

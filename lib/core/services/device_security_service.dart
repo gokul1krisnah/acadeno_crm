@@ -4,7 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
-/// Device Security, Integrity & Hardware Binding Service (PR-5.1 - PR-5.4).
+/// Device Security, Integrity & Hardware Binding Service.
 class DeviceSecurityService {
   static const MethodChannel _securityChannel = MethodChannel(
     'com.acadeno.crm/security',
@@ -46,7 +46,7 @@ class DeviceSecurityService {
     return (deviceId: id, deviceName: 'Registered Device');
   }
 
-  /// Verifies hardware integrity (root, emulator, modified builds - PR-5.4).
+  /// Verifies hardware integrity (root, emulator, modified builds).
   static Future<bool> isDeviceCompromised() async {
     if (kIsWeb || defaultTargetPlatform != TargetPlatform.android) return false;
     try {
@@ -61,19 +61,19 @@ class DeviceSecurityService {
     return false;
   }
 
-  /// Enforces single-phone binding rule for Sales Executives (PR-5.1).
+  /// Enforces single-phone binding rule for Sales Executives.
   ///
   /// Returns null if access is authorized, or a failure message if blocked.
   static Future<String?> verifyDeviceBinding({
     required User user,
     required Map<String, dynamic> userData,
   }) async {
-    // 1. Play Integrity / Root detection check (PR-5.4)
+    // 1. Play Integrity / Root detection check
     if (await isDeviceCompromised()) {
-      return 'Security violation (PR-5.4): Modified or rooted device detected. Access refused.';
+      return 'Security violation: Modified or rooted device detected. Access refused.';
     }
 
-    // 2. Device binding (PR-5.1)
+    // 2. Device binding
     final device = await getDeviceIdentifier();
     final currentId = device.deviceId;
     final currentName = device.deviceName;
@@ -100,7 +100,7 @@ class DeviceSecurityService {
     if (registeredId != currentId) {
       // Trying to sign in on a second phone!
       final boundName = (userData['deviceName'] ?? 'another phone').toString();
-      return 'Device Binding Violation (PR-5.1): Your account is registered to $boundName. Sales executives may only use one registered phone. Contact Super Admin to approve a device switch.';
+      return 'Device Binding Violation: Your account is registered to $boundName. Sales executives may only use one registered phone. Contact Super Admin to approve a device switch.';
     }
 
     return null;

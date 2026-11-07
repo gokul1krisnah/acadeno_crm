@@ -204,39 +204,40 @@ class _CampaignsViewState extends State<CampaignsView> {
 
   void _listenLiveCampaigns() {
     _campaignsSubscription?.cancel();
-    _campaignsSubscription = FirebaseFirestore.instance.collection('campaigns').snapshots().listen((
-      snap,
-    ) {
-      if (snap.docs.isEmpty) {
-        _seedDefaultCampaigns();
-      } else {
-        final live = snap.docs.map((doc) {
-          final d = doc.data();
-          return _CampaignData(
-            id: doc.id,
-            title: (d['title'] ?? 'Campaign').toString(),
-            badge: (d['badge'] ?? 'Upcoming').toString(),
-            topics: (d['topics'] ?? '').toString(),
-            branches: (d['branches'] ?? '').toString(),
-            years: (d['years'] ?? '').toString(),
-            matchingLeads: (d['matchingLeads'] ?? '0').toString(),
-            score70Plus: (d['score70Plus'] ?? '0').toString(),
-            assignedCount: (d['assignedCount'] as num?)?.toInt() ?? 0,
-          );
-        }).toList();
-        if (mounted) {
-          setState(() {
-            _campaigns = live;
-            if (_activeCampaignIndex >= _campaigns.length) {
-              _activeCampaignIndex = 0;
+    _campaignsSubscription = FirebaseFirestore.instance
+        .collection('campaigns')
+        .snapshots()
+        .listen((snap) {
+          if (snap.docs.isEmpty) {
+            _seedDefaultCampaigns();
+          } else {
+            final live = snap.docs.map((doc) {
+              final d = doc.data();
+              return _CampaignData(
+                id: doc.id,
+                title: (d['title'] ?? 'Campaign').toString(),
+                badge: (d['badge'] ?? 'Upcoming').toString(),
+                topics: (d['topics'] ?? '').toString(),
+                branches: (d['branches'] ?? '').toString(),
+                years: (d['years'] ?? '').toString(),
+                matchingLeads: (d['matchingLeads'] ?? '0').toString(),
+                score70Plus: (d['score70Plus'] ?? '0').toString(),
+                assignedCount: (d['assignedCount'] as num?)?.toInt() ?? 0,
+              );
+            }).toList();
+            if (mounted) {
+              setState(() {
+                _campaigns = live;
+                if (_activeCampaignIndex >= _campaigns.length) {
+                  _activeCampaignIndex = 0;
+                }
+              });
+              if (_liveLeadDocs.isNotEmpty) {
+                _recalculateAllCampaignsAndActiveRanking();
+              }
             }
-          });
-          if (_liveLeadDocs.isNotEmpty) {
-            _recalculateAllCampaignsAndActiveRanking();
           }
-        }
-      }
-    });
+        });
   }
 
   void _seedDefaultCampaigns() async {
@@ -261,10 +262,13 @@ class _CampaignsViewState extends State<CampaignsView> {
 
   void _listenLiveLeadsAndRank() {
     _leadsSubscription?.cancel();
-    _leadsSubscription = FirebaseFirestore.instance.collection('leads').snapshots().listen((snap) {
-      _liveLeadDocs = snap.docs;
-      _recalculateAllCampaignsAndActiveRanking();
-    });
+    _leadsSubscription = FirebaseFirestore.instance
+        .collection('leads')
+        .snapshots()
+        .listen((snap) {
+          _liveLeadDocs = snap.docs;
+          _recalculateAllCampaignsAndActiveRanking();
+        });
   }
 
   void _recalculateAllCampaignsAndActiveRanking() {
@@ -284,11 +288,16 @@ class _CampaignsViewState extends State<CampaignsView> {
       for (final doc in _liveLeadDocs) {
         final d = doc.data();
         final branch = (d['branch'] ?? '').toString().toUpperCase();
-        final course = (d['course'] ?? d['source'] ?? '').toString().toLowerCase();
+        final course = (d['course'] ?? d['source'] ?? '')
+            .toString()
+            .toLowerCase();
         final status = (d['status'] ?? 'New').toString();
-        final assignedTo = (d['assignedToName'] ?? d['assignedTo'])?.toString().trim();
+        final assignedTo = (d['assignedToName'] ?? d['assignedTo'])
+            ?.toString()
+            .trim();
 
-        final isAssigned = assignedTo != null &&
+        final isAssigned =
+            assignedTo != null &&
             assignedTo.isNotEmpty &&
             assignedTo != 'null' &&
             assignedTo != 'Unassigned';
@@ -310,11 +319,13 @@ class _CampaignsViewState extends State<CampaignsView> {
         if (s >= 70) score70++;
       }
 
-      updatedCampaigns.add(camp.copyWith(
-        matchingLeads: '$matching',
-        score70Plus: '$score70',
-        assignedCount: assigned,
-      ));
+      updatedCampaigns.add(
+        camp.copyWith(
+          matchingLeads: '$matching',
+          score70Plus: '$score70',
+          assignedCount: assigned,
+        ),
+      );
     }
 
     // 2. Score and rank leads for the active campaign
@@ -327,12 +338,17 @@ class _CampaignsViewState extends State<CampaignsView> {
       final doc = _liveLeadDocs[i];
       final d = doc.data();
       final name = (d['name'] ?? 'Lead ${i + 1}').toString();
-      final college = (d['college'] ?? d['collegeBranch'] ?? 'College').toString();
+      final college = (d['college'] ?? d['collegeBranch'] ?? 'College')
+          .toString();
       final branch = (d['branch'] ?? '').toString().toUpperCase();
       final year = (d['year'] ?? '').toString();
-      final course = (d['course'] ?? d['source'] ?? '').toString().toLowerCase();
+      final course = (d['course'] ?? d['source'] ?? '')
+          .toString()
+          .toLowerCase();
       final status = (d['status'] ?? 'New').toString();
-      final assignedTo = (d['assignedToName'] ?? d['assignedTo'])?.toString().trim();
+      final assignedTo = (d['assignedToName'] ?? d['assignedTo'])
+          ?.toString()
+          .trim();
 
       int score = 40;
       final reasons = <_CampaignReason>[];
@@ -364,9 +380,7 @@ class _CampaignsViewState extends State<CampaignsView> {
       score = score.clamp(20, 98);
       final barColor = score >= 70
           ? const Color(0xFF15803D)
-          : (score >= 50
-                ? const Color(0xFF2563EB)
-                : const Color(0xFF94A3B8));
+          : (score >= 50 ? const Color(0xFF2563EB) : const Color(0xFF94A3B8));
 
       final collegeBranchYear = [
         college,
@@ -392,7 +406,11 @@ class _CampaignsViewState extends State<CampaignsView> {
             status: (d['status'] ?? '').toString(),
             timeline: (d['timeline'] as List?)?.toList(),
           ),
-          assignedExec: (assignedTo != null && assignedTo.isNotEmpty && assignedTo != 'null' && assignedTo != 'Unassigned')
+          assignedExec:
+              (assignedTo != null &&
+                  assignedTo.isNotEmpty &&
+                  assignedTo != 'null' &&
+                  assignedTo != 'Unassigned')
               ? assignedTo
               : null,
         ),
@@ -414,11 +432,15 @@ class _CampaignsViewState extends State<CampaignsView> {
 
     // Persist real live counts to Firestore so stale dummy numbers are erased permanently
     if (activeCamp.id.isNotEmpty && !activeCamp.id.startsWith('cmp_default_')) {
-      FirebaseFirestore.instance.collection('campaigns').doc(activeCamp.id).update({
-        'matchingLeads': activeCamp.matchingLeads,
-        'score70Plus': activeCamp.score70Plus,
-        'assignedCount': activeCamp.assignedCount,
-      }).catchError((_) {});
+      FirebaseFirestore.instance
+          .collection('campaigns')
+          .doc(activeCamp.id)
+          .update({
+            'matchingLeads': activeCamp.matchingLeads,
+            'score70Plus': activeCamp.score70Plus,
+            'assignedCount': activeCamp.assignedCount,
+          })
+          .catchError((_) {});
     }
   }
 
@@ -662,7 +684,9 @@ class _CampaignsViewState extends State<CampaignsView> {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        final isMobile = MediaQuery.of(context).size.width < 768 || constraints.maxWidth < 800;
+        final isMobile =
+            MediaQuery.of(context).size.width < 768 ||
+            constraints.maxWidth < 800;
 
         if (_showAllCampaigns) {
           return _buildAllCampaignsList(isMobile);
@@ -680,7 +704,10 @@ class _CampaignsViewState extends State<CampaignsView> {
                         onTap: () => setState(() => _showAllCampaigns = true),
                         borderRadius: BorderRadius.circular(6),
                         child: const Padding(
-                          padding: EdgeInsets.symmetric(vertical: 4, horizontal: 2),
+                          padding: EdgeInsets.symmetric(
+                            vertical: 4,
+                            horizontal: 2,
+                          ),
                           child: Text(
                             '< All campaigns',
                             style: TextStyle(
@@ -702,7 +729,10 @@ class _CampaignsViewState extends State<CampaignsView> {
                             backgroundColor: const Color(0xFFEF8144),
                             foregroundColor: Colors.white,
                             elevation: 0,
-                            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 18,
+                              vertical: 12,
+                            ),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(10),
                             ),
@@ -718,7 +748,10 @@ class _CampaignsViewState extends State<CampaignsView> {
                         onTap: () => setState(() => _showAllCampaigns = true),
                         borderRadius: BorderRadius.circular(6),
                         child: const Padding(
-                          padding: EdgeInsets.symmetric(vertical: 4, horizontal: 2),
+                          padding: EdgeInsets.symmetric(
+                            vertical: 4,
+                            horizontal: 2,
+                          ),
                           child: Text(
                             '< All campaigns',
                             style: TextStyle(
@@ -737,7 +770,10 @@ class _CampaignsViewState extends State<CampaignsView> {
                           backgroundColor: const Color(0xFFEF8144),
                           foregroundColor: Colors.white,
                           elevation: 0,
-                          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 18,
+                            vertical: 12,
+                          ),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10),
                           ),
@@ -980,10 +1016,7 @@ class _CampaignsViewState extends State<CampaignsView> {
                         spacing: 10,
                         runSpacing: 10,
                         crossAxisAlignment: WrapCrossAlignment.center,
-                        children: [
-                          splitInputRow,
-                          execPills,
-                        ],
+                        children: [splitInputRow, execPills],
                       ),
                       Row(
                         mainAxisSize: MainAxisSize.min,
@@ -1222,9 +1255,7 @@ class _CampaignsViewState extends State<CampaignsView> {
               ),
               Expanded(
                 flex: 2,
-                child: Center(
-                  child: Text('ASSIGNED', style: headerStyle),
-                ),
+                child: Center(child: Text('ASSIGNED', style: headerStyle)),
               ),
             ],
           ),
@@ -1245,153 +1276,156 @@ class _CampaignsViewState extends State<CampaignsView> {
           )
         else
           ListView.separated(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: _rankedLeads.length,
-          separatorBuilder: (_, _) =>
-              const Divider(height: 1, color: Color(0xFFE8EAF0)),
-          itemBuilder: (context, index) {
-            final lead = _rankedLeads[index];
-            return Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 13),
-              child: Row(
-                children: [
-                  SizedBox(
-                    width: 50,
-                    child: Text(
-                      '${lead.rank}',
-                      style: const TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w700,
-                        color: Color(0xFF0F172A),
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: _rankedLeads.length,
+            separatorBuilder: (_, _) =>
+                const Divider(height: 1, color: Color(0xFFE8EAF0)),
+            itemBuilder: (context, index) {
+              final lead = _rankedLeads[index];
+              return Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 13,
+                ),
+                child: Row(
+                  children: [
+                    SizedBox(
+                      width: 50,
+                      child: Text(
+                        '${lead.rank}',
+                        style: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF0F172A),
+                        ),
                       ),
                     ),
-                  ),
-                  Expanded(
-                    flex: 3,
-                    child: Text(
-                      lead.name,
-                      style: const TextStyle(
-                        fontSize: 13.5,
-                        fontWeight: FontWeight.w700,
-                        color: Color(0xFF0F172A),
+                    Expanded(
+                      flex: 3,
+                      child: Text(
+                        lead.name,
+                        style: const TextStyle(
+                          fontSize: 13.5,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF0F172A),
+                        ),
                       ),
                     ),
-                  ),
-                  Expanded(
-                    flex: 4,
-                    child: Text(
-                      lead.collegeBranchYear,
-                      style: const TextStyle(
-                        fontSize: 13,
-                        color: Color(0xFF475467),
+                    Expanded(
+                      flex: 4,
+                      child: Text(
+                        lead.collegeBranchYear,
+                        style: const TextStyle(
+                          fontSize: 13,
+                          color: Color(0xFF475467),
+                        ),
                       ),
                     ),
-                  ),
-                  Expanded(
-                    flex: 2,
-                    child: Row(
-                      children: [
-                        SizedBox(
-                          width: 48,
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(4),
-                            child: LinearProgressIndicator(
-                              value: lead.score / 100,
-                              minHeight: 6,
+                    Expanded(
+                      flex: 2,
+                      child: Row(
+                        children: [
+                          SizedBox(
+                            width: 48,
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(4),
+                              child: LinearProgressIndicator(
+                                value: lead.score / 100,
+                                minHeight: 6,
+                                color: lead.scoreBarColor,
+                                backgroundColor: const Color(0xFFE5E7EB),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            '${lead.score}',
+                            style: TextStyle(
+                              fontSize: 12.5,
+                              fontWeight: FontWeight.w800,
                               color: lead.scoreBarColor,
-                              backgroundColor: const Color(0xFFE5E7EB),
                             ),
                           ),
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          '${lead.score}',
-                          style: TextStyle(
-                            fontSize: 12.5,
-                            fontWeight: FontWeight.w800,
-                            color: lead.scoreBarColor,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Expanded(
-                    flex: 5,
-                    child: Wrap(
-                      spacing: 6,
-                      runSpacing: 4,
-                      children: lead.reasons.map((r) {
-                        return Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 3.5,
-                          ),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFEEF2FF),
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: Text(
-                            r.label.toUpperCase(),
-                            style: const TextStyle(
-                              fontSize: 10.5,
-                              fontWeight: FontWeight.w700,
-                              color: Color(0xFF4F46E5),
-                              letterSpacing: 0.3,
-                            ),
-                          ),
-                        );
-                      }).toList(),
-                    ),
-                  ),
-                  Expanded(
-                    flex: 2,
-                    child: Text(
-                      lead.lastContact,
-                      style: const TextStyle(
-                        fontSize: 12.5,
-                        color: Color(0xFF667085),
+                        ],
                       ),
                     ),
-                  ),
-                  Expanded(
-                    flex: 2,
-                    child: lead.assignedExec != null
-                        ? Center(
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 10,
-                                vertical: 4,
+                    Expanded(
+                      flex: 5,
+                      child: Wrap(
+                        spacing: 6,
+                        runSpacing: 4,
+                        children: lead.reasons.map((r) {
+                          return Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 3.5,
+                            ),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFEEF2FF),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Text(
+                              r.label.toUpperCase(),
+                              style: const TextStyle(
+                                fontSize: 10.5,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFF4F46E5),
+                                letterSpacing: 0.3,
                               ),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFEEF0FF),
-                                borderRadius: BorderRadius.circular(6),
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    ),
+                    Expanded(
+                      flex: 2,
+                      child: Text(
+                        lead.lastContact,
+                        style: const TextStyle(
+                          fontSize: 12.5,
+                          color: Color(0xFF667085),
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      flex: 2,
+                      child: lead.assignedExec != null
+                          ? Center(
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 4,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFEEF0FF),
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Text(
+                                  lead.assignedExec!,
+                                  style: const TextStyle(
+                                    fontSize: 11.5,
+                                    fontWeight: FontWeight.w600,
+                                    color: Color(0xFF4338CA),
+                                  ),
+                                ),
                               ),
+                            )
+                          : const Center(
                               child: Text(
-                                lead.assignedExec!,
-                                style: const TextStyle(
-                                  fontSize: 11.5,
-                                  fontWeight: FontWeight.w600,
-                                  color: Color(0xFF4338CA),
+                                '—',
+                                style: TextStyle(
+                                  fontSize: 12.5,
+                                  color: Color(0xFF98A2B3),
                                 ),
                               ),
                             ),
-                          )
-                        : const Center(
-                            child: Text(
-                              '—',
-                              style: TextStyle(
-                                fontSize: 12.5,
-                                color: Color(0xFF98A2B3),
-                              ),
-                            ),
-                          ),
-                  ),
-                ],
-              ),
-            );
-          },
-        ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
       ],
     );
   }
@@ -1610,7 +1644,10 @@ class _CampaignsViewState extends State<CampaignsView> {
                       SizedBox(height: 4),
                       Text(
                         'Rank and assign historical leads automatically for upcoming events',
-                        style: TextStyle(fontSize: 13, color: Color(0xFF667085)),
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: Color(0xFF667085),
+                        ),
                       ),
                     ],
                   ),

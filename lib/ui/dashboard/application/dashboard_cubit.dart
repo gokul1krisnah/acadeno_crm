@@ -195,8 +195,7 @@ class DashboardCubit extends Cubit<DashboardState> {
         0,
         AuditLogEntry(
           actor: currentActorLabel,
-          action:
-              'Reset registered phone & approved new device binding (PR-5.1)',
+          action: 'Reset registered phone & approved new device binding',
           target: userName,
           timestamp: 'Just now · IST',
           category: 'device_reset',
@@ -204,8 +203,7 @@ class DashboardCubit extends Cubit<DashboardState> {
       );
       emit(
         DashboardActionSuccess(
-          message:
-              'New phone approved for $userName. Old device signed out (PR-5.1).',
+          message: 'New phone approved for $userName. Old device signed out.',
           selectedNavIndex: state.selectedNavIndex,
         ),
       );
@@ -226,7 +224,7 @@ class DashboardCubit extends Cubit<DashboardState> {
         0,
         AuditLogEntry(
           actor: currentActorLabel,
-          action: 'Triggered remote sign-out across all devices (PR-5.3)',
+          action: 'Triggered remote sign-out across all devices',
           target: userName,
           timestamp: 'Just now · IST',
           category: 'remote_signout',
@@ -234,7 +232,7 @@ class DashboardCubit extends Cubit<DashboardState> {
       );
       emit(
         DashboardActionSuccess(
-          message: 'Remote sign-out sent to $userName (PR-5.3).',
+          message: 'Remote sign-out sent to $userName.',
           selectedNavIndex: state.selectedNavIndex,
         ),
       );

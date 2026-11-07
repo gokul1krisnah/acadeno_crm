@@ -66,7 +66,9 @@ class _CollegeSelectorFieldState extends State<CollegeSelectorField> {
     _collegeList.addAll(_defaultColleges);
     if (widget.additionalColleges != null) {
       _collegeList.addAll(
-        widget.additionalColleges!.map((s) => s.trim()).where((s) => s.isNotEmpty),
+        widget.additionalColleges!
+            .map((s) => s.trim())
+            .where((s) => s.isNotEmpty),
       );
     }
 
@@ -77,23 +79,23 @@ class _CollegeSelectorFieldState extends State<CollegeSelectorField> {
         .collection('colleges')
         .snapshots()
         .listen(
-      (snap) {
-        if (!mounted) return;
-        var changed = false;
-        for (final doc in snap.docs) {
-          final name = (doc.data()['name'] ?? doc.id).toString().trim();
-          if (name.isNotEmpty && !_collegeList.contains(name)) {
-            _collegeList.add(name);
-            changed = true;
-          }
-        }
-        if (changed) setState(() {});
-      },
-      onError: (error) {
-        // Fall back gracefully to bundled college list if offline or permission denied
-        debugPrint('Colleges stream notice: $error');
-      },
-    );
+          (snap) {
+            if (!mounted) return;
+            var changed = false;
+            for (final doc in snap.docs) {
+              final name = (doc.data()['name'] ?? doc.id).toString().trim();
+              if (name.isNotEmpty && !_collegeList.contains(name)) {
+                _collegeList.add(name);
+                changed = true;
+              }
+            }
+            if (changed) setState(() {});
+          },
+          onError: (error) {
+            // Fall back gracefully to bundled college list if offline or permission denied
+            debugPrint('Colleges stream notice: $error');
+          },
+        );
   }
 
   @override
@@ -135,13 +137,17 @@ class _CollegeSelectorFieldState extends State<CollegeSelectorField> {
       if (val == _otherValue) {
         _isOther = true;
         final parts = widget.controller.text.split('·');
-        final branchYear = parts.length > 1 ? ' ·${parts.sublist(1).join('·')}' : ' · Branch · Year';
+        final branchYear = parts.length > 1
+            ? ' ·${parts.sublist(1).join('·')}'
+            : ' · Branch · Year';
         _customCollegeCtrl.text = '';
         widget.controller.text = branchYear.trim();
       } else {
         _isOther = false;
         final parts = widget.controller.text.split('·');
-        final branchYear = parts.length > 1 ? ' ·${parts.sublist(1).join('·')}' : ' · Branch · Year';
+        final branchYear = parts.length > 1
+            ? ' ·${parts.sublist(1).join('·')}'
+            : ' · Branch · Year';
         widget.controller.text = '$val$branchYear';
       }
     });
@@ -150,8 +156,12 @@ class _CollegeSelectorFieldState extends State<CollegeSelectorField> {
   void _onCustomCollegeChanged(String text) {
     final clean = text.trim();
     final parts = widget.controller.text.split('·');
-    final branchYear = parts.length > 1 ? ' ·${parts.sublist(1).join('·')}' : ' · Branch · Year';
-    widget.controller.text = clean.isNotEmpty ? '$clean$branchYear' : branchYear.trim();
+    final branchYear = parts.length > 1
+        ? ' ·${parts.sublist(1).join('·')}'
+        : ' · Branch · Year';
+    widget.controller.text = clean.isNotEmpty
+        ? '$clean$branchYear'
+        : branchYear.trim();
   }
 
   @override
@@ -165,7 +175,11 @@ class _CollegeSelectorFieldState extends State<CollegeSelectorField> {
       const AcadenoDropdownItem<String>(
         value: _otherValue,
         label: '+ Other (Type new college...)',
-        icon: Icon(Icons.add_circle_outline, size: 16, color: Color(0xFF4338CA)),
+        icon: Icon(
+          Icons.add_circle_outline,
+          size: 16,
+          color: Color(0xFF4338CA),
+        ),
       ),
     ];
 
@@ -176,7 +190,8 @@ class _CollegeSelectorFieldState extends State<CollegeSelectorField> {
         AcadenoDropdown<String>(
           label: 'College Selection',
           hint: 'Select or choose Other',
-          value: (_selectedCollege != null &&
+          value:
+              (_selectedCollege != null &&
                   dropdownItems.any((i) => i.value == _selectedCollege))
               ? _selectedCollege
               : null,
@@ -197,15 +212,24 @@ class _CollegeSelectorFieldState extends State<CollegeSelectorField> {
               isDense: true,
               filled: true,
               fillColor: const Color(0xFFF8FAFC),
-              prefixIcon: const Icon(Icons.school_outlined, size: 18, color: Color(0xFF4338CA)),
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
+              prefixIcon: const Icon(
+                Icons.school_outlined,
+                size: 18,
+                color: Color(0xFF4338CA),
+              ),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(14),
                 borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(14),
-                borderSide: const BorderSide(color: Color(0xFF4338CA), width: 1.5),
+                borderSide: const BorderSide(
+                  color: Color(0xFF4338CA),
+                  width: 1.5,
+                ),
               ),
             ),
           ),
@@ -222,9 +246,17 @@ class _CollegeSelectorFieldState extends State<CollegeSelectorField> {
             isDense: true,
             filled: true,
             fillColor: Colors.white,
-            prefixIcon: const Icon(Icons.edit_note_rounded, size: 20, color: Color(0xFF6B7280)),
-            helperText: 'You can freely edit or fine-tune college, branch and year here.',
-            helperStyle: const TextStyle(fontSize: 11, color: Color(0xFF94A3B8)),
+            prefixIcon: const Icon(
+              Icons.edit_note_rounded,
+              size: 20,
+              color: Color(0xFF6B7280),
+            ),
+            helperText:
+                'You can freely edit or fine-tune college, branch and year here.',
+            helperStyle: const TextStyle(
+              fontSize: 11,
+              color: Color(0xFF94A3B8),
+            ),
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
@@ -232,11 +264,17 @@ class _CollegeSelectorFieldState extends State<CollegeSelectorField> {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
-              borderSide: const BorderSide(color: Color(0xFF4338CA), width: 1.5),
+              borderSide: const BorderSide(
+                color: Color(0xFF4338CA),
+                width: 1.5,
+              ),
             ),
           ),
-          validator: widget.validator ??
-              (v) => (v == null || v.trim().isEmpty) ? 'College details required' : null,
+          validator:
+              widget.validator ??
+              (v) => (v == null || v.trim().isEmpty)
+                  ? 'College details required'
+                  : null,
         ),
       ],
     );

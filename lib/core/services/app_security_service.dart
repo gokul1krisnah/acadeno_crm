@@ -2,7 +2,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
-/// Service responsible for mobile device security controls (PR-2.1/DPDP).
+/// Service responsible for mobile device security controls.
 ///
 /// Prevents:
 /// 1. Hardware and software screenshots of student lead phone numbers.

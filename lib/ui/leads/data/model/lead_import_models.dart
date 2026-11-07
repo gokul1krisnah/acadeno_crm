@@ -1,6 +1,6 @@
 import 'lead_models.dart';
 
-/// Status classification of an individual row during bulk lead import (FR-1.2).
+/// Status classification of an individual row during bulk lead import.
 enum LeadImportStatus {
   /// Valid new lead, not present in file or database. Ready to import.
   valid,

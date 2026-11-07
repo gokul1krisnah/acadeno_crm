@@ -30,7 +30,7 @@ class AlertsCubit extends Cubit<AlertsState> {
     }
   }
 
-  // FR-5.4: Discount above ₹500 raises a persistent approval request in Firestore
+  // Discount above ₹500 raises a persistent approval request in Firestore
   Future<void> addDiscountApprovalAlert({
     required String leadName,
     required String? courseEnrolled,
@@ -51,7 +51,7 @@ class AlertsCubit extends Cubit<AlertsState> {
     } catch (_) {}
   }
 
-  // FR-9.1: Mark all alerts read
+  // Mark all alerts read
   void markAllAlertsRead() {
     _repository.markAllAlertsRead();
     final updated = List<ExecutiveAlertItem>.from(state.alerts);
@@ -80,7 +80,7 @@ class AlertsCubit extends Cubit<AlertsState> {
     }
   }
 
-  // FR-9.1: Mark a single alert as read
+  // Mark a single alert as read
   void markSingleAlertRead(String id) {
     _repository.markAlertRead(id);
     final updated = List<ExecutiveAlertItem>.from(state.alerts);

@@ -256,7 +256,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                 if (summary != null) {
                   _tryDashboardCubit()?.recordAudit(
                     action:
-                        'Assigned ${summary.totalCount} leads to ${summary.executiveName} for ${summary.dateLabel} (FR-2.1)',
+                        'Assigned ${summary.totalCount} leads to ${summary.executiveName} for ${summary.dateLabel}',
                     target: summary.assignments
                         .map((e) => e.leadName)
                         .join(', '),
@@ -896,7 +896,8 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
             // Top Header - Rigorously aligned to the far right top
             LayoutBuilder(
               builder: (context, c) {
-                final isNarrow = MediaQuery.of(context).size.width < 768 || c.maxWidth < 760;
+                final isNarrow =
+                    MediaQuery.of(context).size.width < 768 || c.maxWidth < 760;
                 final titleCol = Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -933,10 +934,17 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                           padding: const EdgeInsets.symmetric(horizontal: 14),
                         ),
                         onPressed: cubit.refresh,
-                        icon: const Icon(Icons.refresh_rounded, size: 16, color: Color(0xFF475467)),
+                        icon: const Icon(
+                          Icons.refresh_rounded,
+                          size: 16,
+                          color: Color(0xFF475467),
+                        ),
                         label: const Text(
                           'Refresh',
-                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ),
                     ),
@@ -954,10 +962,17 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                           padding: const EdgeInsets.symmetric(horizontal: 14),
                         ),
                         onPressed: () => _tryDashboardCubit()?.selectNav(5),
-                        icon: const Icon(Icons.upload_file_rounded, size: 16, color: Color(0xFF475467)),
+                        icon: const Icon(
+                          Icons.upload_file_rounded,
+                          size: 16,
+                          color: Color(0xFF475467),
+                        ),
                         label: const Text(
                           'Import Leads',
-                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ),
                     ),
@@ -997,10 +1012,17 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                             );
                           }
                         },
-                        icon: const Icon(Icons.download_rounded, size: 16, color: Color(0xFF475467)),
+                        icon: const Icon(
+                          Icons.download_rounded,
+                          size: 16,
+                          color: Color(0xFF475467),
+                        ),
                         label: Text(
                           'Export (${state.filteredLeads.isNotEmpty ? state.filteredLeads.length : ""})',
-                          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ),
                     ),
@@ -1021,7 +1043,10 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                         icon: const Icon(Icons.add, size: 16),
                         label: const Text(
                           'Add lead',
-                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ),
                     ),
@@ -1221,11 +1246,15 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                 },
               ),
             ),
-            const SizedBox(height: 16),            // Dark Bulk Selection & Assignment Bar (Always shown; grey & disabled if no tick selected)
+            const SizedBox(
+              height: 16,
+            ), // Dark Bulk Selection & Assignment Bar (Always shown; grey & disabled if no tick selected)
             // Dark Bulk Selection & Assignment Bar (Responsive mobile-friendly layout)
             LayoutBuilder(
               builder: (context, barC) {
-                final isMobileBar = MediaQuery.of(context).size.width < 768 || barC.maxWidth < 640;
+                final isMobileBar =
+                    MediaQuery.of(context).size.width < 768 ||
+                    barC.maxWidth < 640;
 
                 final execDropdown = Container(
                   height: 38,
@@ -1262,8 +1291,9 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                               fontWeight: FontWeight.w600,
                             ),
                             items: state.activeExecutives.map((exec) {
-                              final count = state
-                                  .assignmentCountForExecutive(exec.uid);
+                              final count = state.assignmentCountForExecutive(
+                                exec.uid,
+                              );
                               return DropdownMenuItem<String>(
                                 value: exec.uid,
                                 child: Text(
@@ -1290,7 +1320,9 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                     border: Border.all(color: const Color(0xFF334155)),
                   ),
                   child: Row(
-                    mainAxisSize: isMobileBar ? MainAxisSize.max : MainAxisSize.min,
+                    mainAxisSize: isMobileBar
+                        ? MainAxisSize.max
+                        : MainAxisSize.min,
                     children: [
                       Expanded(
                         flex: isMobileBar ? 1 : 0,
@@ -1334,8 +1366,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                         onTap: () async {
                           final now = DateTime.now();
                           final parsed =
-                              DateTime.tryParse(state.selectedDateKey) ??
-                              now;
+                              DateTime.tryParse(state.selectedDateKey) ?? now;
                           final picked = await showDatePicker(
                             context: context,
                             initialDate: parsed,
@@ -1388,7 +1419,8 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                         borderRadius: BorderRadius.circular(8),
                       ),
                     ),
-                    onPressed: state.selectedLeadIds.isEmpty ||
+                    onPressed:
+                        state.selectedLeadIds.isEmpty ||
                             state.activeExecutives.isEmpty ||
                             state.isSubmitting
                         ? null
@@ -1399,7 +1431,10 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                         isMobileBar && state.selectedLeadIds.isNotEmpty
                             ? 'Assign ${state.selectedLeadIds.length} Selected Leads'
                             : 'Assign',
-                        style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 13,
+                        ),
                       ),
                     ),
                   ),
@@ -1448,7 +1483,10 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
 
                 return Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 14,
+                  ),
                   decoration: BoxDecoration(
                     color: const Color(0xFF0F172A),
                     borderRadius: BorderRadius.circular(12),

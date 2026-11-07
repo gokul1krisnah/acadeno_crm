@@ -29,7 +29,7 @@ Future<void> main() async {
     return true;
   };
 
-  // Enforce screen security: Block screenshots, screen recordings, and switcher previews (PR-2.1)
+  // Enforce screen security: Block screenshots, screen recordings, and switcher previews
   await AppSecurityService.instance.enableScreenshotProtection();
 
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
@@ -75,7 +75,7 @@ class _AcadenoAppState extends State<AcadenoApp> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    // Attach real-time session revocation listener (PR-5.3)
+    // Attach real-time session revocation listener
     SessionSecurityService.instance.attachContext(
       router: _appRouter,
       messengerKey: _scaffoldMessengerKey,

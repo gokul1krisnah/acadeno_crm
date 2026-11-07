@@ -7,7 +7,10 @@ extension StringExtension on String {
 
   bool _isValidAbsoluteUrl() {
     final uri = Uri.tryParse(this);
-    return uri != null && uri.hasScheme && _isHttpScheme(uri.scheme) && uri.host.isNotEmpty;
+    return uri != null &&
+        uri.hasScheme &&
+        _isHttpScheme(uri.scheme) &&
+        uri.host.isNotEmpty;
   }
 
   bool _isHttpScheme(String scheme) {
@@ -29,14 +32,31 @@ extension TimeFormatter on String {
     final now = DateTime.now();
     final yesterday = now.subtract(const Duration(days: 1));
 
-    if (date.year == now.year && date.month == now.month && date.day == now.day) {
+    if (date.year == now.year &&
+        date.month == now.month &&
+        date.day == now.day) {
       return 'Today';
     }
-    if (date.year == yesterday.year && date.month == yesterday.month && date.day == yesterday.day) {
+    if (date.year == yesterday.year &&
+        date.month == yesterday.month &&
+        date.day == yesterday.day) {
       return 'Yesterday';
     }
 
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
     final day = date.day.toString().padLeft(2, '0');
     final month = months[date.month - 1];
     return '$day $month ${date.year}';
@@ -46,7 +66,9 @@ extension TimeFormatter on String {
     final dateTime = DateTime.tryParse(this)?.toLocal();
     if (dateTime == null) return false;
     final now = DateTime.now();
-    return dateTime.year == now.year && dateTime.month == now.month && dateTime.day == now.day;
+    return dateTime.year == now.year &&
+        dateTime.month == now.month &&
+        dateTime.day == now.day;
   }
 
   String toTimeAgoOrTime() {
@@ -55,7 +77,9 @@ extension TimeFormatter on String {
     final now = DateTime.now();
     final difference = now.difference(dateTime);
 
-    if (now.year == dateTime.year && now.month == dateTime.month && now.day == dateTime.day) {
+    if (now.year == dateTime.year &&
+        now.month == dateTime.month &&
+        now.day == dateTime.day) {
       final hoursAgo = difference.inHours;
       if (hoursAgo >= 1) {
         return '$hoursAgo hours ago';
@@ -65,7 +89,9 @@ extension TimeFormatter on String {
         return 'Just now';
       }
     } else {
-      final hour = dateTime.hour > 12 ? dateTime.hour - 12 : (dateTime.hour == 0 ? 12 : dateTime.hour);
+      final hour = dateTime.hour > 12
+          ? dateTime.hour - 12
+          : (dateTime.hour == 0 ? 12 : dateTime.hour);
       final minute = dateTime.minute.toString().padLeft(2, '0');
       final period = dateTime.hour >= 12 ? 'PM' : 'AM';
       return '$hour:$minute $period';

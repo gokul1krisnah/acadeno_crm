@@ -16,7 +16,7 @@ mixin FormValidatorMixin {
     return null;
   }
 
-  String? requiredField(String? value){
+  String? requiredField(String? value) {
     if (value?.isEmpty ?? true) {
       return 'This field is required';
     }

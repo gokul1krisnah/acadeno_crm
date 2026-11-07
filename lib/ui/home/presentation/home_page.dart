@@ -100,7 +100,7 @@ class _HomeScaffoldViewState extends State<_HomeScaffoldView> {
           ],
         ),
         content: Text(
-          'Sign out of ${context.read<HomeCubit>().state.user.displayName}’s Lead Manager session? Local offline cache will be cleared (PR-6.3).',
+          'Sign out of ${context.read<HomeCubit>().state.user.displayName}’s Lead Manager session? Local offline cache will be cleared.',
           style: const TextStyle(fontSize: 13.5, color: Color(0xFF475467)),
         ),
         actions: [

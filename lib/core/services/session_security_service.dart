@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import '../../ui/auth/data/sources/auth_session_local_ds.dart';
 import '../router/app_router.dart';
 
-/// Central Real-Time Session Security & Remote Deactivation Listener (PR-5.3).
+/// Central Real-Time Session Security & Remote Deactivation Listener.
 ///
 /// Ensures accounts deactivated or remotely signed out in Super Admin console
 /// immediately terminate on the user's device (< 1 sec) via live Firestore snapshot.
@@ -58,7 +58,7 @@ class SessionSecurityService {
         );
   }
 
-  /// Evaluates real-time document updates to trigger instant session termination (PR-5.3).
+  /// Evaluates real-time document updates to trigger instant session termination.
   Future<void> _handleUserDocUpdate(
     DocumentSnapshot<Map<String, dynamic>> doc,
   ) async {
@@ -78,12 +78,12 @@ class SessionSecurityService {
 
     final data = doc.data() ?? {};
 
-    // 1. Remote Account Deactivation Check (PR-5.3)
+    // 1. Remote Account Deactivation Check
     final isActive = data['isActive'] as bool? ?? true;
     final status = (data['status'] as String?)?.toLowerCase();
     if (!isActive || status == 'inactive') {
       await terminateSession(
-        'Your account has been deactivated by Super Admin (PR-5.3).',
+        'Your account has been deactivated by Super Admin.',
       );
       return;
     }
@@ -115,14 +115,14 @@ class SessionSecurityService {
 
       final isDeviceReset = (data['deviceBound'] as bool? ?? true) == false;
       final msg = isDeviceReset
-          ? 'Your phone binding was reset by Super Admin (PR-5.1). Please sign in again on your new phone.'
-          : 'Your session was remotely terminated by Super Admin (PR-5.3).';
+          ? 'Your phone binding was reset by Super Admin. Please sign in again on your new phone.'
+          : 'Your session was remotely terminated by Super Admin.';
       await terminateSession(msg);
       return;
     }
   }
 
-  /// Instantly revokes session, purges local credentials, shows alert, and redirects to login (PR-5.3).
+  /// Instantly revokes session, purges local credentials, shows alert, and redirects to login.
   Future<void> terminateSession(String reasonMessage) async {
     if (_isTerminating) return;
     _isTerminating = true;
