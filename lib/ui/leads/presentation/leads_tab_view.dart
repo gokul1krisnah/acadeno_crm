@@ -10,7 +10,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:acadeno_crm/shared/extensions/build_context_extension.dart';
 import 'package:acadeno_crm/shared/theme/app_images.dart';
 import 'package:acadeno_crm/ui/follow_ups/application/follow_ups_cubit.dart';
-import 'package:acadeno_crm/ui/follow_ups/data/model/follow_up_models.dart';
 import 'package:acadeno_crm/ui/home/application/home_cubit.dart';
 import 'package:acadeno_crm/ui/leads/application/leads_cubit.dart';
 import 'package:acadeno_crm/ui/leads/application/leads_state.dart';
@@ -100,9 +99,7 @@ class _LeadsTabViewState extends State<LeadsTabView> {
     return BlocBuilder<LeadsCubit, LeadsState>(
       builder: (context, state) {
         final cubit = context.read<LeadsCubit>();
-        final homeCubit = context.read<HomeCubit>();
         final homeState = context.watch<HomeCubit>().state;
-        final followUpsCubit = context.read<FollowUpsCubit>();
         final followUpsState = context.watch<FollowUpsCubit>().state;
         final pad = context.devicePadding;
         final displayedLeads = state.showingPendingCalls
@@ -244,7 +241,7 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                   ),
                   const SizedBox(height: 16),
 
-                  // 2. Three Metric Cards Row
+                  // 2. Three Metric Cards Row (Static display metrics — no tap navigation or toggles)
                   Row(
                     children: [
                       Expanded(
@@ -255,9 +252,6 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                           bgColor: const Color(0xFFEEF2FF),
                           valueColor: const Color(0xFF4338CA),
                           labelColor: const Color(0xFF6366F1),
-                          onTap: () => cubit.togglePendingOrDoneCalls(
-                            !state.showingPendingCalls ? true : false,
-                          ),
                         ),
                       ),
                       const SizedBox(width: 10),
@@ -268,12 +262,6 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                           bgColor: const Color(0xFFF0F9FF),
                           valueColor: const Color(0xFF0284C7),
                           labelColor: const Color(0xFF0EA5E9),
-                          onTap: () {
-                            followUpsCubit.selectFollowUpBucket(
-                              FollowUpBucket.today,
-                            );
-                            homeCubit.selectBottomNav(1);
-                          },
                         ),
                       ),
                       const SizedBox(width: 10),
@@ -284,12 +272,6 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                           bgColor: const Color(0xFFFFF7ED),
                           valueColor: const Color(0xFFC2410C),
                           labelColor: const Color(0xFFEA580C),
-                          onTap: () {
-                            followUpsCubit.selectFollowUpBucket(
-                              FollowUpBucket.overdue,
-                            );
-                            homeCubit.selectBottomNav(1);
-                          },
                         ),
                       ),
                     ],
@@ -1205,7 +1187,6 @@ class _MetricBox extends StatelessWidget {
   final Color bgColor;
   final Color valueColor;
   final Color labelColor;
-  final VoidCallback onTap;
 
   const _MetricBox({
     required this.value,
@@ -1213,51 +1194,48 @@ class _MetricBox extends StatelessWidget {
     required this.bgColor,
     required this.valueColor,
     this.labelColor = const Color(0xFF475467),
-    required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
-      child: Container(
-        height: 85,
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: bgColor,
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            FittedBox(
-              fit: BoxFit.scaleDown,
-              child: Text(
-                value,
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.w800,
-                  color: valueColor,
-                  letterSpacing: -0.5,
-                ),
+    return Container(
+      height: 85,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              value,
+              style: TextStyle(
+                fontFamily: 'Inter',
+                fontSize: 22,
+                fontWeight: FontWeight.w800,
+                color: valueColor,
+                letterSpacing: -0.5,
               ),
             ),
-            const SizedBox(height: 4),
-            FittedBox(
-              fit: BoxFit.scaleDown,
-              child: Text(
-                label,
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                  color: labelColor,
-                ),
+          ),
+          const SizedBox(height: 4),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              label,
+              style: TextStyle(
+                fontFamily: 'Inter',
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+                color: labelColor,
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
