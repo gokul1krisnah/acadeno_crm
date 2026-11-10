@@ -35,7 +35,7 @@ class _LeadsTabViewState extends State<LeadsTabView> {
     if (_isRefreshing) return;
     setState(() => _isRefreshing = true);
     context.read<LeadsCubit>().refresh();
-    await Future.delayed(const Duration(seconds: 2));
+    await Future.delayed(const Duration(seconds: 3));
     if (mounted) {
       setState(() => _isRefreshing = false);
     }
@@ -775,12 +775,22 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                       ),
                                       const SizedBox(height: 12),
                                       OutlinedButton.icon(
-                                        onPressed: cubit.refresh,
-                                        icon: const Icon(
-                                          CupertinoIcons.refresh,
-                                          size: 16,
+                                        onPressed: _isRefreshing
+                                            ? null
+                                            : _performRefresh,
+                                        icon: _isRefreshing
+                                            ? const CupertinoActivityIndicator(
+                                                radius: 7,
+                                              )
+                                            : const Icon(
+                                                CupertinoIcons.refresh,
+                                                size: 16,
+                                              ),
+                                        label: Text(
+                                          _isRefreshing
+                                              ? 'Refreshing...'
+                                              : 'Retry',
                                         ),
-                                        label: const Text('Retry'),
                                       ),
                                     ],
                                   ),
@@ -861,7 +871,7 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                       Row(
                                         children: [
                                           if (!state.showingPendingCalls) ...[
-                                            // Back to Pending Calls Button (Figma: flex 8, height 44, radius 12, #D35501)
+                                            // Back to Pending Calls Button (Figma: minWidth 157, expands with box, height 44, gap 14.23, padding [16, 12, 22.25, 12], radius 12, #D35501)
                                             Expanded(
                                               flex: 8,
                                               child: SizedBox(
@@ -903,14 +913,19 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                                       elevation: 0,
                                                       shadowColor:
                                                           Colors.transparent,
-                                                      minimumSize: Size.zero,
+                                                      minimumSize: const Size(
+                                                        157,
+                                                        44,
+                                                      ),
                                                       tapTargetSize:
                                                           MaterialTapTargetSize
                                                               .shrinkWrap,
                                                       padding:
-                                                          const EdgeInsets.symmetric(
-                                                            horizontal: 10,
-                                                            vertical: 4,
+                                                          const EdgeInsets.only(
+                                                            left: 16,
+                                                            top: 12,
+                                                            right: 22.25,
+                                                            bottom: 12,
                                                           ),
                                                       shape: RoundedRectangleBorder(
                                                         borderRadius:
@@ -919,45 +934,49 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                                             ),
                                                       ),
                                                     ),
-                                                    child: FittedBox(
-                                                      fit: BoxFit.scaleDown,
-                                                      child: Row(
-                                                        mainAxisSize:
-                                                            MainAxisSize.min,
-                                                        mainAxisAlignment:
-                                                            MainAxisAlignment
-                                                                .center,
-                                                        children: [
-                                                          SvgPicture.asset(
-                                                            AppSvgs.arrowLeft,
-                                                            width: 15,
-                                                            height: 15,
-                                                            colorFilter:
-                                                                const ColorFilter.mode(
-                                                                  Colors.white,
-                                                                  BlendMode
-                                                                      .srcIn,
-                                                                ),
-                                                          ),
-                                                          const SizedBox(
-                                                            width: 8,
-                                                          ),
-                                                          const Text(
-                                                            'Back to Pending\nCalls',
-                                                            textAlign:
-                                                                TextAlign.left,
-                                                            style: TextStyle(
-                                                              fontSize: 12,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w700,
-                                                              color:
-                                                                  Colors.white,
-                                                              height: 1.15,
+                                                    child: Row(
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment
+                                                              .center,
+                                                      mainAxisSize:
+                                                          MainAxisSize.min,
+                                                      children: [
+                                                        SvgPicture.asset(
+                                                          AppSvgs.arrowLeft,
+                                                          width: 14,
+                                                          height: 14,
+                                                          colorFilter:
+                                                              const ColorFilter.mode(
+                                                                Colors.white,
+                                                                BlendMode.srcIn,
+                                                              ),
+                                                        ),
+                                                        const SizedBox(
+                                                          width: 14.23,
+                                                        ),
+                                                        const Flexible(
+                                                          child: FittedBox(
+                                                            fit: BoxFit
+                                                                .scaleDown,
+                                                            child: Text(
+                                                              'Back to Pending Calls',
+                                                              maxLines: 1,
+                                                              style: TextStyle(
+                                                                fontFamily:
+                                                                    'Inter',
+                                                                fontSize: 13,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w700,
+                                                                color: Colors
+                                                                    .white,
+                                                                letterSpacing:
+                                                                    -0.2,
+                                                              ),
                                                             ),
                                                           ),
-                                                        ],
-                                                      ),
+                                                        ),
+                                                      ],
                                                     ),
                                                   ),
                                                 ),
@@ -966,7 +985,7 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                             const SizedBox(width: 10),
                                           ],
 
-                                          // Refresh Button (Figma: flex 5, height 44, radius 12, border 1px #F3F4F6)
+                                          // Refresh Button (Figma: flex 5, height 44, radius 12, border 1px #E2E8F0, 3-sec loading indicator)
                                           Expanded(
                                             flex: state.showingPendingCalls
                                                 ? 1
@@ -974,7 +993,9 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                             child: SizedBox(
                                               height: 44,
                                               child: OutlinedButton(
-                                                onPressed: cubit.refresh,
+                                                onPressed: _isRefreshing
+                                                    ? null
+                                                    : _performRefresh,
                                                 style: OutlinedButton.styleFrom(
                                                   backgroundColor: Colors.white,
                                                   foregroundColor: const Color(
@@ -1009,28 +1030,50 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                                         MainAxisAlignment
                                                             .center,
                                                     children: [
-                                                      SvgPicture.asset(
-                                                        AppSvgs.refresh,
-                                                        width: 15,
-                                                        height: 15,
-                                                        colorFilter:
-                                                            const ColorFilter.mode(
-                                                              Color(0xFF475467),
-                                                              BlendMode.srcIn,
+                                                      if (_isRefreshing) ...[
+                                                        const CupertinoActivityIndicator(
+                                                          radius: 7.5,
+                                                        ),
+                                                        const SizedBox(
+                                                          width: 7,
+                                                        ),
+                                                        const Text(
+                                                          'Refreshing...',
+                                                          style: TextStyle(
+                                                            fontFamily: 'Inter',
+                                                            fontSize: 13,
+                                                            fontWeight:
+                                                                FontWeight.w700,
+                                                            color: Color(
+                                                              0xFF334155,
                                                             ),
-                                                      ),
-                                                      const SizedBox(width: 7),
-                                                      const Text(
-                                                        'Refresh',
-                                                        style: TextStyle(
-                                                          fontSize: 13,
-                                                          fontWeight:
-                                                              FontWeight.w700,
-                                                          color: Color(
-                                                            0xFF334155,
                                                           ),
                                                         ),
-                                                      ),
+                                                      ] else ...[
+                                                        const Icon(
+                                                          CupertinoIcons
+                                                              .refresh,
+                                                          size: 16,
+                                                          color: Color(
+                                                            0xFF475467,
+                                                          ),
+                                                        ),
+                                                        const SizedBox(
+                                                          width: 7,
+                                                        ),
+                                                        const Text(
+                                                          'Refresh',
+                                                          style: TextStyle(
+                                                            fontFamily: 'Inter',
+                                                            fontSize: 13,
+                                                            fontWeight:
+                                                                FontWeight.w700,
+                                                            color: Color(
+                                                              0xFF334155,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ],
                                                     ],
                                                   ),
                                                 ),
@@ -1095,6 +1138,53 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                 ],
                               ),
                             ),
+                          ),
+                        ),
+                      ),
+                    ),
+
+                  // Floating iOS Refresh Indicator pill during 3-second refresh
+                  if (_isRefreshing)
+                    Positioned(
+                      top: 14,
+                      left: 0,
+                      right: 0,
+                      child: Center(
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 8,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(24),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.12),
+                                blurRadius: 16,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                            border: Border.all(
+                              color: const Color(0xFFE2E8F0),
+                              width: 1,
+                            ),
+                          ),
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              CupertinoActivityIndicator(radius: 8.5),
+                              SizedBox(width: 8),
+                              Text(
+                                'Refreshing...',
+                                style: TextStyle(
+                                  fontFamily: 'Inter',
+                                  fontSize: 12.5,
+                                  fontWeight: FontWeight.w600,
+                                  color: Color(0xFF1E293B),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ),

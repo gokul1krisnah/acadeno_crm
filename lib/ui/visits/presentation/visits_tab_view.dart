@@ -28,7 +28,7 @@ class VisitsTabView extends StatelessWidget {
             color: const Color(0xFF4338CA),
             backgroundColor: Colors.white,
             onRefresh: () async {
-              await Future.delayed(const Duration(seconds: 2));
+              await Future.delayed(const Duration(seconds: 3));
             },
             child: SingleChildScrollView(
               physics: const AlwaysScrollableScrollPhysics(

@@ -30,7 +30,7 @@ class AlertsTabView extends StatelessWidget {
             backgroundColor: Colors.white,
             onRefresh: () async {
               await cubit.refresh();
-              await Future.delayed(const Duration(seconds: 2));
+              await Future.delayed(const Duration(seconds: 3));
             },
             child: SingleChildScrollView(
               physics: const AlwaysScrollableScrollPhysics(
