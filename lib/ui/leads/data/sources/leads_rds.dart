@@ -538,7 +538,7 @@ class FirestoreLeadsBackend implements LeadsBackend {
       year: parsed.year,
       source: source.trim().isEmpty ? 'Direct visit' : source.trim(),
       status: effectiveStatus,
-      lastContact: assignToSelfAsWalkIn ? 'Today · Walk-in' : 'Never',
+      lastContact: 'Never',
       assignedToUid: assignedUid,
       assignedToName: assignedName,
       assignedDateKey: assignToSelfAsWalkIn ? todayKey : null,
@@ -549,8 +549,8 @@ class FirestoreLeadsBackend implements LeadsBackend {
       notes: notes.trim(),
       timeline: [
         if (assignToSelfAsWalkIn)
-          '$todayLabel · Walk-in claimed by ${actor.name}',
-        '${LeadDateHelper.formatTimestamp(now)} · Registered via ${source.trim()} (Consent recorded)',
+          '${LeadDateHelper.timelineStamp(now)} · Walk-in claimed by ${actor.name}',
+        '${LeadDateHelper.timelineStamp(now)} · Registered via ${source.trim().isEmpty ? "Direct visit" : source.trim()} (Consent recorded)',
       ],
       createdByUid: actor.uid,
       createdByName: actor.name,
@@ -912,9 +912,13 @@ class FirestoreLeadsBackend implements LeadsBackend {
           if (isReassignment) 'reassignedAt': FieldValue.serverTimestamp(),
         });
 
+        // Persist the concrete date only ("11 Nov"), never "Today"/"Tomorrow".
+        final concreteDate = dateLabel.contains(', ')
+            ? dateLabel.split(', ').last
+            : dateKey;
         final timelineEntry = isReassignment
-            ? '$dateLabel · Reassigned from ${prevExecName ?? "previous executive"} to ${executive.name} by ${actor.name}'
-            : '$dateLabel · Assigned to ${executive.name} by ${actor.name}';
+            ? '${LeadDateHelper.timelineStamp()} · Reassigned from ${prevExecName ?? "previous executive"} to ${executive.name} by ${actor.name} (For $concreteDate)'
+            : '${LeadDateHelper.timelineStamp()} · Assigned to ${executive.name} by ${actor.name} (For $concreteDate)';
 
         final updatedTimeline = <String>[timelineEntry, ...lead.timeline];
 
@@ -1157,6 +1161,12 @@ class FirestoreLeadsBackend implements LeadsBackend {
         outcome == 'Interested' ||
         outcome == 'No answer';
 
+    // Persist a concrete date/time (never "Today"/"Tomorrow") so follow-ups
+    // can't drift as days pass. Only outcomes that need a follow-up get one.
+    final resolvedFollowUp = isFollowUpPending
+        ? LeadDateHelper.resolveFollowUpLabel(followUpTime, outcome: outcome)
+        : null;
+
     final clientId =
         'call_${leadId}_${DateTime.now().millisecondsSinceEpoch}_${leadId.hashCode.abs()}';
 
@@ -1185,15 +1195,7 @@ class FirestoreLeadsBackend implements LeadsBackend {
           'isLocked': false,
           'lockedByUid': null,
           'lockedMessage': null,
-          if (outcome == 'Follow-up' || outcome == 'Callback')
-            'followUpTime': (followUpTime != null && followUpTime.isNotEmpty)
-                ? followUpTime
-                : 'Tomorrow · 10:30 AM',
-          if (outcome == 'No answer') 'followUpTime': 'Today · 4:00 PM',
-          if (outcome == 'Interested')
-            'followUpTime': (followUpTime != null && followUpTime.isNotEmpty)
-                ? followUpTime
-                : 'Today · 5:30 PM',
+          'followUpTime': ?resolvedFollowUp,
           if (notes.trim().isNotEmpty) 'notes': notes.trim(),
           'updatedAt': FieldValue.serverTimestamp(),
         }, SetOptions(merge: true));
@@ -1234,7 +1236,7 @@ class FirestoreLeadsBackend implements LeadsBackend {
         }
 
         final nextTimeline = <String>[
-          'Today · $outcome logged by ${actor.name}${notes.trim().isNotEmpty ? " ($notes)" : ""}',
+          '${LeadDateHelper.timelineStamp()} · $outcome logged by ${actor.name}${notes.trim().isNotEmpty ? " ($notes)" : ""}',
           ...lead.timeline,
         ];
 
@@ -1248,14 +1250,7 @@ class FirestoreLeadsBackend implements LeadsBackend {
               'isLocked': false,
               'lockedByUid': null,
               'lockedMessage': null,
-              if (followUpTime != null && followUpTime.trim().isNotEmpty)
-                'followUpTime': followUpTime.trim()
-              else if (outcome == 'Follow-up' || outcome == 'Callback')
-                'followUpTime': 'Tomorrow · 10:30 AM'
-              else if (outcome == 'No answer')
-                'followUpTime': 'Today · 4:00 PM'
-              else if (outcome == 'Interested')
-                'followUpTime': 'Today · 5:30 PM',
+              'followUpTime': ?resolvedFollowUp,
               if (notes.trim().isNotEmpty) 'notes': notes.trim(),
               'timeline': nextTimeline,
               'updatedAt': FieldValue.serverTimestamp(),
@@ -1567,7 +1562,7 @@ class FirestoreLeadsBackend implements LeadsBackend {
             if (item.year.isNotEmpty) 'year': item.year,
             if (item.course.isNotEmpty) 'course': item.course,
             'timeline': FieldValue.arrayUnion([
-              '${LeadDateHelper.formatTimestamp(now)} · Profile enriched via Bulk Import by ${actor.name} (Source: $sourceEvent)',
+              '${LeadDateHelper.timelineStamp(now)} · Profile enriched via Bulk Import by ${actor.name} (Source: $sourceEvent)',
             ]),
           };
           batch.update(existingLeadRef, enrichUpdates);

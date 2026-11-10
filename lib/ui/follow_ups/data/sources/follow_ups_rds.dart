@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
+import '../../../leads/data/model/lead_models.dart';
 import '../model/follow_up_models.dart';
 import '../model/follow_up_time_helper.dart';
 
@@ -223,6 +224,8 @@ class FollowUpsRds {
           'isOverdue': false,
           'status': 'contacted',
           'lastContact': 'Today',
+          'lastContactAt': FieldValue.serverTimestamp(),
+          'lastCalledAt': FieldValue.serverTimestamp(),
           'updatedAt': FieldValue.serverTimestamp(),
         });
         await _appendAudit(
@@ -243,8 +246,11 @@ class FollowUpsRds {
       final docRef = _leads.doc(id);
       final snap = await docRef.get();
       if (snap.exists) {
+        // Store a concrete date so "Today"/"Tomorrow" can't go stale.
+        final concreteLabel =
+            LeadDateHelper.resolveFollowUpLabel(newTimeLabel) ?? newTimeLabel;
         await docRef.update({
-          'followUpTime': newTimeLabel,
+          'followUpTime': concreteLabel,
           'status': 'Follow-up',
           'isDone': false,
           'isOverdue': false,

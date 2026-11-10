@@ -139,6 +139,179 @@ abstract final class LeadDateHelper {
     return '${dt.day} ${_months[dt.month - 1]}';
   }
 
+  static String _hm(DateTime dt) {
+    final h12 = dt.hour % 12 == 0 ? 12 : dt.hour % 12;
+    final m = dt.minute.toString().padLeft(2, '0');
+    return '$h12:$m ${dt.hour >= 12 ? 'PM' : 'AM'}';
+  }
+
+  /// Absolute, never-stale stamp stored in lead timelines, e.g.
+  /// `'10 Nov 2026, 3:15 PM'`. Relative words like "Today" must never be
+  /// persisted because they become wrong the next day.
+  static String timelineStamp([DateTime? when]) {
+    final d = when ?? DateTime.now();
+    return '${d.day} ${_months[d.month - 1]} ${d.year}, ${_hm(d)}';
+  }
+
+  /// Parses a stored stamp such as `'10 Nov 2026, 3:15 PM'`, `'5 Nov, 9:15 AM'`,
+  /// `'Today, 5 Nov'` or `'Mon, 2 Nov · 10:30 AM'` into a real date.
+  /// Returns `null` for purely relative text (e.g. just `'Today'`).
+  static ({DateTime dt, bool hasTime})? parseStamp(
+    String raw, {
+    DateTime? now,
+    bool preferPast = true,
+  }) {
+    final ref = now ?? DateTime.now();
+    final s = raw.trim();
+    final dm = RegExp(
+      r'(\d{1,2})\s+(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.?(?:,?\s+(\d{4}))?',
+      caseSensitive: false,
+    ).firstMatch(s);
+    if (dm == null) return null;
+    final day = int.parse(dm.group(1)!);
+    final month =
+        _months.indexWhere(
+          (m) => m.toLowerCase() == dm.group(2)!.toLowerCase(),
+        ) +
+        1;
+    final explicitYear = dm.group(3) != null;
+    int year = explicitYear ? int.parse(dm.group(3)!) : ref.year;
+
+    int hour = 0;
+    int minute = 0;
+    bool hasTime = false;
+    final tm = RegExp(
+      r'(\d{1,2}):(\d{2})\s*(AM|PM)?',
+      caseSensitive: false,
+    ).firstMatch(s.substring(dm.end));
+    if (tm != null) {
+      hour = int.parse(tm.group(1)!);
+      minute = int.parse(tm.group(2)!);
+      final mer = tm.group(3)?.toUpperCase();
+      if (mer == 'PM' && hour < 12) hour += 12;
+      if (mer == 'AM' && hour == 12) hour = 0;
+      hasTime = true;
+    }
+
+    var dt = DateTime(year, month, day, hour, minute);
+    if (!explicitYear &&
+        preferPast &&
+        dt.isAfter(ref.add(const Duration(days: 1)))) {
+      dt = DateTime(year - 1, month, day, hour, minute);
+    }
+    return (dt: dt, hasTime: hasTime);
+  }
+
+  /// Real-date label for display: `Today, 3:15 PM`, `Yesterday, 9:00 AM`,
+  /// `Tomorrow, 10:30 AM`, `5 Nov, 9:15 AM` or `5 Nov 2025`.
+  static String relativeStamp(
+    DateTime dt, {
+    bool withTime = true,
+    DateTime? now,
+  }) {
+    final ref = now ?? DateTime.now();
+    final today = DateTime(ref.year, ref.month, ref.day);
+    final day = DateTime(dt.year, dt.month, dt.day);
+    final diff = day.difference(today).inDays;
+    String label;
+    if (diff == 0) {
+      label = 'Today';
+    } else if (diff == -1) {
+      label = 'Yesterday';
+    } else if (diff == 1) {
+      label = 'Tomorrow';
+    } else {
+      label = '${dt.day} ${_months[dt.month - 1]}';
+      if (dt.year != ref.year) label = '$label ${dt.year}';
+    }
+    return withTime ? '$label, ${_hm(dt)}' : label;
+  }
+
+  /// Concrete follow-up label, e.g. `'Wed, 11 Nov · 10:30 AM'` (year added only
+  /// when it differs from the current year).
+  static String formatFollowUp(DateTime d, {DateTime? now}) {
+    final ref = now ?? DateTime.now();
+    final yearPart = d.year != ref.year ? ' ${d.year}' : '';
+    return '${_days[d.weekday - 1]}, ${d.day} ${_months[d.month - 1]}$yearPart · ${_hm(d)}';
+  }
+
+  /// Converts relative follow-up text (`'Today 5 PM'`, `'Tomorrow 10:30'`,
+  /// `'In 3 days'`, `'Today · 4:00 PM'`) into a concrete date at WRITE time so
+  /// it can never drift as days pass. Already-concrete text is returned as is.
+  /// When [raw] is empty, a sensible next slot is chosen from [outcome];
+  /// returns `null` if no follow-up applies.
+  static String? resolveFollowUpLabel(
+    String? raw, {
+    String outcome = '',
+    DateTime? now,
+  }) {
+    final ref = now ?? DateTime.now();
+    final text = (raw ?? '').trim();
+    final lower = text.toLowerCase();
+
+    DateTime at(int addDays, int h, int m) =>
+        DateTime(ref.year, ref.month, ref.day + addDays, h, m);
+
+    if (text.isEmpty) {
+      switch (outcome) {
+        case 'Follow-up':
+        case 'Callback':
+          return formatFollowUp(at(1, 10, 30), now: ref);
+        case 'No answer':
+          final slot = at(0, 16, 0);
+          return formatFollowUp(
+            slot.isAfter(ref) ? slot : at(1, 10, 30),
+            now: ref,
+          );
+        case 'Interested':
+          final slot = at(0, 17, 30);
+          return formatFollowUp(
+            slot.isAfter(ref) ? slot : at(1, 10, 30),
+            now: ref,
+          );
+        default:
+          return null;
+      }
+    }
+
+    final hasMonth = _months.any((m) => lower.contains(m.toLowerCase()));
+    if (hasMonth || RegExp(r'\d{4}-\d{2}-\d{2}').hasMatch(text)) return text;
+
+    int? offset;
+    final inDays = RegExp(r'in\s+(\d+)\s+day').firstMatch(lower);
+    if (inDays != null) {
+      offset = int.parse(inDays.group(1)!);
+    } else if (lower.contains('tomorrow')) {
+      offset = 1;
+    } else if (lower.contains('yesterday')) {
+      offset = -1;
+    } else if (lower.contains('today')) {
+      offset = 0;
+    }
+    if (offset == null) return text;
+
+    int hour = 10;
+    int minute = 30;
+    final mer = RegExp(
+      r'(\d{1,2})(?::(\d{2}))?\s*(am|pm)',
+      caseSensitive: false,
+    ).firstMatch(text);
+    if (mer != null) {
+      hour = int.parse(mer.group(1)!);
+      minute = int.parse(mer.group(2) ?? '0');
+      final isPm = mer.group(3)!.toLowerCase() == 'pm';
+      if (isPm && hour < 12) hour += 12;
+      if (!isPm && hour == 12) hour = 0;
+    } else {
+      final h24 = RegExp(r'(\d{1,2}):(\d{2})').firstMatch(text);
+      if (h24 != null) {
+        hour = int.parse(h24.group(1)!);
+        minute = int.parse(h24.group(2)!);
+      }
+    }
+    return formatFollowUp(at(offset, hour, minute), now: ref);
+  }
+
   /// Evaluates and formats the actual Last Contact for a lead based on real call logs,
   /// timestamps, and status (returns 'Never' if uncontacted).
   static String formatLastContact({
@@ -197,10 +370,10 @@ abstract final class LeadDateHelper {
         if (rawLower == 'never' || raw == '—' || raw.isEmpty) {
           return 'Never';
         }
-        if (rawLower == 'today') {
-          final uTs = updatedAt;
-          if (uTs is Timestamp) {
-            final uDt = uTs.toDate();
+        if (rawLower == 'today' || rawLower.startsWith('today ·')) {
+          final uTs = updatedAt ?? createdAt;
+          if (uTs is Timestamp || uTs is DateTime) {
+            final uDt = uTs is Timestamp ? uTs.toDate() : uTs as DateTime;
             final now = DateTime.now();
             final diff = DateTime(
               now.year,

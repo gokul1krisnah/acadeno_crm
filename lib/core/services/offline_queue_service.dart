@@ -470,21 +470,30 @@ class OfflineQueueService {
           item.outcome == 'Interested' ||
           item.outcome == 'No answer';
 
-      // 2. Lead document update (merge)
+      // 2. Lead document update (merge). Use the REAL time the call was made
+      // (not the time of the delayed sync) and concrete follow-up dates.
+      final callTs = Timestamp.fromDate(item.recordedAt);
+      final resolvedFollowUp = isFollowUpPending
+          ? LeadDateHelper.resolveFollowUpLabel(
+              null,
+              outcome: item.outcome,
+              now: item.recordedAt,
+            )
+          : null;
       await leadRef.set({
         'status': nextStatus,
         'lastContact': 'Today',
-        'lastContactAt': FieldValue.serverTimestamp(),
-        'lastCalledAt': FieldValue.serverTimestamp(),
+        'lastContactAt': callTs,
+        'lastCalledAt': callTs,
         'isDone': !isFollowUpPending,
         'isLocked': false,
         'lockedByUid': null,
         'lockedMessage': null,
-        if (item.outcome == 'Follow-up' || item.outcome == 'Callback')
-          'followUpTime': 'Tomorrow · 10:30 AM',
-        if (item.outcome == 'No answer') 'followUpTime': 'Today · 4:00 PM',
-        if (item.outcome == 'Interested') 'followUpTime': 'Today · 5:30 PM',
+        'followUpTime': ?resolvedFollowUp,
         if (item.notes.trim().isNotEmpty) 'notes': item.notes.trim(),
+        'timeline': FieldValue.arrayUnion([
+          '${LeadDateHelper.timelineStamp(item.recordedAt)} · ${item.outcome} logged by ${item.executiveName ?? "executive"}${item.notes.trim().isNotEmpty ? " (${item.notes.trim()})" : ""}',
+        ]),
         'updatedAt': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true));
 

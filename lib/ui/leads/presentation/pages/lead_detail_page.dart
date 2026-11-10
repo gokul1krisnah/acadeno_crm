@@ -1,11 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/services/app_phone_call_service.dart';
 import '../../../follow_ups/application/follow_ups_cubit.dart';
+import '../../../follow_ups/data/model/follow_up_time_helper.dart';
 import '../../data/model/lead_models.dart';
 import '../widgets/lead_call_sheets.dart';
 
@@ -42,13 +42,14 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
           pickedTime.hour,
           pickedTime.minute,
         );
-        final formatted = DateFormat('EEE, d MMM · h:mm a').format(dt);
+        final formatted = LeadDateHelper.formatFollowUp(dt);
         setState(() {
           _rescheduledFollowUp = formatted;
         });
 
         try {
-          final entry = 'Today · Follow-up rescheduled to $formatted';
+          final entry =
+              '${LeadDateHelper.timelineStamp()} · Follow-up rescheduled to $formatted';
           await FirebaseFirestore.instance
               .collection('leads')
               .doc(leadId)
@@ -124,9 +125,27 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
                     : lead.followUpTime)
                 .toString()
                 .trim();
-        final effectiveFollowUp =
-            _rescheduledFollowUp ??
-            (rawFollowUp.isNotEmpty ? rawFollowUp : 'Today, 10:30 AM');
+        // Resolve the stored follow-up to a REAL date/time label. Legacy
+        // relative text ("Today · 4:00 PM") is anchored to the day it was saved.
+        String effectiveFollowUp;
+        if (_rescheduledFollowUp != null) {
+          final parsed = LeadDateHelper.parseStamp(
+            _rescheduledFollowUp!,
+            preferPast: false,
+          );
+          effectiveFollowUp = parsed != null
+              ? LeadDateHelper.relativeStamp(parsed.dt)
+              : _rescheduledFollowUp!;
+        } else if (rawFollowUp.isEmpty) {
+          effectiveFollowUp = 'Not scheduled';
+        } else {
+          final eval = FollowUpTimeHelper.evaluate(
+            rawFollowUpTime: rawFollowUp,
+            updatedAt: snapData?['updatedAt'],
+          );
+          effectiveFollowUp =
+              '${LeadDateHelper.relativeStamp(eval.scheduledTime)}${eval.isOverdue ? ' · Overdue' : ''}';
+        }
 
         final liveNotes = (snapData != null ? (snapData['notes'] ?? '') : '')
             .toString()
@@ -176,13 +195,23 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
             .trim();
         final effectiveEmail = liveEmail.isNotEmpty
             ? liveEmail
-            : '${lead.name.toLowerCase().replaceAll(RegExp(r'\s+'), '')}@example.com';
+            : 'Not provided';
 
         final rawInterests = snapData != null ? snapData['interests'] : null;
         final List<String> interests =
             rawInterests is Iterable && rawInterests.isNotEmpty
             ? rawInterests.map((e) => e.toString()).toList()
-            : ['AI', 'Python', 'ML'];
+            : (liveCourse.isNotEmpty ? [liveCourse] : ['Not specified']);
+
+        // Real dates from Firestore timestamps (never hardcoded).
+        DateTime? tsToDate(dynamic v) =>
+            v is Timestamp ? v.toDate() : (v is DateTime ? v : null);
+        final createdAtDt = tsToDate(snapData?['createdAt']);
+        final assignedAtDt = tsToDate(snapData?['assignedAt']);
+        final legacyRefDt =
+            tsToDate(snapData?['lastContactAt']) ??
+            tsToDate(snapData?['lastCalledAt']) ??
+            tsToDate(snapData?['updatedAt']);
 
         final rawTimeline = snapData != null ? snapData['timeline'] : null;
         final List<String> timelineList =
@@ -191,11 +220,10 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
             : (lead.timeline.isNotEmpty
                   ? lead.timeline
                   : [
-                      if (effectiveStatus.isNotEmpty &&
-                          effectiveStatus != 'New')
-                        'Today · $effectiveStatus logged by current executive',
-                      '24 Oct, 9:15 AM · Assigned to executive',
-                      '12 Sep · Registered via ${effectiveCampaign.isNotEmpty ? effectiveCampaign : "Campus outreach"} (Consent recorded)',
+                      if (assignedAtDt != null)
+                        '${LeadDateHelper.timelineStamp(assignedAtDt)} · Assigned to ${snapData?['assignedToName'] ?? 'executive'}',
+                      if (createdAtDt != null)
+                        '${LeadDateHelper.timelineStamp(createdAtDt)} · Registered via ${effectiveCampaign.isNotEmpty ? effectiveCampaign : "Campus outreach"} (Consent recorded)',
                     ]);
 
         // Parse college and branch/year
@@ -204,18 +232,53 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
             .map((s) => s.trim())
             .where((s) => s.isNotEmpty)
             .toList();
-        final collegeDisplay = parts.isNotEmpty ? parts[0] : 'NIT Calicut';
+        final collegeDisplay = parts.isNotEmpty ? parts[0] : '—';
         final branchYearDisplay = parts.length > 1
             ? parts.sublist(1).join(' · ')
-            : 'CSE · 3rd year';
+            : '—';
 
+        final createdLabel = createdAtDt != null
+            ? LeadDateHelper.relativeStamp(createdAtDt, withTime: false)
+            : null;
         final sourceDisplay = effectiveCampaign.isNotEmpty
-            ? '$effectiveCampaign · 12 Sep'
-            : 'AI Webinar · 12 Sep';
+            ? (createdLabel != null
+                  ? '$effectiveCampaign · $createdLabel'
+                  : effectiveCampaign)
+            : (createdLabel ?? '—');
 
-        final parsedTimeline = timelineList
-            .map((t) => _parseTimelineEntry(t))
-            .toList();
+        // Resolve every entry to a real date and show newest first. Legacy
+        // entries saved as plain "Today" have no date of their own, so only
+        // the newest one is anchored to the lead's last activity date; the
+        // rest are labelled "Earlier" instead of showing a wrong date.
+        var legacySeen = 0;
+        final indexed = <({int i, _ParsedTimelineEntry e})>[];
+        for (var i = 0; i < timelineList.length; i++) {
+          final isLegacy = _isLegacyRelative(timelineList[i]);
+          final useRef = isLegacy && legacySeen == 0;
+          if (isLegacy) legacySeen++;
+          indexed.add((
+            i: i,
+            e: _parseTimelineEntry(
+              timelineList[i],
+              legacyRef: useRef ? legacyRefDt : null,
+              createdAt: createdAtDt,
+            ),
+          ));
+        }
+        indexed.sort((a, b) {
+          final ad = a.e.sortDate;
+          final bd = b.e.sortDate;
+          if (ad != null && bd != null) {
+            final c = bd.compareTo(ad);
+            if (c != 0) return c;
+          } else if (ad != null) {
+            return -1;
+          } else if (bd != null) {
+            return 1;
+          }
+          return a.i.compareTo(b.i);
+        });
+        final parsedTimeline = indexed.map((x) => x.e).toList();
 
         return Scaffold(
           backgroundColor: const Color(0xFFF8FAFC),
@@ -558,8 +621,8 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
                                   liveNotes.isNotEmpty
                                       ? liveNotes
                                       : (liveCourse.isNotEmpty
-                                            ? 'Send fee details for $liveCourse'
-                                            : 'Send fee details for AI workshop'),
+                                            ? 'Interested in $liveCourse'
+                                            : 'No notes added'),
                                   style: const TextStyle(
                                     fontSize: 12,
                                     fontWeight: FontWeight.w500,
@@ -814,11 +877,26 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
     );
   }
 
-  static _ParsedTimelineEntry _parseTimelineEntry(String raw) {
+  /// True for old entries saved as plain "Today · ..." / "Yesterday · ..."
+  /// (no real date inside). "Today, 5 Nov · ..." carries a date, so it is not.
+  static bool _isLegacyRelative(String raw) {
+    final first = raw.split('·').first.trim().toLowerCase();
+    if (!(first.startsWith('today') || first.startsWith('yesterday'))) {
+      return false;
+    }
+    return LeadDateHelper.parseStamp(first) == null;
+  }
+
+  static _ParsedTimelineEntry _parseTimelineEntry(
+    String raw, {
+    DateTime? legacyRef,
+    DateTime? createdAt,
+  }) {
     final trimmed = raw.trim();
     Color dotColor = const Color(0xFF64748B);
     String title = 'Activity logged';
-    String timestamp = 'Today';
+    String timestamp = '';
+    DateTime? sortDate;
     String subtitle = '';
     String? note;
 
@@ -831,7 +909,28 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
 
     final parts = mainPart.split('·').map((s) => s.trim()).toList();
     if (parts.length >= 2) {
-      timestamp = parts[0];
+      final stampText = parts[0];
+      final parsed = LeadDateHelper.parseStamp(stampText);
+      if (parsed != null) {
+        sortDate = parsed.dt;
+        timestamp = LeadDateHelper.relativeStamp(
+          parsed.dt,
+          withTime: parsed.hasTime,
+        );
+      } else if (_isLegacyRelative(trimmed)) {
+        if (legacyRef != null) {
+          final isYesterday = stampText.toLowerCase().startsWith('yesterday');
+          final d = isYesterday
+              ? legacyRef.subtract(const Duration(days: 1))
+              : legacyRef;
+          sortDate = d;
+          timestamp = LeadDateHelper.relativeStamp(d, withTime: !isYesterday);
+        } else {
+          timestamp = 'Earlier';
+        }
+      } else {
+        timestamp = stampText;
+      }
       final actionPart = parts.sublist(1).join(' · ').trim();
       final lower = actionPart.toLowerCase();
 
@@ -881,7 +980,10 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
         title = 'Lead created';
         dotColor = const Color(0xFF2563EB);
         subtitle = mainPart;
-        timestamp = '12 Sep';
+        if (createdAt != null) {
+          sortDate = createdAt;
+          timestamp = LeadDateHelper.relativeStamp(createdAt, withTime: false);
+        }
       } else if (lower.contains('assigned')) {
         title = mainPart;
         dotColor = const Color(0xFF4338CA);
@@ -896,6 +998,7 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
       timestamp: timestamp,
       subtitle: subtitle,
       note: note,
+      sortDate: sortDate,
     );
   }
 }
@@ -906,6 +1009,7 @@ class _ParsedTimelineEntry {
   final String timestamp;
   final String subtitle;
   final String? note;
+  final DateTime? sortDate;
 
   const _ParsedTimelineEntry({
     required this.dotColor,
@@ -913,6 +1017,7 @@ class _ParsedTimelineEntry {
     required this.timestamp,
     required this.subtitle,
     this.note,
+    this.sortDate,
   });
 }
 

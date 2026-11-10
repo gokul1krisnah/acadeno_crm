@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/services/app_notification_service.dart';
+import '../../leads/data/model/lead_models.dart';
 import '../data/model/follow_up_models.dart';
 import '../data/repository/follow_ups_repo.dart';
 import 'follow_ups_state.dart';
@@ -106,11 +107,21 @@ class FollowUpsCubit extends Cubit<FollowUpsState> {
     final updated = List<ExecutiveFollowUpItem>.from(state.followUps);
 
     if (outcome == 'Follow-up' || outcome == 'Interested') {
+      final concreteLabel =
+          LeadDateHelper.resolveFollowUpLabel(
+            followUpTimeLabel,
+            outcome: outcome,
+          ) ??
+          followUpTimeLabel;
+      final scheduled = concreteLabel == null
+          ? null
+          : LeadDateHelper.parseStamp(concreteLabel, preferPast: false);
+      final nowRef = DateTime.now();
       final isDueToday =
-          followUpTimeLabel != null &&
-          (followUpTimeLabel.toLowerCase().contains('today') ||
-              followUpTimeLabel.toLowerCase().contains('5 pm') ||
-              followUpTimeLabel.toLowerCase().contains('now'));
+          scheduled != null &&
+          scheduled.dt.year == nowRef.year &&
+          scheduled.dt.month == nowRef.month &&
+          scheduled.dt.day == nowRef.day;
       updated.insert(
         0,
         ExecutiveFollowUpItem(
@@ -118,7 +129,9 @@ class FollowUpsCubit extends Cubit<FollowUpsState> {
           leadName: leadName,
           maskedPhone: maskedPhone ?? '—',
           collegeInfo: collegeInfo,
-          timeLabel: followUpTimeLabel ?? 'Tomorrow · 10:30 AM',
+          timeLabel:
+              concreteLabel ??
+              LeadDateHelper.resolveFollowUpLabel(null, outcome: 'Follow-up')!,
           channelLabel: 'Call',
           note: notes.isEmpty
               ? 'Scheduled follow-up after $outcome call'
