@@ -109,213 +109,214 @@ class LeadCallSheets {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      barrierColor: Colors.black.withValues(alpha: 0.88),
+      barrierColor: Colors.black,
       elevation: 0,
       builder: (ctx) {
-        return Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 440),
-            child: SafeArea(
+        return SizedBox(
+          height: MediaQuery.sizeOf(ctx).height,
+          child: Scaffold(
+            backgroundColor: Colors.black,
+            body: SafeArea(
               bottom: false,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Top Dark Section: "Follow-ups" header + Call ended card
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 10, 20, 12),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Follow-ups',
-                          style: TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.w800,
-                            color: Colors.white,
-                            letterSpacing: -0.5,
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 14,
-                          ),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF1E293B).withValues(alpha: 0.95),
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(
-                              color: Colors.white.withValues(alpha: 0.08),
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 440),
+                  child: Column(
+                    children: [
+                      // Top Dark Section: "Follow-ups" header + Call ended card
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Follow-ups',
+                              style: TextStyle(
+                                fontSize: 26,
+                                fontWeight: FontWeight.w800,
+                                color: Colors.white,
+                                letterSpacing: -0.5,
+                              ),
                             ),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Call ended • $displayDuration',
-                                style: const TextStyle(
-                                  fontSize: 12.5,
-                                  fontWeight: FontWeight.w500,
-                                  color: Color(0xFF94A3B8),
-                                ),
+                            const SizedBox(height: 14),
+                            Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 15,
                               ),
-                              const SizedBox(height: 4),
-                              Text(
-                                leadName,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.w800,
-                                  color: Colors.white,
-                                  letterSpacing: -0.3,
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF1E2024),
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(
+                                  color: Colors.white.withValues(alpha: 0.08),
                                 ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  // Bottom White Sheet
-                  Flexible(
-                    child: Container(
-                      width: double.infinity,
-                      decoration: const BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.vertical(
-                          top: Radius.circular(28),
-                        ),
-                      ),
-                      child: SafeArea(
-                        top: false,
-                        child: StatefulBuilder(
-                          builder: (ctx, setSheetState) {
-                            return SingleChildScrollView(
-                              physics: const BouncingScrollPhysics(),
-                              padding: EdgeInsets.fromLTRB(
-                                20,
-                                12,
-                                20,
-                                20 + MediaQuery.viewInsetsOf(ctx).bottom,
                               ),
                               child: Column(
-                                mainAxisSize: MainAxisSize.min,
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  // Top Drag Handle
-                                  Center(
-                                    child: Container(
-                                      width: 38,
-                                      height: 4,
-                                      margin: const EdgeInsets.only(bottom: 18),
-                                      decoration: BoxDecoration(
-                                        color: const Color(0xFFCBD5E1),
-                                        borderRadius: BorderRadius.circular(2),
-                                      ),
+                                  Text(
+                                    'Call ended • $displayDuration',
+                                    style: const TextStyle(
+                                      fontSize: 12.5,
+                                      fontWeight: FontWeight.w500,
+                                      color: Color(0xFF94A3B8),
                                     ),
                                   ),
-
-                                  // Title: How did the call go?
-                                  const Text(
-                                    'How did the call go?',
-                                    style: TextStyle(
-                                      fontSize: 18.5,
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    leadName,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(
+                                      fontSize: 20,
                                       fontWeight: FontWeight.w800,
-                                      color: Color(0xFF0F172A),
+                                      color: Colors.white,
                                       letterSpacing: -0.3,
                                     ),
                                   ),
-                                  const SizedBox(height: 14),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
 
-                                  // 2x4 Outcomes Grid
-                                  ...outcomeRows.map((row) {
-                                    return Padding(
-                                      padding: const EdgeInsets.only(bottom: 10),
-                                      child: Row(
-                                        children: row.map((item) {
-                                          final name = item.$1;
-                                          final dotColor = item.$2;
-                                          final isSelected =
-                                              selectedOutcome == name;
+                      // Bottom White Sheet
+                      Expanded(
+                        child: Container(
+                          width: double.infinity,
+                          decoration: const BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.vertical(
+                              top: Radius.circular(28),
+                            ),
+                          ),
+                          child: SafeArea(
+                            top: false,
+                            child: StatefulBuilder(
+                              builder: (ctx, setSheetState) {
+                                return SingleChildScrollView(
+                                  physics: const BouncingScrollPhysics(),
+                                  padding: EdgeInsets.fromLTRB(
+                                    20,
+                                    12,
+                                    20,
+                                    20 + MediaQuery.viewInsetsOf(ctx).bottom,
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      // Top Drag Handle
+                                      Center(
+                                        child: Container(
+                                          width: 38,
+                                          height: 4,
+                                          margin: const EdgeInsets.only(bottom: 18),
+                                          decoration: BoxDecoration(
+                                            color: const Color(0xFFCBD5E1),
+                                            borderRadius: BorderRadius.circular(2),
+                                          ),
+                                        ),
+                                      ),
 
-                                          return Expanded(
-                                            child: Padding(
-                                              padding: EdgeInsets.only(
-                                                right: item == row.first ? 5 : 0,
-                                                left: item == row.last ? 5 : 0,
-                                              ),
-                                              child: InkWell(
-                                                onTap: () {
-                                                  setSheetState(
-                                                    () => selectedOutcome = name,
-                                                  );
-                                                },
-                                                borderRadius:
-                                                    BorderRadius.circular(12),
-                                                child: Container(
-                                                  height: 48,
-                                                  decoration: BoxDecoration(
-                                                    color: isSelected
-                                                        ? dotColor
-                                                        : Colors.white,
+                                      // Title: How did the call go?
+                                      const Text(
+                                        'How did the call go?',
+                                        style: TextStyle(
+                                          fontSize: 18.5,
+                                          fontWeight: FontWeight.w800,
+                                          color: Color(0xFF0F172A),
+                                          letterSpacing: -0.3,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 14),
+
+                                      // 2x4 Outcomes Grid
+                                      ...outcomeRows.map((row) {
+                                        return Padding(
+                                          padding: const EdgeInsets.only(bottom: 10),
+                                          child: Row(
+                                            children: row.map((item) {
+                                              final name = item.$1;
+                                              final dotColor = item.$2;
+                                              final isSelected =
+                                                  selectedOutcome == name;
+
+                                              return Expanded(
+                                                child: Padding(
+                                                  padding: EdgeInsets.only(
+                                                    right: item == row.first ? 5 : 0,
+                                                    left: item == row.last ? 5 : 0,
+                                                  ),
+                                                  child: InkWell(
+                                                    onTap: () {
+                                                      setSheetState(
+                                                        () => selectedOutcome = name,
+                                                      );
+                                                    },
                                                     borderRadius:
                                                         BorderRadius.circular(12),
-                                                    border: Border.all(
-                                                      color: isSelected
-                                                          ? dotColor
-                                                          : const Color(
-                                                              0xFFE2E8F0,
+                                                    child: Container(
+                                                      height: 48,
+                                                      decoration: BoxDecoration(
+                                                        color: isSelected
+                                                            ? const Color(0xFFEA580C)
+                                                            : Colors.white,
+                                                        borderRadius:
+                                                            BorderRadius.circular(12),
+                                                        border: Border.all(
+                                                          color: isSelected
+                                                              ? const Color(0xFFEA580C)
+                                                              : const Color(
+                                                                  0xFFE2E8F0,
+                                                                ),
+                                                        ),
+                                                      ),
+                                                      padding:
+                                                          const EdgeInsets.symmetric(
+                                                        horizontal: 14,
+                                                      ),
+                                                      child: Row(
+                                                        children: [
+                                                          Container(
+                                                            width: 8,
+                                                            height: 8,
+                                                            decoration: BoxDecoration(
+                                                              color: isSelected
+                                                                  ? Colors.white
+                                                                  : dotColor,
+                                                              shape: BoxShape.circle,
                                                             ),
+                                                          ),
+                                                          const SizedBox(width: 9),
+                                                          Expanded(
+                                                            child: Text(
+                                                              name,
+                                                              style: TextStyle(
+                                                                fontSize: 13.5,
+                                                                fontWeight:
+                                                                    FontWeight.w700,
+                                                                color: isSelected
+                                                                    ? Colors.white
+                                                                    : const Color(
+                                                                        0xFF0F172A,
+                                                                      ),
+                                                              ),
+                                                              overflow: TextOverflow
+                                                                  .ellipsis,
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
                                                     ),
                                                   ),
-                                                  padding:
-                                                      const EdgeInsets.symmetric(
-                                                    horizontal: 14,
-                                                  ),
-                                                  child: Row(
-                                                    children: [
-                                                      Container(
-                                                        width: 8,
-                                                        height: 8,
-                                                        decoration: BoxDecoration(
-                                                          color: isSelected
-                                                              ? Colors.white
-                                                              : dotColor,
-                                                          shape: BoxShape.circle,
-                                                        ),
-                                                      ),
-                                                      const SizedBox(width: 9),
-                                                      Expanded(
-                                                        child: Text(
-                                                          name,
-                                                          style: TextStyle(
-                                                            fontSize: 13.5,
-                                                            fontWeight:
-                                                                FontWeight.w700,
-                                                            color: isSelected
-                                                                ? Colors.white
-                                                                : const Color(
-                                                                    0xFF0F172A,
-                                                                  ),
-                                                          ),
-                                                          overflow: TextOverflow
-                                                              .ellipsis,
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
                                                 ),
-                                              ),
-                                            ),
-                                          );
-                                        }).toList(),
-                                      ),
-                                    );
-                                  }),
+                                              );
+                                            }).toList(),
+                                          ),
+                                        );
+                                      }),
 
                                   // Follow up when? (Shown when Follow-up is selected)
                                   if (selectedOutcome == 'Follow-up') ...[
@@ -549,10 +550,12 @@ class LeadCallSheets {
               ),
             ),
           ),
-        );
-      },
+        ),
+      ),
     );
-  }
+  },
+);
+}
 
   static Widget _buildSlotPill({
     required String label,

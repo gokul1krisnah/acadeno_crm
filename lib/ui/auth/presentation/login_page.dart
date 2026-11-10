@@ -12,6 +12,7 @@ import 'package:acadeno_crm/ui/auth/data/repository/firebase_auth_repo.dart';
 import 'package:acadeno_crm/ui/auth/data/sources/firebase_auth_rds.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -282,14 +283,9 @@ class _LoginViewState extends State<_LoginView> {
                                           ),
                                         ),
                                         child: isLoading
-                                            ? const SizedBox(
-                                                height: 22,
-                                                width: 22,
-                                                child:
-                                                    CircularProgressIndicator(
-                                                      color: AppColors.white,
-                                                      strokeWidth: 2,
-                                                    ),
+                                            ? const CupertinoActivityIndicator(
+                                                color: AppColors.white,
+                                                radius: 11,
                                               )
                                             : Text(
                                                 'Sign in',
