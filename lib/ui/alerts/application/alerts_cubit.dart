@@ -10,6 +10,7 @@ import 'alerts_state.dart';
 class AlertsCubit extends Cubit<AlertsState> {
   final AlertsRepository _repository;
   StreamSubscription<List<ExecutiveAlertItem>>? _alertsSub;
+  final Set<String> _readAlertIds = {};
 
   AlertsCubit(this._repository)
     : super(AlertsState(alerts: _repository.fetchAlerts())) {
@@ -20,8 +21,17 @@ class AlertsCubit extends Cubit<AlertsState> {
     _alertsSub?.cancel();
     _alertsSub = _repository.watchAlerts().listen((liveAlerts) {
       if (isClosed) return;
+      for (final a in liveAlerts) {
+        if (_readAlertIds.contains(a.id)) {
+          a.isUnread = false;
+        }
+      }
       emit(state.copyWith(alerts: liveAlerts));
     }, onError: (_) {});
+  }
+
+  Future<void> refresh() async {
+    _subscribe();
   }
 
   void clearToast() {
@@ -54,13 +64,13 @@ class AlertsCubit extends Cubit<AlertsState> {
   // Mark all alerts read
   void markAllAlertsRead() {
     _repository.markAllAlertsRead();
-    final updated = List<ExecutiveAlertItem>.from(state.alerts);
-    for (final a in updated) {
+    for (final a in state.alerts) {
+      _readAlertIds.add(a.id);
       a.isUnread = false;
     }
     emit(
       state.copyWith(
-        alerts: updated,
+        alerts: List<ExecutiveAlertItem>.from(state.alerts),
         toastMessage: 'All alerts marked as read',
       ),
     );
@@ -74,7 +84,10 @@ class AlertsCubit extends Cubit<AlertsState> {
       final newStatus = !updated[idx].isUnread;
       updated[idx].isUnread = newStatus;
       if (!newStatus) {
+        _readAlertIds.add(id);
         _repository.markAlertRead(id);
+      } else {
+        _readAlertIds.remove(id);
       }
       emit(state.copyWith(alerts: updated));
     }
@@ -82,6 +95,7 @@ class AlertsCubit extends Cubit<AlertsState> {
 
   // Mark a single alert as read
   void markSingleAlertRead(String id) {
+    _readAlertIds.add(id);
     _repository.markAlertRead(id);
     final updated = List<ExecutiveAlertItem>.from(state.alerts);
     final idx = updated.indexWhere((a) => a.id == id);
