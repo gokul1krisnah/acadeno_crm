@@ -68,131 +68,11 @@ class _HomeScaffoldViewState extends State<_HomeScaffoldView> {
     FirebaseAuthRds(FirebaseAuth.instance),
   );
 
-  void _logout() {
-    showDialog(
-      context: context,
-      builder: (ctx) => Dialog(
-        backgroundColor: Colors.white,
-        insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 420),
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Container(
-                      width: 44,
-                      height: 44,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFFEE2E2),
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      alignment: Alignment.center,
-                      child: const Icon(
-                        Icons.logout_rounded,
-                        size: 22,
-                        color: Color(0xFFDC2626),
-                      ),
-                    ),
-                    IconButton(
-                      onPressed: () => Navigator.pop(ctx),
-                      icon: const Icon(
-                        Icons.close_rounded,
-                        size: 20,
-                        color: Color(0xFF94A3B8),
-                      ),
-                      visualDensity: VisualDensity.compact,
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(
-                        minWidth: 28,
-                        minHeight: 28,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                const Text(
-                  'Sign out from Acadeno?',
-                  style: TextStyle(
-                    fontSize: 19,
-                    fontWeight: FontWeight.w800,
-                    color: Color(0xFF0F172A),
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  'Sign out of ${context.read<HomeCubit>().state.user.displayName}’s Lead Manager session? Local offline cache will be safely preserved.',
-                  style: const TextStyle(
-                    fontSize: 13.5,
-                    color: Color(0xFF64748B),
-                    height: 1.4,
-                  ),
-                ),
-                const SizedBox(height: 24),
-                Row(
-                  children: [
-                    Expanded(
-                      child: SizedBox(
-                        height: 46,
-                        child: OutlinedButton(
-                          onPressed: () => Navigator.pop(ctx),
-                          style: OutlinedButton.styleFrom(
-                            side: const BorderSide(color: Color(0xFFE2E8F0)),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                          child: const Text(
-                            'Cancel',
-                            style: TextStyle(
-                              color: Color(0xFF475467),
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: SizedBox(
-                        height: 46,
-                        child: ElevatedButton(
-                          onPressed: () async {
-                            Navigator.pop(ctx);
-                            await _authRepository.signOut();
-                            isAdminSession = false;
-                            if (!mounted) return;
-                            context.router.replaceAll([const LoginRoute()]);
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFFB42318),
-                            foregroundColor: Colors.white,
-                            elevation: 0,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                          child: const Text(
-                            'Sign out',
-                            style: TextStyle(fontWeight: FontWeight.w700),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
+  Future<void> _performLogout() async {
+    await _authRepository.signOut();
+    isAdminSession = false;
+    if (!mounted) return;
+    context.router.replaceAll([const LoginRoute()]);
   }
 
   void _showToast(String msg) {
@@ -278,11 +158,11 @@ class _HomeScaffoldViewState extends State<_HomeScaffoldView> {
                           // Active Tab Screen
                           Expanded(
                             child: switch (state.bottomNavIndex) {
-                              0 => LeadsTabView(onLogout: _logout),
+                              0 => LeadsTabView(onLogout: _performLogout),
                               1 => const FollowUpsTabView(),
                               2 => const VisitsTabView(),
                               3 => const AlertsTabView(),
-                              _ => LeadsTabView(onLogout: _logout),
+                              _ => LeadsTabView(onLogout: _performLogout),
                             },
                           ),
 

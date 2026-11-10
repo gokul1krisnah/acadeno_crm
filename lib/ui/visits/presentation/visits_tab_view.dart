@@ -203,7 +203,8 @@ class VisitsTabView extends StatelessWidget {
     showDialog(
       context: context,
       builder: (ctx) => Dialog(
-        backgroundColor: Colors.white,
+        backgroundColor: const Color(0xFFFFFFFF),
+        surfaceTintColor: Colors.transparent,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 440),
@@ -393,7 +394,8 @@ class VisitsTabView extends StatelessWidget {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: Colors.white,
+        backgroundColor: const Color(0xFFFFFFFF),
+        surfaceTintColor: Colors.transparent,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Text(
           'Delete Visit',
@@ -466,7 +468,8 @@ class VisitsTabView extends StatelessWidget {
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setSheetState) => Dialog(
-          backgroundColor: Colors.white,
+          backgroundColor: const Color(0xFFFFFFFF),
+          surfaceTintColor: Colors.transparent,
           insetPadding: EdgeInsets.symmetric(
             horizontal: ctx.devicePadding.clamp(16.0, 24.0),
             vertical: 24,
@@ -692,7 +695,8 @@ class VisitsTabView extends StatelessWidget {
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setDialogState) => Dialog(
-          backgroundColor: Colors.white,
+          backgroundColor: const Color(0xFFFFFFFF),
+          surfaceTintColor: Colors.transparent,
           insetPadding: const EdgeInsets.symmetric(
             horizontal: 16,
             vertical: 24,

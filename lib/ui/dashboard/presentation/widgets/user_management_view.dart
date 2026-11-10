@@ -237,7 +237,8 @@ class _UserManagementViewState extends State<UserManagementView> {
         return StatefulBuilder(
           builder: (dialogCtx, setDState) => AlertDialog(
             scrollable: true,
-            backgroundColor: Colors.white,
+            backgroundColor: const Color(0xFFFFFFFF),
+            surfaceTintColor: Colors.transparent,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
             ),

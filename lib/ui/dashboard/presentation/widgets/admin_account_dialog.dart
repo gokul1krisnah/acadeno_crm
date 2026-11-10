@@ -298,6 +298,8 @@ class _AdminAccountDialogState extends State<AdminAccountDialog>
     final currentName = _nameController.text;
 
     return Dialog(
+      backgroundColor: const Color(0xFFFFFFFF),
+      surfaceTintColor: Colors.transparent,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 520),

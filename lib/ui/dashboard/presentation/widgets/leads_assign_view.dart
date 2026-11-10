@@ -88,7 +88,8 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
       context: context,
       builder: (dCtx) => StatefulBuilder(
         builder: (dCtx, setD) => AlertDialog(
-          backgroundColor: Colors.white,
+          backgroundColor: const Color(0xFFFFFFFF),
+          surfaceTintColor: Colors.transparent,
           insetPadding: EdgeInsets.symmetric(
             horizontal: dCtx.devicePadding,
             vertical: 24,
@@ -734,7 +735,8 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
       context: context,
       builder: (dCtx) => StatefulBuilder(
         builder: (dCtx, setD) => AlertDialog(
-          backgroundColor: Colors.white,
+          backgroundColor: const Color(0xFFFFFFFF),
+          surfaceTintColor: Colors.transparent,
           insetPadding: EdgeInsets.symmetric(
             horizontal: dCtx.devicePadding,
             vertical: 24,

@@ -255,7 +255,8 @@ class _FollowUpsTabViewState extends State<FollowUpsTabView> {
     showDialog(
       context: context,
       builder: (ctx) => Dialog(
-        backgroundColor: Colors.white,
+        backgroundColor: const Color(0xFFFFFFFF),
+        surfaceTintColor: Colors.transparent,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 420),

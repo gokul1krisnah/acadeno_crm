@@ -738,7 +738,8 @@ class LeadCallSheets {
     showDialog(
       context: context,
       builder: (ctx) => Dialog(
-        backgroundColor: Colors.white,
+        backgroundColor: const Color(0xFFFFFFFF),
+        surfaceTintColor: Colors.transparent,
         insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
         child: ConstrainedBox(
@@ -1249,7 +1250,8 @@ class LeadCallSheets {
     showDialog(
       context: context,
       builder: (ctx) => Dialog(
-        backgroundColor: Colors.white,
+        backgroundColor: const Color(0xFFFFFFFF),
+        surfaceTintColor: Colors.transparent,
         insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
         child: ConstrainedBox(

@@ -223,6 +223,18 @@ class _AcadenoAppState extends State<AcadenoApp> with WidgetsBindingObserver {
             ),
           ),
         ),
+        dialogTheme: const DialogThemeData(
+          backgroundColor: Color(0xFFFFFFFF),
+          surfaceTintColor: Colors.transparent,
+          elevation: 4,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(24)),
+          ),
+        ),
+        bottomSheetTheme: const BottomSheetThemeData(
+          backgroundColor: Color(0xFFFFFFFF),
+          surfaceTintColor: Colors.transparent,
+        ),
       ),
       builder: (context, child) {
         // Clamp the system font scale so large accessibility fonts on small

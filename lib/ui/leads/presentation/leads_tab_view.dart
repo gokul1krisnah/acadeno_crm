@@ -58,7 +58,7 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                   width: double.infinity,
                   constraints: const BoxConstraints(minHeight: 171.125),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: const Color(0xFFFFFFFF),
                     borderRadius: BorderRadius.circular(24),
                     boxShadow: [
                       BoxShadow(
@@ -149,7 +149,7 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                   width: double.infinity,
                   height: 58,
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: const Color(0xFFFFFFFF),
                     borderRadius: BorderRadius.circular(24),
                     boxShadow: [
                       BoxShadow(
