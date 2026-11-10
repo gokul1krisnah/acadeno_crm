@@ -692,41 +692,112 @@ class VisitsTabView extends StatelessWidget {
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setDialogState) => Dialog(
           backgroundColor: Colors.white,
-          insetPadding: EdgeInsets.symmetric(
-            horizontal: ctx.devicePadding.clamp(16.0, 24.0),
+          insetPadding: const EdgeInsets.symmetric(
+            horizontal: 20,
             vertical: 24,
           ),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(28),
           ),
           child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 480),
+            constraints: const BoxConstraints(maxWidth: 460),
             child: Padding(
-              padding: EdgeInsets.all(ctx.devicePadding.clamp(16.0, 20.0)),
+              padding: const EdgeInsets.all(24),
               child: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Plan College Visit',
-                      style: TextStyle(
-                        fontSize: 17,
-                        fontWeight: FontWeight.w800,
-                        color: Color(0xFF0F172A),
-                      ),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Plan College Visit',
+                                style: TextStyle(
+                                  fontSize: 19,
+                                  fontWeight: FontWeight.w800,
+                                  color: Color(0xFF0F172A),
+                                ),
+                              ),
+                              SizedBox(height: 4),
+                              Text(
+                                'Schedule campus seminar, workshop, or student drive',
+                                style: TextStyle(
+                                  fontSize: 12.5,
+                                  color: Color(0xFF64748B),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        IconButton(
+                          onPressed: () => Navigator.pop(ctx),
+                          icon: const Icon(
+                            Icons.close_rounded,
+                            size: 20,
+                            color: Color(0xFF94A3B8),
+                          ),
+                          visualDensity: VisualDensity.compact,
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(
+                            minWidth: 28,
+                            minHeight: 28,
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 18),
                     TextField(
                       controller: collegeCtrl,
-                      decoration: const InputDecoration(
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: Color(0xFF0F172A),
+                      ),
+                      decoration: InputDecoration(
                         labelText: 'College Name *',
                         hintText: 'e.g. Kannur University',
-                        border: OutlineInputBorder(),
+                        hintStyle: const TextStyle(
+                          color: Color(0xFF94A3B8),
+                          fontSize: 13.5,
+                        ),
+                        filled: true,
+                        fillColor: const Color(0xFFF8FAFC),
+                        prefixIcon: const Icon(
+                          Icons.account_balance_outlined,
+                          size: 19,
+                          color: Color(0xFF64748B),
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
+                          borderSide: const BorderSide(
+                            color: Color(0xFFE2E8F0),
+                          ),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
+                          borderSide: const BorderSide(
+                            color: Color(0xFFE2E8F0),
+                          ),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
+                          borderSide: const BorderSide(
+                            color: Color(0xFF4338CA),
+                            width: 1.5,
+                          ),
+                        ),
                         isDense: true,
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 13,
+                        ),
                       ),
                     ),
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 14),
                     InkWell(
                       onTap: () async {
                         final picked = await showDatePicker(
@@ -747,41 +818,145 @@ class VisitsTabView extends StatelessWidget {
                       child: IgnorePointer(
                         child: TextField(
                           controller: dateCtrl,
-                          decoration: const InputDecoration(
+                          style: const TextStyle(
+                            fontSize: 14,
+                            color: Color(0xFF0F172A),
+                          ),
+                          decoration: InputDecoration(
                             labelText: 'Visit Date *',
-                            suffixIcon: Icon(
+                            filled: true,
+                            fillColor: const Color(0xFFF8FAFC),
+                            prefixIcon: const Icon(
                               Icons.calendar_today_rounded,
-                              size: 18,
+                              size: 19,
+                              color: Color(0xFF64748B),
                             ),
-                            border: OutlineInputBorder(),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              borderSide: const BorderSide(
+                                color: Color(0xFFE2E8F0),
+                              ),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              borderSide: const BorderSide(
+                                color: Color(0xFFE2E8F0),
+                              ),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              borderSide: const BorderSide(
+                                color: Color(0xFF4338CA),
+                                width: 1.5,
+                              ),
+                            ),
                             isDense: true,
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 13,
+                            ),
                           ),
                         ),
                       ),
                     ),
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 14),
                     TextField(
                       controller: subCtrl,
-                      decoration: const InputDecoration(
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: Color(0xFF0F172A),
+                      ),
+                      decoration: InputDecoration(
                         labelText: 'Department / Location',
                         hintText: 'e.g. MCA Dept · 10:30 AM',
-                        border: OutlineInputBorder(),
+                        hintStyle: const TextStyle(
+                          color: Color(0xFF94A3B8),
+                          fontSize: 13.5,
+                        ),
+                        filled: true,
+                        fillColor: const Color(0xFFF8FAFC),
+                        prefixIcon: const Icon(
+                          Icons.place_outlined,
+                          size: 19,
+                          color: Color(0xFF64748B),
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
+                          borderSide: const BorderSide(
+                            color: Color(0xFFE2E8F0),
+                          ),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
+                          borderSide: const BorderSide(
+                            color: Color(0xFFE2E8F0),
+                          ),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
+                          borderSide: const BorderSide(
+                            color: Color(0xFF4338CA),
+                            width: 1.5,
+                          ),
+                        ),
                         isDense: true,
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 13,
+                        ),
                       ),
                     ),
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 14),
                     TextField(
                       controller: purposeCtrl,
-                      decoration: const InputDecoration(
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: Color(0xFF0F172A),
+                      ),
+                      decoration: InputDecoration(
                         labelText: 'Visit Purpose',
                         hintText: 'e.g. Seminar + student drive',
-                        border: OutlineInputBorder(),
+                        hintStyle: const TextStyle(
+                          color: Color(0xFF94A3B8),
+                          fontSize: 13.5,
+                        ),
+                        filled: true,
+                        fillColor: const Color(0xFFF8FAFC),
+                        prefixIcon: const Icon(
+                          Icons.assignment_outlined,
+                          size: 19,
+                          color: Color(0xFF64748B),
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
+                          borderSide: const BorderSide(
+                            color: Color(0xFFE2E8F0),
+                          ),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
+                          borderSide: const BorderSide(
+                            color: Color(0xFFE2E8F0),
+                          ),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
+                          borderSide: const BorderSide(
+                            color: Color(0xFF4338CA),
+                            width: 1.5,
+                          ),
+                        ),
                         isDense: true,
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 13,
+                        ),
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 20),
                     SizedBox(
                       width: double.infinity,
+                      height: 48,
                       child: ElevatedButton(
                         onPressed: () {
                           if (collegeCtrl.text.trim().isEmpty) return;
@@ -810,14 +985,17 @@ class VisitsTabView extends StatelessWidget {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF4338CA),
                           foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 13),
+                          elevation: 0,
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(14),
                           ),
                         ),
                         child: const Text(
-                          'Save Visit',
-                          style: TextStyle(fontWeight: FontWeight.w700),
+                          'Save College Visit',
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w700,
+                          ),
                         ),
                       ),
                     ),

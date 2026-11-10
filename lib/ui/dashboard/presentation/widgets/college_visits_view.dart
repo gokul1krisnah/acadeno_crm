@@ -62,177 +62,346 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
 
   void _showPlanVisitDialog() {
     final collegeCtrl = TextEditingController();
-
     final dateCtrl = TextEditingController(
       text: DateFormat('dd MMM yyyy').format(DateTime.now()),
     );
-
     final purposeCtrl = TextEditingController();
-
     final staffCtrl = TextEditingController();
 
     showDialog(
       context: context,
-
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-
-        title: const Text(
-          'Plan College Visit',
-
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
-        ),
-
-        content: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 440),
-
-          child: SingleChildScrollView(
-            padding: EdgeInsets.all(ctx.devicePadding),
-
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-
-              children: [
-                TextField(
-                  controller: collegeCtrl,
-
-                  decoration: const InputDecoration(
-                    labelText: 'College & Department *',
-
-                    hintText: 'e.g. Farook College · BCA Dept',
-                  ),
-                ),
-
-                const SizedBox(height: 12),
-
-                TextField(
-                  controller: dateCtrl,
-                  readOnly: true,
-                  onTap: () async {
-                    final now = DateTime.now();
-                    final picked = await showDatePicker(
-                      context: ctx,
-                      initialDate: now,
-                      firstDate: DateTime(2024),
-                      lastDate: DateTime(2030),
-                      builder: (context, child) {
-                        return Theme(
-                          data: Theme.of(context).copyWith(
-                            colorScheme: const ColorScheme.light(
-                              primary: Color(0xFF4338CA),
-                              onPrimary: Colors.white,
-                              onSurface: Color(0xFF0F172A),
+      builder: (ctx) => Dialog(
+        backgroundColor: Colors.white,
+        insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 460),
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Plan College Visit',
+                              style: TextStyle(
+                                fontSize: 19,
+                                fontWeight: FontWeight.w800,
+                                color: Color(0xFF0F172A),
+                              ),
                             ),
-                          ),
-                          child: child!,
-                        );
-                      },
-                    );
-                    if (picked != null) {
-                      dateCtrl.text = DateFormat('dd MMM yyyy').format(picked);
-                    }
-                  },
-                  decoration: const InputDecoration(
-                    labelText: 'Visit Date',
-                    suffixIcon: Icon(
-                      Icons.calendar_today_rounded,
-                      size: 18,
-                      color: Color(0xFF4338CA),
+                            SizedBox(height: 4),
+                            Text(
+                              'Schedule campus outreach, seminar, or student drive',
+                              style: TextStyle(
+                                fontSize: 12.5,
+                                color: Color(0xFF64748B),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: () => Navigator.pop(ctx),
+                        icon: const Icon(
+                          Icons.close_rounded,
+                          size: 20,
+                          color: Color(0xFF94A3B8),
+                        ),
+                        visualDensity: VisualDensity.compact,
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(
+                          minWidth: 28,
+                          minHeight: 28,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 18),
+                  TextField(
+                    controller: collegeCtrl,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: Color(0xFF0F172A),
+                    ),
+                    decoration: InputDecoration(
+                      labelText: 'College & Department *',
+                      hintText: 'e.g. Farook College · BCA Dept',
+                      hintStyle: const TextStyle(
+                        color: Color(0xFF94A3B8),
+                        fontSize: 13.5,
+                      ),
+                      filled: true,
+                      fillColor: const Color(0xFFF8FAFC),
+                      prefixIcon: const Icon(
+                        Icons.account_balance_outlined,
+                        size: 19,
+                        color: Color(0xFF64748B),
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: const BorderSide(
+                          color: Color(0xFFEF8144),
+                          width: 1.5,
+                        ),
+                      ),
+                      isDense: true,
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 13,
+                      ),
                     ),
                   ),
-                ),
-
-                const SizedBox(height: 12),
-
-                TextField(
-                  controller: purposeCtrl,
-
-                  decoration: const InputDecoration(
-                    labelText: 'Purpose / Event',
-
-                    hintText: 'e.g. Seminar + student registration drive',
+                  const SizedBox(height: 14),
+                  TextField(
+                    controller: dateCtrl,
+                    readOnly: true,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: Color(0xFF0F172A),
+                    ),
+                    onTap: () async {
+                      final now = DateTime.now();
+                      final picked = await showDatePicker(
+                        context: ctx,
+                        initialDate: now,
+                        firstDate: DateTime(2024),
+                        lastDate: DateTime(2030),
+                        builder: (context, child) {
+                          return Theme(
+                            data: Theme.of(context).copyWith(
+                              colorScheme: const ColorScheme.light(
+                                primary: Color(0xFFEF8144),
+                                onPrimary: Colors.white,
+                                onSurface: Color(0xFF0F172A),
+                              ),
+                            ),
+                            child: child!,
+                          );
+                        },
+                      );
+                      if (picked != null) {
+                        dateCtrl.text = DateFormat(
+                          'dd MMM yyyy',
+                        ).format(picked);
+                      }
+                    },
+                    decoration: InputDecoration(
+                      labelText: 'Visit Date',
+                      filled: true,
+                      fillColor: const Color(0xFFF8FAFC),
+                      prefixIcon: const Icon(
+                        Icons.calendar_today_rounded,
+                        size: 19,
+                        color: Color(0xFF64748B),
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: const BorderSide(
+                          color: Color(0xFFEF8144),
+                          width: 1.5,
+                        ),
+                      ),
+                      isDense: true,
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 13,
+                      ),
+                    ),
                   ),
-                ),
-
-                const SizedBox(height: 12),
-
-                TextField(
-                  controller: staffCtrl,
-
-                  decoration: const InputDecoration(
-                    labelText: 'Assigned Staff',
+                  const SizedBox(height: 14),
+                  TextField(
+                    controller: purposeCtrl,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: Color(0xFF0F172A),
+                    ),
+                    decoration: InputDecoration(
+                      labelText: 'Purpose / Event',
+                      hintText: 'e.g. Seminar + student registration drive',
+                      hintStyle: const TextStyle(
+                        color: Color(0xFF94A3B8),
+                        fontSize: 13.5,
+                      ),
+                      filled: true,
+                      fillColor: const Color(0xFFF8FAFC),
+                      prefixIcon: const Icon(
+                        Icons.assignment_outlined,
+                        size: 19,
+                        color: Color(0xFF64748B),
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: const BorderSide(
+                          color: Color(0xFFEF8144),
+                          width: 1.5,
+                        ),
+                      ),
+                      isDense: true,
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 13,
+                      ),
+                    ),
                   ),
-                ),
-              ],
+                  const SizedBox(height: 14),
+                  TextField(
+                    controller: staffCtrl,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: Color(0xFF0F172A),
+                    ),
+                    decoration: InputDecoration(
+                      labelText: 'Assigned Staff',
+                      hintText: 'e.g. Sales Executive A, HOD',
+                      hintStyle: const TextStyle(
+                        color: Color(0xFF94A3B8),
+                        fontSize: 13.5,
+                      ),
+                      filled: true,
+                      fillColor: const Color(0xFFF8FAFC),
+                      prefixIcon: const Icon(
+                        Icons.people_outline_rounded,
+                        size: 19,
+                        color: Color(0xFF64748B),
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: const BorderSide(
+                          color: Color(0xFFEF8144),
+                          width: 1.5,
+                        ),
+                      ),
+                      isDense: true,
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 13,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 22),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: SizedBox(
+                          height: 46,
+                          child: OutlinedButton(
+                            onPressed: () => Navigator.pop(ctx),
+                            style: OutlinedButton.styleFrom(
+                              side: const BorderSide(color: Color(0xFFE2E8F0)),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            child: const Text(
+                              'Cancel',
+                              style: TextStyle(
+                                color: Color(0xFF475467),
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: SizedBox(
+                          height: 46,
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFFEF8144),
+                              foregroundColor: Colors.white,
+                              elevation: 0,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            onPressed: () async {
+                              if (collegeCtrl.text.trim().isEmpty) return;
+                              final dText = dateCtrl.text.trim();
+                              final dayNum =
+                                  RegExp(r'\d+').firstMatch(dText)?.group(0) ??
+                                  '29';
+                              final month = dText.contains('Nov')
+                                  ? 'NOV'
+                                  : (dText.contains('Dec') ? 'DEC' : 'OCT');
+
+                              await _visitsCollection.add({
+                                'collegeName': collegeCtrl.text.trim(),
+                                'dateLabel': dText,
+                                'dayNumber': dayNum,
+                                'monthShort': month,
+                                'purpose': purposeCtrl.text.trim().isEmpty
+                                    ? 'Campus outreach & seminar'
+                                    : purposeCtrl.text.trim(),
+                                'assignedStaff': staffCtrl.text.trim(),
+                                'staffNames': staffCtrl.text.trim(),
+                                'status': 'Planned',
+                                'statusLabel': 'Planned',
+                                'outcomeNotes': 'Scheduled campus visit.',
+                                'leadsCollected': 0,
+                                'conversions': 0,
+                                'createdByUid':
+                                    FirebaseAuth.instance.currentUser?.uid,
+                                'createdAt': FieldValue.serverTimestamp(),
+                                'updatedAt': FieldValue.serverTimestamp(),
+                              });
+                              if (ctx.mounted) Navigator.pop(ctx);
+                            },
+                            child: const Text(
+                              'Save Visit',
+                              style: TextStyle(fontWeight: FontWeight.w700),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
         ),
-
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-
-            child: const Text('Cancel'),
-          ),
-
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFEF8144),
-
-              foregroundColor: Colors.white,
-            ),
-
-            onPressed: () async {
-              if (collegeCtrl.text.trim().isEmpty) return;
-
-              final dText = dateCtrl.text.trim();
-
-              final dayNum = RegExp(r'\d+').firstMatch(dText)?.group(0) ?? '29';
-
-              final month = dText.contains('Nov')
-                  ? 'NOV'
-                  : (dText.contains('Dec') ? 'DEC' : 'OCT');
-
-              await _visitsCollection.add({
-                'collegeName': collegeCtrl.text.trim(),
-
-                'dateLabel': dText,
-
-                'dayNumber': dayNum,
-
-                'monthShort': month,
-
-                'purpose': purposeCtrl.text.trim().isEmpty
-                    ? 'Campus outreach & seminar'
-                    : purposeCtrl.text.trim(),
-
-                'assignedStaff': staffCtrl.text.trim(),
-
-                'staffNames': staffCtrl.text.trim(),
-
-                'status': 'Planned',
-
-                'statusLabel': 'Planned',
-
-                'outcomeNotes': 'Scheduled campus visit.',
-
-                'leadsCollected': 0,
-
-                'conversions': 0,
-
-                'createdByUid': FirebaseAuth.instance.currentUser?.uid,
-
-                'createdAt': FieldValue.serverTimestamp(),
-
-                'updatedAt': FieldValue.serverTimestamp(),
-              });
-
-              if (ctx.mounted) Navigator.pop(ctx);
-            },
-
-            child: const Text('Save Visit'),
-          ),
-        ],
       ),
     );
   }

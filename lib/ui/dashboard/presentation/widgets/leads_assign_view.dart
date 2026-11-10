@@ -287,177 +287,390 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
     showDialog(
       context: context,
       builder: (dCtx) => StatefulBuilder(
-        builder: (dCtx, setD) => AlertDialog(
+        builder: (dCtx, setD) => Dialog(
           backgroundColor: Colors.white,
-          insetPadding: EdgeInsets.symmetric(
-            horizontal: dCtx.devicePadding,
+          insetPadding: const EdgeInsets.symmetric(
+            horizontal: 20,
             vertical: 24,
           ),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(28),
           ),
-          title: const Text(
-            'Add walk-in lead',
-            style: TextStyle(fontWeight: FontWeight.w700, fontSize: 18),
-          ),
-          content: SizedBox(
-            width: 400,
-            child: SingleChildScrollView(
-              child: Form(
-                key: formKey,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (backendError != null) ...[
-                      Container(
-                        width: double.infinity,
-                        margin: const EdgeInsets.only(bottom: 12),
-                        padding: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFFEE2E2),
-                          borderRadius: BorderRadius.circular(8),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 460),
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: SingleChildScrollView(
+                child: Form(
+                  key: formKey,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Add Walk-in Lead',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: 19,
+                                    color: Color(0xFF0F172A),
+                                  ),
+                                ),
+                                SizedBox(height: 4),
+                                Text(
+                                  'Record student walk-in and register for follow-up',
+                                  style: TextStyle(
+                                    fontSize: 12.5,
+                                    color: Color(0xFF64748B),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          IconButton(
+                            onPressed: () => Navigator.pop(dCtx),
+                            icon: const Icon(
+                              Icons.close_rounded,
+                              size: 20,
+                              color: Color(0xFF94A3B8),
+                            ),
+                            visualDensity: VisualDensity.compact,
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(
+                              minWidth: 28,
+                              minHeight: 28,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 18),
+                      if (backendError != null) ...[
+                        Container(
+                          width: double.infinity,
+                          margin: const EdgeInsets.only(bottom: 14),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 11,
+                          ),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFEE2E2),
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(
+                                Icons.error_outline_rounded,
+                                size: 18,
+                                color: Color(0xFFDC2626),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  backendError!,
+                                  style: const TextStyle(
+                                    color: Color(0xFF991B1B),
+                                    fontSize: 12.5,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                        child: Text(
-                          backendError!,
-                          style: const TextStyle(
-                            color: Color(0xFFB91C1C),
-                            fontSize: 12.5,
-                            fontWeight: FontWeight.w600,
+                      ],
+                      TextFormField(
+                        controller: nameC,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: Color(0xFF0F172A),
+                        ),
+                        decoration: InputDecoration(
+                          labelText: 'Student Name *',
+                          hintText: 'e.g. Rahul Sharma',
+                          hintStyle: const TextStyle(
+                            color: Color(0xFF94A3B8),
+                            fontSize: 13.5,
+                          ),
+                          filled: true,
+                          fillColor: const Color(0xFFF8FAFC),
+                          prefixIcon: const Icon(
+                            Icons.person_outline_rounded,
+                            size: 19,
+                            color: Color(0xFF64748B),
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFE2E8F0),
+                            ),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFE2E8F0),
+                            ),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: const BorderSide(
+                              color: _primary,
+                              width: 1.5,
+                            ),
+                          ),
+                          isDense: true,
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 13,
+                          ),
+                        ),
+                        validator: (v) =>
+                            (v == null || v.trim().isEmpty) ? 'Required' : null,
+                      ),
+                      const SizedBox(height: 14),
+                      TextFormField(
+                        controller: phoneC,
+                        keyboardType: TextInputType.phone,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: Color(0xFF0F172A),
+                        ),
+                        decoration: InputDecoration(
+                          labelText: '10-digit Phone Number *',
+                          hintText: '9847011111',
+                          hintStyle: const TextStyle(
+                            color: Color(0xFF94A3B8),
+                            fontSize: 13.5,
+                          ),
+                          filled: true,
+                          fillColor: const Color(0xFFF8FAFC),
+                          prefixIcon: const Icon(
+                            Icons.phone_outlined,
+                            size: 19,
+                            color: Color(0xFF64748B),
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFE2E8F0),
+                            ),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFE2E8F0),
+                            ),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: const BorderSide(
+                              color: _primary,
+                              width: 1.5,
+                            ),
+                          ),
+                          isDense: true,
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 13,
+                          ),
+                        ),
+                        validator: LeadPhoneValidator.validate,
+                      ),
+                      const SizedBox(height: 14),
+                      CollegeSelectorField(
+                        controller: collegeC,
+                        additionalColleges: state.allLeads
+                            .map(
+                              (l) => l.collegeBranch
+                                  .split(RegExp(r'[·\-]'))
+                                  .first
+                                  .trim(),
+                            )
+                            .where((s) => s.isNotEmpty)
+                            .toList(),
+                      ),
+                      const SizedBox(height: 14),
+                      AcadenoDropdown.strings(
+                        label: 'Source Event / Consent',
+                        value: source,
+                        items: const [
+                          'Direct visit',
+                          'AI Webinar',
+                          'Python workshop',
+                          'Industrial visit',
+                          'College visit',
+                          'Add-on course',
+                        ],
+                        onChanged: (v) => setD(() => source = v ?? source),
+                      ),
+                      const SizedBox(height: 14),
+                      TextFormField(
+                        controller: notesC,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: Color(0xFF0F172A),
+                        ),
+                        decoration: InputDecoration(
+                          labelText: 'Notes (Optional)',
+                          hintText: 'Add context or requirements...',
+                          hintStyle: const TextStyle(
+                            color: Color(0xFF94A3B8),
+                            fontSize: 13.5,
+                          ),
+                          filled: true,
+                          fillColor: const Color(0xFFF8FAFC),
+                          prefixIcon: const Icon(
+                            Icons.note_alt_outlined,
+                            size: 19,
+                            color: Color(0xFF64748B),
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFE2E8F0),
+                            ),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFE2E8F0),
+                            ),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: const BorderSide(
+                              color: _primary,
+                              width: 1.5,
+                            ),
+                          ),
+                          isDense: true,
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 13,
                           ),
                         ),
                       ),
+                      const SizedBox(height: 22),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: SizedBox(
+                              height: 46,
+                              child: OutlinedButton(
+                                onPressed: saving
+                                    ? null
+                                    : () => Navigator.pop(dCtx),
+                                style: OutlinedButton.styleFrom(
+                                  side: const BorderSide(
+                                    color: Color(0xFFE2E8F0),
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                                child: const Text(
+                                  'Cancel',
+                                  style: TextStyle(
+                                    color: Color(0xFF475467),
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: SizedBox(
+                              height: 46,
+                              child: ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: _primary,
+                                  foregroundColor: Colors.white,
+                                  elevation: 0,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                                onPressed: saving
+                                    ? null
+                                    : () async {
+                                        setD(() => backendError = null);
+                                        if (!formKey.currentState!.validate()) {
+                                          return;
+                                        }
+                                        setD(() => saving = true);
+                                        try {
+                                          await CollegeSelectorField.saveCollegeIfNew(
+                                            collegeC.text,
+                                          );
+                                          final created = await cubit
+                                              .createLead(
+                                                name: nameC.text.trim(),
+                                                phone: phoneC.text.trim(),
+                                                collegeBranch: collegeC.text
+                                                    .trim(),
+                                                source: source,
+                                                notes: notesC.text.trim(),
+                                              );
+                                          if (!dCtx.mounted) return;
+                                          Navigator.pop(dCtx);
+                                          if (created != null) {
+                                            _tryDashboardCubit()?.recordAudit(
+                                              action:
+                                                  'Added walk-in lead ($source)',
+                                              target:
+                                                  '${created.name} · ${created.phone}',
+                                              category: 'lead_create',
+                                            );
+                                          }
+                                        } catch (e) {
+                                          if (!dCtx.mounted) return;
+                                          setD(() {
+                                            saving = false;
+                                            backendError = e
+                                                .toString()
+                                                .replaceFirst('Exception: ', '')
+                                                .replaceFirst(
+                                                  'Invalid argument(s): ',
+                                                  '',
+                                                );
+                                          });
+                                        }
+                                      },
+                                child: saving
+                                    ? const SizedBox(
+                                        width: 16,
+                                        height: 16,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          valueColor:
+                                              AlwaysStoppedAnimation<Color>(
+                                                Colors.white,
+                                              ),
+                                        ),
+                                      )
+                                    : const Text(
+                                        'Save lead',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ],
-                    TextFormField(
-                      controller: nameC,
-                      decoration: InputDecoration(
-                        labelText: 'Student Name',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        isDense: true,
-                      ),
-                      validator: (v) =>
-                          (v == null || v.trim().isEmpty) ? 'Required' : null,
-                    ),
-                    const SizedBox(height: 12),
-                    TextFormField(
-                      controller: phoneC,
-                      keyboardType: TextInputType.phone,
-                      decoration: InputDecoration(
-                        labelText: '10-digit Phone Number',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        isDense: true,
-                      ),
-                      validator: LeadPhoneValidator.validate,
-                    ),
-                    const SizedBox(height: 12),
-                    CollegeSelectorField(
-                      controller: collegeC,
-                      additionalColleges: state.allLeads
-                          .map(
-                            (l) => l.collegeBranch
-                                .split(RegExp(r'[·\-]'))
-                                .first
-                                .trim(),
-                          )
-                          .where((s) => s.isNotEmpty)
-                          .toList(),
-                    ),
-                    const SizedBox(height: 12),
-                    AcadenoDropdown.strings(
-                      label: 'Source Event / Consent',
-                      value: source,
-                      items: const [
-                        'Direct visit',
-                        'AI Webinar',
-                        'Python workshop',
-                        'Industrial visit',
-                        'College visit',
-                        'Add-on course',
-                      ],
-                      onChanged: (v) => setD(() => source = v ?? source),
-                    ),
-                    const SizedBox(height: 12),
-                    TextFormField(
-                      controller: notesC,
-                      decoration: InputDecoration(
-                        labelText: 'Notes (Optional)',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        isDense: true,
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
               ),
             ),
           ),
-          actions: [
-            TextButton(
-              onPressed: saving ? null : () => Navigator.pop(dCtx),
-              child: const Text('Cancel'),
-            ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: _primary,
-                foregroundColor: Colors.white,
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-              onPressed: saving
-                  ? null
-                  : () async {
-                      setD(() => backendError = null);
-                      if (!formKey.currentState!.validate()) return;
-                      setD(() => saving = true);
-                      try {
-                        await CollegeSelectorField.saveCollegeIfNew(
-                          collegeC.text,
-                        );
-                        final created = await cubit.createLead(
-                          name: nameC.text.trim(),
-                          phone: phoneC.text.trim(),
-                          collegeBranch: collegeC.text.trim(),
-                          source: source,
-                          notes: notesC.text.trim(),
-                        );
-                        if (!dCtx.mounted) return;
-                        Navigator.pop(dCtx);
-                        if (created != null) {
-                          _tryDashboardCubit()?.recordAudit(
-                            action: 'Added walk-in lead ($source)',
-                            target: '${created.name} · ${created.phone}',
-                            category: 'lead_create',
-                          );
-                        }
-                      } catch (e) {
-                        if (!dCtx.mounted) return;
-                        setD(() {
-                          saving = false;
-                          backendError = e
-                              .toString()
-                              .replaceFirst('Exception: ', '')
-                              .replaceFirst('Invalid argument(s): ', '');
-                        });
-                      }
-                    },
-              child: saving
-                  ? const SizedBox(
-                      width: 16,
-                      height: 16,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
-                      ),
-                    )
-                  : const Text('Save lead'),
-            ),
-          ],
         ),
       ),
     );

@@ -4,7 +4,6 @@ import 'package:acadeno_crm/shared/widgets/college_selector_field.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import 'package:acadeno_crm/shared/extensions/build_context_extension.dart';
 import 'package:acadeno_crm/ui/follow_ups/application/follow_ups_cubit.dart';
 import 'package:acadeno_crm/ui/home/application/home_cubit.dart';
 import 'package:acadeno_crm/ui/leads/application/leads_cubit.dart';
@@ -729,121 +728,292 @@ class LeadCallSheets {
       context: context,
       builder: (ctx) => Dialog(
         backgroundColor: Colors.white,
-        insetPadding: EdgeInsets.symmetric(
-          horizontal: ctx.devicePadding.clamp(16.0, 24.0),
-          vertical: 24,
-        ),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
         child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 480),
+          constraints: const BoxConstraints(maxWidth: 460),
           child: StatefulBuilder(
             builder: (ctx, setSheetState) {
-              final pad = ctx.devicePadding.clamp(16.0, 20.0);
               return Padding(
-                padding: EdgeInsets.all(pad),
+                padding: const EdgeInsets.all(24),
                 child: SingleChildScrollView(
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'Phone Lookup & Add Walk-in Lead',
-                        style: TextStyle(
-                          fontSize: 17,
-                          fontWeight: FontWeight.w800,
-                          color: Color(0xFF0F172A),
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Type a 10-digit phone number to check duplicates before saving. Lookups this hour: ${cubit.state.phoneLookupsThisHour}/40.',
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: Color(0xFF667085),
-                        ),
-                      ),
-                      const SizedBox(height: 12),
                       Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Phone Lookup & Add Walk-in Lead',
+                                  style: TextStyle(
+                                    fontSize: 19,
+                                    fontWeight: FontWeight.w800,
+                                    color: Color(0xFF0F172A),
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Check duplicates before saving · ${cubit.state.phoneLookupsThisHour}/40 hourly lookups',
+                                  style: const TextStyle(
+                                    fontSize: 12.5,
+                                    color: Color(0xFF64748B),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          IconButton(
+                            onPressed: () => Navigator.pop(ctx),
+                            icon: const Icon(
+                              Icons.close_rounded,
+                              size: 20,
+                              color: Color(0xFF94A3B8),
+                            ),
+                            visualDensity: VisualDensity.compact,
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(
+                              minWidth: 28,
+                              minHeight: 28,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 18),
+
+                      // Phone Lookup Row
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Expanded(
                             child: TextField(
                               controller: phoneCtrl,
                               keyboardType: TextInputType.phone,
-                              decoration: const InputDecoration(
+                              style: const TextStyle(
+                                fontSize: 14,
+                                color: Color(0xFF0F172A),
+                              ),
+                              decoration: InputDecoration(
                                 labelText: '10-digit mobile number *',
                                 hintText: '9847011111',
+                                hintStyle: const TextStyle(
+                                  color: Color(0xFF94A3B8),
+                                  fontSize: 13.5,
+                                ),
+                                filled: true,
+                                fillColor: const Color(0xFFF8FAFC),
+                                prefixIcon: const Icon(
+                                  Icons.phone_outlined,
+                                  size: 19,
+                                  color: Color(0xFF64748B),
+                                ),
                                 isDense: true,
-                                border: OutlineInputBorder(),
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 14,
+                                  vertical: 13,
+                                ),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(14),
+                                  borderSide: const BorderSide(
+                                    color: Color(0xFFE2E8F0),
+                                  ),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(14),
+                                  borderSide: const BorderSide(
+                                    color: Color(0xFFE2E8F0),
+                                  ),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(14),
+                                  borderSide: const BorderSide(
+                                    color: Color(0xFF4338CA),
+                                    width: 1.5,
+                                  ),
+                                ),
                               ),
                             ),
                           ),
-                          const SizedBox(width: 8),
-                          ElevatedButton(
-                            onPressed: () async {
-                              final res = await cubit.lookupByPhone(
-                                phoneCtrl.text,
-                              );
-                              if (!ctx.mounted) return;
-                              setSheetState(() {
-                                lookupFeedback = res.owner != null
-                                    ? '${res.message} · Owned by ${res.owner} (${res.status})'
-                                    : res.message;
-                                lookupFoundDuplicate = res.found;
-                              });
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF0F172A),
-                              foregroundColor: Colors.white,
+                          const SizedBox(width: 10),
+                          SizedBox(
+                            height: 46,
+                            child: ElevatedButton(
+                              onPressed: () async {
+                                final res = await cubit.lookupByPhone(
+                                  phoneCtrl.text,
+                                );
+                                if (!ctx.mounted) return;
+                                setSheetState(() {
+                                  lookupFeedback = res.owner != null
+                                      ? '${res.message} · Owned by ${res.owner} (${res.status})'
+                                      : res.message;
+                                  lookupFoundDuplicate = res.found;
+                                });
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF0F172A),
+                                foregroundColor: Colors.white,
+                                elevation: 0,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(14),
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                ),
+                              ),
+                              child: const Text(
+                                'Check',
+                                style: TextStyle(fontWeight: FontWeight.w600),
+                              ),
                             ),
-                            child: const Text('Check'),
                           ),
                         ],
                       ),
                       if (lookupFeedback != null) ...[
-                        const SizedBox(height: 10),
+                        const SizedBox(height: 12),
                         Container(
                           width: double.infinity,
-                          padding: const EdgeInsets.all(10),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 11,
+                          ),
                           decoration: BoxDecoration(
                             color: lookupFoundDuplicate
-                                ? const Color(0xFFFEF0E6)
-                                : const Color(0xFFE6F4EA),
-                            borderRadius: BorderRadius.circular(10),
+                                ? const Color(0xFFFEE2E2)
+                                : const Color(0xFFDCFCE7),
+                            borderRadius: BorderRadius.circular(14),
                           ),
-                          child: Text(
-                            lookupFeedback!,
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                              color: lookupFoundDuplicate
-                                  ? const Color(0xFF9A3412)
-                                  : const Color(0xFF15803D),
-                            ),
+                          child: Row(
+                            children: [
+                              Icon(
+                                lookupFoundDuplicate
+                                    ? Icons.error_outline_rounded
+                                    : Icons.check_circle_outline_rounded,
+                                size: 18,
+                                color: lookupFoundDuplicate
+                                    ? const Color(0xFFDC2626)
+                                    : const Color(0xFF16A34A),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  lookupFeedback!,
+                                  style: TextStyle(
+                                    fontSize: 12.5,
+                                    fontWeight: FontWeight.w600,
+                                    color: lookupFoundDuplicate
+                                        ? const Color(0xFF991B1B)
+                                        : const Color(0xFF166534),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ],
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 14),
+
+                      // Student Name
                       TextField(
                         controller: nameCtrl,
-                        decoration: const InputDecoration(
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: Color(0xFF0F172A),
+                        ),
+                        decoration: InputDecoration(
                           labelText: 'Student Name *',
+                          hintText: 'e.g. Rahul Sharma',
+                          hintStyle: const TextStyle(
+                            color: Color(0xFF94A3B8),
+                            fontSize: 13.5,
+                          ),
+                          filled: true,
+                          fillColor: const Color(0xFFF8FAFC),
+                          prefixIcon: const Icon(
+                            Icons.person_outline_rounded,
+                            size: 19,
+                            color: Color(0xFF64748B),
+                          ),
                           isDense: true,
-                          border: OutlineInputBorder(),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 13,
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFE2E8F0),
+                            ),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFE2E8F0),
+                            ),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: const BorderSide(
+                              color: Color(0xFF4338CA),
+                              width: 1.5,
+                            ),
+                          ),
                         ),
                       ),
-                      const SizedBox(height: 10),
+                      const SizedBox(height: 14),
+
+                      // College branch year selector
                       CollegeSelectorField(
                         controller: collegeCtrl,
                         label: 'College · Branch · Year',
                       ),
-                      const SizedBox(height: 10),
+                      const SizedBox(height: 14),
+
+                      // Campaign source
                       DropdownButtonFormField<String>(
                         initialValue: selectedCampaign,
                         isExpanded: true,
-                        decoration: const InputDecoration(
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: Color(0xFF0F172A),
+                        ),
+                        decoration: InputDecoration(
                           labelText: 'Source Event / Consent',
+                          filled: true,
+                          fillColor: const Color(0xFFF8FAFC),
+                          prefixIcon: const Icon(
+                            Icons.campaign_outlined,
+                            size: 19,
+                            color: Color(0xFF64748B),
+                          ),
                           isDense: true,
-                          border: OutlineInputBorder(),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 13,
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFE2E8F0),
+                            ),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFE2E8F0),
+                            ),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: const BorderSide(
+                              color: Color(0xFF4338CA),
+                              width: 1.5,
+                            ),
+                          ),
                         ),
                         items: const [
                           DropdownMenuItem(
@@ -865,9 +1035,12 @@ class LeadCallSheets {
                           }
                         },
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 20),
+
+                      // Save Button
                       SizedBox(
                         width: double.infinity,
+                        height: 48,
                         child: ElevatedButton(
                           onPressed: lookupFoundDuplicate
                               ? null
@@ -901,14 +1074,17 @@ class LeadCallSheets {
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF4338CA),
                             foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(vertical: 13),
+                            elevation: 0,
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(14),
                             ),
                           ),
                           child: const Text(
                             'Save Walk-in Lead',
-                            style: TextStyle(fontWeight: FontWeight.w700),
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w700,
+                            ),
                           ),
                         ),
                       ),
@@ -930,19 +1106,24 @@ class LeadCallSheets {
     final state = context.read<LeadsCubit>().state;
     final user = context.read<HomeCubit>().state.user;
 
+    final totalCalls = state.callRecords.length;
+    final interestedCount = state.callRecords
+        .where((r) => r.outcome.trim().toLowerCase() == 'interested')
+        .length;
+    final convertedCount = state.callRecords
+        .where((r) => r.outcome.trim().toLowerCase() == 'converted')
+        .length;
+
     showDialog(
       context: context,
       builder: (ctx) => Dialog(
         backgroundColor: Colors.white,
-        insetPadding: EdgeInsets.symmetric(
-          horizontal: ctx.devicePadding.clamp(16.0, 24.0),
-          vertical: 24,
-        ),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
         child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 480),
+          constraints: const BoxConstraints(maxWidth: 440),
           child: Padding(
-            padding: EdgeInsets.all(ctx.devicePadding.clamp(16.0, 20.0)),
+            padding: const EdgeInsets.all(24),
             child: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -958,17 +1139,18 @@ class LeadCallSheets {
                             const Text(
                               'My Record & Performance',
                               style: TextStyle(
-                                fontSize: 17,
+                                fontSize: 20,
                                 fontWeight: FontWeight.w800,
                                 color: Color(0xFF0F172A),
                               ),
                             ),
-                            const SizedBox(height: 2),
+                            const SizedBox(height: 4),
                             Text(
-                              '${user.displayName} · ${user.roleLabel} · Joined ${user.joinedLabel} · Permanent read-only call log',
+                              '${user.displayName} · ${user.roleLabel} · Joined ${user.joinedLabel}\nPermanent read-only call log',
                               style: const TextStyle(
-                                fontSize: 12,
-                                color: Color(0xFF667085),
+                                fontSize: 12.5,
+                                color: Color(0xFF64748B),
+                                height: 1.35,
                               ),
                             ),
                           ],
@@ -976,47 +1158,144 @@ class LeadCallSheets {
                       ),
                       IconButton(
                         onPressed: () => Navigator.pop(ctx),
-                        icon: const Icon(Icons.close, size: 20),
+                        icon: const Icon(
+                          Icons.close_rounded,
+                          size: 20,
+                          color: Color(0xFF94A3B8),
+                        ),
                         visualDensity: VisualDensity.compact,
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(
+                          minWidth: 28,
+                          minHeight: 28,
+                        ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 18),
                   Row(
                     children: [
-                      _miniPerfStat(
-                        'Total Calls',
-                        '${state.callRecords.length}',
-                        const Color(0xFF4338CA),
+                      Expanded(
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 14,
+                          ),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF3E8FF).withValues(alpha: 0.55),
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                '$totalCalls',
+                                style: const TextStyle(
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.w800,
+                                  color: Color(0xFF0F172A),
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              const Text(
+                                'Total Calls',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                  color: Color(0xFF64748B),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
-                      const SizedBox(width: 8),
-                      _miniPerfStat(
-                        'Interested',
-                        '${state.callRecords.where((r) => r.outcome.trim().toLowerCase() == "interested").length}',
-                        const Color(0xFF0284C7),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 14,
+                          ),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFE0F2FE),
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                '$interestedCount',
+                                style: const TextStyle(
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.w800,
+                                  color: Color(0xFF0284C7),
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              const Text(
+                                'Interested',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                  color: Color(0xFF64748B),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
-                      const SizedBox(width: 8),
-                      _miniPerfStat(
-                        'Converted',
-                        '${state.callRecords.where((r) => r.outcome.trim().toLowerCase() == "converted").length}',
-                        const Color(0xFF15803D),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 14,
+                          ),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFDCFCE7),
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                '$convertedCount',
+                                style: const TextStyle(
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.w800,
+                                  color: Color(0xFF16A34A),
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              const Text(
+                                'Converted',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                  color: Color(0xFF64748B),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 14),
+                  const SizedBox(height: 22),
                   const Text(
                     'RECENT PERMANENT CALL LOGS (READ-ONLY)',
                     style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w700,
-                      color: Color(0xFF667085),
+                      color: Color(0xFF64748B),
+                      letterSpacing: 0.5,
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 12),
                   if (state.callRecords.isEmpty)
                     Container(
                       padding: const EdgeInsets.symmetric(
-                        vertical: 24,
+                        vertical: 28,
                         horizontal: 16,
                       ),
                       alignment: Alignment.center,
@@ -1051,12 +1330,14 @@ class LeadCallSheets {
                   else
                     ...state.callRecords.map(
                       (rec) => Container(
-                        margin: const EdgeInsets.only(bottom: 8),
-                        padding: const EdgeInsets.all(12),
+                        margin: const EdgeInsets.only(bottom: 10),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 14,
+                        ),
                         decoration: BoxDecoration(
                           color: const Color(0xFFF8FAFC),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: const Color(0xFFE2E8F0)),
+                          borderRadius: BorderRadius.circular(16),
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -1077,20 +1358,22 @@ class LeadCallSheets {
                                 ),
                                 const SizedBox(width: 8),
                                 Text(
-                                  '${rec.duration} · ${rec.timestamp}',
+                                  '${rec.duration.isNotEmpty ? "${rec.duration} · " : ""}${rec.timestamp}',
                                   style: const TextStyle(
-                                    fontSize: 11.5,
-                                    color: Color(0xFF667085),
+                                    fontSize: 12,
+                                    color: Color(0xFF64748B),
                                   ),
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 3),
+                            const SizedBox(height: 4),
                             Text(
-                              rec.notes,
+                              rec.notes.isNotEmpty
+                                  ? rec.notes
+                                  : 'Logged ${rec.outcome} outcome',
                               style: const TextStyle(
                                 fontSize: 12,
-                                color: Color(0xFF475467),
+                                color: Color(0xFF64748B),
                               ),
                             ),
                           ],
@@ -1101,35 +1384,6 @@ class LeadCallSheets {
               ),
             ),
           ),
-        ),
-      ),
-    );
-  }
-
-  static Widget _miniPerfStat(String label, String val, Color color) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.09),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              val,
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w800,
-                color: color,
-              ),
-            ),
-            Text(
-              label,
-              style: const TextStyle(fontSize: 11.5, color: Color(0xFF475467)),
-            ),
-          ],
         ),
       ),
     );

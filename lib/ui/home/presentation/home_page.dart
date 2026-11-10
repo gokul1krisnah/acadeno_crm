@@ -1,4 +1,3 @@
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:acadeno_crm/core/router/app_router.dart';
 import 'package:acadeno_crm/shared/extensions/build_context_extension.dart';
@@ -72,79 +71,126 @@ class _HomeScaffoldViewState extends State<_HomeScaffoldView> {
   void _logout() {
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
+      builder: (ctx) => Dialog(
         backgroundColor: Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Row(
-          children: [
-            Container(
-              width: 36,
-              height: 36,
-              decoration: BoxDecoration(
-                color: const Color(0xFFF9FAFB),
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: const Color(0xFFF3F4F6)),
-              ),
-              alignment: Alignment.center,
-              child: SvgPicture.asset(
-                'assets/svgs/logout.svg',
-                width: 18,
-                height: 18,
-              ),
-            ),
-            const SizedBox(width: 12),
-            const Text(
-              'Sign out',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
-            ),
-          ],
-        ),
-        content: Text(
-          'Sign out of ${context.read<HomeCubit>().state.user.displayName}’s Lead Manager session? Local offline cache will be cleared.',
-          style: const TextStyle(fontSize: 13.5, color: Color(0xFF475467)),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text(
-              'Cancel',
-              style: TextStyle(color: Color(0xFF667085)),
-            ),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              Navigator.pop(ctx);
-              await _authRepository.signOut();
-              isAdminSession = false;
-              if (!mounted) return;
-              context.router.replaceAll([const LoginRoute()]);
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFB42318),
-              foregroundColor: Colors.white,
-              elevation: 0,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-            ),
-            child: Row(
+        insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 420),
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
               mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SvgPicture.asset(
-                  'assets/svgs/logout.svg',
-                  width: 14,
-                  height: 14,
-                  colorFilter: const ColorFilter.mode(
-                    Colors.white,
-                    BlendMode.srcIn,
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFEE2E2),
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      alignment: Alignment.center,
+                      child: const Icon(
+                        Icons.logout_rounded,
+                        size: 22,
+                        color: Color(0xFFDC2626),
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () => Navigator.pop(ctx),
+                      icon: const Icon(
+                        Icons.close_rounded,
+                        size: 20,
+                        color: Color(0xFF94A3B8),
+                      ),
+                      visualDensity: VisualDensity.compact,
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(
+                        minWidth: 28,
+                        minHeight: 28,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'Sign out from Acadeno?',
+                  style: TextStyle(
+                    fontSize: 19,
+                    fontWeight: FontWeight.w800,
+                    color: Color(0xFF0F172A),
                   ),
                 ),
-                const SizedBox(width: 6),
-                const Text('Sign out'),
+                const SizedBox(height: 6),
+                Text(
+                  'Sign out of ${context.read<HomeCubit>().state.user.displayName}’s Lead Manager session? Local offline cache will be safely preserved.',
+                  style: const TextStyle(
+                    fontSize: 13.5,
+                    color: Color(0xFF64748B),
+                    height: 1.4,
+                  ),
+                ),
+                const SizedBox(height: 24),
+                Row(
+                  children: [
+                    Expanded(
+                      child: SizedBox(
+                        height: 46,
+                        child: OutlinedButton(
+                          onPressed: () => Navigator.pop(ctx),
+                          style: OutlinedButton.styleFrom(
+                            side: const BorderSide(color: Color(0xFFE2E8F0)),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: const Text(
+                            'Cancel',
+                            style: TextStyle(
+                              color: Color(0xFF475467),
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: SizedBox(
+                        height: 46,
+                        child: ElevatedButton(
+                          onPressed: () async {
+                            Navigator.pop(ctx);
+                            await _authRepository.signOut();
+                            isAdminSession = false;
+                            if (!mounted) return;
+                            context.router.replaceAll([const LoginRoute()]);
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFFB42318),
+                            foregroundColor: Colors.white,
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: const Text(
+                            'Sign out',
+                            style: TextStyle(fontWeight: FontWeight.w700),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ],
             ),
           ),
-        ],
+        ),
       ),
     );
   }
