@@ -104,103 +104,93 @@ class LeadCallSheets {
         ? initialDuration.trim()
         : '0s';
 
-    showModalBottomSheet(
+    showDialog(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      barrierColor: Colors.black.withValues(alpha: 0.65),
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setSheetState) {
-          return Align(
-            alignment: Alignment.bottomCenter,
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 480),
-              child: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    // 1. Dark Top Backdrop Header (Matches Screenshot exactly)
-                    Container(
-                      padding: const EdgeInsets.fromLTRB(20, 24, 20, 16),
-                      decoration: const BoxDecoration(
-                        color: Color(0xFF181A22),
-                        borderRadius: BorderRadius.vertical(
-                          top: Radius.circular(20),
-                        ),
-                      ),
-                      child: Column(
+      builder: (ctx) => Dialog(
+        backgroundColor: const Color(0xFFFFFFFF),
+        surfaceTintColor: Colors.transparent,
+        insetPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 24),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(28),
+          side: const BorderSide(color: Color(0xFFE2E8F0), width: 1),
+        ),
+        child: Container(
+          width: double.infinity,
+          constraints: const BoxConstraints(maxWidth: 420),
+          decoration: BoxDecoration(
+            color: const Color(0xFFFFFFFF),
+            borderRadius: BorderRadius.circular(28),
+            border: Border.all(color: const Color(0xFFE2E8F0), width: 1),
+          ),
+          child: StatefulBuilder(
+            builder: (ctx, setSheetState) {
+              return Padding(
+                padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Header Row: Title & Subtitle + Close button (exact same as Add Walk-in Lead)
+                      Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            'Call ended · $displayDuration',
-                            style: const TextStyle(
-                              color: Color(0xFF94A3B8),
-                              fontSize: 13,
-                              fontWeight: FontWeight.w500,
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Log Call Outcome',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.w700,
+                                    height: 27.5 / 20,
+                                    color: const Color(0xFF0F172A),
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  '$leadName · Ended in $displayDuration\n$collegeInfo',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 12.5,
+                                    fontWeight: FontWeight.w400,
+                                    height: 1.35,
+                                    color: const Color(0xFF64748B),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                          const SizedBox(height: 4),
-                          Text(
-                            leadName,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 20,
-                              fontWeight: FontWeight.w800,
-                              letterSpacing: -0.3,
+                          IconButton(
+                            onPressed: () => Navigator.pop(ctx),
+                            icon: const Icon(
+                              Icons.close_rounded,
+                              size: 20,
+                              color: Color(0xFF94A3B8),
+                            ),
+                            visualDensity: VisualDensity.compact,
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(
+                              minWidth: 28,
+                              minHeight: 28,
                             ),
                           ),
                         ],
                       ),
-                    ),
+                      const SizedBox(height: 18),
 
-                    // 2. White Bottom Sheet
-                    Container(
-                      decoration: const BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.vertical(
-                          top: Radius.circular(24),
+                      // Title: How did the call go?
+                      const Text(
+                        'How did the call go?',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF0F172A),
                         ),
                       ),
-                      child: SafeArea(
-                        top: false,
-                        child: Padding(
-                          padding: EdgeInsets.fromLTRB(
-                            16,
-                            12,
-                            16,
-                            24 + MediaQuery.of(ctx).viewInsets.bottom,
-                          ),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              // Drag handle
-                              Center(
-                                child: Container(
-                                  width: 38,
-                                  height: 4,
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFFE2E8F0),
-                                    borderRadius: BorderRadius.circular(2),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 14),
+                      const SizedBox(height: 12),
 
-                              // Title
-                              const Text(
-                                'How did the call go?',
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w800,
-                                  color: Color(0xFF0F172A),
-                                  letterSpacing: -0.3,
-                                ),
-                              ),
-                              const SizedBox(height: 14),
-
-                              // 2x4 Outcomes Grid
+                      // 2x4 Outcomes Grid
                               ...outcomeRows.map((row) {
                                 return Padding(
                                   padding: const EdgeInsets.only(bottom: 10),
@@ -508,17 +498,13 @@ class LeadCallSheets {
                             ],
                           ),
                         ),
-                      ),
-                    ),
-                  ],
+                      );
+                    },
+                  ),
                 ),
               ),
-            ),
-          );
-        },
-      ),
-    );
-  }
+            );
+          }
 
   static Widget _buildSlotPill({
     required String label,
@@ -745,10 +731,19 @@ class LeadCallSheets {
       builder: (ctx) => Dialog(
         backgroundColor: const Color(0xFFFFFFFF),
         surfaceTintColor: Colors.transparent,
-        insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 385),
+        insetPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 24),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(28),
+          side: const BorderSide(color: Color(0xFFE2E8F0), width: 1),
+        ),
+        child: Container(
+          width: double.infinity,
+          constraints: const BoxConstraints(maxWidth: 420),
+          decoration: BoxDecoration(
+            color: const Color(0xFFFFFFFF),
+            borderRadius: BorderRadius.circular(28),
+            border: Border.all(color: const Color(0xFFE2E8F0), width: 1),
+          ),
           child: StatefulBuilder(
             builder: (ctx, setSheetState) {
               return Padding(
@@ -1273,14 +1268,14 @@ class LeadCallSheets {
           side: const BorderSide(color: Color(0xFFE2E8F0), width: 1),
         ),
         child: Container(
-          width: 358,
-          constraints: const BoxConstraints(maxWidth: 358, maxHeight: 764.4),
+          width: double.infinity,
+          constraints: const BoxConstraints(maxWidth: 420, maxHeight: 764.4),
           decoration: BoxDecoration(
             color: const Color(0xFFFFFFFF),
             borderRadius: BorderRadius.circular(32),
             border: Border.all(color: const Color(0xFFE2E8F0), width: 1),
           ),
-          padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
+          padding: const EdgeInsets.fromLTRB(16, 24, 16, 24),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -1333,30 +1328,33 @@ class LeadCallSheets {
               const SizedBox(height: 18),
               // Fixed-dimension metric boxes: width 99.333, height 84, gap 4px, radius 16
               Center(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    _buildRecordMetricBox(
-                      value: '$totalCalls',
-                      label: 'Total Calls',
-                      valueColor: const Color(0xFF0F172A),
-                      bgColor: const Color(0xFFF3E8FF).withValues(alpha: 0.55),
-                    ),
-                    const SizedBox(width: 4),
-                    _buildRecordMetricBox(
-                      value: '$interestedCount',
-                      label: 'Interested',
-                      valueColor: const Color(0xFF0284C7),
-                      bgColor: const Color(0xFFE0F2FE),
-                    ),
-                    const SizedBox(width: 4),
-                    _buildRecordMetricBox(
-                      value: '$convertedCount',
-                      label: 'Converted',
-                      valueColor: const Color(0xFF16A34A),
-                      bgColor: const Color(0xFFDCFCE7),
-                    ),
-                  ],
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      _buildRecordMetricBox(
+                        value: '$totalCalls',
+                        label: 'Total Calls',
+                        valueColor: const Color(0xFF0F172A),
+                        bgColor: const Color(0xFFF3E8FF).withValues(alpha: 0.55),
+                      ),
+                      const SizedBox(width: 4),
+                      _buildRecordMetricBox(
+                        value: '$interestedCount',
+                        label: 'Interested',
+                        valueColor: const Color(0xFF0284C7),
+                        bgColor: const Color(0xFFE0F2FE),
+                      ),
+                      const SizedBox(width: 4),
+                      _buildRecordMetricBox(
+                        value: '$convertedCount',
+                        label: 'Converted',
+                        valueColor: const Color(0xFF16A34A),
+                        bgColor: const Color(0xFFDCFCE7),
+                      ),
+                    ],
+                  ),
                 ),
               ),
               const SizedBox(height: 22),
