@@ -198,6 +198,31 @@ class _AcadenoAppState extends State<AcadenoApp> with WidgetsBindingObserver {
             color: AppColors.white,
           ),
         ),
+        popupMenuTheme: PopupMenuThemeData(
+          color: Colors.white,
+          elevation: 4,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+        dropdownMenuTheme: DropdownMenuThemeData(
+          menuStyle: MenuStyle(
+            backgroundColor: WidgetStateProperty.all(Colors.white),
+            elevation: WidgetStateProperty.all(4),
+            shape: WidgetStateProperty.all(
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+          ),
+        ),
+        menuTheme: MenuThemeData(
+          style: MenuStyle(
+            backgroundColor: WidgetStateProperty.all(Colors.white),
+            elevation: WidgetStateProperty.all(4),
+            shape: WidgetStateProperty.all(
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+          ),
+        ),
       ),
       builder: (context, child) {
         return Material(

@@ -995,6 +995,8 @@ class LeadCallSheets {
                           child: DropdownButton<String>(
                             value: selectedCollege,
                             isExpanded: true,
+                            dropdownColor: Colors.white,
+                            borderRadius: BorderRadius.circular(12),
                             icon: const Icon(
                               Icons.keyboard_arrow_down_rounded,
                               color: Color(0xFF64748B),
@@ -1122,6 +1124,8 @@ class LeadCallSheets {
                           child: DropdownButton<String>(
                             value: selectedCampaign,
                             isExpanded: true,
+                            dropdownColor: Colors.white,
+                            borderRadius: BorderRadius.circular(12),
                             icon: const Icon(
                               Icons.keyboard_arrow_down_rounded,
                               color: Color(0xFF64748B),

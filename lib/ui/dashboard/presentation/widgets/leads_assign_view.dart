@@ -535,6 +535,8 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                           child: DropdownButton<String>(
                             value: source,
                             isExpanded: true,
+                            dropdownColor: Colors.white,
+                            borderRadius: BorderRadius.circular(12),
                             icon: const Icon(
                               Icons.keyboard_arrow_down_rounded,
                               color: Color(0xFF64748B),
@@ -866,10 +868,18 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                           child: DropdownButtonFormField<String>(
                             initialValue: selectedSource,
                             isExpanded: true,
+                            dropdownColor: Colors.white,
+                            borderRadius: BorderRadius.circular(12),
                             decoration: InputDecoration(
                               labelText: 'Source',
                               border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(8),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: const BorderSide(
+                                  color: Color(0xFFE2E8F0),
+                                ),
                               ),
                               isDense: true,
                             ),
@@ -894,10 +904,18 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                           child: DropdownButtonFormField<String>(
                             initialValue: selectedStatus,
                             isExpanded: true,
+                            dropdownColor: Colors.white,
+                            borderRadius: BorderRadius.circular(12),
                             decoration: InputDecoration(
                               labelText: 'Status',
                               border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(8),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: const BorderSide(
+                                  color: Color(0xFFE2E8F0),
+                                ),
                               ),
                               isDense: true,
                             ),
@@ -1062,7 +1080,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
           padding: const EdgeInsets.symmetric(horizontal: 12),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(12),
             border: Border.all(color: _border),
           ),
           child: DropdownButtonHideUnderline(
@@ -1070,6 +1088,8 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
               value: value,
               isExpanded: true,
               isDense: true,
+              dropdownColor: Colors.white,
+              borderRadius: BorderRadius.circular(12),
               icon: const Icon(
                 Icons.keyboard_arrow_down_rounded,
                 size: 18,
@@ -1489,7 +1509,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                   padding: const EdgeInsets.symmetric(horizontal: 10),
                   decoration: BoxDecoration(
                     color: const Color(0xFF1E293B),
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(12),
                     border: Border.all(color: const Color(0xFF334155)),
                   ),
                   child: DropdownButtonHideUnderline(
@@ -1505,6 +1525,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                           )
                         : DropdownButton<String>(
                             dropdownColor: const Color(0xFF1E293B),
+                            borderRadius: BorderRadius.circular(12),
                             value: state.selectedExecutive?.uid,
                             isDense: true,
                             isExpanded: isMobileBar,
@@ -1544,7 +1565,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                   padding: const EdgeInsets.symmetric(horizontal: 10),
                   decoration: BoxDecoration(
                     color: const Color(0xFF1E293B),
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(12),
                     border: Border.all(color: const Color(0xFF334155)),
                   ),
                   child: Row(
@@ -1557,6 +1578,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                         child: DropdownButtonHideUnderline(
                           child: DropdownButton<String>(
                             dropdownColor: const Color(0xFF1E293B),
+                            borderRadius: BorderRadius.circular(12),
                             value: state.selectedDateKey,
                             isDense: true,
                             isExpanded: isMobileBar,

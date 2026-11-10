@@ -208,15 +208,15 @@ class _UserManagementViewState extends State<UserManagementView> {
         prefixIcon: Icon(icon, size: 18, color: _textMuted),
         suffixIcon: suffix,
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: _borderColor),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: _borderColor),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: _primaryColor, width: 1.5),
         ),
         filled: true,
@@ -362,6 +362,8 @@ class _UserManagementViewState extends State<UserManagementView> {
                     DropdownButtonFormField<String>(
                       initialValue: selectedRole,
                       isExpanded: true,
+                      dropdownColor: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
                       decoration: inputDeco(
                         'Role & Access *',
                         Icons.badge_outlined,
@@ -522,9 +524,29 @@ class _UserManagementViewState extends State<UserManagementView> {
                   DropdownButtonFormField<String>(
                     initialValue: reassignTarget,
                     isExpanded: true,
-                    decoration: const InputDecoration(
-                      border: OutlineInputBorder(),
+                    dropdownColor: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(
+                          color: Color(0xFF4338CA),
+                          width: 1.5,
+                        ),
+                      ),
                       isDense: true,
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 12,
+                      ),
                     ),
                     items: fallbackExecs
                         .map(
@@ -1394,10 +1416,12 @@ class _UserManagementViewState extends State<UserManagementView> {
                           padding: const EdgeInsets.symmetric(horizontal: 10),
                           decoration: BoxDecoration(
                             color: const Color(0xFFF1F5F9),
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: BorderRadius.circular(12),
                           ),
                           child: DropdownButtonHideUnderline(
                             child: DropdownButton<String>(
+                              dropdownColor: Colors.white,
+                              borderRadius: BorderRadius.circular(12),
                               value: DashboardUserModel.normalizeRole(
                                 user.role,
                               ),
@@ -1799,11 +1823,13 @@ class _UserManagementViewState extends State<UserManagementView> {
                             padding: const EdgeInsets.symmetric(horizontal: 8),
                             decoration: BoxDecoration(
                               color: Colors.white,
-                              borderRadius: BorderRadius.circular(6),
+                              borderRadius: BorderRadius.circular(12),
                               border: Border.all(color: _borderColor),
                             ),
                             child: DropdownButtonHideUnderline(
                               child: DropdownButton<String>(
+                                dropdownColor: Colors.white,
+                                borderRadius: BorderRadius.circular(12),
                                 value: DashboardUserModel.normalizeRole(
                                   user.role,
                                 ),

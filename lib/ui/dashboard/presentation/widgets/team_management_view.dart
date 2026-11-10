@@ -598,12 +598,14 @@ class _TeamManagementViewState extends State<TeamManagementView> {
                 padding: const EdgeInsets.symmetric(horizontal: 14),
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(12),
                   border: Border.all(color: const Color(0xFFE2E8F0)),
                 ),
                 child: DropdownButtonHideUnderline(
                   child: DropdownButton<String>(
                     value: _selectedDateRange,
+                    dropdownColor: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
                     icon: const Icon(
                       Icons.keyboard_arrow_down_rounded,
                       size: 18,

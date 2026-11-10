@@ -519,12 +519,14 @@ class _FollowUpsViewState extends State<FollowUpsView> {
                           padding: const EdgeInsets.symmetric(horizontal: 14),
                           decoration: BoxDecoration(
                             color: Colors.white,
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: BorderRadius.circular(12),
                             border: Border.all(color: const Color(0xFFE2E8F0)),
                           ),
                           child: DropdownButtonHideUnderline(
                             child: DropdownButton<String>(
                               value: _selectedExecFilter,
+                              dropdownColor: Colors.white,
+                              borderRadius: BorderRadius.circular(12),
                               icon: const Icon(
                                 CupertinoIcons.chevron_down,
                                 size: 14,
