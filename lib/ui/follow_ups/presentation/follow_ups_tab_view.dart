@@ -190,7 +190,7 @@ class _FollowUpsTabViewState extends State<FollowUpsTabView> {
     return Theme(
       data: Theme.of(context).copyWith(platform: TargetPlatform.iOS),
       child: RefreshIndicator.adaptive(
-        color: const Color(0xFFE86938),
+        color: const Color(0xFF4338CA),
         backgroundColor: Colors.white,
         onRefresh: () async {
           cubit.refresh();
