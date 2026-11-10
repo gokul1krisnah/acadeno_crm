@@ -2053,15 +2053,49 @@ class _Conversions extends StatelessWidget {
 
   const _Conversions({required this.leads});
 
+  static String _normalizeSource(dynamic raw) {
+    if (raw == null) return 'Direct Visit';
+    final trimmed = raw.toString().trim();
+    if (trimmed.isEmpty) return 'Direct Visit';
+    final lower = trimmed.toLowerCase();
+    if (lower == 'direct visit' ||
+        lower == 'direct_visit' ||
+        lower == 'direct' ||
+        lower == 'walk-in' ||
+        lower == 'direct walk-in') {
+      return 'Direct Visit';
+    }
+    // Clean capitalized title
+    return trimmed
+        .split(RegExp(r'[\s_]+'))
+        .map((word) {
+          if (word.isEmpty) return word;
+          return word[0].toUpperCase() + word.substring(1).toLowerCase();
+        })
+        .join(' ');
+  }
+
+  static bool _isConverted(dynamic statusVal) {
+    final s = (statusVal ?? '').toString().toLowerCase();
+    return s.contains('convert') ||
+        s.contains('enrolled') ||
+        s.contains('admission');
+  }
+
   @override
   Widget build(BuildContext context) {
     final sourcesMap = <String, (int converted, int total)>{};
     for (final l in leads) {
-      final rawSource = (l['source'] ?? 'Direct Visit').toString().trim();
-      final src = rawSource.isEmpty ? 'Direct Visit' : rawSource;
-      final isConverted = (l['status'] ?? '').toString().toLowerCase().contains(
-        'convert',
-      );
+      final rawSource =
+          l['source'] ??
+          l['sourceEvent'] ??
+          l['campaign'] ??
+          l['campaignTag'] ??
+          l['lead_source'] ??
+          'Direct Visit';
+      final src = _normalizeSource(rawSource);
+      final statusVal = l['status'] ?? l['leadStatus'] ?? l['outcome'];
+      final isConverted = _isConverted(statusVal);
       final curr = sourcesMap[src] ?? (0, 0);
       sourcesMap[src] = (curr.$1 + (isConverted ? 1 : 0), curr.$2 + 1);
     }
@@ -2070,15 +2104,12 @@ class _Conversions extends StatelessWidget {
         ? (sourcesMap.entries
               .map((e) => (e.key, e.value.$1, e.value.$2))
               .toList()
-            ..sort((a, b) => b.$3.compareTo(a.$3)))
-        : [
-            ('AI & Machine Le...', 0, 18),
-            ('Direct Visit', 1, 3),
-            ('AI Webinar', 1, 2),
-            ('Python Workshop', 1, 1),
-            ('College Visit', 0, 1),
-            ('Workshop', 0, 1),
-          ];
+            ..sort((a, b) {
+              final convCmp = b.$2.compareTo(a.$2);
+              if (convCmp != 0) return convCmp;
+              return b.$3.compareTo(a.$3);
+            }))
+        : const [];
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -2112,54 +2143,80 @@ class _Conversions extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 18),
-          for (final r in displaySources.take(6))
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 6),
-              child: Row(
-                children: [
-                  SizedBox(
-                    width: 120,
-                    child: Text(
-                      r.$1,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontSize: 12.5,
-                        color: Color(0xFF475569),
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
+          if (displaySources.isEmpty)
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 24),
+              child: Center(
+                child: Text(
+                  'No source conversion data recorded yet.',
+                  style: TextStyle(
+                    color: _muted,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
                   ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(4),
-                      child: LinearProgressIndicator(
-                        value: r.$3 > 0 ? (r.$2 / r.$3).clamp(0.0, 1.0) : 0.0,
-                        minHeight: 7,
-                        color: r.$1.toLowerCase().contains('direct')
-                            ? _orangeAccent
-                            : _primary,
-                        backgroundColor: const Color(0xFFF1F5F9),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  SizedBox(
-                    width: 48,
-                    child: Text(
-                      '${r.$2} / ${r.$3}',
-                      textAlign: TextAlign.right,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w700,
-                        color: _text,
-                      ),
-                    ),
-                  ),
-                ],
+                ),
               ),
-            ),
+            )
+          else
+            for (final r in displaySources.take(6))
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 6),
+                child: Row(
+                  children: [
+                    SizedBox(
+                      width: 120,
+                      child: Text(
+                        r.$1,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 12.5,
+                          color: Color(0xFF475569),
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(4),
+                        child: LinearProgressIndicator(
+                          value: r.$3 > 0 ? (r.$2 / r.$3).clamp(0.0, 1.0) : 0.0,
+                          minHeight: 7,
+                          color: r.$2 > 0
+                              ? const Color(0xFF16A34A)
+                              : (r.$1.toLowerCase().contains('direct')
+                                    ? _orangeAccent
+                                    : _primary),
+                          backgroundColor: const Color(0xFFF1F5F9),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Text(
+                      '${r.$3 > 0 ? ((r.$2 / r.$3) * 100).round() : 0}%',
+                      style: TextStyle(
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.w700,
+                        color: r.$2 > 0 ? const Color(0xFF16A34A) : _muted,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    SizedBox(
+                      width: 48,
+                      child: Text(
+                        '${r.$2} / ${r.$3}',
+                        textAlign: TextAlign.right,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          color: _text,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
         ],
       ),
     );

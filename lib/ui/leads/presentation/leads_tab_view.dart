@@ -440,7 +440,7 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              // 4. DUE NOW Section
+                              // 4. DUE NOW Section (Shows top overdue or due contact one-by-one)
                               const Text(
                                 'DUE NOW',
                                 style: TextStyle(
@@ -451,15 +451,169 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                 ),
                               ),
                               const SizedBox(height: 10),
-                              if (state.dueNowLead != null)
-                                Builder(
-                                  builder: (_) {
-                                    final due = state.dueNowLead!;
+                              Builder(
+                                builder: (_) {
+                                  final hasOverdue = followUpsState
+                                      .overdueFollowUps
+                                      .isNotEmpty;
+                                  final topOverdue = hasOverdue
+                                      ? followUpsState.overdueFollowUps.first
+                                      : null;
+                                  final dueLead = state.dueNowLead;
+
+                                  if (topOverdue != null) {
+                                    final overdueLead = ExecutiveLeadItem(
+                                      id: topOverdue.id,
+                                      name: topOverdue.leadName,
+                                      initials: topOverdue.leadName.isNotEmpty
+                                          ? topOverdue.leadName[0].toUpperCase()
+                                          : 'L',
+                                      maskedPhone: topOverdue.maskedPhone,
+                                      fullPhone: topOverdue.phone.isNotEmpty
+                                          ? topOverdue.phone
+                                          : topOverdue.maskedPhone,
+                                      collegeInfo: topOverdue.collegeInfo,
+                                      statusTag: 'Overdue Follow-up',
+                                      statusColor: const Color(0xFFDC2626),
+                                      statusBg: const Color(0xFFFEE2E2),
+                                      campaignTag: topOverdue.note.isNotEmpty
+                                          ? topOverdue.note
+                                          : 'Follow-up Due',
+                                      followUpTime: topOverdue.timeLabel,
+                                    );
+
                                     return InkWell(
                                       onTap: () =>
                                           LeadCallSheets.showLeadDetailSheet(
                                             context,
-                                            lead: due,
+                                            lead: overdueLead,
+                                          ),
+                                      borderRadius: BorderRadius.circular(16),
+                                      child: Container(
+                                        padding: const EdgeInsets.all(20),
+                                        decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          borderRadius: BorderRadius.circular(
+                                            16,
+                                          ),
+                                          border: Border.all(
+                                            color: const Color(0x66DC2626),
+                                            width: 2,
+                                          ),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: const Color(
+                                                0xFFDC2626,
+                                              ).withValues(alpha: 0.08),
+                                              blurRadius: 16,
+                                              offset: const Offset(0, 4),
+                                            ),
+                                          ],
+                                        ),
+                                        child: Row(
+                                          children: [
+                                            Expanded(
+                                              child: Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  Row(
+                                                    children: [
+                                                      const Icon(
+                                                        CupertinoIcons
+                                                            .clock_fill,
+                                                        size: 15,
+                                                        color: Color(
+                                                          0xFFDC2626,
+                                                        ),
+                                                      ),
+                                                      const SizedBox(width: 6),
+                                                      Text(
+                                                        'OVERDUE · ${topOverdue.timeLabel.isNotEmpty ? topOverdue.timeLabel : 'Action Needed'}',
+                                                        style: const TextStyle(
+                                                          fontSize: 13,
+                                                          fontWeight:
+                                                              FontWeight.w700,
+                                                          color: Color(
+                                                            0xFFDC2626,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  const SizedBox(height: 8),
+                                                  Text(
+                                                    topOverdue.leadName,
+                                                    style: const TextStyle(
+                                                      fontSize: 19,
+                                                      fontWeight:
+                                                          FontWeight.w800,
+                                                      color: Color(0xFF0F172A),
+                                                      letterSpacing: -0.3,
+                                                    ),
+                                                  ),
+                                                  const SizedBox(height: 6),
+                                                  Text(
+                                                    '${topOverdue.collegeInfo.isNotEmpty ? topOverdue.collegeInfo : 'Student'} · ${topOverdue.note.isNotEmpty ? topOverdue.note : 'Follow-up call scheduled'}',
+                                                    style: const TextStyle(
+                                                      fontSize: 13.5,
+                                                      color: Color(0xFF64748B),
+                                                      height: 1.4,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                            const SizedBox(width: 14),
+                                            InkWell(
+                                              onTap: () => AppPhoneCallService
+                                                  .instance
+                                                  .dialFollowUpItem(
+                                                    context,
+                                                    topOverdue,
+                                                  ),
+                                              borderRadius:
+                                                  BorderRadius.circular(26),
+                                              child: Container(
+                                                width: 52,
+                                                height: 52,
+                                                decoration: BoxDecoration(
+                                                  color: const Color(
+                                                    0xFFDC2626,
+                                                  ),
+                                                  shape: BoxShape.circle,
+                                                  boxShadow: [
+                                                    BoxShadow(
+                                                      color: const Color(
+                                                        0xFFDC2626,
+                                                      ).withValues(alpha: 0.38),
+                                                      blurRadius: 18,
+                                                      offset: const Offset(
+                                                        0,
+                                                        6,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                                child: const Icon(
+                                                  CupertinoIcons.phone_fill,
+                                                  color: Colors.white,
+                                                  size: 22,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    );
+                                  }
+
+                                  if (dueLead != null) {
+                                    return InkWell(
+                                      onTap: () =>
+                                          LeadCallSheets.showLeadDetailSheet(
+                                            context,
+                                            lead: dueLead,
                                           ),
                                       borderRadius: BorderRadius.circular(16),
                                       child: Container(
@@ -492,7 +646,7 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                                       ),
                                                       const SizedBox(width: 6),
                                                       Text(
-                                                        '${due.statusTag} · Due Today',
+                                                        '${dueLead.statusTag} · Due Today',
                                                         style: const TextStyle(
                                                           fontSize: 13,
                                                           fontWeight:
@@ -506,7 +660,7 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                                   ),
                                                   const SizedBox(height: 8),
                                                   Text(
-                                                    due.name,
+                                                    dueLead.name,
                                                     style: const TextStyle(
                                                       fontSize: 19,
                                                       fontWeight:
@@ -517,7 +671,7 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                                   ),
                                                   const SizedBox(height: 6),
                                                   Text(
-                                                    '${due.collegeInfo} · ${due.campaignTag}',
+                                                    '${dueLead.collegeInfo} · ${dueLead.campaignTag}',
                                                     style: const TextStyle(
                                                       fontSize: 13.5,
                                                       color: Color(0xFF64748B),
@@ -531,7 +685,7 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                             InkWell(
                                               onTap: () => AppPhoneCallService
                                                   .instance
-                                                  .dialLead(context, due),
+                                                  .dialLead(context, dueLead),
                                               borderRadius:
                                                   BorderRadius.circular(26),
                                               child: Container(
@@ -566,43 +720,44 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                         ),
                                       ),
                                     );
-                                  },
-                                )
-                              else
-                                Container(
-                                  width: double.infinity,
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 16,
-                                    vertical: 14,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(16),
-                                    border: Border.all(
-                                      color: const Color(0xFFEAECF0),
+                                  }
+
+                                  return Container(
+                                    width: double.infinity,
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 16,
+                                      vertical: 14,
                                     ),
-                                  ),
-                                  child: const Row(
-                                    children: [
-                                      Icon(
-                                        CupertinoIcons.checkmark_circle,
-                                        color: Color(0xFF15803D),
-                                        size: 20,
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(16),
+                                      border: Border.all(
+                                        color: const Color(0xFFEAECF0),
                                       ),
-                                      SizedBox(width: 10),
-                                      Expanded(
-                                        child: Text(
-                                          'No urgent pending calls right now',
-                                          style: TextStyle(
-                                            fontSize: 13.5,
-                                            fontWeight: FontWeight.w600,
-                                            color: Color(0xFF475467),
+                                    ),
+                                    child: const Row(
+                                      children: [
+                                        Icon(
+                                          CupertinoIcons.checkmark_circle,
+                                          color: Color(0xFF15803D),
+                                          size: 20,
+                                        ),
+                                        SizedBox(width: 10),
+                                        Expanded(
+                                          child: Text(
+                                            'No urgent pending calls right now',
+                                            style: TextStyle(
+                                              fontSize: 13.5,
+                                              fontWeight: FontWeight.w600,
+                                              color: Color(0xFF475467),
+                                            ),
                                           ),
                                         ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
+                                      ],
+                                    ),
+                                  );
+                                },
+                              ),
                               const SizedBox(height: 18),
 
                               // Quick Actions: Add Walk-in Lead & My Record (Responsive flex boxes)
