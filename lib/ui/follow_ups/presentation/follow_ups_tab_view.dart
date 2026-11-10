@@ -10,6 +10,7 @@ import 'package:acadeno_crm/core/services/app_phone_call_service.dart';
 import 'package:acadeno_crm/ui/follow_ups/application/follow_ups_cubit.dart';
 import 'package:acadeno_crm/ui/follow_ups/application/follow_ups_state.dart';
 import 'package:acadeno_crm/ui/follow_ups/data/model/follow_up_models.dart';
+import 'package:acadeno_crm/shared/snackbar_alerts/snack_alert.dart';
 
 class FollowUpsTabView extends StatefulWidget {
   const FollowUpsTabView({super.key});
@@ -231,7 +232,13 @@ class _FollowUpsTabViewState extends State<FollowUpsTabView> {
                     onCallNow: () => AppPhoneCallService.instance
                         .dialFollowUpItem(context, item),
                     onSnooze: () => _showSnoozeSheet(context, item),
-                    onMarkDone: () => cubit.completeFollowUp(item.id),
+                    onMarkDone: () {
+                      cubit.completeFollowUp(item.id);
+                      SnackBarAlert.showToast(
+                        context: context,
+                        message: 'Follow-up for ${item.leadName} marked completed',
+                      );
+                    },
                   );
                 },
               ),
@@ -297,6 +304,11 @@ class _FollowUpsTabViewState extends State<FollowUpsTabView> {
                       oneHourLabel,
                       moveToUpcoming: inOneHourDay == 'Tomorrow',
                     );
+                    SnackBarAlert.showToast(
+                      context: context,
+                      message:
+                          'Follow-up for ${item.leadName} snoozed ($oneHourLabel)',
+                    );
                   },
                 ),
                 ListTile(
@@ -312,6 +324,11 @@ class _FollowUpsTabViewState extends State<FollowUpsTabView> {
                   onTap: () {
                     Navigator.pop(ctx);
                     cubit.snoozeFollowUp(item.id, eveningLabel);
+                    SnackBarAlert.showToast(
+                      context: context,
+                      message:
+                          'Follow-up for ${item.leadName} snoozed ($eveningLabel)',
+                    );
                   },
                 ),
                 ListTile(
@@ -330,6 +347,11 @@ class _FollowUpsTabViewState extends State<FollowUpsTabView> {
                       item.id,
                       tomorrowLabel,
                       moveToUpcoming: true,
+                    );
+                    SnackBarAlert.showToast(
+                      context: context,
+                      message:
+                          'Follow-up for ${item.leadName} snoozed ($tomorrowLabel)',
                     );
                   },
                 ),
