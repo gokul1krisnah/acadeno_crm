@@ -1,6 +1,6 @@
 import 'package:flutter/cupertino.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:acadeno_crm/shared/widgets/college_selector_field.dart';
-import 'package:acadeno_crm/shared/widgets/acadeno_dropdown.dart';
 import 'package:acadeno_crm/shared/extensions/build_context_extension.dart';
 import 'package:acadeno_crm/shared/snackbar_alerts/snack_alert.dart';
 import 'package:acadeno_crm/ui/leads/application/admin_leads_cubit.dart';
@@ -290,16 +290,16 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
         builder: (dCtx, setD) => Dialog(
           backgroundColor: Colors.white,
           insetPadding: const EdgeInsets.symmetric(
-            horizontal: 20,
+            horizontal: 16,
             vertical: 24,
           ),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(28),
           ),
           child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 460),
+            constraints: const BoxConstraints(maxWidth: 420),
             child: Padding(
-              padding: const EdgeInsets.all(24),
+              padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
               child: SingleChildScrollView(
                 child: Form(
                   key: formKey,
@@ -307,47 +307,26 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Add Walk-in Lead',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.w800,
-                                    fontSize: 19,
-                                    color: Color(0xFF0F172A),
-                                  ),
-                                ),
-                                SizedBox(height: 4),
-                                Text(
-                                  'Record student walk-in and register for follow-up',
-                                  style: TextStyle(
-                                    fontSize: 12.5,
-                                    color: Color(0xFF64748B),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          IconButton(
-                            onPressed: () => Navigator.pop(dCtx),
-                            icon: const Icon(
-                              Icons.close_rounded,
-                              size: 20,
-                              color: Color(0xFF94A3B8),
-                            ),
-                            visualDensity: VisualDensity.compact,
-                            padding: EdgeInsets.zero,
-                            constraints: const BoxConstraints(
-                              minWidth: 28,
-                              minHeight: 28,
-                            ),
-                          ),
-                        ],
+                      Text(
+                        'Phone Lookup & Add Walk-in Lead',
+                        style: GoogleFonts.inter(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 20,
+                          height: 27.5 / 20,
+                          letterSpacing: 0,
+                          color: const Color(0xFF0F172A),
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        'Type a 10-digit phone number to check duplicates before saving.',
+                        style: GoogleFonts.inter(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w400,
+                          height: 21.13 / 13,
+                          letterSpacing: 0,
+                          color: const Color(0xFF64748B),
+                        ),
                       ),
                       const SizedBox(height: 18),
                       if (backendError != null) ...[
@@ -360,7 +339,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                           ),
                           decoration: BoxDecoration(
                             color: const Color(0xFFFEE2E2),
-                            borderRadius: BorderRadius.circular(14),
+                            borderRadius: BorderRadius.circular(12),
                           ),
                           child: Row(
                             children: [
@@ -373,8 +352,8 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                               Expanded(
                                 child: Text(
                                   backendError!,
-                                  style: const TextStyle(
-                                    color: Color(0xFF991B1B),
+                                  style: GoogleFonts.inter(
+                                    color: const Color(0xFF991B1B),
                                     fontSize: 12.5,
                                     fontWeight: FontWeight.w600,
                                   ),
@@ -385,182 +364,223 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                         ),
                       ],
                       TextFormField(
-                        controller: nameC,
-                        style: const TextStyle(
-                          fontSize: 14,
-                          color: Color(0xFF0F172A),
+                        controller: phoneC,
+                        keyboardType: TextInputType.phone,
+                        style: GoogleFonts.inter(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w400,
+                          height: 21.13 / 13,
+                          color: const Color(0xFF0F172A),
                         ),
                         decoration: InputDecoration(
-                          labelText: 'Student Name *',
-                          hintText: 'e.g. Rahul Sharma',
-                          hintStyle: const TextStyle(
-                            color: Color(0xFF94A3B8),
-                            fontSize: 13.5,
+                          hintText: '10-digit mobile nu...',
+                          hintStyle: GoogleFonts.inter(
+                            color: const Color(0xFF94A3B8),
+                            fontSize: 13,
+                            height: 21.13 / 13,
                           ),
                           filled: true,
                           fillColor: const Color(0xFFF8FAFC),
-                          prefixIcon: const Icon(
-                            Icons.person_outline_rounded,
-                            size: 19,
-                            color: Color(0xFF64748B),
-                          ),
                           border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(14),
+                            borderRadius: BorderRadius.circular(12),
                             borderSide: const BorderSide(
                               color: Color(0xFFE2E8F0),
+                              width: 1,
                             ),
                           ),
                           enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(14),
+                            borderRadius: BorderRadius.circular(12),
                             borderSide: const BorderSide(
                               color: Color(0xFFE2E8F0),
+                              width: 1,
                             ),
                           ),
                           focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(14),
+                            borderRadius: BorderRadius.circular(12),
                             borderSide: const BorderSide(
-                              color: _primary,
+                              color: Color(0xFFD45107),
                               width: 1.5,
                             ),
                           ),
                           isDense: true,
                           contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 14,
-                            vertical: 13,
+                            horizontal: 16,
+                            vertical: 16,
+                          ),
+                        ),
+                        validator: LeadPhoneValidator.validate,
+                      ),
+                      const SizedBox(height: 14),
+                      TextFormField(
+                        controller: nameC,
+                        style: GoogleFonts.inter(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w400,
+                          color: const Color(0xFF0F172A),
+                        ),
+                        decoration: InputDecoration(
+                          hintText: 'Student Name *',
+                          hintStyle: GoogleFonts.inter(
+                            color: const Color(0xFF94A3B8),
+                            fontSize: 13,
+                          ),
+                          filled: true,
+                          fillColor: const Color(0xFFF8FAFC),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFE2E8F0),
+                              width: 1,
+                            ),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFE2E8F0),
+                              width: 1,
+                            ),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFD45107),
+                              width: 1.5,
+                            ),
+                          ),
+                          isDense: true,
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 16,
                           ),
                         ),
                         validator: (v) =>
                             (v == null || v.trim().isEmpty) ? 'Required' : null,
                       ),
                       const SizedBox(height: 14),
-                      TextFormField(
-                        controller: phoneC,
-                        keyboardType: TextInputType.phone,
-                        style: const TextStyle(
-                          fontSize: 14,
-                          color: Color(0xFF0F172A),
+                      Text(
+                        'College · Branch · Year',
+                        style: GoogleFonts.inter(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: 0.5,
+                          color: const Color(0xFF94A3B8),
                         ),
-                        decoration: InputDecoration(
-                          labelText: '10-digit Phone Number *',
-                          hintText: '9847011111',
-                          hintStyle: const TextStyle(
-                            color: Color(0xFF94A3B8),
-                            fontSize: 13.5,
-                          ),
-                          filled: true,
-                          fillColor: const Color(0xFFF8FAFC),
-                          prefixIcon: const Icon(
-                            Icons.phone_outlined,
-                            size: 19,
-                            color: Color(0xFF64748B),
-                          ),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(14),
-                            borderSide: const BorderSide(
-                              color: Color(0xFFE2E8F0),
-                            ),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(14),
-                            borderSide: const BorderSide(
-                              color: Color(0xFFE2E8F0),
-                            ),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(14),
-                            borderSide: const BorderSide(
-                              color: _primary,
-                              width: 1.5,
-                            ),
-                          ),
-                          isDense: true,
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 14,
-                            vertical: 13,
-                          ),
-                        ),
-                        validator: LeadPhoneValidator.validate,
                       ),
-                      const SizedBox(height: 14),
-                      CollegeSelectorField(
+                      const SizedBox(height: 6),
+                      TextFormField(
                         controller: collegeC,
-                        additionalColleges: state.allLeads
-                            .map(
-                              (l) => l.collegeBranch
-                                  .split(RegExp(r'[·\-]'))
-                                  .first
-                                  .trim(),
-                            )
-                            .where((s) => s.isNotEmpty)
-                            .toList(),
-                      ),
-                      const SizedBox(height: 14),
-                      AcadenoDropdown.strings(
-                        label: 'Source Event / Consent',
-                        value: source,
-                        items: const [
-                          'Direct visit',
-                          'AI Webinar',
-                          'Python workshop',
-                          'Industrial visit',
-                          'College visit',
-                          'Add-on course',
-                        ],
-                        onChanged: (v) => setD(() => source = v ?? source),
-                      ),
-                      const SizedBox(height: 14),
-                      TextFormField(
-                        controller: notesC,
-                        style: const TextStyle(
-                          fontSize: 14,
-                          color: Color(0xFF0F172A),
+                        style: GoogleFonts.inter(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w400,
+                          color: const Color(0xFF0F172A),
                         ),
                         decoration: InputDecoration(
-                          labelText: 'Notes (Optional)',
-                          hintText: 'Add context or requirements...',
-                          hintStyle: const TextStyle(
-                            color: Color(0xFF94A3B8),
-                            fontSize: 13.5,
-                          ),
                           filled: true,
                           fillColor: const Color(0xFFF8FAFC),
                           prefixIcon: const Icon(
-                            Icons.note_alt_outlined,
-                            size: 19,
-                            color: Color(0xFF64748B),
-                          ),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(14),
-                            borderSide: const BorderSide(
-                              color: Color(0xFFE2E8F0),
-                            ),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(14),
-                            borderSide: const BorderSide(
-                              color: Color(0xFFE2E8F0),
-                            ),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(14),
-                            borderSide: const BorderSide(
-                              color: _primary,
-                              width: 1.5,
-                            ),
+                            Icons.notes_rounded,
+                            size: 20,
+                            color: Color(0xFF94A3B8),
                           ),
                           isDense: true,
                           contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 14,
-                            vertical: 13,
+                            horizontal: 16,
+                            vertical: 16,
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFE2E8F0),
+                              width: 1,
+                            ),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFE2E8F0),
+                              width: 1,
+                            ),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFD45107),
+                              width: 1.5,
+                            ),
                           ),
                         ),
                       ),
-                      const SizedBox(height: 22),
+                      const SizedBox(height: 14),
+                      Text(
+                        'Source Event / Consent',
+                        style: GoogleFonts.inter(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: const Color(0xFF334155),
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Container(
+                        height: 54,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF8FAFC),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: const Color(0xFFE2E8F0),
+                            width: 1,
+                          ),
+                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: DropdownButtonHideUnderline(
+                          child: DropdownButton<String>(
+                            value: source,
+                            isExpanded: true,
+                            icon: const Icon(
+                              Icons.keyboard_arrow_down_rounded,
+                              color: Color(0xFF64748B),
+                              size: 22,
+                            ),
+                            style: GoogleFonts.inter(
+                              fontSize: 13.5,
+                              fontWeight: FontWeight.w400,
+                              color: const Color(0xFF0F172A),
+                            ),
+                            items: const [
+                              DropdownMenuItem(
+                                value: 'Direct visit',
+                                child: Text('Direct visit'),
+                              ),
+                              DropdownMenuItem(
+                                value: 'AI Webinar',
+                                child: Text('AI Webinar'),
+                              ),
+                              DropdownMenuItem(
+                                value: 'Python workshop',
+                                child: Text('Python workshop'),
+                              ),
+                              DropdownMenuItem(
+                                value: 'College visit',
+                                child: Text('College visit'),
+                              ),
+                              DropdownMenuItem(
+                                value: 'Add-on course',
+                                child: Text('Add-on course'),
+                              ),
+                            ],
+                            onChanged: (v) {
+                              if (v != null) {
+                                setD(() => source = v);
+                              }
+                            },
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
                       Row(
                         children: [
                           Expanded(
                             child: SizedBox(
-                              height: 46,
+                              height: 48,
                               child: OutlinedButton(
                                 onPressed: saving
                                     ? null
@@ -570,13 +590,13 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                                     color: Color(0xFFE2E8F0),
                                   ),
                                   shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
+                                    borderRadius: BorderRadius.circular(16),
                                   ),
                                 ),
-                                child: const Text(
+                                child: Text(
                                   'Cancel',
-                                  style: TextStyle(
-                                    color: Color(0xFF475467),
+                                  style: GoogleFonts.inter(
+                                    color: const Color(0xFF475467),
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
@@ -586,14 +606,18 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                           const SizedBox(width: 12),
                           Expanded(
                             child: SizedBox(
-                              height: 46,
+                              height: 48,
                               child: ElevatedButton(
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: _primary,
+                                  backgroundColor: const Color(0xFFD45107),
                                   foregroundColor: Colors.white,
                                   elevation: 0,
+                                  padding: const EdgeInsets.only(
+                                    top: 14.5,
+                                    bottom: 15.5,
+                                  ),
                                   shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
+                                    borderRadius: BorderRadius.circular(16),
                                   ),
                                 ),
                                 onPressed: saving
@@ -642,24 +666,14 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                                           });
                                         }
                                       },
-                                child: saving
-                                    ? const SizedBox(
-                                        width: 16,
-                                        height: 16,
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2,
-                                          valueColor:
-                                              AlwaysStoppedAnimation<Color>(
-                                                Colors.white,
-                                              ),
-                                        ),
-                                      )
-                                    : const Text(
-                                        'Save lead',
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.w700,
-                                        ),
-                                      ),
+                                child: Text(
+                                  'Save Walk-in Lead',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 14.5,
+                                    fontWeight: FontWeight.w700,
+                                    color: Colors.white,
+                                  ),
+                                ),
                               ),
                             ),
                           ),

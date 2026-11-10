@@ -1,5 +1,6 @@
 import '../pages/lead_detail_page.dart';
 import 'package:intl/intl.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:acadeno_crm/shared/widgets/college_selector_field.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -720,127 +721,123 @@ class LeadCallSheets {
     final collegeCtrl = TextEditingController(
       text: 'MES College · CSE · 3rd yr',
     );
+    String selectedCollege = 'MES College';
     String selectedCampaign = 'Direct Walk-in';
     String? lookupFeedback;
     bool lookupFoundDuplicate = false;
+
+    const knownColleges = [
+      'MES College',
+      'NIT Calicut',
+      'Farook College',
+      'GEC Kozhikode',
+      'KMCT College of Engineering',
+      'Government Polytechnic',
+    ];
 
     showDialog(
       context: context,
       builder: (ctx) => Dialog(
         backgroundColor: Colors.white,
-        insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+        insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
         child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 460),
+          constraints: const BoxConstraints(maxWidth: 385),
           child: StatefulBuilder(
             builder: (ctx, setSheetState) {
               return Padding(
-                padding: const EdgeInsets.all(24),
+                padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
                 child: SingleChildScrollView(
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text(
-                                  'Phone Lookup & Add Walk-in Lead',
-                                  style: TextStyle(
-                                    fontSize: 19,
-                                    fontWeight: FontWeight.w800,
-                                    color: Color(0xFF0F172A),
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  'Check duplicates before saving · ${cubit.state.phoneLookupsThisHour}/40 hourly lookups',
-                                  style: const TextStyle(
-                                    fontSize: 12.5,
-                                    color: Color(0xFF64748B),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          IconButton(
-                            onPressed: () => Navigator.pop(ctx),
-                            icon: const Icon(
-                              Icons.close_rounded,
-                              size: 20,
-                              color: Color(0xFF94A3B8),
-                            ),
-                            visualDensity: VisualDensity.compact,
-                            padding: EdgeInsets.zero,
-                            constraints: const BoxConstraints(
-                              minWidth: 28,
-                              minHeight: 28,
-                            ),
-                          ),
-                        ],
+                      // Heading Text (Inter Bold 700, 20px, line-height 27.5px)
+                      Text(
+                        'Phone Lookup & Add Walk-in Lead',
+                        style: GoogleFonts.inter(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w700,
+                          height: 27.5 / 20,
+                          letterSpacing: 0,
+                          color: const Color(0xFF0F172A),
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      // Short Heading (Inter Regular 400, 13px, line-height 21.13px)
+                      Text(
+                        'Type a 10-digit phone number to check duplicates before saving.',
+                        style: GoogleFonts.inter(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w400,
+                          height: 21.13 / 13,
+                          letterSpacing: 0,
+                          color: const Color(0xFF64748B),
+                        ),
                       ),
                       const SizedBox(height: 18),
 
-                      // Phone Lookup Row
+                      // Phone Lookup Row: Phone input (height 54) + Check button (width 98, height 54)
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Expanded(
-                            child: TextField(
-                              controller: phoneCtrl,
-                              keyboardType: TextInputType.phone,
-                              style: const TextStyle(
-                                fontSize: 14,
-                                color: Color(0xFF0F172A),
-                              ),
-                              decoration: InputDecoration(
-                                labelText: '10-digit mobile number *',
-                                hintText: '9847011111',
-                                hintStyle: const TextStyle(
-                                  color: Color(0xFF94A3B8),
-                                  fontSize: 13.5,
+                            child: SizedBox(
+                              height: 54,
+                              child: TextField(
+                                controller: phoneCtrl,
+                                keyboardType: TextInputType.phone,
+                                style: GoogleFonts.inter(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w400,
+                                  height: 21.13 / 13,
+                                  color: const Color(0xFF0F172A),
                                 ),
-                                filled: true,
-                                fillColor: const Color(0xFFF8FAFC),
-                                prefixIcon: const Icon(
-                                  Icons.phone_outlined,
-                                  size: 19,
-                                  color: Color(0xFF64748B),
-                                ),
-                                isDense: true,
-                                contentPadding: const EdgeInsets.symmetric(
-                                  horizontal: 14,
-                                  vertical: 13,
-                                ),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(14),
-                                  borderSide: const BorderSide(
-                                    color: Color(0xFFE2E8F0),
+                                decoration: InputDecoration(
+                                  hintText: '10-digit mobile nu...',
+                                  hintStyle: GoogleFonts.inter(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w400,
+                                    height: 21.13 / 13,
+                                    color: const Color(0xFF94A3B8),
                                   ),
-                                ),
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(14),
-                                  borderSide: const BorderSide(
-                                    color: Color(0xFFE2E8F0),
+                                  filled: true,
+                                  fillColor: const Color(0xFFF8FAFC),
+                                  isDense: true,
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 16,
                                   ),
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(14),
-                                  borderSide: const BorderSide(
-                                    color: Color(0xFF4338CA),
-                                    width: 1.5,
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: const BorderSide(
+                                      color: Color(0xFFE2E8F0),
+                                      width: 1,
+                                    ),
+                                  ),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: const BorderSide(
+                                      color: Color(0xFFE2E8F0),
+                                      width: 1,
+                                    ),
+                                  ),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: const BorderSide(
+                                      color: Color(0xFFD45107),
+                                      width: 1.5,
+                                    ),
                                   ),
                                 ),
                               ),
                             ),
                           ),
                           const SizedBox(width: 10),
+                          // Check button (Figma spec: width 98, height 54, borderRadius 12, padding 24px)
                           SizedBox(
-                            height: 46,
+                            width: 98,
+                            height: 54,
                             child: ElevatedButton(
                               onPressed: () async {
                                 final res = await cubit.lookupByPhone(
@@ -855,19 +852,23 @@ class LeadCallSheets {
                                 });
                               },
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF0F172A),
-                                foregroundColor: Colors.white,
+                                backgroundColor: const Color(0xFFE2E8F0),
+                                foregroundColor: const Color(0xFF334155),
                                 elevation: 0,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(14),
-                                ),
                                 padding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
+                                  horizontal: 24,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
                                 ),
                               ),
-                              child: const Text(
+                              child: Text(
                                 'Check',
-                                style: TextStyle(fontWeight: FontWeight.w600),
+                                style: GoogleFonts.inter(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: const Color(0xFF334155),
+                                ),
                               ),
                             ),
                           ),
@@ -885,7 +886,7 @@ class LeadCallSheets {
                             color: lookupFoundDuplicate
                                 ? const Color(0xFFFEE2E2)
                                 : const Color(0xFFDCFCE7),
-                            borderRadius: BorderRadius.circular(14),
+                            borderRadius: BorderRadius.circular(12),
                           ),
                           child: Row(
                             children: [
@@ -902,7 +903,7 @@ class LeadCallSheets {
                               Expanded(
                                 child: Text(
                                   lookupFeedback!,
-                                  style: TextStyle(
+                                  style: GoogleFonts.inter(
                                     fontSize: 12.5,
                                     fontWeight: FontWeight.w600,
                                     color: lookupFoundDuplicate
@@ -917,127 +918,249 @@ class LeadCallSheets {
                       ],
                       const SizedBox(height: 14),
 
-                      // Student Name
-                      TextField(
-                        controller: nameCtrl,
-                        style: const TextStyle(
-                          fontSize: 14,
-                          color: Color(0xFF0F172A),
-                        ),
-                        decoration: InputDecoration(
-                          labelText: 'Student Name *',
-                          hintText: 'e.g. Rahul Sharma',
-                          hintStyle: const TextStyle(
-                            color: Color(0xFF94A3B8),
-                            fontSize: 13.5,
+                      // Student Name (Figma spec: width 343, height 54, borderRadius 12, borderWidth 1, padding 16)
+                      SizedBox(
+                        width: double.infinity,
+                        height: 54,
+                        child: TextField(
+                          controller: nameCtrl,
+                          style: GoogleFonts.inter(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w400,
+                            color: const Color(0xFF0F172A),
                           ),
-                          filled: true,
-                          fillColor: const Color(0xFFF8FAFC),
-                          prefixIcon: const Icon(
-                            Icons.person_outline_rounded,
-                            size: 19,
-                            color: Color(0xFF64748B),
-                          ),
-                          isDense: true,
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 14,
-                            vertical: 13,
-                          ),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(14),
-                            borderSide: const BorderSide(
-                              color: Color(0xFFE2E8F0),
+                          decoration: InputDecoration(
+                            hintText: 'Student Name *',
+                            hintStyle: GoogleFonts.inter(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w400,
+                              color: const Color(0xFF94A3B8),
                             ),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(14),
-                            borderSide: const BorderSide(
-                              color: Color(0xFFE2E8F0),
+                            filled: true,
+                            fillColor: const Color(0xFFF8FAFC),
+                            isDense: true,
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 16,
                             ),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(14),
-                            borderSide: const BorderSide(
-                              color: Color(0xFF4338CA),
-                              width: 1.5,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(
+                                color: Color(0xFFE2E8F0),
+                                width: 1,
+                              ),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(
+                                color: Color(0xFFE2E8F0),
+                                width: 1,
+                              ),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(
+                                color: Color(0xFFD45107),
+                                width: 1.5,
+                              ),
                             ),
                           ),
                         ),
                       ),
                       const SizedBox(height: 14),
 
-                      // College branch year selector
-                      CollegeSelectorField(
-                        controller: collegeCtrl,
-                        label: 'College · Branch · Year',
+                      // College Selection Label
+                      Text(
+                        'College Selection',
+                        style: GoogleFonts.inter(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: const Color(0xFF334155),
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      // College Selection Dropdown (Figma styling: height 54, borderRadius 12, padding 16)
+                      Container(
+                        height: 54,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF8FAFC),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: const Color(0xFFE2E8F0),
+                            width: 1,
+                          ),
+                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: DropdownButtonHideUnderline(
+                          child: DropdownButton<String>(
+                            value: selectedCollege,
+                            isExpanded: true,
+                            icon: const Icon(
+                              Icons.keyboard_arrow_down_rounded,
+                              color: Color(0xFF64748B),
+                              size: 22,
+                            ),
+                            style: GoogleFonts.inter(
+                              fontSize: 13.5,
+                              fontWeight: FontWeight.w400,
+                              color: const Color(0xFF0F172A),
+                            ),
+                            items: knownColleges.map((col) {
+                              return DropdownMenuItem<String>(
+                                value: col,
+                                child: Text(col),
+                              );
+                            }).toList(),
+                            onChanged: (val) {
+                              if (val != null) {
+                                setSheetState(() {
+                                  selectedCollege = val;
+                                  final parts = collegeCtrl.text.split('·');
+                                  final branchYear = parts.length > 1
+                                      ? ' ·${parts.sublist(1).join('·')}'
+                                      : ' · CSE · 3rd yr';
+                                  collegeCtrl.text = '$val$branchYear';
+                                });
+                              }
+                            },
+                          ),
+                        ),
                       ),
                       const SizedBox(height: 14),
 
-                      // Campaign source
-                      DropdownButtonFormField<String>(
-                        initialValue: selectedCampaign,
-                        isExpanded: true,
-                        style: const TextStyle(
-                          fontSize: 14,
-                          color: Color(0xFF0F172A),
+                      // COLLEGE · BRANCH · YEAR Label
+                      Text(
+                        'COLLEGE · BRANCH · YEAR',
+                        style: GoogleFonts.inter(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: 0.5,
+                          color: const Color(0xFF94A3B8),
                         ),
-                        decoration: InputDecoration(
-                          labelText: 'Source Event / Consent',
-                          filled: true,
-                          fillColor: const Color(0xFFF8FAFC),
-                          prefixIcon: const Icon(
-                            Icons.campaign_outlined,
-                            size: 19,
-                            color: Color(0xFF64748B),
+                      ),
+                      const SizedBox(height: 6),
+                      // Editable College · Branch · Year text input (height 54, borderRadius 12)
+                      SizedBox(
+                        height: 54,
+                        child: TextField(
+                          controller: collegeCtrl,
+                          style: GoogleFonts.inter(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w400,
+                            color: const Color(0xFF0F172A),
                           ),
-                          isDense: true,
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 14,
-                            vertical: 13,
-                          ),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(14),
-                            borderSide: const BorderSide(
-                              color: Color(0xFFE2E8F0),
+                          decoration: InputDecoration(
+                            filled: true,
+                            fillColor: const Color(0xFFF8FAFC),
+                            prefixIcon: const Icon(
+                              Icons.notes_rounded,
+                              size: 20,
+                              color: Color(0xFF94A3B8),
                             ),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(14),
-                            borderSide: const BorderSide(
-                              color: Color(0xFFE2E8F0),
+                            isDense: true,
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 16,
                             ),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(14),
-                            borderSide: const BorderSide(
-                              color: Color(0xFF4338CA),
-                              width: 1.5,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(
+                                color: Color(0xFFE2E8F0),
+                                width: 1,
+                              ),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(
+                                color: Color(0xFFE2E8F0),
+                                width: 1,
+                              ),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(
+                                color: Color(0xFFD45107),
+                                width: 1.5,
+                              ),
                             ),
                           ),
                         ),
-                        items: const [
-                          DropdownMenuItem(
-                            value: 'Direct Walk-in',
-                            child: Text('Direct Walk-in'),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'You can freely edit or fine-tune college, bran...',
+                        style: GoogleFonts.inter(
+                          fontSize: 11,
+                          color: const Color(0xFF94A3B8),
+                        ),
+                      ),
+                      const SizedBox(height: 14),
+
+                      // Source Event / Consent Label
+                      Text(
+                        'Source Event / Consent',
+                        style: GoogleFonts.inter(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: const Color(0xFF334155),
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      // Source Event Dropdown (height 54, borderRadius 12, padding 16)
+                      Container(
+                        height: 54,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF8FAFC),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: const Color(0xFFE2E8F0),
+                            width: 1,
                           ),
-                          DropdownMenuItem(
-                            value: 'AI Webinar',
-                            child: Text('AI Webinar'),
+                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: DropdownButtonHideUnderline(
+                          child: DropdownButton<String>(
+                            value: selectedCampaign,
+                            isExpanded: true,
+                            icon: const Icon(
+                              Icons.keyboard_arrow_down_rounded,
+                              color: Color(0xFF64748B),
+                              size: 22,
+                            ),
+                            style: GoogleFonts.inter(
+                              fontSize: 13.5,
+                              fontWeight: FontWeight.w400,
+                              color: const Color(0xFF0F172A),
+                            ),
+                            items: const [
+                              DropdownMenuItem(
+                                value: 'Direct Walk-in',
+                                child: Text('Direct Walk-in'),
+                              ),
+                              DropdownMenuItem(
+                                value: 'AI Webinar',
+                                child: Text('AI Webinar'),
+                              ),
+                              DropdownMenuItem(
+                                value: 'College visit',
+                                child: Text('College visit'),
+                              ),
+                              DropdownMenuItem(
+                                value: 'Campus Drive',
+                                child: Text('Campus Drive'),
+                              ),
+                            ],
+                            onChanged: (v) {
+                              if (v != null) {
+                                setSheetState(() => selectedCampaign = v);
+                              }
+                            },
                           ),
-                          DropdownMenuItem(
-                            value: 'College visit',
-                            child: Text('College visit'),
-                          ),
-                        ],
-                        onChanged: (v) {
-                          if (v != null) {
-                            setSheetState(() => selectedCampaign = v);
-                          }
-                        },
+                        ),
                       ),
                       const SizedBox(height: 20),
 
-                      // Save Button
+                      // Save Button (Figma spec: width 343, height 44, borderRadius 16, padding-top 14.5, padding-bottom 15.5)
                       SizedBox(
                         width: double.infinity,
                         height: 48,
@@ -1072,18 +1195,23 @@ class LeadCallSheets {
                                   }
                                 },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF4338CA),
+                            backgroundColor: const Color(0xFFD45107),
                             foregroundColor: Colors.white,
                             elevation: 0,
+                            padding: const EdgeInsets.only(
+                              top: 14.5,
+                              bottom: 15.5,
+                            ),
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(14),
+                              borderRadius: BorderRadius.circular(16),
                             ),
                           ),
-                          child: const Text(
+                          child: Text(
                             'Save Walk-in Lead',
-                            style: TextStyle(
+                            style: GoogleFonts.inter(
                               fontSize: 15,
                               fontWeight: FontWeight.w700,
+                              color: Colors.white,
                             ),
                           ),
                         ),
@@ -1182,7 +1310,9 @@ class LeadCallSheets {
                             vertical: 14,
                           ),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFF3E8FF).withValues(alpha: 0.55),
+                            color: const Color(
+                              0xFFF3E8FF,
+                            ).withValues(alpha: 0.55),
                             borderRadius: BorderRadius.circular(16),
                           ),
                           child: Column(
