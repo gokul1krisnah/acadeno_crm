@@ -41,43 +41,166 @@ class _LeadsTabViewState extends State<LeadsTabView> {
   }
 
   void _confirmLogout(BuildContext context) {
-    showCupertinoModalPopup<void>(
+    showModalBottomSheet<void>(
       context: context,
-      builder: (ctx) => CupertinoActionSheet(
-        title: const Text(
-          'Log Out',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w700,
-            color: Color(0xFF0F172A),
-          ),
-        ),
-        message: const Text(
-          'Are you sure you want to end your current session?',
-        ),
-        actions: [
-          CupertinoActionSheetAction(
-            isDestructiveAction: true,
-            onPressed: () {
-              Navigator.pop(ctx);
-              widget.onLogout();
-            },
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+      backgroundColor: Colors.transparent,
+      barrierColor: Colors.black.withValues(alpha: 0.4),
+      isScrollControlled: true,
+      builder: (ctx) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.only(left: 16, right: 16, bottom: 16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                SvgPicture.asset(AppSvgs.logout, width: 18, height: 18),
-                const SizedBox(width: 8),
-                const Text('Log Out'),
+                // Top Card (Figma: width 343, height 171.125, border-radius 24)
+                ConstrainedBox(
+                  constraints: const BoxConstraints(
+                    maxWidth: 343,
+                    minHeight: 171.125,
+                  ),
+                  child: Container(
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(24),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.08),
+                          blurRadius: 20,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const SizedBox(height: 22),
+                        const Text(
+                          'Log Out',
+                          style: TextStyle(
+                            fontFamily: 'Inter',
+                            fontSize: 17,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFF0F172A),
+                            letterSpacing: -0.2,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        const Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 24),
+                          child: Text(
+                            'Are you sure you want to end your current session?',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontFamily: 'Inter',
+                              fontSize: 13,
+                              fontWeight: FontWeight.w400,
+                              color: Color(0xFF64748B),
+                              height: 1.35,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        const Divider(
+                          height: 1,
+                          thickness: 1,
+                          color: Color(0xFFF1F5F9),
+                        ),
+                        InkWell(
+                          onTap: () {
+                            Navigator.pop(ctx);
+                            widget.onLogout();
+                          },
+                          borderRadius: const BorderRadius.vertical(
+                            bottom: Radius.circular(24),
+                          ),
+                          child: SizedBox(
+                            height: 56,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                SvgPicture.asset(
+                                  AppSvgs.logout,
+                                  width: 18,
+                                  height: 18,
+                                  colorFilter: const ColorFilter.mode(
+                                    Color(0xFFEF4444),
+                                    BlendMode.srcIn,
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                const Text(
+                                  'Log Out',
+                                  style: TextStyle(
+                                    fontFamily: 'Inter',
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                    color: Color(0xFFEF4444),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 10),
+
+                // Bottom Cancel Button (Figma: width 343, height 58, padding 16/24, border-radius 24)
+                ConstrainedBox(
+                  constraints: const BoxConstraints(
+                    maxWidth: 343,
+                    minHeight: 58,
+                    maxHeight: 58,
+                  ),
+                  child: Container(
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(24),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.08),
+                          blurRadius: 20,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        onTap: () => Navigator.pop(ctx),
+                        borderRadius: BorderRadius.circular(24),
+                        child: const Padding(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 24,
+                            vertical: 16,
+                          ),
+                          child: Center(
+                            child: Text(
+                              'Cancel',
+                              style: TextStyle(
+                                fontFamily: 'Inter',
+                                fontSize: 16,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFF0066CC),
+                                letterSpacing: -0.2,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
-        ],
-        cancelButton: CupertinoActionSheetAction(
-          isDefaultAction: true,
-          onPressed: () => Navigator.pop(ctx),
-          child: const Text('Cancel'),
-        ),
-      ),
+        );
+      },
     );
   }
 

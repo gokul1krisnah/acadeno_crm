@@ -558,39 +558,62 @@ class _ImportLeadsBodyState extends State<_ImportLeadsBody> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // 3 Summary Cards
-          if (isMobile) ...[
-            _buildSummaryBanner(
-              count: '${state.newLeadsCount}',
-              label: 'New leads to create',
-              bg: const Color(0xFFE6F4EA),
-              fg: const Color(0xFF15803D),
+          // Header: Import Summary
+          const Text(
+            'Import Summary',
+            style: TextStyle(
+              fontFamily: 'Inter',
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
+              color: Color(0xFF1E1B4B),
+              letterSpacing: -0.3,
             ),
-            const SizedBox(height: 10),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildSummaryBanner(
-                    count: '${state.skippedLeadsCount}',
-                    label: 'Invalid / duplicates\nskipped',
-                    bg: const Color(0xFFFEF0E6),
-                    fg: const Color(0xFF9A3412),
+          ),
+          const SizedBox(height: 4),
+          const Text(
+            'View the result before importing',
+            style: TextStyle(
+              fontFamily: 'Inter',
+              fontSize: 13,
+              fontWeight: FontWeight.w400,
+              color: Color(0xFF64748B),
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // 3 Summary Cards (Figma on mobile: width 133, height 114, gap 12; unchanged on laptop)
+          if (isMobile)
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              physics: const BouncingScrollPhysics(),
+              child: Row(
+                children: [
+                  _buildFigmaMobileBox(
+                    count: '${state.newLeadsCount}',
+                    label: 'New leads to create',
+                    bg: const Color(0xFFE6F4EA),
+                    fg: const Color(0xFF15803D),
                   ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: _buildSummaryBanner(
+                  const SizedBox(width: 12),
+                  _buildFigmaMobileBox(
                     count: '${state.existingLeadsCount}',
                     label: _skipExisting
-                        ? 'Already exist - will be\nskipped'
-                        : 'Already exist - will\nenrich blanks',
+                        ? 'Already exist - skipped'
+                        : 'Already exist - enrich blanks',
                     bg: const Color(0xFFE8F1FD),
                     fg: const Color(0xFF1D4ED8),
                   ),
-                ),
-              ],
-            ),
-          ] else
+                  const SizedBox(width: 12),
+                  _buildFigmaMobileBox(
+                    count: '${state.skippedLeadsCount}',
+                    label: 'Invalid duplicates skipped',
+                    bg: const Color(0xFFFEF0E6),
+                    fg: const Color(0xFF9A3412),
+                  ),
+                ],
+              ),
+            )
+          else
             Row(
               children: [
                 Expanded(
@@ -625,6 +648,28 @@ class _ImportLeadsBodyState extends State<_ImportLeadsBody> {
             ),
 
           const SizedBox(height: 20),
+
+          // Lead Filters Header
+          const Row(
+            children: [
+              Icon(
+                Icons.filter_alt_outlined,
+                size: 18,
+                color: Color(0xFF1E1B4B),
+              ),
+              SizedBox(width: 6),
+              Text(
+                'Lead Filters',
+                style: TextStyle(
+                  fontFamily: 'Inter',
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF1E1B4B),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
 
           // Filter bar and Policy toggle
           Wrap(
@@ -811,6 +856,53 @@ class _ImportLeadsBodyState extends State<_ImportLeadsBody> {
             style: TextStyle(
               fontSize: 12.5,
               fontWeight: FontWeight.w500,
+              color: fg,
+              height: 1.25,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFigmaMobileBox({
+    required String count,
+    required String label,
+    required Color bg,
+    required Color fg,
+  }) {
+    return Container(
+      width: 133,
+      height: 114,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            count,
+            style: TextStyle(
+              fontFamily: 'Inter',
+              fontSize: 28,
+              fontWeight: FontWeight.w800,
+              color: fg,
+              height: 1.0,
+              letterSpacing: -0.5,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            label,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontFamily: 'Inter',
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
               color: fg,
               height: 1.25,
             ),
