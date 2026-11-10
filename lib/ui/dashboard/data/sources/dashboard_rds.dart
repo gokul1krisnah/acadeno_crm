@@ -188,6 +188,10 @@ class DashboardRds {
     );
   }
 
+  Future<void> sendPasswordResetEmail(String email) async {
+    await _firebaseAuth.sendPasswordResetEmail(email: email.trim());
+  }
+
   Future<void> deleteUser(String uid) {
     return _users.doc(uid).delete();
   }

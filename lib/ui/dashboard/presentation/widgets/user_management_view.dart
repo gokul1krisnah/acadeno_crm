@@ -134,6 +134,62 @@ class _UserManagementViewState extends State<UserManagementView> {
     );
   }
 
+  void _confirmResetPassword(
+    BuildContext context,
+    DashboardCubit cubit,
+    DashboardUserModel user,
+  ) {
+    if (user.email.isEmpty || user.email == '—') {
+      SnackBarAlert.showToast(
+        context: context,
+        message: 'Cannot reset password: user does not have a valid email.',
+      );
+      return;
+    }
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Row(
+          children: [
+            Icon(Icons.lock_reset_rounded, color: Color(0xFF4F46E5)),
+            SizedBox(width: 8),
+            Text(
+              'Reset Password',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+          ],
+        ),
+        content: Text(
+          'Send a password reset link to ${user.email}?\n\n'
+          'The user will receive an email allowing them to securely choose a new password.',
+          style: const TextStyle(fontSize: 13.5, color: Color(0xFF334155)),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF4F46E5),
+              foregroundColor: Colors.white,
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            onPressed: () {
+              Navigator.pop(ctx);
+              cubit.sendPasswordResetEmail(user.email, userName: user.name);
+            },
+            child: const Text('Send Reset Email'),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _openAddUserDialog({required bool byUid}) {
     final cubit = context.read<DashboardCubit>();
     final formKey = GlobalKey<FormState>();
@@ -687,9 +743,9 @@ class _UserManagementViewState extends State<UserManagementView> {
                 final addByUidBtn = OutlinedButton.icon(
                   onPressed: () => _openAddUserDialog(byUid: true),
                   icon: const Icon(
-                    Icons.key_outlined,
+                    Icons.vpn_key_outlined,
                     size: 16,
-                    color: Color(0xFF475467),
+                    color: Color(0xFF64748B),
                   ),
                   label: const FittedBox(
                     fit: BoxFit.scaleDown,
@@ -698,7 +754,7 @@ class _UserManagementViewState extends State<UserManagementView> {
                       style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
-                        color: Color(0xFF334155),
+                        color: Color(0xFF1E293B),
                       ),
                     ),
                   ),
@@ -706,10 +762,10 @@ class _UserManagementViewState extends State<UserManagementView> {
                     backgroundColor: Colors.white,
                     side: const BorderSide(color: Color(0xFFE2E8F0)),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(24),
                     ),
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 14,
+                      horizontal: 16,
                       vertical: 10,
                     ),
                   ),
@@ -717,7 +773,11 @@ class _UserManagementViewState extends State<UserManagementView> {
 
                 final addUserBtn = ElevatedButton.icon(
                   onPressed: () => _openAddUserDialog(byUid: false),
-                  icon: const Icon(Icons.add, size: 18),
+                  icon: const Icon(
+                    Icons.person_add_alt_1_rounded,
+                    size: 17,
+                    color: Colors.white,
+                  ),
                   label: const FittedBox(
                     fit: BoxFit.scaleDown,
                     child: Text(
@@ -725,6 +785,7 @@ class _UserManagementViewState extends State<UserManagementView> {
                       style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
+                        color: Colors.white,
                       ),
                     ),
                   ),
@@ -734,11 +795,11 @@ class _UserManagementViewState extends State<UserManagementView> {
                     elevation: 0,
                     side: BorderSide.none,
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
+                      horizontal: 18,
                       vertical: 10,
                     ),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(24),
                     ),
                   ),
                 );
@@ -788,207 +849,117 @@ class _UserManagementViewState extends State<UserManagementView> {
             const SizedBox(height: 20),
 
             // Search & Filter Toolbar
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: const Color(0xFFE8EAF0)),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  LayoutBuilder(
-                    builder: (context, c) {
-                      final isNarrow = c.maxWidth < 720;
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          if (isNarrow) ...[
-                            TextField(
-                              onChanged: (v) =>
-                                  setState(() => _searchQuery = v),
-                              style: const TextStyle(
-                                fontSize: 13.5,
-                                color: _textDark,
-                              ),
-                              decoration: InputDecoration(
-                                hintText: 'Search by name, email, or UID...',
-                                hintStyle: const TextStyle(
-                                  fontSize: 13,
-                                  color: _textMuted,
-                                ),
-                                prefixIcon: const Icon(
-                                  Icons.search,
-                                  size: 20,
-                                  color: _textMuted,
-                                ),
-                                suffixIcon: _searchQuery.isNotEmpty
-                                    ? IconButton(
-                                        icon: const Icon(Icons.clear, size: 18),
-                                        onPressed: () =>
-                                            setState(() => _searchQuery = ''),
-                                      )
-                                    : null,
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                  borderSide: const BorderSide(
-                                    color: _borderColor,
-                                  ),
-                                ),
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                  borderSide: const BorderSide(
-                                    color: _borderColor,
-                                  ),
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                  borderSide: const BorderSide(
-                                    color: _primaryColor,
-                                    width: 1.5,
-                                  ),
-                                ),
-                                isDense: true,
-                                contentPadding: const EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                  vertical: 10,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 10),
-                            Row(
-                              children: [
-                                Expanded(child: _buildRoleFilterDropdown()),
-                                const SizedBox(width: 10),
-                                Expanded(child: _buildStatusFilterDropdown()),
-                              ],
-                            ),
-                          ] else ...[
-                            Row(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                Expanded(
-                                  flex: 5,
-                                  child: TextField(
-                                    onChanged: (v) =>
-                                        setState(() => _searchQuery = v),
-                                    style: const TextStyle(
-                                      fontSize: 13.5,
-                                      color: _textDark,
-                                    ),
-                                    decoration: InputDecoration(
-                                      hintText:
-                                          'Search by name, email, or UID...',
-                                      hintStyle: const TextStyle(
-                                        fontSize: 13,
-                                        color: _textMuted,
-                                      ),
-                                      prefixIcon: const Icon(
-                                        Icons.search,
-                                        size: 20,
-                                        color: _textMuted,
-                                      ),
-                                      suffixIcon: _searchQuery.isNotEmpty
-                                          ? IconButton(
-                                              icon: const Icon(
-                                                Icons.clear,
-                                                size: 18,
-                                              ),
-                                              onPressed: () => setState(
-                                                () => _searchQuery = '',
-                                              ),
-                                            )
-                                          : null,
-                                      border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8),
-                                        borderSide: const BorderSide(
-                                          color: _borderColor,
-                                        ),
-                                      ),
-                                      enabledBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8),
-                                        borderSide: const BorderSide(
-                                          color: _borderColor,
-                                        ),
-                                      ),
-                                      focusedBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8),
-                                        borderSide: const BorderSide(
-                                          color: _primaryColor,
-                                          width: 1.5,
-                                        ),
-                                      ),
-                                      isDense: true,
-                                      contentPadding:
-                                          const EdgeInsets.symmetric(
-                                            horizontal: 12,
-                                            vertical: 10,
-                                          ),
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  flex: 3,
-                                  child: _buildRoleFilterDropdown(),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  flex: 2,
-                                  child: _buildStatusFilterDropdown(),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ],
-                      );
-                    },
+            LayoutBuilder(
+              builder: (context, c) {
+                final isNarrow = c.maxWidth < 720;
+                final searchField = Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: const Color(0xFFE2E8F0)),
                   ),
-                  const SizedBox(height: 12),
-                  // Badges
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 6,
+                  child: TextField(
+                    onChanged: (v) => setState(() => _searchQuery = v),
+                    style: const TextStyle(fontSize: 13.5, color: _textDark),
+                    decoration: InputDecoration(
+                      hintText: 'Search by name, email, or UID...',
+                      hintStyle: const TextStyle(
+                        fontSize: 13,
+                        color: Color(0xFF94A3B8),
+                      ),
+                      prefixIcon: const Icon(
+                        Icons.search,
+                        size: 20,
+                        color: Color(0xFF94A3B8),
+                      ),
+                      suffixIcon: _searchQuery.isNotEmpty
+                          ? IconButton(
+                              icon: const Icon(Icons.clear, size: 18),
+                              onPressed: () =>
+                                  setState(() => _searchQuery = ''),
+                            )
+                          : null,
+                      border: InputBorder.none,
+                      isDense: true,
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 12,
+                      ),
+                    ),
+                  ),
+                );
+
+                if (isNarrow) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _badge(
-                        'Total: ${allUsers.length}',
-                        const Color(0xFFEEF0FF),
-                        _primaryColor,
+                      searchField,
+                      const SizedBox(height: 10),
+                      Row(
+                        children: [
+                          Expanded(child: _buildRoleFilterDropdown()),
+                          const SizedBox(width: 10),
+                          Expanded(child: _buildStatusFilterDropdown()),
+                        ],
                       ),
-                      _badge(
-                        'Active: $activeCount',
-                        const Color(0xFFDCFCE7),
-                        const Color(0xFF15803D),
-                      ),
-                      _badge(
-                        'Inactive: $inactiveCount',
-                        const Color(0xFFFEE2E2),
-                        const Color(0xFFB91C1C),
-                      ),
-                      if (_searchQuery.isNotEmpty ||
-                          _roleFilter != 'all' ||
-                          _statusFilter != 'all')
-                        _badge(
-                          'Showing: ${filteredUsers.length}',
-                          const Color(0xFFFEF3C7),
-                          const Color(0xFFB45309),
-                        ),
                     ],
-                  ),
-                ],
-              ),
+                  );
+                }
+
+                return Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Expanded(flex: 5, child: searchField),
+                    const SizedBox(width: 12),
+                    Expanded(flex: 3, child: _buildRoleFilterDropdown()),
+                    const SizedBox(width: 12),
+                    Expanded(flex: 2, child: _buildStatusFilterDropdown()),
+                  ],
+                );
+              },
             ),
-            const SizedBox(height: 18),
+            const SizedBox(height: 14),
+
+            // Badges
+            Wrap(
+              spacing: 8,
+              runSpacing: 6,
+              children: [
+                _badge(
+                  'Total: ${allUsers.length}',
+                  const Color(0xFFEEF0FF),
+                  const Color(0xFF4F46E5),
+                ),
+                _badge(
+                  'Active: $activeCount',
+                  const Color(0xFFDCFCE7),
+                  const Color(0xFF16A34A),
+                ),
+                _badge(
+                  'Inactive: $inactiveCount',
+                  const Color(0xFFFEE2E2),
+                  const Color(0xFFEF4444),
+                ),
+                if (_searchQuery.isNotEmpty ||
+                    _roleFilter != 'all' ||
+                    _statusFilter != 'all')
+                  _badge(
+                    'Showing: ${filteredUsers.length}',
+                    const Color(0xFFFEF3C7),
+                    const Color(0xFFB45309),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 20),
 
             // User List / Table Card
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: const Color(0xFFE8EAF0)),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: const Color(0xFFF1F5F9)),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -1084,9 +1055,9 @@ class _UserManagementViewState extends State<UserManagementView> {
                       builder: (context, constraints) {
                         final isDesktop = constraints.maxWidth >= 780;
                         if (isDesktop) {
-                          final tableWidth = constraints.maxWidth > 980
+                          final tableWidth = constraints.maxWidth > 1050
                               ? constraints.maxWidth
-                              : 980.0;
+                              : 1050.0;
                           return SizedBox(
                             width: double.infinity,
                             child: SingleChildScrollView(
@@ -1124,18 +1095,19 @@ class _UserManagementViewState extends State<UserManagementView> {
   Widget _buildRoleFilterDropdown() {
     return AcadenoDropdown<String>(
       value: _roleFilter,
-      borderRadius: 8,
-      borderColor: _borderColor,
+      borderRadius: 10,
+      borderColor: const Color(0xFFE2E8F0),
+      fillColor: Colors.white,
       prefixIcon: const Icon(
-        Icons.admin_panel_settings_outlined,
+        Icons.work_outline_rounded,
         size: 18,
-        color: _textMuted,
+        color: Color(0xFF64748B),
       ),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       items: const [
         AcadenoDropdownItem(value: 'all', label: 'All Roles'),
         AcadenoDropdownItem(value: 'admin', label: 'Admin'),
-        AcadenoDropdownItem(value: 'hr', label: 'HR & Operation Manager'),
+        AcadenoDropdownItem(value: 'hr', label: 'HR & Operations'),
       ],
       onChanged: (v) => setState(() => _roleFilter = v ?? 'all'),
     );
@@ -1144,10 +1116,15 @@ class _UserManagementViewState extends State<UserManagementView> {
   Widget _buildStatusFilterDropdown() {
     return AcadenoDropdown<String>(
       value: _statusFilter,
-      borderRadius: 8,
-      borderColor: _borderColor,
-      prefixIcon: const Icon(Icons.tune_rounded, size: 18, color: _textMuted),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      borderRadius: 10,
+      borderColor: const Color(0xFFE2E8F0),
+      fillColor: Colors.white,
+      prefixIcon: const Icon(
+        Icons.tune_rounded,
+        size: 18,
+        color: Color(0xFF64748B),
+      ),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       items: const [
         AcadenoDropdownItem(value: 'all', label: 'All Statuses'),
         AcadenoDropdownItem(value: 'active', label: 'Active Only'),
@@ -1159,18 +1136,14 @@ class _UserManagementViewState extends State<UserManagementView> {
 
   Widget _badge(String text, Color bg, Color fg) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
       decoration: BoxDecoration(
         color: bg,
         borderRadius: BorderRadius.circular(20),
       ),
       child: Text(
         text,
-        style: TextStyle(
-          fontSize: 11.5,
-          fontWeight: FontWeight.w700,
-          color: fg,
-        ),
+        style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: fg),
       ),
     );
   }
@@ -1178,7 +1151,7 @@ class _UserManagementViewState extends State<UserManagementView> {
   static const _tblHdr = TextStyle(
     fontSize: 11,
     fontWeight: FontWeight.w700,
-    color: _textMuted,
+    color: Color(0xFF94A3B8),
     letterSpacing: 0.5,
   );
 
@@ -1193,10 +1166,9 @@ class _UserManagementViewState extends State<UserManagementView> {
       children: [
         Container(
           width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
           decoration: const BoxDecoration(
-            color: Color(0xFFF8FAFC),
-            border: Border(bottom: BorderSide(color: _borderColor)),
+            border: Border(bottom: BorderSide(color: Color(0xFFF1F5F9))),
           ),
           child: const Row(
             children: [
@@ -1228,20 +1200,20 @@ class _UserManagementViewState extends State<UserManagementView> {
                   child: Text('DEVICE SECURITY', style: _tblHdr),
                 ),
               ),
-              Expanded(
-                flex: 1,
+              SizedBox(
+                width: 70,
                 child: Padding(
                   padding: EdgeInsets.only(right: 8),
                   child: Text('ACTIVE', style: _tblHdr),
                 ),
               ),
               SizedBox(
-                width: 90,
-                child: Text(
-                  'ACTIONS',
-                  style: _tblHdr,
-                  textAlign: TextAlign.right,
-                ),
+                width: 80,
+                child: Center(child: Text('ACTIONS', style: _tblHdr)),
+              ),
+              SizedBox(
+                width: 110,
+                child: Center(child: Text('RESET PASSWORD', style: _tblHdr)),
               ),
             ],
           ),
@@ -1254,10 +1226,10 @@ class _UserManagementViewState extends State<UserManagementView> {
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 14,
-                  vertical: 12,
+                  vertical: 14,
                 ),
                 decoration: const BoxDecoration(
-                  border: Border(bottom: BorderSide(color: Color(0xFFF1F5F9))),
+                  border: Border(bottom: BorderSide(color: Color(0xFFF8FAFC))),
                 ),
                 child: Row(
                   children: [
@@ -1269,8 +1241,8 @@ class _UserManagementViewState extends State<UserManagementView> {
                         child: Row(
                           children: [
                             Container(
-                              width: 32,
-                              height: 32,
+                              width: 36,
+                              height: 36,
                               decoration: BoxDecoration(
                                 color: user.name.toLowerCase().contains('admin')
                                     ? const Color(0xFFFEF3C7)
@@ -1288,7 +1260,7 @@ class _UserManagementViewState extends State<UserManagementView> {
                                           ? user.email[0].toUpperCase()
                                           : 'U'),
                                 style: TextStyle(
-                                  fontSize: 13,
+                                  fontSize: 14,
                                   fontWeight: FontWeight.w800,
                                   color:
                                       user.name.toLowerCase().contains('admin')
@@ -1332,7 +1304,7 @@ class _UserManagementViewState extends State<UserManagementView> {
                                         Container(
                                           padding: const EdgeInsets.symmetric(
                                             horizontal: 5,
-                                            vertical: 1,
+                                            vertical: 1.5,
                                           ),
                                           decoration: BoxDecoration(
                                             color: const Color(0xFFEEF0FF),
@@ -1394,7 +1366,7 @@ class _UserManagementViewState extends State<UserManagementView> {
                                       style: const TextStyle(
                                         fontFamily: 'monospace',
                                         fontSize: 11,
-                                        color: _textMuted,
+                                        color: Color(0xFF94A3B8),
                                       ),
                                     ),
                                   ),
@@ -1402,7 +1374,7 @@ class _UserManagementViewState extends State<UserManagementView> {
                                   const Icon(
                                     Icons.copy_rounded,
                                     size: 12,
-                                    color: _textMuted,
+                                    color: Color(0xFF94A3B8),
                                   ),
                                 ],
                               ),
@@ -1419,11 +1391,10 @@ class _UserManagementViewState extends State<UserManagementView> {
                         padding: const EdgeInsets.only(right: 14),
                         child: Container(
                           height: 34,
-                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                          padding: const EdgeInsets.symmetric(horizontal: 10),
                           decoration: BoxDecoration(
-                            color: _bgLight,
+                            color: const Color(0xFFF1F5F9),
                             borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: _borderColor),
                           ),
                           child: DropdownButtonHideUnderline(
                             child: DropdownButton<String>(
@@ -1432,10 +1403,15 @@ class _UserManagementViewState extends State<UserManagementView> {
                               ),
                               isDense: true,
                               isExpanded: true,
+                              icon: const Icon(
+                                Icons.keyboard_arrow_down_rounded,
+                                size: 18,
+                                color: Color(0xFF94A3B8),
+                              ),
                               style: const TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w600,
-                                color: _textDark,
+                                color: Color(0xFF334155),
                               ),
                               items: const [
                                 DropdownMenuItem(
@@ -1449,7 +1425,7 @@ class _UserManagementViewState extends State<UserManagementView> {
                                 DropdownMenuItem(
                                   value: 'hr',
                                   child: Text(
-                                    'HR & Operation Manager',
+                                    'HR & Operations',
                                     overflow: TextOverflow.ellipsis,
                                     maxLines: 1,
                                   ),
@@ -1480,24 +1456,14 @@ class _UserManagementViewState extends State<UserManagementView> {
                         padding: const EdgeInsets.only(right: 14),
                         child: Row(
                           children: [
-                            Container(
-                              width: 28,
-                              height: 28,
-                              decoration: BoxDecoration(
-                                color: user.deviceBound
-                                    ? const Color(0xFFDCFCE7)
-                                    : const Color(0xFFFEF3C7),
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                              child: Icon(
-                                user.deviceBound
-                                    ? Icons.phone_android_rounded
-                                    : Icons.phonelink_setup_rounded,
-                                size: 15,
-                                color: user.deviceBound
-                                    ? const Color(0xFF16A34A)
-                                    : const Color(0xFFD97706),
-                              ),
+                            Icon(
+                              user.deviceBound
+                                  ? Icons.smartphone_rounded
+                                  : Icons.sync_rounded,
+                              size: 18,
+                              color: user.deviceBound
+                                  ? const Color(0xFF10B981)
+                                  : const Color(0xFFF59E0B),
                             ),
                             const SizedBox(width: 8),
                             Expanded(
@@ -1506,17 +1472,19 @@ class _UserManagementViewState extends State<UserManagementView> {
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   Text(
-                                    user.deviceName.isNotEmpty
-                                        ? user.deviceName
+                                    user.deviceBound
+                                        ? (user.deviceName.isNotEmpty
+                                              ? user.deviceName
+                                              : 'Registered Phone')
                                         : 'Pending new phone',
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                     style: TextStyle(
-                                      fontSize: 12,
+                                      fontSize: 12.5,
                                       color: user.deviceBound
                                           ? _textDark
-                                          : const Color(0xFFB45309),
-                                      fontWeight: FontWeight.w600,
+                                          : const Color(0xFFD97706),
+                                      fontWeight: FontWeight.w700,
                                     ),
                                   ),
                                   const SizedBox(height: 1),
@@ -1525,23 +1493,22 @@ class _UserManagementViewState extends State<UserManagementView> {
                                         ? 'REGISTERED PHONE'
                                         : 'PENDING BINDING',
                                     style: TextStyle(
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.w700,
+                                      fontSize: 9.5,
+                                      fontWeight: FontWeight.w800,
                                       letterSpacing: 0.3,
                                       color: user.deviceBound
-                                          ? const Color(0xFF16A34A)
+                                          ? const Color(0xFF10B981)
                                           : const Color(0xFFD97706),
                                     ),
                                   ),
                                 ],
                               ),
                             ),
-                            const SizedBox(width: 4),
                             IconButton(
                               padding: EdgeInsets.zero,
                               constraints: const BoxConstraints(
-                                minWidth: 28,
-                                minHeight: 28,
+                                minWidth: 26,
+                                minHeight: 26,
                               ),
                               icon: const Icon(
                                 Icons.cancel_rounded,
@@ -1558,17 +1525,22 @@ class _UserManagementViewState extends State<UserManagementView> {
                     ),
 
                     // ACTIVE
-                    Expanded(
-                      flex: 1,
+                    SizedBox(
+                      width: 70,
                       child: Padding(
                         padding: const EdgeInsets.only(right: 8),
                         child: Align(
                           alignment: Alignment.centerLeft,
                           child: Transform.scale(
-                            scale: 0.85,
+                            scale: 0.8,
                             child: Switch(
                               value: user.isActive,
-                              activeThumbColor: const Color(0xFF4F46E5),
+                              activeTrackColor: const Color(0xFF4F46E5),
+                              inactiveTrackColor: const Color(0xFFE2E8F0),
+                              thumbColor: WidgetStateProperty.all(Colors.white),
+                              trackOutlineColor: WidgetStateProperty.all(
+                                Colors.transparent,
+                              ),
                               onChanged: isMe
                                   ? null
                                   : (val) {
@@ -1593,32 +1565,37 @@ class _UserManagementViewState extends State<UserManagementView> {
 
                     // ACTIONS
                     SizedBox(
-                      width: 90,
+                      width: 80,
                       child: Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           IconButton(
                             padding: EdgeInsets.zero,
                             constraints: const BoxConstraints(
-                              minWidth: 32,
-                              minHeight: 32,
+                              minWidth: 30,
+                              minHeight: 30,
                             ),
-                            icon: const Icon(Icons.logout_rounded, size: 16),
+                            icon: const Icon(
+                              Icons.logout_rounded,
+                              size: 17,
+                              color: Color(0xFF94A3B8),
+                            ),
                             tooltip: 'Remote sign out session',
                             onPressed: () =>
                                 _confirmForceSignOut(context, cubit, user),
                           ),
+                          const SizedBox(width: 4),
                           if (isMe)
                             IconButton(
                               padding: EdgeInsets.zero,
                               constraints: const BoxConstraints(
-                                minWidth: 32,
-                                minHeight: 32,
+                                minWidth: 30,
+                                minHeight: 30,
                               ),
                               icon: const Icon(
-                                Icons.manage_accounts_outlined,
-                                size: 18,
-                                color: Color(0xFF4F46E5),
+                                Icons.groups_outlined,
+                                size: 19,
+                                color: Color(0xFF6366F1),
                               ),
                               tooltip: 'Admin Settings',
                               onPressed: _navigateToSettings,
@@ -1627,19 +1604,41 @@ class _UserManagementViewState extends State<UserManagementView> {
                             IconButton(
                               padding: EdgeInsets.zero,
                               constraints: const BoxConstraints(
-                                minWidth: 32,
-                                minHeight: 32,
+                                minWidth: 30,
+                                minHeight: 30,
                               ),
                               icon: const Icon(
-                                Icons.delete_outline,
+                                Icons.delete_outline_rounded,
                                 size: 18,
-                                color: Color(0xFFDC2626),
+                                color: Color(0xFFF87171),
                               ),
                               tooltip: 'Remove user',
                               onPressed: () =>
                                   _confirmDelete(context, user.uid, user.name),
                             ),
                         ],
+                      ),
+                    ),
+
+                    // RESET PASSWORD
+                    SizedBox(
+                      width: 110,
+                      child: Center(
+                        child: IconButton(
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(
+                            minWidth: 32,
+                            minHeight: 32,
+                          ),
+                          icon: const Icon(
+                            Icons.lock_reset_rounded,
+                            size: 20,
+                            color: Color(0xFF94A3B8),
+                          ),
+                          tooltip: 'Reset Password',
+                          onPressed: () =>
+                              _confirmResetPassword(context, cubit, user),
+                        ),
                       ),
                     ),
                   ],
@@ -1915,6 +1914,16 @@ class _UserManagementViewState extends State<UserManagementView> {
                               tooltip: 'Remote sign out session',
                               onPressed: () =>
                                   _confirmForceSignOut(context, cubit, user),
+                            ),
+                            IconButton(
+                              icon: const Icon(
+                                Icons.lock_reset_rounded,
+                                size: 19,
+                                color: Color(0xFF64748B),
+                              ),
+                              tooltip: 'Reset Password',
+                              onPressed: () =>
+                                  _confirmResetPassword(context, cubit, user),
                             ),
                             if (isMe)
                               IconButton(

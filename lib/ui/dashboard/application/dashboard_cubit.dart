@@ -275,6 +275,38 @@ class DashboardCubit extends Cubit<DashboardState> {
     }
   }
 
+  Future<void> sendPasswordResetEmail(
+    String email, {
+    String userName = '',
+  }) async {
+    try {
+      await _repository.sendPasswordResetEmail(email, userName: userName);
+      auditEntries.insert(
+        0,
+        AuditLogEntry(
+          actor: currentActorLabel,
+          action: 'Sent password reset email',
+          target: userName.isEmpty ? email : userName,
+          timestamp: 'Just now · IST',
+          category: 'password_reset',
+        ),
+      );
+      emit(
+        DashboardActionSuccess(
+          message: 'Password reset link sent to $email',
+          selectedNavIndex: state.selectedNavIndex,
+        ),
+      );
+    } catch (e) {
+      emit(
+        DashboardActionFailure(
+          message: 'Password reset failed: $e',
+          selectedNavIndex: state.selectedNavIndex,
+        ),
+      );
+    }
+  }
+
   Future<void> signOut() async {
     await _repository.signOut();
     isAdminSession = false;

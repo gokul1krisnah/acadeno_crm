@@ -126,6 +126,18 @@ class DashboardRepository {
     );
   }
 
+  Future<void> sendPasswordResetEmail(
+    String email, {
+    String userName = '',
+  }) async {
+    await _rds.sendPasswordResetEmail(email);
+    await _rds.appendAuditLog(
+      action: 'Sent password reset email',
+      target: userName.isEmpty ? email : '$userName ($email)',
+      category: 'password_reset',
+    );
+  }
+
   Future<void> deleteUser(String uid, {String userName = ''}) async {
     await _rds.deleteUser(uid);
     await _rds.appendAuditLog(
