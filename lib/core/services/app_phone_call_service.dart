@@ -30,6 +30,12 @@ class AppPhoneCallService with WidgetsBindingObserver {
   int _dialStartTimeMs = 0;
   bool _isWaitingForCallReturn = false;
   BuildContext? _activeContext;
+  GlobalKey<NavigatorState>? _navigatorKey;
+
+  /// Attaches global navigator key for immediate fallback dialog display.
+  void attachNavigatorKey(GlobalKey<NavigatorState> key) {
+    _navigatorKey = key;
+  }
 
   /// Initializes lifecycle observation for automatic post-call return detection.
   void initialize() {
@@ -124,100 +130,45 @@ class AppPhoneCallService with WidgetsBindingObserver {
     final context = _activeContext;
     final startMs = _dialStartTimeMs;
     _activeLead = null;
+    _activeContext = null;
 
-    if (lead == null || context == null || !context.mounted) return;
+    final targetContext = (context != null && context.mounted)
+        ? context
+        : _navigatorKey?.currentContext;
+
+    if (lead == null || targetContext == null || !targetContext.mounted) return;
+
+    final elapsedMs = DateTime.now().millisecondsSinceEpoch - startMs;
+    // Debounce accidental same-frame re-entry (< 150ms)
+    if (elapsedMs < 150) return;
 
     final cleanPhone =
         (lead.fullPhone.isNotEmpty ? lead.fullPhone : lead.maskedPhone)
             .replaceAll(RegExp(r'[^0-9+]'), '');
 
-    int durationSeconds = 0;
-    bool permissionDenied = false;
-    bool foundCallLog = false;
+    int durationSeconds = (elapsedMs / 1000).round();
 
-    // Retry querying Android CallLog up to 4 times (with 700ms intervals)
-    // because Android Telecom writes the CallLog entry asynchronously upon hangup
-    for (int attempt = 0; attempt < 4; attempt++) {
-      await Future.delayed(Duration(milliseconds: attempt == 0 ? 800 : 700));
-      if (!context.mounted) return;
-
-      if (!kIsWeb && Platform.isAndroid) {
-        try {
-          final res = await _channel.invokeMethod<int>('getLastCallDuration', {
-            'phone': cleanPhone,
-            'startTimestamp': startMs,
-          });
-
-          if (res != null && res >= 0) {
-            // EXACT talk-time duration from the Android telephony CallLog!
-            durationSeconds = res;
-            foundCallLog = true;
-            break;
-          } else if (res == -1) {
-            permissionDenied = true;
-            break;
-          }
-        } catch (_) {
-          break;
-        }
-      }
-    }
-
-    final elapsedMs = DateTime.now().millisecondsSinceEpoch - startMs;
-    final elapsedSeconds = (elapsedMs / 1000).round();
-
-    // Only open the Call Outcome update alert box if the person was actually called!
-    // If the executive only navigated to the dialer pad and returned without calling, skip dialog.
+    // Fast non-blocking check on Android Telecom CallLog (at most 80ms)
     if (!kIsWeb && Platform.isAndroid) {
-      if (!permissionDenied && !foundCallLog) {
-        if (elapsedMs < 3500) {
-          debugPrint(
-            '[AppPhoneCallService] User returned immediately (<3.5s) without call. Skipping outcome dialog.',
-          );
-          return;
-        }
-      }
+      try {
+        final res = await _channel.invokeMethod<int>('getLastCallDuration', {
+          'phone': cleanPhone,
+          'startTimestamp': startMs,
+        }).timeout(const Duration(milliseconds: 80), onTimeout: () => null);
 
-      if (permissionDenied) {
-        if (elapsedMs < 3500) {
-          debugPrint(
-            '[AppPhoneCallService] User returned immediately (<3.5s) without call. Skipping outcome dialog.',
-          );
-          return;
+        if (res != null && res >= 0) {
+          durationSeconds = res;
         }
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text(
-                'Tip: Allow Call Log permission to automatically read call duration.',
-              ),
-              duration: Duration(seconds: 3),
-            ),
-          );
-        }
-      }
-    } else {
-      if (elapsedMs < 3500) {
-        debugPrint(
-          '[AppPhoneCallService] User returned immediately (<3.5s). Skipping outcome dialog.',
-        );
-        return;
-      }
-    }
-
-    // If exact carrier talk-time was not found from CallLog (e.g. permission denied or OEM delay),
-    // accurately fallback to the actual measured session duration the user spent away on the call!
-    if (!foundCallLog && elapsedSeconds > 0) {
-      durationSeconds = elapsedSeconds;
+      } catch (_) {}
     }
 
     // Format duration: e.g. "2m 18s" or "45s" or "0s"
     final formattedDuration = _formatDuration(durationSeconds);
 
-    // Automatically open Call Outcome sheet only when call was made
-    if (context.mounted) {
+    // Immediately open Call Outcome sheet with zero delay
+    if (targetContext.mounted) {
       LeadCallSheets.showCallAndOutcomeSheet(
-        context,
+        targetContext,
         leadId: lead.id,
         leadName: lead.name,
         maskedPhone: lead.maskedPhone,

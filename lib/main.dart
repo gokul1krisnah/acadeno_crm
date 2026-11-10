@@ -75,6 +75,7 @@ class _AcadenoAppState extends State<AcadenoApp> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    AppPhoneCallService.instance.attachNavigatorKey(_appRouter.navigatorKey);
     // Attach real-time session revocation listener
     SessionSecurityService.instance.attachContext(
       router: _appRouter,
