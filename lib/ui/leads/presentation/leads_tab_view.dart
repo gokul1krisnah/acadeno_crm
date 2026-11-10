@@ -53,10 +53,9 @@ class _LeadsTabViewState extends State<LeadsTabView> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Top Card (Expands with device width, 10px padding from device, minHeight 171.125, border-radius 24)
+                // Top Card (Expands with device width, 10px padding from device, border-radius 24)
                 Container(
                   width: double.infinity,
-                  constraints: const BoxConstraints(minHeight: 171.125),
                   decoration: BoxDecoration(
                     color: const Color(0xFFFFFFFF),
                     borderRadius: BorderRadius.circular(24),
