@@ -246,19 +246,30 @@ class _AlertCard extends StatelessWidget {
             width: double.infinity,
             height: 80,
             decoration: BoxDecoration(
-              color: const Color(0xFFE9E9F0),
+              color: const Color(0xFFFFFFFF),
               borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: const Color(0xFFF1F5F9),
+                width: 1,
+              ),
+              boxShadow: const [
+                BoxShadow(
+                  color: Color(0x0A000000),
+                  blurRadius: 4,
+                  offset: Offset(0, 1),
+                ),
+              ],
             ),
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                // Category SVG Icon Container (Figma design: 48x48 rounded square #D1D1E0)
+                // Category SVG Icon Container (48x48 rounded square)
                 Container(
                   width: 48,
                   height: 48,
                   decoration: BoxDecoration(
-                    color: const Color(0xFFD1D1E0),
+                    color: const Color(0xFFF1F5F9),
                     borderRadius: BorderRadius.circular(14),
                   ),
                   alignment: Alignment.center,

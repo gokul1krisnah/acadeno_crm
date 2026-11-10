@@ -101,12 +101,12 @@ class _AcadenoAppState extends State<AcadenoApp> with WidgetsBindingObserver {
                 width: 36,
                 height: 36,
                 decoration: BoxDecoration(
-                  color: const Color(0x33FFFFFF),
+                  color: const Color(0xFFEEF2FF),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: const Icon(
                   Icons.notifications_active_rounded,
-                  color: Colors.white,
+                  color: Color(0xFF4F46E5),
                   size: 20,
                 ),
               ),
@@ -121,7 +121,7 @@ class _AcadenoAppState extends State<AcadenoApp> with WidgetsBindingObserver {
                       style: const TextStyle(
                         fontWeight: FontWeight.w700,
                         fontSize: 14,
-                        color: Colors.white,
+                        color: Color(0xFF0F172A),
                       ),
                     ),
                     if (body.isNotEmpty) ...[
@@ -130,7 +130,7 @@ class _AcadenoAppState extends State<AcadenoApp> with WidgetsBindingObserver {
                         body,
                         style: const TextStyle(
                           fontSize: 12.5,
-                          color: Color(0xFFE0E7FF),
+                          color: Color(0xFF475467),
                         ),
                       ),
                     ],
@@ -141,10 +141,11 @@ class _AcadenoAppState extends State<AcadenoApp> with WidgetsBindingObserver {
           ),
           duration: const Duration(seconds: 5),
           behavior: SnackBarBehavior.floating,
-          backgroundColor: const Color(0xFF312E81),
+          backgroundColor: const Color(0xFFFFFFFF),
           elevation: 6,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(16),
+            side: const BorderSide(color: Color(0xFFE2E8F0), width: 1),
           ),
         ),
       );
@@ -238,17 +239,13 @@ class _AcadenoAppState extends State<AcadenoApp> with WidgetsBindingObserver {
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-            textStyle: const TextStyle(
-              overflow: TextOverflow.ellipsis,
-            ),
+            textStyle: const TextStyle(overflow: TextOverflow.ellipsis),
           ),
         ),
         outlinedButtonTheme: OutlinedButtonThemeData(
           style: OutlinedButton.styleFrom(
             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-            textStyle: const TextStyle(
-              overflow: TextOverflow.ellipsis,
-            ),
+            textStyle: const TextStyle(overflow: TextOverflow.ellipsis),
           ),
         ),
       ),
