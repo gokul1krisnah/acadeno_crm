@@ -473,14 +473,19 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                           ? topOverdue.phone
                                           : topOverdue.maskedPhone,
                                       collegeInfo: topOverdue.collegeInfo,
-                                      statusTag: 'Overdue Follow-up',
-                                      statusColor: const Color(0xFFDC2626),
-                                      statusBg: const Color(0xFFFEE2E2),
+                                      statusTag: 'Follow-up',
+                                      statusColor: const Color(0xFFEF8144),
+                                      statusBg: const Color(0xFFFEF0E6),
                                       campaignTag: topOverdue.note.isNotEmpty
                                           ? topOverdue.note
                                           : 'Follow-up Due',
                                       followUpTime: topOverdue.timeLabel,
                                     );
+
+                                    final overdueTag =
+                                        topOverdue.timeLabel.isNotEmpty
+                                        ? 'Follow-up · ${topOverdue.timeLabel}'
+                                        : 'Follow-up · Due Today';
 
                                     return InkWell(
                                       onTap: () =>
@@ -497,18 +502,9 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                             16,
                                           ),
                                           border: Border.all(
-                                            color: const Color(0x66DC2626),
+                                            color: const Color(0x4DF97316),
                                             width: 2,
                                           ),
-                                          boxShadow: [
-                                            BoxShadow(
-                                              color: const Color(
-                                                0xFFDC2626,
-                                              ).withValues(alpha: 0.08),
-                                              blurRadius: 16,
-                                              offset: const Offset(0, 4),
-                                            ),
-                                          ],
                                         ),
                                         child: Row(
                                           children: [
@@ -520,22 +516,21 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                                   Row(
                                                     children: [
                                                       const Icon(
-                                                        CupertinoIcons
-                                                            .clock_fill,
+                                                        CupertinoIcons.clock,
                                                         size: 15,
                                                         color: Color(
-                                                          0xFFDC2626,
+                                                          0xFFEA580C,
                                                         ),
                                                       ),
                                                       const SizedBox(width: 6),
                                                       Text(
-                                                        'OVERDUE · ${topOverdue.timeLabel.isNotEmpty ? topOverdue.timeLabel : 'Action Needed'}',
+                                                        overdueTag,
                                                         style: const TextStyle(
                                                           fontSize: 13,
                                                           fontWeight:
                                                               FontWeight.w700,
                                                           color: Color(
-                                                            0xFFDC2626,
+                                                            0xFFEA580C,
                                                           ),
                                                         ),
                                                       ),
@@ -579,13 +574,13 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                                 height: 52,
                                                 decoration: BoxDecoration(
                                                   color: const Color(
-                                                    0xFFDC2626,
+                                                    0xFFEF8144,
                                                   ),
                                                   shape: BoxShape.circle,
                                                   boxShadow: [
                                                     BoxShadow(
                                                       color: const Color(
-                                                        0xFFDC2626,
+                                                        0xFFEF8144,
                                                       ).withValues(alpha: 0.38),
                                                       blurRadius: 18,
                                                       offset: const Offset(
