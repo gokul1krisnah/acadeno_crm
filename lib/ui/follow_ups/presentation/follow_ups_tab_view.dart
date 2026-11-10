@@ -363,15 +363,19 @@ class _TabItem extends StatelessWidget {
         children: [
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 4),
-            child: Text(
-              title,
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w800,
-                letterSpacing: 0.8,
-                color: isSelected
-                    ? const Color(0xFF0F172A)
-                    : const Color(0xFF94A3B8),
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                title,
+                maxLines: 1,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 0.8,
+                  color: isSelected
+                      ? const Color(0xFF0F172A)
+                      : const Color(0xFF94A3B8),
+                ),
               ),
             ),
           ),
@@ -447,14 +451,19 @@ class _FollowUpCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 10),
-              Text(
-                item.timeLabel.isNotEmpty
-                    ? item.timeLabel
-                    : 'Today · ${DateFormat('h:mm a').format(DateTime.now())}',
-                style: const TextStyle(
-                  fontSize: 12.5,
-                  fontWeight: FontWeight.w700,
-                  color: Color(0xFF2563EB),
+              Flexible(
+                child: Text(
+                  item.timeLabel.isNotEmpty
+                      ? item.timeLabel
+                      : 'Today · ${DateFormat('h:mm a').format(DateTime.now())}',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.right,
+                  style: const TextStyle(
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF2563EB),
+                  ),
                 ),
               ),
             ],

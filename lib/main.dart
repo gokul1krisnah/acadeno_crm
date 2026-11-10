@@ -225,18 +225,29 @@ class _AcadenoAppState extends State<AcadenoApp> with WidgetsBindingObserver {
         ),
       ),
       builder: (context, child) {
-        return Material(
-          color: Colors.white,
-          child: Stack(
-            children: [
-              child ?? const SizedBox.shrink(),
-              const Positioned(
-                top: 0,
-                left: 0,
-                right: 0,
-                child: OfflineStatusBar(),
-              ),
-            ],
+        // Clamp the system font scale so large accessibility fonts on small
+        // phones never cause "RenderFlex overflowed" pixel errors.
+        final mq = MediaQuery.of(context);
+        return MediaQuery(
+          data: mq.copyWith(
+            textScaler: mq.textScaler.clamp(
+              minScaleFactor: 0.85,
+              maxScaleFactor: 1.15,
+            ),
+          ),
+          child: Material(
+            color: Colors.white,
+            child: Stack(
+              children: [
+                child ?? const SizedBox.shrink(),
+                const Positioned(
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  child: OfflineStatusBar(),
+                ),
+              ],
+            ),
           ),
         );
       },

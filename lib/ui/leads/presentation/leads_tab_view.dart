@@ -275,6 +275,8 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                             const SizedBox(height: 2),
                             Text(
                               homeState.todayLabel,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                               style: const TextStyle(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w500,
@@ -523,15 +525,22 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                                         ),
                                                       ),
                                                       const SizedBox(width: 6),
-                                                      Text(
-                                                        overdueTag,
-                                                        style: const TextStyle(
-                                                          fontSize: 13,
-                                                          fontWeight:
-                                                              FontWeight.w700,
-                                                          color: Color(
-                                                            0xFFEA580C,
-                                                          ),
+                                                      Flexible(
+                                                        child: Text(
+                                                          overdueTag,
+                                                          maxLines: 1,
+                                                          overflow: TextOverflow
+                                                              .ellipsis,
+                                                          style:
+                                                              const TextStyle(
+                                                                fontSize: 13,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w700,
+                                                                color: Color(
+                                                                  0xFFEA580C,
+                                                                ),
+                                                              ),
                                                         ),
                                                       ),
                                                     ],
@@ -539,6 +548,9 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                                   const SizedBox(height: 8),
                                                   Text(
                                                     topOverdue.leadName,
+                                                    maxLines: 2,
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
                                                     style: const TextStyle(
                                                       fontSize: 19,
                                                       fontWeight:
@@ -550,6 +562,9 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                                   const SizedBox(height: 6),
                                                   Text(
                                                     '${topOverdue.collegeInfo.isNotEmpty ? topOverdue.collegeInfo : 'Student'} · ${topOverdue.note.isNotEmpty ? topOverdue.note : 'Follow-up call scheduled'}',
+                                                    maxLines: 3,
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
                                                     style: const TextStyle(
                                                       fontSize: 13.5,
                                                       color: Color(0xFF64748B),
@@ -640,15 +655,22 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                                         ),
                                                       ),
                                                       const SizedBox(width: 6),
-                                                      Text(
-                                                        '${dueLead.statusTag} · Due Today',
-                                                        style: const TextStyle(
-                                                          fontSize: 13,
-                                                          fontWeight:
-                                                              FontWeight.w700,
-                                                          color: Color(
-                                                            0xFFEA580C,
-                                                          ),
+                                                      Flexible(
+                                                        child: Text(
+                                                          '${dueLead.statusTag} · Due Today',
+                                                          maxLines: 1,
+                                                          overflow: TextOverflow
+                                                              .ellipsis,
+                                                          style:
+                                                              const TextStyle(
+                                                                fontSize: 13,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w700,
+                                                                color: Color(
+                                                                  0xFFEA580C,
+                                                                ),
+                                                              ),
                                                         ),
                                                       ),
                                                     ],
@@ -656,6 +678,9 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                                   const SizedBox(height: 8),
                                                   Text(
                                                     dueLead.name,
+                                                    maxLines: 2,
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
                                                     style: const TextStyle(
                                                       fontSize: 19,
                                                       fontWeight:
@@ -667,6 +692,9 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                                   const SizedBox(height: 6),
                                                   Text(
                                                     '${dueLead.collegeInfo} · ${dueLead.campaignTag}',
+                                                    maxLines: 3,
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
                                                     style: const TextStyle(
                                                       fontSize: 13.5,
                                                       color: Color(0xFF64748B),
@@ -1415,42 +1443,43 @@ class _MetricBox extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       height: 85,
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
         color: bgColor,
         borderRadius: BorderRadius.circular(16),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          FittedBox(
-            fit: BoxFit.scaleDown,
-            child: Text(
-              value,
-              style: TextStyle(
-                fontFamily: 'Inter',
-                fontSize: 22,
-                fontWeight: FontWeight.w800,
-                color: valueColor,
-                letterSpacing: -0.5,
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          alignment: Alignment.centerLeft,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                value,
+                style: TextStyle(
+                  fontFamily: 'Inter',
+                  fontSize: 22,
+                  fontWeight: FontWeight.w800,
+                  color: valueColor,
+                  letterSpacing: -0.5,
+                ),
               ),
-            ),
-          ),
-          const SizedBox(height: 4),
-          FittedBox(
-            fit: BoxFit.scaleDown,
-            child: Text(
-              label,
-              style: TextStyle(
-                fontFamily: 'Inter',
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-                color: labelColor,
+              const SizedBox(height: 4),
+              Text(
+                label,
+                style: TextStyle(
+                  fontFamily: 'Inter',
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                  color: labelColor,
+                ),
               ),
-            ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -1516,6 +1545,8 @@ class _TodayLeadCard extends StatelessWidget {
                 children: [
                   Text(
                     item.name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w800,
@@ -1535,22 +1566,27 @@ class _TodayLeadCard extends StatelessWidget {
                   const SizedBox(height: 8),
                   Row(
                     children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 3.5,
-                        ),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFEEF2FF),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Text(
-                          item.statusTag.toUpperCase(),
-                          style: const TextStyle(
-                            fontSize: 10.5,
-                            fontWeight: FontWeight.w800,
-                            letterSpacing: 0.4,
-                            color: Color(0xFF4F46E5),
+                      Flexible(
+                        flex: 0,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 3.5,
+                          ),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFEEF2FF),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            item.statusTag.toUpperCase(),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontSize: 10.5,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 0.4,
+                              color: Color(0xFF4F46E5),
+                            ),
                           ),
                         ),
                       ),
