@@ -506,12 +506,17 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
                                       size: 18,
                                       color: Colors.white,
                                     ),
-                                    label: const Text(
-                                      'Call',
-                                      style: TextStyle(
-                                        fontSize: 14.5,
-                                        fontWeight: FontWeight.w700,
-                                        color: Colors.white,
+                                    label: const FittedBox(
+                                      fit: BoxFit.scaleDown,
+                                      child: Text(
+                                        'Call',
+                                        maxLines: 1,
+                                        softWrap: false,
+                                        style: TextStyle(
+                                          fontSize: 14.5,
+                                          fontWeight: FontWeight.w700,
+                                          color: Colors.white,
+                                        ),
                                       ),
                                     ),
                                     style: ElevatedButton.styleFrom(
@@ -537,12 +542,17 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
                                       size: 18,
                                       color: Color(0xFF0F172A),
                                     ),
-                                    label: const Text(
-                                      'WhatsApp',
-                                      style: TextStyle(
-                                        fontSize: 14.5,
-                                        fontWeight: FontWeight.w700,
-                                        color: Color(0xFF0F172A),
+                                    label: const FittedBox(
+                                      fit: BoxFit.scaleDown,
+                                      child: Text(
+                                        'WhatsApp',
+                                        maxLines: 1,
+                                        softWrap: false,
+                                        style: TextStyle(
+                                          fontSize: 14.5,
+                                          fontWeight: FontWeight.w700,
+                                          color: Color(0xFF0F172A),
+                                        ),
                                       ),
                                     ),
                                     style: OutlinedButton.styleFrom(
@@ -650,12 +660,17 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
                                 horizontal: 12,
                                 vertical: 7,
                               ),
-                              child: const Text(
-                                'Reschedule',
-                                style: TextStyle(
-                                  color: Color(0xFF9A3412),
-                                  fontWeight: FontWeight.w700,
-                                  fontSize: 12.5,
+                              child: const FittedBox(
+                                fit: BoxFit.scaleDown,
+                                child: Text(
+                                  'Reschedule',
+                                  maxLines: 1,
+                                  softWrap: false,
+                                  style: TextStyle(
+                                    color: Color(0xFF9A3412),
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 12.5,
+                                  ),
                                 ),
                               ),
                             ),

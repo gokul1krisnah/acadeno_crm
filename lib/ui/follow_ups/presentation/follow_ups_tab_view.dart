@@ -511,6 +511,8 @@ class _FollowUpCard extends StatelessWidget {
                         padding: EdgeInsets.symmetric(horizontal: 4),
                         child: Text(
                           'Call Now',
+                          maxLines: 1,
+                          softWrap: false,
                           style: TextStyle(
                             fontSize: 13.5,
                             fontWeight: FontWeight.w700,
@@ -545,6 +547,8 @@ class _FollowUpCard extends StatelessWidget {
                         padding: EdgeInsets.symmetric(horizontal: 4),
                         child: Text(
                           'Snooze',
+                          maxLines: 1,
+                          softWrap: false,
                           style: TextStyle(
                             fontSize: 13.5,
                             fontWeight: FontWeight.w700,

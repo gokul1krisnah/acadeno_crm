@@ -235,16 +235,32 @@ class _AcadenoAppState extends State<AcadenoApp> with WidgetsBindingObserver {
           backgroundColor: Color(0xFFFFFFFF),
           surfaceTintColor: Colors.transparent,
         ),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            textStyle: const TextStyle(
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ),
+        outlinedButtonTheme: OutlinedButtonThemeData(
+          style: OutlinedButton.styleFrom(
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            textStyle: const TextStyle(
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ),
       ),
       builder: (context, child) {
-        // Clamp the system font scale so large accessibility fonts on small
-        // phones never cause "RenderFlex overflowed" pixel errors.
+        // Clamp the system font scale so accessibility/device font overrides
+        // never cause button text to wrap to second lines or overflow pixels.
         final mq = MediaQuery.of(context);
         return MediaQuery(
           data: mq.copyWith(
             textScaler: mq.textScaler.clamp(
               minScaleFactor: 0.85,
-              maxScaleFactor: 1.15,
+              maxScaleFactor: 1.0,
             ),
           ),
           child: Material(

@@ -64,11 +64,16 @@ class VisitsTabView extends StatelessWidget {
                           child: ElevatedButton.icon(
                             onPressed: () => _showLogVisitModal(context),
                             icon: const Icon(Icons.add, size: 17),
-                            label: const Text(
-                              'Log visit',
-                              style: TextStyle(
-                                fontSize: 13.5,
-                                fontWeight: FontWeight.w700,
+                            label: const FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Text(
+                                'Log visit',
+                                maxLines: 1,
+                                softWrap: false,
+                                style: TextStyle(
+                                  fontSize: 13.5,
+                                  fontWeight: FontWeight.w700,
+                                ),
                               ),
                             ),
                             style: ElevatedButton.styleFrom(
@@ -1220,12 +1225,17 @@ class _UpcomingVisitCard extends StatelessWidget {
                   size: 17,
                   color: Color(0xFFDC2626),
                 ),
-                label: const Text(
-                  'Delete visit',
-                  style: TextStyle(
-                    fontSize: 13.5,
-                    fontWeight: FontWeight.w700,
-                    color: Color(0xFFDC2626),
+                label: const FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    'Delete visit',
+                    maxLines: 1,
+                    softWrap: false,
+                    style: TextStyle(
+                      fontSize: 13.5,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFFDC2626),
+                    ),
                   ),
                 ),
                 style: OutlinedButton.styleFrom(
@@ -1250,12 +1260,17 @@ class _UpcomingVisitCard extends StatelessWidget {
                         size: 17,
                         color: Color(0xFF0F172A),
                       ),
-                      label: const Text(
-                        'Directions',
-                        style: TextStyle(
-                          fontSize: 13.5,
-                          fontWeight: FontWeight.w700,
-                          color: Color(0xFF0F172A),
+                      label: const FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          'Directions',
+                          maxLines: 1,
+                          softWrap: false,
+                          style: TextStyle(
+                            fontSize: 13.5,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFF0F172A),
+                          ),
                         ),
                       ),
                       style: OutlinedButton.styleFrom(
@@ -1281,11 +1296,16 @@ class _UpcomingVisitCard extends StatelessWidget {
                           borderRadius: BorderRadius.circular(11),
                         ),
                       ),
-                      child: const Text(
-                        'Record outcome',
-                        style: TextStyle(
-                          fontSize: 13.5,
-                          fontWeight: FontWeight.w700,
+                      child: const FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          'Record outcome',
+                          maxLines: 1,
+                          softWrap: false,
+                          style: TextStyle(
+                            fontSize: 13.5,
+                            fontWeight: FontWeight.w700,
+                          ),
                         ),
                       ),
                     ),

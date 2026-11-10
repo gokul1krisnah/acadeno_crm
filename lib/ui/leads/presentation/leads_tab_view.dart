@@ -830,6 +830,8 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                               const SizedBox(width: 7),
                                               const Text(
                                                 'Add Walk-in Lead',
+                                                maxLines: 1,
+                                                softWrap: false,
                                                 style: TextStyle(
                                                   fontSize: 12,
                                                   fontWeight: FontWeight.w600,
@@ -887,6 +889,8 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                               const SizedBox(width: 7),
                                               const Text(
                                                 'My Record',
+                                                maxLines: 1,
+                                                softWrap: false,
                                                 style: TextStyle(
                                                   fontSize: 12,
                                                   fontWeight: FontWeight.w600,
@@ -1694,14 +1698,19 @@ class _CallTabPill extends StatelessWidget {
                 ]
               : null,
         ),
-        child: Text(
-          label,
-          style: TextStyle(
-            fontSize: 11.5,
-            fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
-            color: isSelected
-                ? const Color(0xFF0F172A)
-                : const Color(0xFF64748B),
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            label,
+            maxLines: 1,
+            softWrap: false,
+            style: TextStyle(
+              fontSize: 11.5,
+              fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+              color: isSelected
+                  ? const Color(0xFF0F172A)
+                  : const Color(0xFF64748B),
+            ),
           ),
         ),
       ),
