@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
-import '../../../../shared/extensions/build_context_extension.dart';
 import '../../../../shared/utilities/link_launcher.dart';
 
 class _CollegeVisit {
@@ -435,7 +434,7 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
     final messenger = ScaffoldMessenger.of(context);
     final notesCtrl = TextEditingController(text: visit.outcomeNotes);
     final leadsCtrl = TextEditingController(
-      text: visit.leadsCollected > 0 ? '' : '0',
+      text: visit.leadsCollected > 0 ? '${visit.leadsCollected}' : '',
     );
     bool isCancelled = visit.status == 'Cancelled';
     bool isSaving = false;
@@ -443,194 +442,395 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
     showDialog(
       context: context,
       builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setDialogState) => AlertDialog(
+        builder: (ctx, setDialogState) => Dialog(
+          backgroundColor: const Color(0xFFFFFFFF),
+          surfaceTintColor: Colors.transparent,
+          insetPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 24,
+          ),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(28),
           ),
-          title: Text(
-            'Log Visit Outcome · ${visit.collegeName}',
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
-          ),
-          content: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 440),
-            child: SingleChildScrollView(
-              padding: EdgeInsets.all(ctx.devicePadding),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Tick option for Cancelled / Not Completed
-                  Container(
-                    decoration: BoxDecoration(
-                      color: isCancelled
-                          ? const Color(0xFFFEF2F2)
-                          : const Color(0xFFF0FDF4),
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(
-                        color: isCancelled
-                            ? const Color(0xFFFECACA)
-                            : const Color(0xFFBBF7D0),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 385),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Record Visit Outcome',
+                      style: GoogleFonts.inter(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w700,
+                        height: 27.5 / 20,
+                        color: const Color(0xFF0F172A),
                       ),
                     ),
-                    child: CheckboxListTile(
-                      dense: true,
-                      value: isCancelled,
-                      activeColor: const Color(0xFFDC2626),
-                      checkColor: Colors.white,
-                      title: Text(
-                        isCancelled
-                            ? 'Not Completed · Cancelled'
-                            : 'Visit Completed Successfully',
-                        style: TextStyle(
-                          fontSize: 13.5,
-                          fontWeight: FontWeight.w700,
-                          color: isCancelled
-                              ? const Color(0xFF991B1B)
-                              : const Color(0xFF166534),
+                    const SizedBox(height: 6),
+                    Text(
+                      '${visit.collegeName} · Outcome & student attendance',
+                      style: GoogleFonts.inter(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w400,
+                        height: 21.13 / 13,
+                        color: const Color(0xFF64748B),
+                      ),
+                    ),
+                    const SizedBox(height: 18),
+
+                    // Modern Segmented Status Toggle (Completed vs Cancelled)
+                    Container(
+                      height: 44,
+                      padding: const EdgeInsets.all(3),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF1F5F9),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: InkWell(
+                              onTap: isSaving
+                                  ? null
+                                  : () => setDialogState(
+                                        () => isCancelled = false,
+                                      ),
+                              borderRadius: BorderRadius.circular(10),
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: !isCancelled
+                                      ? Colors.white
+                                      : Colors.transparent,
+                                  borderRadius: BorderRadius.circular(10),
+                                  boxShadow: !isCancelled
+                                      ? const [
+                                          BoxShadow(
+                                            color: Color(0x0D000000),
+                                            blurRadius: 4,
+                                            offset: Offset(0, 1),
+                                          ),
+                                        ]
+                                      : null,
+                                ),
+                                alignment: Alignment.center,
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.check_circle_rounded,
+                                      size: 16,
+                                      color: !isCancelled
+                                          ? const Color(0xFF15803D)
+                                          : const Color(0xFF94A3B8),
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      'Completed',
+                                      style: GoogleFonts.inter(
+                                        fontSize: 13,
+                                        fontWeight: !isCancelled
+                                            ? FontWeight.w700
+                                            : FontWeight.w500,
+                                        color: !isCancelled
+                                            ? const Color(0xFF0F172A)
+                                            : const Color(0xFF64748B),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                          Expanded(
+                            child: InkWell(
+                              onTap: isSaving
+                                  ? null
+                                  : () => setDialogState(
+                                        () => isCancelled = true,
+                                      ),
+                              borderRadius: BorderRadius.circular(10),
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: isCancelled
+                                      ? Colors.white
+                                      : Colors.transparent,
+                                  borderRadius: BorderRadius.circular(10),
+                                  boxShadow: isCancelled
+                                      ? const [
+                                          BoxShadow(
+                                            color: Color(0x0D000000),
+                                            blurRadius: 4,
+                                            offset: Offset(0, 1),
+                                          ),
+                                        ]
+                                      : null,
+                                ),
+                                alignment: Alignment.center,
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.cancel_rounded,
+                                      size: 16,
+                                      color: isCancelled
+                                          ? const Color(0xFFDC2626)
+                                          : const Color(0xFF94A3B8),
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      'Cancelled',
+                                      style: GoogleFonts.inter(
+                                        fontSize: 13,
+                                        fontWeight: isCancelled
+                                            ? FontWeight.w700
+                                            : FontWeight.w500,
+                                        color: isCancelled
+                                            ? const Color(0xFF0F172A)
+                                            : const Color(0xFF64748B),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+
+                    // Inputs matching Log Visit Figma styling
+                    SizedBox(
+                      height: 54,
+                      child: TextField(
+                        controller: notesCtrl,
+                        style: GoogleFonts.inter(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w400,
+                          color: const Color(0xFF0F172A),
+                        ),
+                        decoration: InputDecoration(
+                          hintText: isCancelled
+                              ? 'Cancellation reason & notes *'
+                              : 'People met, agreements & notes',
+                          hintStyle: GoogleFonts.inter(
+                            color: const Color(0xFF94A3B8),
+                            fontSize: 13,
+                          ),
+                          filled: true,
+                          fillColor: const Color(0xFFF8FAFC),
+                          prefixIcon: Icon(
+                            isCancelled
+                                ? Icons.report_problem_outlined
+                                : Icons.people_outline_rounded,
+                            size: 19,
+                            color: const Color(0xFF64748B),
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFE2E8F0),
+                              width: 1,
+                            ),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFE2E8F0),
+                              width: 1,
+                            ),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFD45107),
+                              width: 1.5,
+                            ),
+                          ),
+                          isDense: true,
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 16,
+                          ),
                         ),
                       ),
-                      subtitle: Text(
-                        isCancelled
-                            ? 'Tick to log this visit as not completed / cancelled'
-                            : 'Tick if this visit was cancelled or could not be conducted',
-                        style: TextStyle(
-                          fontSize: 11.5,
-                          color: isCancelled
-                              ? const Color(0xFFB91C1C)
-                              : const Color(0xFF15803D),
+                    ),
+                    if (!isCancelled) ...[
+                      const SizedBox(height: 14),
+                      SizedBox(
+                        height: 54,
+                        child: TextField(
+                          controller: leadsCtrl,
+                          keyboardType: TextInputType.number,
+                          style: GoogleFonts.inter(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w400,
+                            color: const Color(0xFF0F172A),
+                          ),
+                          decoration: InputDecoration(
+                            hintText: 'Student leads collected from visit',
+                            hintStyle: GoogleFonts.inter(
+                              color: const Color(0xFF94A3B8),
+                              fontSize: 13,
+                            ),
+                            filled: true,
+                            fillColor: const Color(0xFFF8FAFC),
+                            prefixIcon: const Icon(
+                              Icons.how_to_reg_outlined,
+                              size: 19,
+                              color: Color(0xFF64748B),
+                            ),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(
+                                color: Color(0xFFE2E8F0),
+                                width: 1,
+                              ),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(
+                                color: Color(0xFFE2E8F0),
+                                width: 1,
+                              ),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(
+                                color: Color(0xFFD45107),
+                                width: 1.5,
+                              ),
+                            ),
+                            isDense: true,
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 16,
+                            ),
+                          ),
                         ),
                       ),
-                      controlAffinity: ListTileControlAffinity.leading,
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 8),
-                      onChanged: isSaving
-                          ? null
-                          : (val) {
-                              setDialogState(() {
-                                isCancelled = val ?? false;
-                              });
-                            },
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  TextField(
-                    controller: notesCtrl,
-                    maxLines: 3,
-                    decoration: InputDecoration(
-                      labelText: isCancelled
-                          ? 'Cancellation reason & notes'
-                          : 'People met, agreements & notes',
-                      hintText: isCancelled
-                          ? 'e.g. Principal unavailable, postponed due to exams'
-                          : 'e.g. Met placement coordinator, agreed to workshop',
-                      border: const OutlineInputBorder(),
-                    ),
-                  ),
-                  if (!isCancelled) ...[
-                    const SizedBox(height: 12),
-                    TextField(
-                      controller: leadsCtrl,
-                      keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(
-                        labelText: 'Student leads collected from visit',
-                        border: OutlineInputBorder(),
+                    ],
+                    const SizedBox(height: 20),
+
+                    // Primary Button (same as Log Visit)
+                    SizedBox(
+                      width: double.infinity,
+                      height: 48,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFD45107),
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          padding: const EdgeInsets.only(
+                            top: 14.5,
+                            bottom: 15.5,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                        ),
+                        onPressed: isSaving
+                            ? null
+                            : () async {
+                                setDialogState(() => isSaving = true);
+                                final newNotes = notesCtrl.text.trim();
+                                final newLeads = isCancelled
+                                    ? 0
+                                    : (int.tryParse(leadsCtrl.text.trim()) ??
+                                        0);
+
+                                try {
+                                  if (isCancelled) {
+                                    await _visitsCollection.doc(visit.id).set({
+                                      'status': 'Cancelled',
+                                      'statusLabel': 'Cancelled',
+                                      'outcomeNotes': newNotes.isNotEmpty
+                                          ? newNotes
+                                          : 'Visit cancelled',
+                                      'cancelReason': newNotes,
+                                      'leadsCollected': 0,
+                                      'updatedAt': FieldValue.serverTimestamp(),
+                                    }, SetOptions(merge: true));
+
+                                    if (ctx.mounted) {
+                                      Navigator.pop(ctx);
+                                      messenger.showSnackBar(
+                                        SnackBar(
+                                          content: Text(
+                                            'Visit to ${visit.collegeName} saved as Cancelled.',
+                                          ),
+                                          backgroundColor:
+                                              const Color(0xFFDC2626),
+                                        ),
+                                      );
+                                    }
+                                  } else {
+                                    await _visitsCollection.doc(visit.id).set({
+                                      'status': 'Completed',
+                                      'statusLabel': 'Completed',
+                                      'outcomeNotes': newNotes,
+                                      'metSummary': newNotes,
+                                      'leadsCollected': newLeads,
+                                      'updatedAt': FieldValue.serverTimestamp(),
+                                    }, SetOptions(merge: true));
+
+                                    if (ctx.mounted) {
+                                      Navigator.pop(ctx);
+                                      messenger.showSnackBar(
+                                        SnackBar(
+                                          content: Text(
+                                            'Visit to ${visit.collegeName} marked as Completed!',
+                                          ),
+                                          backgroundColor:
+                                              const Color(0xFF15803D),
+                                        ),
+                                      );
+                                    }
+                                  }
+                                } catch (e) {
+                                  setDialogState(() => isSaving = false);
+                                  if (ctx.mounted) {
+                                    messenger.showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                          'Failed to update visit: $e',
+                                        ),
+                                        backgroundColor: Colors.red,
+                                      ),
+                                    );
+                                  }
+                                }
+                              },
+                        child: isSaving
+                            ? const SizedBox(
+                                width: 16,
+                                height: 16,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : Text(
+                                isCancelled
+                                    ? 'Save as Cancelled'
+                                    : 'Save Visit Outcome',
+                                style: GoogleFonts.inter(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.white,
+                                ),
+                              ),
                       ),
                     ),
                   ],
-                ],
+                ),
               ),
             ),
           ),
-          actions: [
-            TextButton(
-              onPressed: isSaving ? null : () => Navigator.pop(ctx),
-              child: const Text('Cancel'),
-            ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: isCancelled
-                    ? const Color(0xFFDC2626)
-                    : const Color(0xFF15803D),
-                foregroundColor: Colors.white,
-              ),
-              onPressed: isSaving
-                  ? null
-                  : () async {
-                      setDialogState(() => isSaving = true);
-                      final newNotes = notesCtrl.text.trim();
-                      final newLeads = isCancelled
-                          ? 0
-                          : (int.tryParse(leadsCtrl.text.trim()) ?? 0);
-
-                      try {
-                        if (isCancelled) {
-                          await _visitsCollection.doc(visit.id).set({
-                            'status': 'Cancelled',
-                            'statusLabel': 'Cancelled',
-                            'outcomeNotes': newNotes.isNotEmpty
-                                ? newNotes
-                                : 'Visit cancelled',
-                            'cancelReason': newNotes,
-                            'leadsCollected': 0,
-                            'updatedAt': FieldValue.serverTimestamp(),
-                          }, SetOptions(merge: true));
-
-                          if (ctx.mounted) {
-                            Navigator.pop(ctx);
-                            messenger.showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  'Visit to ${visit.collegeName} saved as Cancelled.',
-                                ),
-                                backgroundColor: const Color(0xFFDC2626),
-                              ),
-                            );
-                          }
-                        } else {
-                          await _visitsCollection.doc(visit.id).set({
-                            'status': 'Completed',
-                            'statusLabel': 'Completed',
-                            'outcomeNotes': newNotes,
-                            'metSummary': newNotes,
-                            'leadsCollected': newLeads,
-                            'updatedAt': FieldValue.serverTimestamp(),
-                          }, SetOptions(merge: true));
-
-                          if (ctx.mounted) {
-                            Navigator.pop(ctx);
-                            messenger.showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  'Visit to ${visit.collegeName} marked as Completed!',
-                                ),
-                                backgroundColor: const Color(0xFF15803D),
-                              ),
-                            );
-                          }
-                        }
-                      } catch (e) {
-                        setDialogState(() => isSaving = false);
-                        if (ctx.mounted) {
-                          messenger.showSnackBar(
-                            SnackBar(
-                              content: Text('Failed to update visit: $e'),
-                              backgroundColor: Colors.red,
-                            ),
-                          );
-                        }
-                      }
-                    },
-              child: isSaving
-                  ? const SizedBox(
-                      width: 16,
-                      height: 16,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
-                      ),
-                    )
-                  : Text(isCancelled ? 'Save as Cancelled' : 'Mark Completed'),
-            ),
-          ],
         ),
       ),
     );
