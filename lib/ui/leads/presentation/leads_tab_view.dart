@@ -484,10 +484,7 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                       followUpTime: topOverdue.timeLabel,
                                     );
 
-                                    final overdueTag =
-                                        topOverdue.timeLabel.isNotEmpty
-                                        ? 'Follow-up · ${topOverdue.timeLabel}'
-                                        : 'Follow-up · Due Today';
+                                    const overdueTag = 'Follow-up · Due Today';
 
                                     return InkWell(
                                       onTap: () =>
@@ -495,17 +492,17 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                             context,
                                             lead: overdueLead,
                                           ),
-                                      borderRadius: BorderRadius.circular(16),
+                                      borderRadius: BorderRadius.circular(24),
                                       child: Container(
                                         padding: const EdgeInsets.all(20),
                                         decoration: BoxDecoration(
                                           color: Colors.white,
                                           borderRadius: BorderRadius.circular(
-                                            16,
+                                            24,
                                           ),
                                           border: Border.all(
-                                            color: const Color(0x4DF97316),
-                                            width: 2,
+                                            color: const Color(0xFFFED7AA),
+                                            width: 1.5,
                                           ),
                                         ),
                                         child: Row(
@@ -625,17 +622,17 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                             context,
                                             lead: dueLead,
                                           ),
-                                      borderRadius: BorderRadius.circular(16),
+                                      borderRadius: BorderRadius.circular(24),
                                       child: Container(
                                         padding: const EdgeInsets.all(20),
                                         decoration: BoxDecoration(
                                           color: Colors.white,
                                           borderRadius: BorderRadius.circular(
-                                            16,
+                                            24,
                                           ),
                                           border: Border.all(
-                                            color: const Color(0x4DF97316),
-                                            width: 2,
+                                            color: const Color(0xFFFED7AA),
+                                            width: 1.5,
                                           ),
                                         ),
                                         child: Row(

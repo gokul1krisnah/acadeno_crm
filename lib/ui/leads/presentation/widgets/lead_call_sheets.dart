@@ -1275,7 +1275,7 @@ class LeadCallSheets {
             borderRadius: BorderRadius.circular(32),
             border: Border.all(color: const Color(0xFFE2E8F0), width: 1),
           ),
-          padding: const EdgeInsets.fromLTRB(16, 24, 16, 24),
+          padding: const EdgeInsets.fromLTRB(10, 24, 10, 24),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -1326,36 +1326,36 @@ class LeadCallSheets {
                 ],
               ),
               const SizedBox(height: 18),
-              // Fixed-dimension metric boxes: width 99.333, height 84, gap 4px, radius 16
-              Center(
-                child: FittedBox(
-                  fit: BoxFit.scaleDown,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      _buildRecordMetricBox(
-                        value: '$totalCalls',
-                        label: 'Total Calls',
-                        valueColor: const Color(0xFF0F172A),
-                        bgColor: const Color(0xFFF3E8FF).withValues(alpha: 0.55),
-                      ),
-                      const SizedBox(width: 4),
-                      _buildRecordMetricBox(
-                        value: '$interestedCount',
-                        label: 'Interested',
-                        valueColor: const Color(0xFF0284C7),
-                        bgColor: const Color(0xFFE0F2FE),
-                      ),
-                      const SizedBox(width: 4),
-                      _buildRecordMetricBox(
-                        value: '$convertedCount',
-                        label: 'Converted',
-                        valueColor: const Color(0xFF16A34A),
-                        bgColor: const Color(0xFFDCFCE7),
-                      ),
-                    ],
+              // Responsive metric boxes with 10 left/right padding, height 84, gap 4px, radius 16
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildRecordMetricBox(
+                      value: '$totalCalls',
+                      label: 'Total Calls',
+                      valueColor: const Color(0xFF0F172A),
+                      bgColor: const Color(0xFFF3E8FF).withValues(alpha: 0.55),
+                    ),
                   ),
-                ),
+                  const SizedBox(width: 4),
+                  Expanded(
+                    child: _buildRecordMetricBox(
+                      value: '$interestedCount',
+                      label: 'Interested',
+                      valueColor: const Color(0xFF0284C7),
+                      bgColor: const Color(0xFFE0F2FE),
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  Expanded(
+                    child: _buildRecordMetricBox(
+                      value: '$convertedCount',
+                      label: 'Converted',
+                      valueColor: const Color(0xFF16A34A),
+                      bgColor: const Color(0xFFDCFCE7),
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 22),
               const Text(
@@ -1489,9 +1489,9 @@ class LeadCallSheets {
     required Color bgColor,
   }) {
     return SizedBox(
-      width: 99.33333587646484,
       height: 84,
       child: Container(
+        width: double.infinity,
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
         decoration: BoxDecoration(
           color: bgColor,
