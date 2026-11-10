@@ -21,17 +21,19 @@ class LeadsCubit extends Cubit<LeadsState> {
     _subscribe();
   }
 
-  void _subscribe() {
+  void _subscribe({bool isRefresh = false}) {
     _leadsSub?.cancel();
     _callRecordsSub?.cancel();
 
-    emit(
-      state.copyWith(
-        isLoading: true,
-        clearError: true,
-        isPermissionDenied: false,
-      ),
-    );
+    if (!isRefresh) {
+      emit(
+        state.copyWith(
+          isLoading: true,
+          clearError: true,
+          isPermissionDenied: false,
+        ),
+      );
+    }
 
     _leadsSub = _repository
         .watchExecutiveTodayLeads(dateKey: _overrideDateKey)
@@ -76,7 +78,7 @@ class LeadsCubit extends Cubit<LeadsState> {
   }
 
   /// Re-subscribes to the executive's assignments for today.
-  void refresh() => _subscribe();
+  void refresh() => _subscribe(isRefresh: true);
 
   void togglePendingOrDoneCalls(bool showPending) {
     emit(state.copyWith(showingPendingCalls: showPending, clearToast: true));

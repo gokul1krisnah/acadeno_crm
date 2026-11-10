@@ -684,7 +684,7 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                               const SizedBox(height: 12),
 
                               // 6. Call Cards List (Loading, Error/Permission, Empty, or Assigned Leads)
-                              if (state.isLoading)
+                              if (state.isLoading && state.leads.isEmpty)
                                 Container(
                                   width: double.infinity,
                                   padding: const EdgeInsets.symmetric(
@@ -1120,53 +1120,6 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                 ],
                               ),
                             ),
-                          ),
-                        ),
-                      ),
-                    ),
-
-                  // Floating iOS Refresh Indicator pill during 3-second refresh
-                  if (_isRefreshing)
-                    Positioned(
-                      top: 14,
-                      left: 0,
-                      right: 0,
-                      child: Center(
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 8,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(24),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.12),
-                                blurRadius: 16,
-                                offset: const Offset(0, 4),
-                              ),
-                            ],
-                            border: Border.all(
-                              color: const Color(0xFFE2E8F0),
-                              width: 1,
-                            ),
-                          ),
-                          child: const Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              CupertinoActivityIndicator(radius: 8.5),
-                              SizedBox(width: 8),
-                              Text(
-                                'Refreshing...',
-                                style: TextStyle(
-                                  fontFamily: 'Inter',
-                                  fontSize: 12.5,
-                                  fontWeight: FontWeight.w600,
-                                  color: Color(0xFF1E293B),
-                                ),
-                              ),
-                            ],
                           ),
                         ),
                       ),
