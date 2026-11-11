@@ -1449,16 +1449,6 @@ class LeadCallSheets {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Text(
-                        'RECENT PERMANENT CALL LOGS (READ-ONLY)',
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w700,
-                          color: Color(0xFF64748B),
-                          letterSpacing: 0.5,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
                       if (state.callRecords.isEmpty)
                         Container(
                           padding: const EdgeInsets.symmetric(
