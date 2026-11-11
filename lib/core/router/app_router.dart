@@ -1,7 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 
 import '../../ui/auth/presentation/login_page.dart';
-import '../../ui/dashboard/dashboard_page.dart';
+import '../../ui/dashboard/presentation/dashboard_page.dart';
 import '../../ui/home/home_page.dart';
 import '../../ui/splash/splash_page.dart';
 part 'app_router.gr.dart';
