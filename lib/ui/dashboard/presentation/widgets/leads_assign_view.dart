@@ -761,9 +761,9 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                             child: Text(
                               'Lead Details · ${lead.name}',
                               style: GoogleFonts.inter(
-                                fontWeight: FontWeight.w700,
-                                fontSize: 20,
-                                height: 27.5 / 20,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 18.5,
+                                height: 26 / 18.5,
                                 color: const Color(0xFF0F172A),
                               ),
                             ),

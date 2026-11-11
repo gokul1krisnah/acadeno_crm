@@ -297,12 +297,12 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
             ),
             titleSpacing: 0,
             title: const Text(
-              'Lead',
+              'Lead Details',
               style: TextStyle(
-                fontSize: 18,
+                fontSize: 17,
                 fontWeight: FontWeight.w600,
                 color: Color(0xFF0F172A),
-                letterSpacing: -0.3,
+                letterSpacing: -0.2,
               ),
             ),
             bottom: PreferredSize(
@@ -328,7 +328,17 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: const Color(0xFFE2E8F0)),
+                        border: Border.all(
+                          color: const Color(0xFFF1F5F9),
+                          width: 1,
+                        ),
+                        boxShadow: const [
+                          BoxShadow(
+                            color: Color(0x0A000000),
+                            blurRadius: 8,
+                            offset: Offset(0, 2),
+                          ),
+                        ],
                       ),
                       padding: const EdgeInsets.all(16),
                       child: Column(
@@ -338,20 +348,20 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
                             children: [
                               // Avatar circle with Initials
                               Container(
-                                width: 52,
-                                height: 52,
+                                width: 50,
+                                height: 50,
                                 decoration: const BoxDecoration(
-                                  color: Color(0xFF3F37C9),
+                                  color: Color(0xFFEEF2FF),
                                   shape: BoxShape.circle,
                                 ),
                                 alignment: Alignment.center,
                                 child: Text(
                                   lead.initials,
                                   style: const TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w700,
-                                    color: Colors.white,
-                                    letterSpacing: 0.5,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                    color: Color(0xFF4F46E5),
+                                    letterSpacing: 0.3,
                                   ),
                                 ),
                               ),
@@ -366,10 +376,10 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
                                           child: Text(
                                             lead.name,
                                             style: const TextStyle(
-                                              fontSize: 18,
-                                              fontWeight: FontWeight.w700,
+                                              fontSize: 17.5,
+                                              fontWeight: FontWeight.w600,
                                               color: Color(0xFF0F172A),
-                                              letterSpacing: -0.3,
+                                              letterSpacing: -0.2,
                                             ),
                                             maxLines: 1,
                                             overflow: TextOverflow.ellipsis,
@@ -393,7 +403,7 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
                                                 : 'Follow-up',
                                             style: const TextStyle(
                                               fontSize: 11.5,
-                                              fontWeight: FontWeight.w700,
+                                              fontWeight: FontWeight.w600,
                                               color: Color(0xFFC2410C),
                                             ),
                                           ),
@@ -441,14 +451,14 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
                                         maxLines: 1,
                                         softWrap: false,
                                         style: TextStyle(
-                                          fontSize: 14.5,
-                                          fontWeight: FontWeight.w700,
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w600,
                                           color: Colors.white,
                                         ),
                                       ),
                                     ),
                                     style: ElevatedButton.styleFrom(
-                                      backgroundColor: const Color(0xFF3F37C9),
+                                      backgroundColor: const Color(0xFF4F46E5),
                                       foregroundColor: Colors.white,
                                       elevation: 0,
                                       shape: RoundedRectangleBorder(
@@ -477,8 +487,8 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
                                         maxLines: 1,
                                         softWrap: false,
                                         style: TextStyle(
-                                          fontSize: 14.5,
-                                          fontWeight: FontWeight.w700,
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w600,
                                           color: Color(0xFF0F172A),
                                         ),
                                       ),
@@ -510,7 +520,16 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
                       decoration: BoxDecoration(
                         color: const Color(0xFFFFFBF5),
                         borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: const Color(0xFFFED7AA)),
+                        border: Border.all(
+                          color: const Color(0xFFFED7AA).withValues(alpha: 0.8),
+                        ),
+                        boxShadow: const [
+                          BoxShadow(
+                            color: Color(0x06C2410C),
+                            blurRadius: 6,
+                            offset: Offset(0, 2),
+                          ),
+                        ],
                       ),
                       padding: const EdgeInsets.all(14),
                       child: Row(
@@ -549,7 +568,7 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
                                 Text(
                                   effectiveFollowUp,
                                   style: const TextStyle(
-                                    fontSize: 15,
+                                    fontSize: 14.5,
                                     fontWeight: FontWeight.w600,
                                     color: Color(0xFF0F172A),
                                   ),
@@ -596,7 +615,7 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
                                   softWrap: false,
                                   style: TextStyle(
                                     color: Color(0xFF9A3412),
-                                    fontWeight: FontWeight.w700,
+                                    fontWeight: FontWeight.w600,
                                     fontSize: 12.5,
                                   ),
                                 ),
@@ -615,7 +634,17 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: const Color(0xFFE2E8F0)),
+                        border: Border.all(
+                          color: const Color(0xFFF1F5F9),
+                          width: 1,
+                        ),
+                        boxShadow: const [
+                          BoxShadow(
+                            color: Color(0x0A000000),
+                            blurRadius: 8,
+                            offset: Offset(0, 2),
+                          ),
+                        ],
                       ),
                       padding: const EdgeInsets.all(16),
                       child: Column(
@@ -649,7 +678,7 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
                                       collegeDisplay,
                                       style: const TextStyle(
                                         fontSize: 13.5,
-                                        fontWeight: FontWeight.w700,
+                                        fontWeight: FontWeight.w600,
                                         color: Color(0xFF0F172A),
                                       ),
                                     ),
@@ -672,7 +701,7 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
                                       branchYearDisplay,
                                       style: const TextStyle(
                                         fontSize: 13.5,
-                                        fontWeight: FontWeight.w700,
+                                        fontWeight: FontWeight.w600,
                                         color: Color(0xFF0F172A),
                                       ),
                                     ),
@@ -700,7 +729,7 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
                                       sourceDisplay,
                                       style: const TextStyle(
                                         fontSize: 13.5,
-                                        fontWeight: FontWeight.w700,
+                                        fontWeight: FontWeight.w600,
                                         color: Color(0xFF0F172A),
                                       ),
                                     ),
@@ -723,7 +752,7 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
                                       effectiveEmail,
                                       style: const TextStyle(
                                         fontSize: 13.5,
-                                        fontWeight: FontWeight.w700,
+                                        fontWeight: FontWeight.w600,
                                         color: Color(0xFF0F172A),
                                       ),
                                     ),
@@ -759,7 +788,7 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
                                   style: const TextStyle(
                                     color: Color(0xFF1D4ED8),
                                     fontSize: 12,
-                                    fontWeight: FontWeight.w700,
+                                    fontWeight: FontWeight.w500,
                                   ),
                                 ),
                               );
@@ -777,7 +806,17 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: const Color(0xFFE2E8F0)),
+                        border: Border.all(
+                          color: const Color(0xFFF1F5F9),
+                          width: 1,
+                        ),
+                        boxShadow: const [
+                          BoxShadow(
+                            color: Color(0x0A000000),
+                            blurRadius: 8,
+                            offset: Offset(0, 2),
+                          ),
+                        ],
                       ),
                       padding: const EdgeInsets.all(16),
                       child: Column(
@@ -1026,7 +1065,7 @@ class _ActivityTimelineItem extends StatelessWidget {
                           title,
                           style: const TextStyle(
                             fontSize: 13.5,
-                            fontWeight: FontWeight.w700,
+                            fontWeight: FontWeight.w600,
                             color: Color(0xFF0F172A),
                           ),
                         ),
