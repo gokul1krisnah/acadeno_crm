@@ -59,6 +59,7 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
   );
 
   void _showPlanVisitDialog() {
+    final formKey = GlobalKey<FormState>();
     final collegeCtrl = TextEditingController();
     final dateCtrl = TextEditingController(
       text: DateFormat('dd MMM yyyy').format(DateTime.now()),
@@ -77,34 +78,41 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
           child: Padding(
             padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
             child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Plan College Visit',
-                    style: GoogleFonts.inter(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w700,
-                      height: 27.5 / 20,
-                      color: const Color(0xFF0F172A),
+              child: Form(
+                key: formKey,
+                autovalidateMode: AutovalidateMode.onUserInteraction,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Plan College Visit',
+                      style: GoogleFonts.inter(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w700,
+                        height: 27.5 / 20,
+                        color: const Color(0xFF0F172A),
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    'Schedule campus outreach, seminar, or student drive',
-                    style: GoogleFonts.inter(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w400,
-                      height: 21.13 / 13,
-                      color: const Color(0xFF64748B),
+                    const SizedBox(height: 6),
+                    Text(
+                      'Schedule campus outreach, seminar, or student drive',
+                      style: GoogleFonts.inter(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w400,
+                        height: 21.13 / 13,
+                        color: const Color(0xFF64748B),
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 18),
-                  SizedBox(
-                    height: 54,
-                    child: TextField(
+                    const SizedBox(height: 18),
+                    TextFormField(
                       controller: collegeCtrl,
+                      validator: (v) {
+                        if (v == null || v.trim().isEmpty) {
+                          return 'Please enter college & department';
+                        }
+                        return null;
+                      },
                       style: GoogleFonts.inter(
                         fontSize: 13,
                         fontWeight: FontWeight.w400,
@@ -144,85 +152,25 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
                             width: 1.5,
                           ),
                         ),
-                        isDense: true,
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 16,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 14),
-                  SizedBox(
-                    height: 54,
-                    child: TextField(
-                      controller: dateCtrl,
-                      readOnly: true,
-                      style: GoogleFonts.inter(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w400,
-                        color: const Color(0xFF0F172A),
-                      ),
-                      onTap: () async {
-                        final now = DateTime.now();
-                        final picked = await showDatePicker(
-                          context: ctx,
-                          initialDate: now,
-                          firstDate: DateTime(2024),
-                          lastDate: DateTime(2030),
-                          builder: (context, child) {
-                            return Theme(
-                              data: Theme.of(context).copyWith(
-                                colorScheme: const ColorScheme.light(
-                                  primary: Color(0xFFD45107),
-                                  onPrimary: Colors.white,
-                                  onSurface: Color(0xFF0F172A),
-                                ),
-                              ),
-                              child: child!,
-                            );
-                          },
-                        );
-                        if (picked != null) {
-                          dateCtrl.text = DateFormat(
-                            'dd MMM yyyy',
-                          ).format(picked);
-                        }
-                      },
-                      decoration: InputDecoration(
-                        hintText: 'Visit Date',
-                        hintStyle: GoogleFonts.inter(
-                          color: const Color(0xFF94A3B8),
-                          fontSize: 13,
-                        ),
-                        filled: true,
-                        fillColor: const Color(0xFFF8FAFC),
-                        prefixIcon: const Icon(
-                          Icons.calendar_today_rounded,
-                          size: 19,
-                          color: Color(0xFF64748B),
-                        ),
-                        border: OutlineInputBorder(
+                        errorBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                           borderSide: const BorderSide(
-                            color: Color(0xFFE2E8F0),
+                            color: Color(0xFFEF4444),
                             width: 1,
                           ),
                         ),
-                        enabledBorder: OutlineInputBorder(
+                        focusedErrorBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                           borderSide: const BorderSide(
-                            color: Color(0xFFE2E8F0),
-                            width: 1,
-                          ),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(
-                            color: Color(0xFFD45107),
+                            color: Color(0xFFEF4444),
                             width: 1.5,
                           ),
                         ),
+                        errorStyle: GoogleFonts.inter(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w500,
+                          color: const Color(0xFFEF4444),
+                        ),
                         isDense: true,
                         contentPadding: const EdgeInsets.symmetric(
                           horizontal: 16,
@@ -230,19 +178,101 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
                         ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 14),
-                  SizedBox(
-                    height: 54,
-                    child: TextField(
+                    const SizedBox(height: 14),
+                    SizedBox(
+                      height: 54,
+                      child: TextField(
+                        controller: dateCtrl,
+                        readOnly: true,
+                        style: GoogleFonts.inter(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w400,
+                          color: const Color(0xFF0F172A),
+                        ),
+                        onTap: () async {
+                          final now = DateTime.now();
+                          final picked = await showDatePicker(
+                            context: ctx,
+                            initialDate: now,
+                            firstDate: DateTime(2024),
+                            lastDate: DateTime(2030),
+                            builder: (context, child) {
+                              return Theme(
+                                data: Theme.of(context).copyWith(
+                                  colorScheme: const ColorScheme.light(
+                                    primary: Color(0xFFD45107),
+                                    onPrimary: Colors.white,
+                                    onSurface: Color(0xFF0F172A),
+                                  ),
+                                ),
+                                child: child!,
+                              );
+                            },
+                          );
+                          if (picked != null) {
+                            dateCtrl.text = DateFormat(
+                              'dd MMM yyyy',
+                            ).format(picked);
+                          }
+                        },
+                        decoration: InputDecoration(
+                          hintText: 'Visit Date',
+                          hintStyle: GoogleFonts.inter(
+                            color: const Color(0xFF94A3B8),
+                            fontSize: 13,
+                          ),
+                          filled: true,
+                          fillColor: const Color(0xFFF8FAFC),
+                          prefixIcon: const Icon(
+                            Icons.calendar_today_rounded,
+                            size: 19,
+                            color: Color(0xFF64748B),
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFE2E8F0),
+                              width: 1,
+                            ),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFE2E8F0),
+                              width: 1,
+                            ),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFD45107),
+                              width: 1.5,
+                            ),
+                          ),
+                          isDense: true,
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 16,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                    TextFormField(
                       controller: purposeCtrl,
+                      validator: (v) {
+                        if (v == null || v.trim().isEmpty) {
+                          return 'Please enter purpose / event';
+                        }
+                        return null;
+                      },
                       style: GoogleFonts.inter(
                         fontSize: 13,
                         fontWeight: FontWeight.w400,
                         color: const Color(0xFF0F172A),
                       ),
                       decoration: InputDecoration(
-                        hintText: 'Purpose / Event',
+                        hintText: 'Purpose / Event *',
                         hintStyle: GoogleFonts.inter(
                           color: const Color(0xFF94A3B8),
                           fontSize: 13,
@@ -275,6 +305,25 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
                             width: 1.5,
                           ),
                         ),
+                        errorBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(
+                            color: Color(0xFFEF4444),
+                            width: 1,
+                          ),
+                        ),
+                        focusedErrorBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(
+                            color: Color(0xFFEF4444),
+                            width: 1.5,
+                          ),
+                        ),
+                        errorStyle: GoogleFonts.inter(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w500,
+                          color: const Color(0xFFEF4444),
+                        ),
                         isDense: true,
                         contentPadding: const EdgeInsets.symmetric(
                           horizontal: 16,
@@ -282,19 +331,22 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
                         ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 14),
-                  SizedBox(
-                    height: 54,
-                    child: TextField(
+                    const SizedBox(height: 14),
+                    TextFormField(
                       controller: staffCtrl,
+                      validator: (v) {
+                        if (v == null || v.trim().isEmpty) {
+                          return 'Please enter assigned staff';
+                        }
+                        return null;
+                      },
                       style: GoogleFonts.inter(
                         fontSize: 13,
                         fontWeight: FontWeight.w400,
                         color: const Color(0xFF0F172A),
                       ),
                       decoration: InputDecoration(
-                        hintText: 'Assigned Staff',
+                        hintText: 'Assigned Staff *',
                         hintStyle: GoogleFonts.inter(
                           color: const Color(0xFF94A3B8),
                           fontSize: 13,
@@ -327,6 +379,25 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
                             width: 1.5,
                           ),
                         ),
+                        errorBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(
+                            color: Color(0xFFEF4444),
+                            width: 1,
+                          ),
+                        ),
+                        focusedErrorBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(
+                            color: Color(0xFFEF4444),
+                            width: 1.5,
+                          ),
+                        ),
+                        errorStyle: GoogleFonts.inter(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w500,
+                          color: const Color(0xFFEF4444),
+                        ),
                         isDense: true,
                         contentPadding: const EdgeInsets.symmetric(
                           horizontal: 16,
@@ -334,94 +405,94 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
                         ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 22),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: SizedBox(
-                          height: 48,
-                          child: OutlinedButton(
-                            onPressed: () => Navigator.pop(ctx),
-                            style: OutlinedButton.styleFrom(
-                              side: const BorderSide(color: Color(0xFFE2E8F0)),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16),
+                    const SizedBox(height: 22),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: SizedBox(
+                            height: 48,
+                            child: OutlinedButton(
+                              onPressed: () => Navigator.pop(ctx),
+                              style: OutlinedButton.styleFrom(
+                                side: const BorderSide(color: Color(0xFFE2E8F0)),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
                               ),
-                            ),
-                            child: Text(
-                              'Cancel',
-                              style: GoogleFonts.inter(
-                                color: const Color(0xFF475467),
-                                fontWeight: FontWeight.w600,
+                              child: Text(
+                                'Cancel',
+                                style: GoogleFonts.inter(
+                                  color: const Color(0xFF475467),
+                                  fontWeight: FontWeight.w600,
+                                ),
                               ),
                             ),
                           ),
                         ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: SizedBox(
-                          height: 48,
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFFD45107),
-                              foregroundColor: Colors.white,
-                              elevation: 0,
-                              padding: const EdgeInsets.only(
-                                top: 14.5,
-                                bottom: 15.5,
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: SizedBox(
+                            height: 48,
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFFD45107),
+                                foregroundColor: Colors.white,
+                                elevation: 0,
+                                padding: const EdgeInsets.only(
+                                  top: 14.5,
+                                  bottom: 15.5,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
                               ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                            ),
-                            onPressed: () async {
-                              if (collegeCtrl.text.trim().isEmpty) return;
-                              final dText = dateCtrl.text.trim();
-                              final dayNum =
-                                  RegExp(r'\d+').firstMatch(dText)?.group(0) ??
-                                  '29';
-                              final month = dText.contains('Nov')
-                                  ? 'NOV'
-                                  : (dText.contains('Dec') ? 'DEC' : 'OCT');
+                              onPressed: () async {
+                                if (!formKey.currentState!.validate()) return;
+                                final dText = dateCtrl.text.trim();
+                                final dayNum =
+                                    RegExp(r'\d+').firstMatch(dText)?.group(0) ??
+                                    '29';
+                                final month = dText.contains('Nov')
+                                    ? 'NOV'
+                                    : (dText.contains('Dec') ? 'DEC' : 'OCT');
 
-                              await _visitsCollection.add({
-                                'collegeName': collegeCtrl.text.trim(),
-                                'dateLabel': dText,
-                                'dayNumber': dayNum,
-                                'monthShort': month,
-                                'purpose': purposeCtrl.text.trim().isEmpty
-                                    ? 'Campus outreach & seminar'
-                                    : purposeCtrl.text.trim(),
-                                'assignedStaff': staffCtrl.text.trim(),
-                                'staffNames': staffCtrl.text.trim(),
-                                'status': 'Planned',
-                                'statusLabel': 'Planned',
-                                'outcomeNotes': 'Scheduled campus visit.',
-                                'leadsCollected': 0,
-                                'conversions': 0,
-                                'createdByUid':
-                                    FirebaseAuth.instance.currentUser?.uid,
-                                'createdAt': FieldValue.serverTimestamp(),
-                                'updatedAt': FieldValue.serverTimestamp(),
-                              });
-                              if (ctx.mounted) Navigator.pop(ctx);
-                            },
-                            child: Text(
-                              'Save Visit',
-                              style: GoogleFonts.inter(
-                                fontSize: 14.5,
-                                fontWeight: FontWeight.w700,
-                                color: Colors.white,
+                                await _visitsCollection.add({
+                                  'collegeName': collegeCtrl.text.trim(),
+                                  'dateLabel': dText,
+                                  'dayNumber': dayNum,
+                                  'monthShort': month,
+                                  'purpose': purposeCtrl.text.trim().isEmpty
+                                      ? 'Campus outreach & seminar'
+                                      : purposeCtrl.text.trim(),
+                                  'assignedStaff': staffCtrl.text.trim(),
+                                  'staffNames': staffCtrl.text.trim(),
+                                  'status': 'Planned',
+                                  'statusLabel': 'Planned',
+                                  'outcomeNotes': 'Scheduled campus visit.',
+                                  'leadsCollected': 0,
+                                  'conversions': 0,
+                                  'createdByUid':
+                                      FirebaseAuth.instance.currentUser?.uid,
+                                  'createdAt': FieldValue.serverTimestamp(),
+                                  'updatedAt': FieldValue.serverTimestamp(),
+                                });
+                                if (ctx.mounted) Navigator.pop(ctx);
+                              },
+                              child: Text(
+                                'Save Visit',
+                                style: GoogleFonts.inter(
+                                  fontSize: 14.5,
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.white,
+                                ),
                               ),
                             ),
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-                ],
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -432,6 +503,7 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
 
   void _showLogOutcomeDialog(_CollegeVisit visit) {
     final messenger = ScaffoldMessenger.of(context);
+    final formKey = GlobalKey<FormState>();
     final notesCtrl = TextEditingController(text: visit.outcomeNotes);
     final leadsCtrl = TextEditingController(
       text: visit.leadsCollected > 0 ? '${visit.leadsCollected}' : '',
@@ -457,10 +529,13 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
             child: Padding(
               padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
               child: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
+                child: Form(
+                  key: formKey,
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
                     Text(
                       'Record Visit Outcome',
                       style: GoogleFonts.inter(
@@ -603,32 +678,118 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
                     ),
                     const SizedBox(height: 14),
 
-                    // Inputs matching Log Visit Figma styling
-                    SizedBox(
-                      height: 54,
-                      child: TextField(
-                        controller: notesCtrl,
+                    // Inputs matching Log Visit Figma styling with Native Form Validation
+                    TextFormField(
+                      controller: notesCtrl,
+                      validator: (v) {
+                        if (v == null || v.trim().isEmpty) {
+                          return isCancelled
+                              ? 'Please enter cancellation reason & notes'
+                              : 'Please enter meeting notes & agreements';
+                        }
+                        return null;
+                      },
+                      style: GoogleFonts.inter(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w400,
+                        color: const Color(0xFF0F172A),
+                      ),
+                      decoration: InputDecoration(
+                        hintText: isCancelled
+                            ? 'Cancellation reason & notes *'
+                            : 'People met, agreements & notes *',
+                        hintStyle: GoogleFonts.inter(
+                          color: const Color(0xFF94A3B8),
+                          fontSize: 13,
+                        ),
+                        filled: true,
+                        fillColor: const Color(0xFFF8FAFC),
+                        prefixIcon: Icon(
+                          isCancelled
+                              ? Icons.report_problem_outlined
+                              : Icons.people_outline_rounded,
+                          size: 19,
+                          color: const Color(0xFF64748B),
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(
+                            color: Color(0xFFE2E8F0),
+                            width: 1,
+                          ),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(
+                            color: Color(0xFFE2E8F0),
+                            width: 1,
+                          ),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(
+                            color: Color(0xFFD45107),
+                            width: 1.5,
+                          ),
+                        ),
+                        errorBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(
+                            color: Color(0xFFEF4444),
+                            width: 1,
+                          ),
+                        ),
+                        focusedErrorBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(
+                            color: Color(0xFFEF4444),
+                            width: 1.5,
+                          ),
+                        ),
+                        errorStyle: GoogleFonts.inter(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w500,
+                          color: const Color(0xFFEF4444),
+                        ),
+                        isDense: true,
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 16,
+                        ),
+                      ),
+                    ),
+                    if (!isCancelled) ...[
+                      const SizedBox(height: 14),
+                      TextFormField(
+                        controller: leadsCtrl,
+                        keyboardType: TextInputType.number,
+                        validator: (v) {
+                          if (v == null || v.trim().isEmpty) {
+                            return 'Please enter student leads count';
+                          }
+                          final n = int.tryParse(v.trim());
+                          if (n == null || n < 0) {
+                            return 'Please enter valid count';
+                          }
+                          return null;
+                        },
                         style: GoogleFonts.inter(
                           fontSize: 13,
                           fontWeight: FontWeight.w400,
                           color: const Color(0xFF0F172A),
                         ),
                         decoration: InputDecoration(
-                          hintText: isCancelled
-                              ? 'Cancellation reason & notes *'
-                              : 'People met, agreements & notes',
+                          hintText: 'Student leads collected from visit *',
                           hintStyle: GoogleFonts.inter(
                             color: const Color(0xFF94A3B8),
                             fontSize: 13,
                           ),
                           filled: true,
                           fillColor: const Color(0xFFF8FAFC),
-                          prefixIcon: Icon(
-                            isCancelled
-                                ? Icons.report_problem_outlined
-                                : Icons.people_outline_rounded,
+                          prefixIcon: const Icon(
+                            Icons.how_to_reg_outlined,
                             size: 19,
-                            color: const Color(0xFF64748B),
+                            color: Color(0xFF64748B),
                           ),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -651,65 +812,29 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
                               width: 1.5,
                             ),
                           ),
+                          errorBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFEF4444),
+                              width: 1,
+                            ),
+                          ),
+                          focusedErrorBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFEF4444),
+                              width: 1.5,
+                            ),
+                          ),
+                          errorStyle: GoogleFonts.inter(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w500,
+                            color: const Color(0xFFEF4444),
+                          ),
                           isDense: true,
                           contentPadding: const EdgeInsets.symmetric(
                             horizontal: 16,
                             vertical: 16,
-                          ),
-                        ),
-                      ),
-                    ),
-                    if (!isCancelled) ...[
-                      const SizedBox(height: 14),
-                      SizedBox(
-                        height: 54,
-                        child: TextField(
-                          controller: leadsCtrl,
-                          keyboardType: TextInputType.number,
-                          style: GoogleFonts.inter(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w400,
-                            color: const Color(0xFF0F172A),
-                          ),
-                          decoration: InputDecoration(
-                            hintText: 'Student leads collected from visit',
-                            hintStyle: GoogleFonts.inter(
-                              color: const Color(0xFF94A3B8),
-                              fontSize: 13,
-                            ),
-                            filled: true,
-                            fillColor: const Color(0xFFF8FAFC),
-                            prefixIcon: const Icon(
-                              Icons.how_to_reg_outlined,
-                              size: 19,
-                              color: Color(0xFF64748B),
-                            ),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(
-                                color: Color(0xFFE2E8F0),
-                                width: 1,
-                              ),
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(
-                                color: Color(0xFFE2E8F0),
-                                width: 1,
-                              ),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(
-                                color: Color(0xFFD45107),
-                                width: 1.5,
-                              ),
-                            ),
-                            isDense: true,
-                            contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 16,
-                            ),
                           ),
                         ),
                       ),
@@ -736,6 +861,7 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
                         onPressed: isSaving
                             ? null
                             : () async {
+                                if (!formKey.currentState!.validate()) return;
                                 setDialogState(() => isSaving = true);
                                 final newNotes = notesCtrl.text.trim();
                                 final newLeads = isCancelled
@@ -748,9 +874,7 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
                                     await _visitsCollection.doc(visit.id).set({
                                       'status': 'Cancelled',
                                       'statusLabel': 'Cancelled',
-                                      'outcomeNotes': newNotes.isNotEmpty
-                                          ? newNotes
-                                          : 'Visit cancelled',
+                                      'outcomeNotes': newNotes,
                                       'cancelReason': newNotes,
                                       'leadsCollected': 0,
                                       'updatedAt': FieldValue.serverTimestamp(),
@@ -833,8 +957,9 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   Future<void> _confirmDeleteVisit(
     BuildContext context,
