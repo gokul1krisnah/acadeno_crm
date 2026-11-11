@@ -2551,7 +2551,7 @@ class _CollegeVisits extends StatelessWidget {
                               ),
                               decoration: BoxDecoration(
                                 color: badgeBg,
-                                borderRadius: BorderRadius.circular(12),
+                                borderRadius: BorderRadius.circular(8),
                               ),
                               child: Text(
                                 status,
