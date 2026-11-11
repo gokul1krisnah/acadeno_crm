@@ -673,13 +673,33 @@ class _ImportLeadsBodyState extends State<_ImportLeadsBody> {
           const Gap(12),
 
           // Filter bar and Policy toggle
-          Wrap(
-            alignment: WrapAlignment.spaceBetween,
-            crossAxisAlignment: WrapCrossAlignment.center,
-            spacing: 12,
-            runSpacing: 10,
-            children: [
-              Wrap(
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final toggleWidget = Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    'Skip already existing leads:',
+                    style: TextStyle(
+                      fontSize: 12.5,
+                      color: Color(0xFF475467),
+                    ),
+                  ),
+                  const Gap(8),
+                  Switch(
+                    value: _skipExisting,
+                    activeTrackColor: const Color(0xFF4338CA),
+                    inactiveTrackColor: const Color(0xFFE2E8F0),
+                    thumbColor: WidgetStateProperty.all(Colors.white),
+                    trackOutlineColor: WidgetStateProperty.all(
+                      Colors.transparent,
+                    ),
+                    onChanged: (val) => setState(() => _skipExisting = val),
+                  ),
+                ],
+              );
+
+              final filterChips = Wrap(
                 spacing: 8,
                 runSpacing: 8,
                 children: [
@@ -708,27 +728,31 @@ class _ImportLeadsBodyState extends State<_ImportLeadsBody> {
                     'Existing (${state.existingLeadsCount})',
                   ),
                 ],
-              ),
-              if (!isMobile)
-                Row(
-                  mainAxisSize: MainAxisSize.min,
+              );
+
+              if (constraints.maxWidth > 780) {
+                return Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    const Text(
-                      'Skip already existing leads:',
-                      style: TextStyle(
-                        fontSize: 12.5,
-                        color: Color(0xFF475467),
-                      ),
-                    ),
-                    const Gap(8),
-                    Switch(
-                      value: _skipExisting,
-                      activeThumbColor: const Color(0xFF4338CA),
-                      onChanged: (val) => setState(() => _skipExisting = val),
-                    ),
+                    Expanded(child: filterChips),
+                    const Gap(16),
+                    toggleWidget,
                   ],
-                ),
-            ],
+                );
+              }
+
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  filterChips,
+                  const Gap(10),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: toggleWidget,
+                  ),
+                ],
+              );
+            },
           ),
 
           // Attention Table (only shown when rows match filter)
