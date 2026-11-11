@@ -735,303 +735,600 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
     showDialog(
       context: context,
       builder: (dCtx) => StatefulBuilder(
-        builder: (dCtx, setD) => AlertDialog(
-          backgroundColor: const Color(0xFFFFFFFF),
-          surfaceTintColor: Colors.transparent,
-          insetPadding: EdgeInsets.symmetric(
-            horizontal: dCtx.devicePadding,
+        builder: (dCtx, setD) => Dialog(
+          backgroundColor: Colors.white,
+          insetPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
             vertical: 24,
           ),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(28),
           ),
-          title: Row(
-            children: [
-              Expanded(
-                child: Text(
-                  'Lead Details · ${lead.name}',
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w700,
-                    fontSize: 18,
-                  ),
-                ),
-              ),
-              _statusBadge(selectedStatus),
-            ],
-          ),
-          content: SizedBox(
-            width: 440,
-            child: SingleChildScrollView(
-              child: Form(
-                key: formKey,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    if (errorText != null)
-                      Container(
-                        width: double.infinity,
-                        margin: const EdgeInsets.only(bottom: 12),
-                        padding: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFFEE2E2),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Text(
-                          errorText!,
-                          style: const TextStyle(
-                            color: Color(0xFFB91C1C),
-                            fontSize: 12.5,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF8FAFC),
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: _border),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 440),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
+              child: SingleChildScrollView(
+                child: Form(
+                  key: formKey,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
                         children: [
-                          Text(
-                            'Lead ID: ${lead.id}',
-                            style: const TextStyle(
-                              fontSize: 11.5,
-                              color: _muted,
-                            ),
-                          ),
-                          const Gap(2),
-                          Text(
-                            'Assigned To: ${lead.assignedToName}${lead.assignedDateLabel != null ? " (${lead.assignedDateLabel})" : ""}',
-                            style: const TextStyle(
-                              fontSize: 12.5,
-                              fontWeight: FontWeight.w600,
-                              color: _text,
-                            ),
-                          ),
-                          if (lead.assignedByName != null &&
-                              lead.assignedByName!.isNotEmpty)
-                            Text(
-                              'Assigned By: ${lead.assignedByName}',
-                              style: const TextStyle(
-                                fontSize: 12,
-                                color: _muted,
+                          Expanded(
+                            child: Text(
+                              'Lead Details · ${lead.name}',
+                              style: GoogleFonts.inter(
+                                fontWeight: FontWeight.w700,
+                                fontSize: 20,
+                                height: 27.5 / 20,
+                                color: const Color(0xFF0F172A),
                               ),
                             ),
+                          ),
+                          const Gap(8),
+                          _statusBadge(selectedStatus),
                         ],
                       ),
-                    ),
-                    const Gap(12),
-                    TextFormField(
-                      controller: nameC,
-                      decoration: InputDecoration(
-                        labelText: 'Student Name',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
+                      const Gap(4),
+                      Text(
+                        'View and update lead contact details, stage, and history.',
+                        style: GoogleFonts.inter(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w400,
+                          color: const Color(0xFF64748B),
                         ),
-                        isDense: true,
                       ),
-                      validator: (v) =>
-                          (v == null || v.trim().isEmpty) ? 'Required' : null,
-                    ),
-                    const Gap(12),
-                    TextFormField(
-                      controller: phoneC,
-                      keyboardType: TextInputType.phone,
-                      decoration: InputDecoration(
-                        labelText: '10-digit Phone Number',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        isDense: true,
-                      ),
-                      validator: LeadPhoneValidator.validate,
-                    ),
-                    const Gap(12),
-                    CollegeSelectorField(
-                      controller: collegeC,
-                      additionalColleges: state.allLeads
-                          .map(
-                            (l) => l.collegeBranch
-                                .split(RegExp(r'[·\-]'))
-                                .first
-                                .trim(),
-                          )
-                          .where((s) => s.isNotEmpty)
-                          .toList(),
-                    ),
-                    const Gap(12),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: DropdownButtonFormField<String>(
-                            initialValue: selectedSource,
-                            isExpanded: true,
-                            dropdownColor: Colors.white,
-                            borderRadius: BorderRadius.circular(12),
-                            decoration: InputDecoration(
-                              labelText: 'Source',
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: const BorderSide(
-                                  color: Color(0xFFE2E8F0),
-                                ),
-                              ),
-                              isDense: true,
-                            ),
-                            items: sourceOptions
-                                .map(
-                                  (s) => DropdownMenuItem(
-                                    value: s,
-                                    child: Text(
-                                      s,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ),
-                                )
-                                .toList(),
-                            onChanged: (v) => setD(
-                              () => selectedSource = v ?? selectedSource,
-                            ),
+                      const Gap(16),
+                      if (errorText != null) ...[
+                        Container(
+                          width: double.infinity,
+                          margin: const EdgeInsets.only(bottom: 14),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 11,
                           ),
-                        ),
-                        const Gap(10),
-                        Expanded(
-                          child: DropdownButtonFormField<String>(
-                            initialValue: selectedStatus,
-                            isExpanded: true,
-                            dropdownColor: Colors.white,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFEE2E2),
                             borderRadius: BorderRadius.circular(12),
-                            decoration: InputDecoration(
-                              labelText: 'Status',
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(
+                                Icons.error_outline_rounded,
+                                size: 18,
+                                color: Color(0xFFDC2626),
                               ),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: const BorderSide(
-                                  color: Color(0xFFE2E8F0),
+                              const Gap(8),
+                              Expanded(
+                                child: Text(
+                                  errorText!,
+                                  style: GoogleFonts.inter(
+                                    color: const Color(0xFF991B1B),
+                                    fontSize: 12.5,
+                                    fontWeight: FontWeight.w600,
+                                  ),
                                 ),
                               ),
-                              isDense: true,
-                            ),
-                            items: statusOptions
-                                .map(
-                                  (s) => DropdownMenuItem(
-                                    value: s,
-                                    child: Text(
-                                      s,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ),
-                                )
-                                .toList(),
-                            onChanged: (v) => setD(
-                              () => selectedStatus = v ?? selectedStatus,
-                            ),
+                            ],
                           ),
                         ),
                       ],
-                    ),
-                    const Gap(12),
-                    TextFormField(
-                      controller: notesC,
-                      maxLines: 2,
-                      decoration: InputDecoration(
-                        labelText: 'Notes',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF8FAFC),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: const Color(0xFFE2E8F0)),
                         ),
-                        isDense: true,
-                      ),
-                    ),
-                    if (lead.timeline.isNotEmpty) ...[
-                      const Gap(12),
-                      const Text(
-                        'TIMELINE',
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w700,
-                          color: _muted,
-                        ),
-                      ),
-                      const Gap(4),
-                      ...lead.timeline
-                          .take(4)
-                          .map(
-                            (t) => Padding(
-                              padding: const EdgeInsets.only(bottom: 3),
-                              child: Text(
-                                '• $t',
-                                style: const TextStyle(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Lead ID: ${lead.id}',
+                              style: GoogleFonts.inter(
+                                fontSize: 11.5,
+                                color: const Color(0xFF64748B),
+                              ),
+                            ),
+                            const Gap(2),
+                            Text(
+                              'Assigned To: ${lead.assignedToName}${lead.assignedDateLabel != null ? " (${lead.assignedDateLabel})" : ""}',
+                              style: GoogleFonts.inter(
+                                fontSize: 12.5,
+                                fontWeight: FontWeight.w600,
+                                color: const Color(0xFF0F172A),
+                              ),
+                            ),
+                            if (lead.assignedByName != null &&
+                                lead.assignedByName!.isNotEmpty) ...[
+                              const Gap(1),
+                              Text(
+                                'Assigned By: ${lead.assignedByName}',
+                                style: GoogleFonts.inter(
                                   fontSize: 12,
-                                  color: _muted,
+                                  color: const Color(0xFF64748B),
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                      const Gap(14),
+                      Text(
+                        'Student Name *',
+                        style: GoogleFonts.inter(
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w600,
+                          color: const Color(0xFF334155),
+                        ),
+                      ),
+                      const Gap(6),
+                      TextFormField(
+                        controller: nameC,
+                        style: GoogleFonts.inter(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w400,
+                          color: const Color(0xFF0F172A),
+                        ),
+                        decoration: InputDecoration(
+                          hintText: 'Student Name *',
+                          hintStyle: GoogleFonts.inter(
+                            color: const Color(0xFF94A3B8),
+                            fontSize: 13,
+                          ),
+                          filled: true,
+                          fillColor: const Color(0xFFF8FAFC),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFE2E8F0),
+                              width: 1,
+                            ),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFE2E8F0),
+                              width: 1,
+                            ),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFD45107),
+                              width: 1.5,
+                            ),
+                          ),
+                          isDense: true,
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 16,
+                          ),
+                        ),
+                        validator: (v) =>
+                            (v == null || v.trim().isEmpty) ? 'Required' : null,
+                      ),
+                      const Gap(14),
+                      Text(
+                        '10-digit Phone Number *',
+                        style: GoogleFonts.inter(
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w600,
+                          color: const Color(0xFF334155),
+                        ),
+                      ),
+                      const Gap(6),
+                      TextFormField(
+                        controller: phoneC,
+                        keyboardType: TextInputType.phone,
+                        style: GoogleFonts.inter(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w400,
+                          color: const Color(0xFF0F172A),
+                        ),
+                        decoration: InputDecoration(
+                          hintText: '10-digit mobile number...',
+                          hintStyle: GoogleFonts.inter(
+                            color: const Color(0xFF94A3B8),
+                            fontSize: 13,
+                          ),
+                          filled: true,
+                          fillColor: const Color(0xFFF8FAFC),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFE2E8F0),
+                              width: 1,
+                            ),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFE2E8F0),
+                              width: 1,
+                            ),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFD45107),
+                              width: 1.5,
+                            ),
+                          ),
+                          isDense: true,
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 16,
+                          ),
+                        ),
+                        validator: LeadPhoneValidator.validate,
+                      ),
+                      const Gap(14),
+                      CollegeSelectorField(
+                        controller: collegeC,
+                        additionalColleges: state.allLeads
+                            .map(
+                              (l) => l.collegeBranch
+                                  .split(RegExp(r'[·\-]'))
+                                  .first
+                                  .trim(),
+                            )
+                            .where((s) => s.isNotEmpty)
+                            .toList(),
+                      ),
+                      const Gap(14),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Source',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 12.5,
+                                    fontWeight: FontWeight.w600,
+                                    color: const Color(0xFF334155),
+                                  ),
+                                ),
+                                const Gap(6),
+                                Container(
+                                  height: 52,
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFF8FAFC),
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(
+                                      color: const Color(0xFFE2E8F0),
+                                      width: 1,
+                                    ),
+                                  ),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                  ),
+                                  child: DropdownButtonHideUnderline(
+                                    child: DropdownButton<String>(
+                                      value: selectedSource,
+                                      isExpanded: true,
+                                      dropdownColor: Colors.white,
+                                      borderRadius: BorderRadius.circular(12),
+                                      icon: const Icon(
+                                        Icons.keyboard_arrow_down_rounded,
+                                        color: Color(0xFF64748B),
+                                        size: 22,
+                                      ),
+                                      style: GoogleFonts.inter(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w400,
+                                        color: const Color(0xFF0F172A),
+                                      ),
+                                      items: sourceOptions
+                                          .map(
+                                            (s) => DropdownMenuItem(
+                                              value: s,
+                                              child: Text(
+                                                s,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ),
+                                          )
+                                          .toList(),
+                                      onChanged: (v) {
+                                        if (v != null) {
+                                          setD(() => selectedSource = v);
+                                        }
+                                      },
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const Gap(12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Status',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 12.5,
+                                    fontWeight: FontWeight.w600,
+                                    color: const Color(0xFF334155),
+                                  ),
+                                ),
+                                const Gap(6),
+                                Container(
+                                  height: 52,
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFF8FAFC),
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(
+                                      color: const Color(0xFFE2E8F0),
+                                      width: 1,
+                                    ),
+                                  ),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                  ),
+                                  child: DropdownButtonHideUnderline(
+                                    child: DropdownButton<String>(
+                                      value: selectedStatus,
+                                      isExpanded: true,
+                                      dropdownColor: Colors.white,
+                                      borderRadius: BorderRadius.circular(12),
+                                      icon: const Icon(
+                                        Icons.keyboard_arrow_down_rounded,
+                                        color: Color(0xFF64748B),
+                                        size: 22,
+                                      ),
+                                      style: GoogleFonts.inter(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w400,
+                                        color: const Color(0xFF0F172A),
+                                      ),
+                                      items: statusOptions
+                                          .map(
+                                            (s) => DropdownMenuItem(
+                                              value: s,
+                                              child: Text(
+                                                s,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ),
+                                          )
+                                          .toList(),
+                                      onChanged: (v) {
+                                        if (v != null) {
+                                          setD(() => selectedStatus = v);
+                                        }
+                                      },
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const Gap(14),
+                      Text(
+                        'Notes',
+                        style: GoogleFonts.inter(
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w600,
+                          color: const Color(0xFF334155),
+                        ),
+                      ),
+                      const Gap(6),
+                      TextFormField(
+                        controller: notesC,
+                        maxLines: 2,
+                        style: GoogleFonts.inter(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w400,
+                          color: const Color(0xFF0F172A),
+                        ),
+                        decoration: InputDecoration(
+                          hintText: 'Add internal notes or context...',
+                          hintStyle: GoogleFonts.inter(
+                            color: const Color(0xFF94A3B8),
+                            fontSize: 13,
+                          ),
+                          filled: true,
+                          fillColor: const Color(0xFFF8FAFC),
+                          isDense: true,
+                          contentPadding: const EdgeInsets.all(14),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFE2E8F0),
+                              width: 1,
+                            ),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFE2E8F0),
+                              width: 1,
+                            ),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFD45107),
+                              width: 1.5,
+                            ),
+                          ),
+                        ),
+                      ),
+                      if (lead.timeline.isNotEmpty) ...[
+                        const Gap(14),
+                        Text(
+                          'TIMELINE',
+                          style: GoogleFonts.inter(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 0.5,
+                            color: const Color(0xFF64748B),
+                          ),
+                        ),
+                        const Gap(6),
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 10,
+                          ),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF8FAFC),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: const Color(0xFFE2E8F0)),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: lead.timeline
+                                .take(4)
+                                .map(
+                                  (t) => Padding(
+                                    padding: const EdgeInsets.only(bottom: 4),
+                                    child: Row(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        const Text(
+                                          '• ',
+                                          style: TextStyle(
+                                            color: Color(0xFF94A3B8),
+                                            fontSize: 13,
+                                          ),
+                                        ),
+                                        Expanded(
+                                          child: Text(
+                                            t,
+                                            style: GoogleFonts.inter(
+                                              fontSize: 12,
+                                              color: const Color(0xFF475467),
+                                              height: 1.4,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                )
+                                .toList(),
+                          ),
+                        ),
+                      ],
+                      const Gap(20),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: SizedBox(
+                              height: 48,
+                              child: OutlinedButton(
+                                onPressed: saving
+                                    ? null
+                                    : () => Navigator.pop(dCtx),
+                                style: OutlinedButton.styleFrom(
+                                  side: const BorderSide(
+                                    color: Color(0xFFE2E8F0),
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
+                                ),
+                                child: Text(
+                                  'Cancel',
+                                  style: GoogleFonts.inter(
+                                    color: const Color(0xFF475467),
+                                    fontWeight: FontWeight.w600,
+                                  ),
                                 ),
                               ),
                             ),
                           ),
+                          const Gap(12),
+                          Expanded(
+                            child: SizedBox(
+                              height: 48,
+                              child: ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFFD45107),
+                                  foregroundColor: Colors.white,
+                                  elevation: 0,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
+                                ),
+                                onPressed: saving
+                                    ? null
+                                    : () async {
+                                        setD(() => errorText = null);
+                                        if (!formKey.currentState!.validate()) {
+                                          return;
+                                        }
+                                        setD(() => saving = true);
+                                        try {
+                                          await CollegeSelectorField.saveCollegeIfNew(
+                                            collegeC.text,
+                                          );
+                                          await cubit.updateLead(
+                                            leadId: lead.id,
+                                            name: nameC.text.trim(),
+                                            phone: phoneC.text.trim(),
+                                            collegeBranch: collegeC.text.trim(),
+                                            source: selectedSource,
+                                            status: selectedStatus,
+                                            notes: notesC.text.trim(),
+                                          );
+                                          if (!dCtx.mounted) return;
+                                          Navigator.pop(dCtx);
+                                        } catch (e) {
+                                          if (!dCtx.mounted) return;
+                                          setD(() {
+                                            saving = false;
+                                            errorText = e
+                                                .toString()
+                                                .replaceFirst(
+                                                  'Exception: ',
+                                                  '',
+                                                );
+                                          });
+                                        }
+                                      },
+                                child: saving
+                                    ? const SizedBox(
+                                        width: 20,
+                                        height: 20,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          color: Colors.white,
+                                        ),
+                                      )
+                                    : Text(
+                                        'Save changes',
+                                        style: GoogleFonts.inter(
+                                          fontSize: 14.5,
+                                          fontWeight: FontWeight.w700,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ],
-                  ],
+                  ),
                 ),
               ),
             ),
           ),
-          actions: [
-            TextButton(
-              onPressed: saving ? null : () => Navigator.pop(dCtx),
-              child: const Text('Cancel'),
-            ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: _primary,
-                foregroundColor: Colors.white,
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-              onPressed: saving
-                  ? null
-                  : () async {
-                      setD(() => errorText = null);
-                      if (!formKey.currentState!.validate()) return;
-                      setD(() => saving = true);
-                      try {
-                        await CollegeSelectorField.saveCollegeIfNew(
-                          collegeC.text,
-                        );
-                        await cubit.updateLead(
-                          leadId: lead.id,
-                          name: nameC.text.trim(),
-                          phone: phoneC.text.trim(),
-                          collegeBranch: collegeC.text.trim(),
-                          source: selectedSource,
-                          status: selectedStatus,
-                          notes: notesC.text.trim(),
-                        );
-                        if (!dCtx.mounted) return;
-                        Navigator.pop(dCtx);
-                      } catch (e) {
-                        if (!dCtx.mounted) return;
-                        setD(() {
-                          saving = false;
-                          errorText = e.toString().replaceFirst(
-                            'Exception: ',
-                            '',
-                          );
-                        });
-                      }
-                    },
-              child: const Text('Save changes'),
-            ),
-          ],
         ),
       ),
     );

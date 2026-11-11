@@ -198,37 +198,52 @@ class _CollegeSelectorFieldState extends State<CollegeSelectorField> {
               : null,
           items: dropdownItems,
           onChanged: _onDropdownChanged,
-          borderRadius: 14.0,
+          fillColor: const Color(0xFFF8FAFC),
+          borderColor: const Color(0xFFE2E8F0),
+          borderRadius: 12.0,
         ),
 
         // 2. Extra field if Other is selected
         if (_isOther) ...[
           const Gap(10),
+          const Text(
+            'New College Name *',
+            style: TextStyle(
+              fontSize: 12.5,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF334155),
+            ),
+          ),
+          const Gap(6),
           TextFormField(
             controller: _customCollegeCtrl,
             onChanged: _onCustomCollegeChanged,
             decoration: InputDecoration(
-              labelText: 'New College Name *',
               hintText: 'e.g. Malabar College of Engineering',
               isDense: true,
               filled: true,
               fillColor: const Color(0xFFF8FAFC),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 16,
+              ),
               prefixIcon: const Icon(
                 Icons.school_outlined,
                 size: 18,
-                color: Color(0xFF4338CA),
+                color: Color(0xFF94A3B8),
               ),
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: Color(0xFFE2E8F0), width: 1),
               ),
               enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(14),
-                borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: Color(0xFFE2E8F0), width: 1),
               ),
               focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(12),
                 borderSide: const BorderSide(
-                  color: Color(0xFF4338CA),
+                  color: Color(0xFFD45107),
                   width: 1.5,
                 ),
               ),
@@ -236,37 +251,46 @@ class _CollegeSelectorFieldState extends State<CollegeSelectorField> {
           ),
         ],
 
-        const Gap(10),
+        const Gap(12),
 
         // 3. Fully editable text field for [College · Branch · Year]
+        Text(
+          widget.label,
+          style: const TextStyle(
+            fontSize: 12.5,
+            fontWeight: FontWeight.w600,
+            color: Color(0xFF334155),
+          ),
+        ),
+        const Gap(6),
         TextFormField(
           controller: widget.controller,
           decoration: InputDecoration(
-            labelText: widget.label,
             hintText: 'College · Branch · Year',
             isDense: true,
             filled: true,
-            fillColor: Colors.white,
-            prefixIcon: const Icon(
-              Icons.edit_note_rounded,
-              size: 20,
-              color: Color(0xFF6B7280),
+            fillColor: const Color(0xFFF8FAFC),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 16,
             ),
-            helperText:
-                'You can freely edit or fine-tune college, branch and year here.',
-            helperStyle: const TextStyle(
-              fontSize: 11,
+            prefixIcon: const Icon(
+              Icons.notes_rounded,
+              size: 20,
               color: Color(0xFF94A3B8),
             ),
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: Color(0xFFE2E8F0), width: 1),
+            ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14),
-              borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: Color(0xFFE2E8F0), width: 1),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: BorderRadius.circular(12),
               borderSide: const BorderSide(
-                color: Color(0xFF4338CA),
+                color: Color(0xFFD45107),
                 width: 1.5,
               ),
             ),
