@@ -1356,7 +1356,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
           const Color(0xFFB91C1C),
         ),
       'converted' => (const Color(0xFFEDE9FE), const Color(0xFF4338CA)),
-      'new' => (const Color(0xFFF1F5F9), const Color(0xFF475467)),
+      'overdue' || 'new' => (const Color(0xFFF1F5F9), const Color(0xFF475467)),
       _ => (const Color(0xFFF1F5F9), const Color(0xFF334155)),
     };
     return Container(
@@ -2193,28 +2193,25 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
     return InkWell(
       onTap: () => onChanged(!value),
       borderRadius: BorderRadius.circular(4),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 2),
-        child: Container(
-          width: 16,
-          height: 16,
-          decoration: BoxDecoration(
-            color: value ? activeColor : Colors.transparent,
-            borderRadius: BorderRadius.circular(2.5),
-            border: Border.all(
-              color: value ? activeColor : const Color(0xFF64748B),
-              width: 1.0,
-            ),
+      child: Container(
+        width: 16,
+        height: 16,
+        decoration: BoxDecoration(
+          color: value ? activeColor : Colors.transparent,
+          borderRadius: BorderRadius.circular(2.5),
+          border: Border.all(
+            color: value ? activeColor : const Color(0xFF64748B),
+            width: 1.0,
           ),
-          alignment: Alignment.center,
-          child: value
-              ? const Icon(
-                  Icons.check_rounded,
-                  size: 12,
-                  color: Colors.white,
-                )
-              : null,
         ),
+        alignment: Alignment.center,
+        child: value
+            ? const Icon(
+                Icons.check_rounded,
+                size: 12,
+                color: Colors.white,
+              )
+            : null,
       ),
     );
   }
@@ -2355,19 +2352,19 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                         color: isSelected
                             ? const Color(0xFFF5F6FF)
                             : Colors.white,
-                        padding: const EdgeInsets.all(12),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 14,
+                        ),
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
-                            Container(
-                              width: 36,
-                              alignment: Alignment.centerLeft,
-                              child: _buildFigmaCheckbox(
-                                value: isSelected,
-                                onChanged: (v) =>
-                                    cubit.toggleLeadSelection(r.id, v ?? false),
-                              ),
+                            _buildFigmaCheckbox(
+                              value: isSelected,
+                              onChanged: (v) =>
+                                  cubit.toggleLeadSelection(r.id, v ?? false),
                             ),
+                            const Gap(16),
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -2441,24 +2438,29 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
           children: [
             Container(
               color: const Color(0xFFF8FAFC),
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Container(
-                    width: 36,
-                    alignment: Alignment.centerLeft,
-                    child: _buildFigmaCheckbox(
-                      value: allSelectedOnPage,
-                      onChanged: (v) => cubit.toggleSelectAllOnPage(v ?? false),
+                  Expanded(
+                    flex: 4,
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        _buildFigmaCheckbox(
+                          value: allSelectedOnPage,
+                          onChanged: (v) => cubit.toggleSelectAllOnPage(v ?? false),
+                        ),
+                        const Gap(16),
+                        const Text('NAME', style: h),
+                      ],
                     ),
                   ),
-                  const Expanded(flex: 3, child: Text('NAME', style: h)),
                   const Expanded(
                     flex: 4,
                     child: Text('COLLEGE - BRANCH', style: h),
                   ),
-                  const Expanded(flex: 2, child: Text('SOURCE', style: h)),
+                  const Expanded(flex: 3, child: Text('SOURCE', style: h)),
                   const Expanded(flex: 2, child: Text('STATUS', style: h)),
                   const Expanded(
                     flex: 2,
@@ -2483,49 +2485,56 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                           ? const Color(0xFFF5F6FF)
                           : Colors.white,
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 20,
-                        vertical: 14,
+                        horizontal: 24,
+                        vertical: 18,
                       ),
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          Container(
-                            width: 36,
-                            alignment: Alignment.centerLeft,
-                            child: _buildFigmaCheckbox(
-                              value: isSelected,
-                              onChanged: (v) =>
-                                  cubit.toggleLeadSelection(r.id, v ?? false),
-                            ),
-                          ),
                           Expanded(
-                            flex: 3,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisAlignment: MainAxisAlignment.center,
+                            flex: 4,
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
-                                Text(
-                                  r.name,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: GoogleFonts.poppins(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                    height: 24 / 16,
-                                    letterSpacing: 0,
-                                    color: _text,
-                                  ),
+                                _buildFigmaCheckbox(
+                                  value: isSelected,
+                                  onChanged: (v) =>
+                                      cubit.toggleLeadSelection(r.id, v ?? false),
                                 ),
-                                Text(
-                                  r.phone,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: GoogleFonts.poppins(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w500,
-                                    height: 16 / 12,
-                                    letterSpacing: 0,
-                                    color: const Color(0xFF8A94A6),
+                                const Gap(16),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text(
+                                        r.name,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: GoogleFonts.poppins(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w600,
+                                          height: 24 / 16,
+                                          letterSpacing: 0,
+                                          color: _text,
+                                        ),
+                                      ),
+                                      const Gap(2),
+                                      Text(
+                                        r.phone,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: GoogleFonts.poppins(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w500,
+                                          height: 16 / 12,
+                                          letterSpacing: 0,
+                                          color: const Color(0xFF8A94A6),
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ],
@@ -2533,27 +2542,33 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                           ),
                           Expanded(
                             flex: 4,
-                            child: Text(
-                              r.collegeBranch,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                fontSize: 13,
-                                color: Color(0xFF334155),
-                                fontWeight: FontWeight.w500,
+                            child: Align(
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                r.collegeBranch,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  color: Color(0xFF334155),
+                                  fontWeight: FontWeight.w500,
+                                ),
                               ),
                             ),
                           ),
                           Expanded(
-                            flex: 2,
-                            child: Text(
-                              r.source,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                fontSize: 13,
-                                color: Color(0xFF334155),
-                                fontWeight: FontWeight.w500,
+                            flex: 3,
+                            child: Align(
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                r.source,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  color: Color(0xFF334155),
+                                  fontWeight: FontWeight.w500,
+                                ),
                               ),
                             ),
                           ),
@@ -2566,25 +2581,33 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                           ),
                           Expanded(
                             flex: 2,
-                            child: Text(
-                              r.lastContact,
-                              style: const TextStyle(
-                                fontSize: 13,
-                                color: Color(0xFF334155),
-                                fontWeight: FontWeight.w500,
+                            child: Align(
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                r.lastContact,
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  color: Color(0xFF334155),
+                                  fontWeight: FontWeight.w500,
+                                ),
                               ),
                             ),
                           ),
                           Expanded(
                             flex: 2,
-                            child: Text(
-                              r.assignedToName,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                fontSize: 13,
-                                color: Color(0xFF334155),
-                                fontWeight: FontWeight.w500,
+                            child: Align(
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                r.assignedToName.isEmpty
+                                    ? '—'
+                                    : r.assignedToName,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  color: Color(0xFF334155),
+                                  fontWeight: FontWeight.w500,
+                                ),
                               ),
                             ),
                           ),
