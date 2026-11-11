@@ -279,7 +279,7 @@ class _SettingsViewState extends State<SettingsView>
                 'Settings',
                 style: TextStyle(
                   fontSize: 22,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w700,
                   color: _text,
                 ),
               ),
@@ -300,6 +300,8 @@ class _SettingsViewState extends State<SettingsView>
                   isScrollable: true,
                   tabAlignment: TabAlignment.start,
                   padding: EdgeInsets.zero,
+                  labelPadding: const EdgeInsets.only(right: 28),
+                  indicatorSize: TabBarIndicatorSize.label,
                   onTap: (_) => setState(() {}),
                   labelColor: _primary,
                   unselectedLabelColor: _muted,
@@ -307,7 +309,7 @@ class _SettingsViewState extends State<SettingsView>
                   indicatorWeight: 2.5,
                   labelStyle: const TextStyle(
                     fontSize: 13.5,
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.w600,
                   ),
                   unselectedLabelStyle: const TextStyle(
                     fontSize: 13.5,

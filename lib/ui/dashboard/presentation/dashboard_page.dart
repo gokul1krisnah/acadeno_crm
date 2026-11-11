@@ -817,7 +817,7 @@ class _DashboardViewState extends State<_DashboardView> {
                       'Dashboard',
                       style: TextStyle(
                         fontSize: 24,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w700,
                         color: _text,
                         letterSpacing: -0.4,
                       ),
@@ -884,7 +884,7 @@ class _DashboardViewState extends State<_DashboardView> {
                 'Dashboard',
                 style: TextStyle(
                   fontSize: 26,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w700,
                   color: _text,
                   letterSpacing: -0.4,
                 ),

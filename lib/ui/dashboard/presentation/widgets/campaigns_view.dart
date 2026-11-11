@@ -1072,7 +1072,7 @@ class _CampaignsViewState extends State<CampaignsView> {
               campaign.title,
               style: const TextStyle(
                 fontSize: 20,
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w700,
                 color: Color(0xFF0F172A),
                 letterSpacing: -0.3,
               ),
@@ -1199,7 +1199,7 @@ class _CampaignsViewState extends State<CampaignsView> {
               value,
               style: TextStyle(
                 fontSize: 24,
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w700,
                 color: valueColor,
               ),
             ),

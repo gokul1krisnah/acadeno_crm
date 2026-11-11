@@ -267,7 +267,7 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                               overflow: TextOverflow.ellipsis,
                               style: const TextStyle(
                                 fontSize: 20,
-                                fontWeight: FontWeight.w800,
+                                fontWeight: FontWeight.w700,
                                 color: Color(0xFF0F172A),
                                 letterSpacing: -0.3,
                               ),
@@ -447,7 +447,7 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                 'DUE NOW',
                                 style: TextStyle(
                                   fontSize: 11.5,
-                                  fontWeight: FontWeight.w700,
+                                  fontWeight: FontWeight.w600,
                                   letterSpacing: 0.8,
                                   color: Color(0xFF94A3B8),
                                 ),
@@ -551,7 +551,7 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                                     style: const TextStyle(
                                                       fontSize: 19,
                                                       fontWeight:
-                                                          FontWeight.w800,
+                                                          FontWeight.w700,
                                                       color: Color(0xFF0F172A),
                                                       letterSpacing: -0.3,
                                                     ),
@@ -681,7 +681,7 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                                     style: const TextStyle(
                                                       fontSize: 19,
                                                       fontWeight:
-                                                          FontWeight.w800,
+                                                          FontWeight.w700,
                                                       color: Color(0xFF0F172A),
                                                       letterSpacing: -0.3,
                                                     ),
@@ -915,7 +915,7 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                         "TODAY'S CALLS",
                                         style: TextStyle(
                                           fontSize: 11.5,
-                                          fontWeight: FontWeight.w700,
+                                          fontWeight: FontWeight.w600,
                                           letterSpacing: 0.8,
                                           color: Color(0xFF94A3B8),
                                         ),
@@ -1457,7 +1457,7 @@ class _MetricBox extends StatelessWidget {
                 style: TextStyle(
                   fontFamily: 'Inter',
                   fontSize: 22,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w700,
                   color: valueColor,
                   letterSpacing: -0.5,
                 ),
@@ -1526,7 +1526,7 @@ class _TodayLeadCard extends StatelessWidget {
                 item.initials,
                 style: const TextStyle(
                   fontSize: 15,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w700,
                   color: Color(0xFF4F46E5),
                 ),
               ),
@@ -1544,7 +1544,7 @@ class _TodayLeadCard extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
                       fontSize: 16,
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w600,
                       color: Color(0xFF0F172A),
                     ),
                   ),
@@ -1578,7 +1578,7 @@ class _TodayLeadCard extends StatelessWidget {
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
                               fontSize: 10.5,
-                              fontWeight: FontWeight.w800,
+                              fontWeight: FontWeight.w700,
                               letterSpacing: 0.4,
                               color: Color(0xFF4F46E5),
                             ),

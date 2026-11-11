@@ -75,7 +75,7 @@ class _FollowUpsTabViewState extends State<FollowUpsTabView> {
                       'Follow-ups',
                       style: TextStyle(
                         fontSize: 26,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w700,
                         color: Color(0xFF0F172A),
                         letterSpacing: -0.5,
                       ),
@@ -278,7 +278,7 @@ class _FollowUpsTabViewState extends State<FollowUpsTabView> {
                   'Snooze follow-up · ${item.leadName}',
                   style: const TextStyle(
                     fontSize: 16,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w700,
                     color: Color(0xFF0F172A),
                   ),
                 ),
@@ -394,7 +394,7 @@ class _TabItem extends StatelessWidget {
                 maxLines: 1,
                 style: TextStyle(
                   fontSize: 12,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w600,
                   letterSpacing: 0.8,
                   color: isSelected
                       ? const Color(0xFF0F172A)
@@ -466,7 +466,7 @@ class _FollowUpCard extends StatelessWidget {
                   item.leadName,
                   style: const TextStyle(
                     fontSize: 17,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w600,
                     color: Color(0xFF0F172A),
                     letterSpacing: -0.3,
                   ),

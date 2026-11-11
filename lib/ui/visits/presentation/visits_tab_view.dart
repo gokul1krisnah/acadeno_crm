@@ -66,7 +66,7 @@ class _VisitsTabViewState extends State<VisitsTabView> {
                       'College visits',
                       style: TextStyle(
                         fontSize: 24,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w700,
                         color: Color(0xFF0F172A),
                         letterSpacing: -0.4,
                       ),
@@ -206,7 +206,7 @@ class _VisitsTabViewState extends State<VisitsTabView> {
                             'UPCOMING · ASSIGNED TO YOU',
                             style: TextStyle(
                               fontSize: 11.5,
-                              fontWeight: FontWeight.w700,
+                              fontWeight: FontWeight.w600,
                               letterSpacing: 0.7,
                               color: Color(0xFF667085),
                             ),
@@ -270,7 +270,7 @@ class _VisitsTabViewState extends State<VisitsTabView> {
                             'RECENT',
                             style: TextStyle(
                               fontSize: 11.5,
-                              fontWeight: FontWeight.w700,
+                              fontWeight: FontWeight.w600,
                               letterSpacing: 0.7,
                               color: Color(0xFF667085),
                             ),
@@ -1835,7 +1835,7 @@ class _UpcomingVisitCard extends StatelessWidget {
                       visit.collegeName,
                       style: const TextStyle(
                         fontSize: 16,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w600,
                         color: Color(0xFF0F172A),
                       ),
                     ),
@@ -2178,7 +2178,7 @@ class _RecentVisitCard extends StatelessWidget {
                             day,
                             style: const TextStyle(
                               fontSize: 21,
-                              fontWeight: FontWeight.w800,
+                              fontWeight: FontWeight.w700,
                               color: Color(0xFF166534),
                               height: 1.1,
                             ),
@@ -2197,7 +2197,7 @@ class _RecentVisitCard extends StatelessWidget {
                             title,
                             style: const TextStyle(
                               fontSize: 17,
-                              fontWeight: FontWeight.w800,
+                              fontWeight: FontWeight.w600,
                               color: Color(0xFF0F172A),
                               letterSpacing: -0.2,
                             ),

@@ -751,7 +751,7 @@ class _UserManagementViewState extends State<UserManagementView> {
                       'User Management',
                       style: TextStyle(
                         fontSize: 28,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w700,
                         color: _textDark,
                         letterSpacing: -0.5,
                       ),

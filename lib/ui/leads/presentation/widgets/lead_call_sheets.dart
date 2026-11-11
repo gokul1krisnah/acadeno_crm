@@ -135,7 +135,7 @@ class LeadCallSheets {
                               'Follow-ups',
                               style: TextStyle(
                                 fontSize: 26,
-                                fontWeight: FontWeight.w800,
+                                fontWeight: FontWeight.w700,
                                 color: Colors.white,
                                 letterSpacing: -0.5,
                               ),
@@ -172,7 +172,7 @@ class LeadCallSheets {
                                     overflow: TextOverflow.ellipsis,
                                     style: const TextStyle(
                                       fontSize: 20,
-                                      fontWeight: FontWeight.w800,
+                                      fontWeight: FontWeight.w700,
                                       color: Colors.white,
                                       letterSpacing: -0.3,
                                     ),
@@ -235,7 +235,7 @@ class LeadCallSheets {
                                               'How did the call go?',
                                               style: TextStyle(
                                                 fontSize: 18.5,
-                                                fontWeight: FontWeight.w800,
+                                                fontWeight: FontWeight.w700,
                                                 color: Color(0xFF0F172A),
                                                 letterSpacing: -0.3,
                                               ),
@@ -690,7 +690,7 @@ class LeadCallSheets {
                       'WhatsApp Quick Templates',
                       style: TextStyle(
                         fontSize: 17,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w700,
                         color: Color(0xFF0F172A),
                       ),
                     ),
@@ -1370,7 +1370,7 @@ class LeadCallSheets {
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
                             fontSize: 18,
-                            fontWeight: FontWeight.w800,
+                            fontWeight: FontWeight.w700,
                             color: Color(0xFF0F172A),
                           ),
                         ),
@@ -1577,7 +1577,7 @@ class LeadCallSheets {
                 softWrap: false,
                 style: TextStyle(
                   fontSize: 22,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w700,
                   color: valueColor,
                 ),
               ),

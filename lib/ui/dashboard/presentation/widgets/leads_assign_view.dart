@@ -1156,7 +1156,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                       'Leads',
                       style: TextStyle(
                         fontSize: 28,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w700,
                         color: _text,
                         letterSpacing: -0.5,
                       ),

@@ -300,7 +300,7 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
               'Lead',
               style: TextStyle(
                 fontSize: 18,
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w600,
                 color: Color(0xFF0F172A),
                 letterSpacing: -0.3,
               ),
@@ -349,7 +349,7 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
                                   lead.initials,
                                   style: const TextStyle(
                                     fontSize: 18,
-                                    fontWeight: FontWeight.w800,
+                                    fontWeight: FontWeight.w700,
                                     color: Colors.white,
                                     letterSpacing: 0.5,
                                   ),
@@ -367,7 +367,7 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
                                             lead.name,
                                             style: const TextStyle(
                                               fontSize: 18,
-                                              fontWeight: FontWeight.w800,
+                                              fontWeight: FontWeight.w700,
                                               color: Color(0xFF0F172A),
                                               letterSpacing: -0.3,
                                             ),
@@ -540,7 +540,7 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
                                   'NEXT FOLLOW-UP · YOU',
                                   style: TextStyle(
                                     fontSize: 10.5,
-                                    fontWeight: FontWeight.w800,
+                                    fontWeight: FontWeight.w600,
                                     color: Color(0xFFC2410C),
                                     letterSpacing: 0.5,
                                   ),
@@ -550,7 +550,7 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
                                   effectiveFollowUp,
                                   style: const TextStyle(
                                     fontSize: 15,
-                                    fontWeight: FontWeight.w800,
+                                    fontWeight: FontWeight.w600,
                                     color: Color(0xFF0F172A),
                                   ),
                                 ),
@@ -625,7 +625,7 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
                             'DETAILS',
                             style: TextStyle(
                               fontSize: 11,
-                              fontWeight: FontWeight.w800,
+                              fontWeight: FontWeight.w600,
                               color: Color(0xFF64748B),
                               letterSpacing: 0.6,
                             ),
@@ -787,7 +787,7 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
                             'ACTIVITY · VISIBLE TO WHOLE TEAM',
                             style: TextStyle(
                               fontSize: 11,
-                              fontWeight: FontWeight.w800,
+                              fontWeight: FontWeight.w600,
                               color: Color(0xFF64748B),
                               letterSpacing: 0.6,
                             ),

@@ -60,7 +60,7 @@ class AlertsTabView extends StatelessWidget {
                               'Alerts',
                               style: GoogleFonts.inter(
                                 fontSize: 24,
-                                fontWeight: FontWeight.w800,
+                                fontWeight: FontWeight.w700,
                                 color: const Color(0xFF0F172A),
                                 letterSpacing: -0.4,
                               ),
@@ -142,7 +142,7 @@ class AlertsTabView extends StatelessWidget {
                               'TODAY',
                               style: GoogleFonts.inter(
                                 fontSize: 11.5,
-                                fontWeight: FontWeight.w700,
+                                fontWeight: FontWeight.w600,
                                 letterSpacing: 0.8,
                                 color: const Color(0xFF8E8EA9),
                               ),
@@ -165,7 +165,7 @@ class AlertsTabView extends StatelessWidget {
                               'YESTERDAY',
                               style: GoogleFonts.inter(
                                 fontSize: 11.5,
-                                fontWeight: FontWeight.w700,
+                                fontWeight: FontWeight.w600,
                                 letterSpacing: 0.8,
                                 color: const Color(0xFF8E8EA9),
                               ),
@@ -188,7 +188,7 @@ class AlertsTabView extends StatelessWidget {
                               'EARLIER',
                               style: GoogleFonts.inter(
                                 fontSize: 11.5,
-                                fontWeight: FontWeight.w700,
+                                fontWeight: FontWeight.w600,
                                 letterSpacing: 0.8,
                                 color: const Color(0xFF8E8EA9),
                               ),

@@ -68,7 +68,7 @@ class _ImportLeadsBodyState extends State<_ImportLeadsBody> {
                           'Import leads',
                           style: TextStyle(
                             fontSize: 26,
-                            fontWeight: FontWeight.w800,
+                            fontWeight: FontWeight.w700,
                             color: Color(0xFF0F172A),
                             letterSpacing: -0.5,
                           ),
