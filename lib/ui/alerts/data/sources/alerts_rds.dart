@@ -99,20 +99,25 @@ class AlertsRds {
     List<QueryDocumentSnapshot<Map<String, dynamic>>> leadsDocs = [];
     List<QueryDocumentSnapshot<Map<String, dynamic>>> callLogsDocs = [];
     Map<String, dynamic>? userData;
+    Timer? debounceTimer;
 
     void emitCombined(String currentUid) {
       if (controller.isClosed) return;
-      try {
-        final items = _buildLiveAlertItems(
-          uid: currentUid,
-          alertsDocs: alertsDocs,
-          assignmentsDocs: assignmentsDocs,
-          leadsDocs: leadsDocs,
-          callLogsDocs: callLogsDocs,
-          userData: userData,
-        );
-        controller.add(items);
-      } catch (_) {}
+      debounceTimer?.cancel();
+      debounceTimer = Timer(const Duration(milliseconds: 60), () {
+        if (controller.isClosed) return;
+        try {
+          final items = _buildLiveAlertItems(
+            uid: currentUid,
+            alertsDocs: alertsDocs,
+            assignmentsDocs: assignmentsDocs,
+            leadsDocs: leadsDocs,
+            callLogsDocs: callLogsDocs,
+            userData: userData,
+          );
+          controller.add(items);
+        } catch (_) {}
+      });
     }
 
     void subscribeForUid(String uid) {
@@ -197,6 +202,7 @@ class AlertsRds {
     }
 
     void onCancel() {
+      debounceTimer?.cancel();
       authSub?.cancel();
       alertsSub?.cancel();
       assignmentsSub?.cancel();

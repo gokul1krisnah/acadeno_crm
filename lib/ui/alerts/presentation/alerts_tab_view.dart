@@ -5,10 +5,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:acadeno_crm/shared/extensions/build_context_extension.dart';
 import 'package:acadeno_crm/shared/theme/app_images.dart';
 import 'package:acadeno_crm/ui/alerts/application/alerts_cubit.dart';
-import 'package:acadeno_crm/ui/home/application/home_cubit.dart';
 import 'package:acadeno_crm/ui/alerts/application/alerts_state.dart';
 import 'package:acadeno_crm/ui/alerts/data/model/alert_models.dart';
-import 'package:acadeno_crm/ui/leads/presentation/widgets/lead_call_sheets.dart';
 
 class AlertsTabView extends StatelessWidget {
   const AlertsTabView({super.key});
@@ -30,7 +28,7 @@ class AlertsTabView extends StatelessWidget {
             backgroundColor: Colors.white,
             onRefresh: () async {
               await cubit.refresh();
-              await Future.delayed(const Duration(seconds: 3));
+              await Future.delayed(const Duration(milliseconds: 350));
             },
             child: SingleChildScrollView(
               physics: const AlwaysScrollableScrollPhysics(
@@ -96,7 +94,9 @@ class AlertsTabView extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        if (todayList.isEmpty &&
+                        if (state.isLoading && state.alerts.isEmpty)
+                          _buildLoadingSkeleton()
+                        else if (todayList.isEmpty &&
                             yesterdayList.isEmpty &&
                             earlierList.isEmpty)
                           Container(
@@ -216,15 +216,75 @@ class AlertsTabView extends StatelessWidget {
   }
 
   void _handleAlertTap(BuildContext context, ExecutiveAlertItem item) {
+    // Mark alert as read in-place; do not navigate anywhere per user requirement
     context.read<AlertsCubit>().markSingleAlertRead(item.id);
-    if (item.targetLeadName != null) {
-      LeadCallSheets.showCallAndOutcomeSheet(
-        context,
-        leadName: item.targetLeadName!,
-      );
-    } else if (item.targetTabIndex != null) {
-      context.read<HomeCubit>().selectBottomNav(item.targetTabIndex!);
-    }
+  }
+
+  Widget _buildLoadingSkeleton() {
+    return Column(
+      children: List.generate(
+        3,
+        (index) => Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 395),
+              child: Container(
+                width: double.infinity,
+                height: 80,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: const Color(0xFFF1F5F9),
+                    width: 1,
+                  ),
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 48,
+                      height: 48,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF1F5F9),
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            height: 14,
+                            width: 140,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF1F5F9),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Container(
+                            height: 12,
+                            width: 200,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF8FAFC),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
 

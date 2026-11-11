@@ -3,8 +3,13 @@ import '../data/model/alert_models.dart';
 class AlertsState {
   final List<ExecutiveAlertItem> alerts;
   final String? toastMessage;
+  final bool isLoading;
 
-  const AlertsState({required this.alerts, this.toastMessage});
+  const AlertsState({
+    required this.alerts,
+    this.toastMessage,
+    this.isLoading = false,
+  });
 
   /// Alerts created today, strictly ordered newest first
   List<ExecutiveAlertItem> get todayAlerts {
@@ -62,10 +67,12 @@ class AlertsState {
     List<ExecutiveAlertItem>? alerts,
     String? toastMessage,
     bool clearToast = false,
+    bool? isLoading,
   }) {
     return AlertsState(
       alerts: alerts ?? this.alerts,
       toastMessage: clearToast ? null : (toastMessage ?? this.toastMessage),
+      isLoading: isLoading ?? this.isLoading,
     );
   }
 }

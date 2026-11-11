@@ -13,7 +13,7 @@ class AlertsCubit extends Cubit<AlertsState> {
   final Set<String> _readAlertIds = {};
 
   AlertsCubit(this._repository)
-    : super(AlertsState(alerts: _repository.fetchAlerts())) {
+    : super(AlertsState(alerts: _repository.fetchAlerts(), isLoading: true)) {
     _subscribe();
   }
 
@@ -26,11 +26,17 @@ class AlertsCubit extends Cubit<AlertsState> {
           a.isUnread = false;
         }
       }
-      emit(state.copyWith(alerts: liveAlerts));
-    }, onError: (_) {});
+      emit(state.copyWith(alerts: liveAlerts, isLoading: false));
+    }, onError: (_) {
+      if (!isClosed) {
+        emit(state.copyWith(isLoading: false));
+      }
+    });
   }
 
   Future<void> refresh() async {
+    // Preserve existing alerts so the view never flickers empty during reload
+    emit(state.copyWith(isLoading: true));
     _subscribe();
   }
 
