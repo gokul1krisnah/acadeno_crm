@@ -1230,204 +1230,235 @@ class _CampaignsViewState extends State<CampaignsView> {
       letterSpacing: 0.5,
     );
 
-    return Column(
-      children: [
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-          decoration: const BoxDecoration(
-            border: Border(bottom: BorderSide(color: Color(0xFFE8EAF0))),
-          ),
-          child: const Row(
-            children: [
-              SizedBox(width: 50, child: Text('#', style: headerStyle)),
-              Expanded(flex: 3, child: Text('NAME', style: headerStyle)),
-              Expanded(
-                flex: 4,
-                child: Text('COLLEGE & BRANCH', style: headerStyle),
-              ),
-              Expanded(flex: 2, child: Text('SCORE', style: headerStyle)),
-              Expanded(
-                flex: 5,
-                child: Text('REASONS FOR HIGH SCORE', style: headerStyle),
-              ),
-              Expanded(
-                flex: 2,
-                child: Text('LAST CONTACT', style: headerStyle),
-              ),
-              Expanded(
-                flex: 2,
-                child: Center(child: Text('ASSIGNED', style: headerStyle)),
-              ),
-            ],
-          ),
-        ),
-        if (_rankedLeads.isEmpty)
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 40),
-            child: Center(
-              child: Text(
-                'No leads found in database. Import or add leads to see ranked campaign candidates.',
-                style: TextStyle(
-                  fontSize: 13.5,
-                  fontWeight: FontWeight.w500,
-                  color: Color(0xFF667085),
-                ),
-              ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              minWidth: constraints.maxWidth < 950 ? 950 : constraints.maxWidth,
             ),
-          )
-        else
-          ListView.separated(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: _rankedLeads.length,
-            separatorBuilder: (_, _) =>
-                const Divider(height: 1, color: Color(0xFFE8EAF0)),
-            itemBuilder: (context, index) {
-              final lead = _rankedLeads[index];
-              return Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 13,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 14,
+                  ),
+                  decoration: const BoxDecoration(
+                    border: Border(
+                      bottom: BorderSide(color: Color(0xFFE8EAF0)),
+                    ),
+                  ),
+                  child: const Row(
+                    children: [
+                      SizedBox(width: 50, child: Text('#', style: headerStyle)),
+                      Expanded(flex: 3, child: Text('NAME', style: headerStyle)),
+                      Expanded(
+                        flex: 4,
+                        child: Text('COLLEGE & BRANCH', style: headerStyle),
+                      ),
+                      Expanded(flex: 2, child: Text('SCORE', style: headerStyle)),
+                      Expanded(
+                        flex: 4,
+                        child: Text(
+                          'REASONS FOR HIGH SCORE',
+                          style: headerStyle,
+                        ),
+                      ),
+                      Expanded(
+                        flex: 2,
+                        child: Text('LAST CONTACT', style: headerStyle),
+                      ),
+                      Expanded(
+                        flex: 3,
+                        child: Center(
+                          child: Text('ASSIGNED', style: headerStyle),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-                child: Row(
-                  children: [
-                    SizedBox(
-                      width: 50,
+                if (_rankedLeads.isEmpty)
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 40),
+                    child: Center(
                       child: Text(
-                        '${lead.rank}',
-                        style: const TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w700,
-                          color: Color(0xFF0F172A),
-                        ),
-                      ),
-                    ),
-                    Expanded(
-                      flex: 3,
-                      child: Text(
-                        lead.name,
-                        style: const TextStyle(
+                        'No leads found in database. Import or add leads to see ranked campaign candidates.',
+                        style: TextStyle(
                           fontSize: 13.5,
-                          fontWeight: FontWeight.w700,
-                          color: Color(0xFF0F172A),
-                        ),
-                      ),
-                    ),
-                    Expanded(
-                      flex: 4,
-                      child: Text(
-                        lead.collegeBranchYear,
-                        style: const TextStyle(
-                          fontSize: 13,
-                          color: Color(0xFF475467),
-                        ),
-                      ),
-                    ),
-                    Expanded(
-                      flex: 2,
-                      child: Row(
-                        children: [
-                          SizedBox(
-                            width: 48,
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(4),
-                              child: LinearProgressIndicator(
-                                value: lead.score / 100,
-                                minHeight: 6,
-                                color: lead.scoreBarColor,
-                                backgroundColor: const Color(0xFFE5E7EB),
-                              ),
-                            ),
-                          ),
-                          const Gap(8),
-                          Text(
-                            '${lead.score}',
-                            style: TextStyle(
-                              fontSize: 12.5,
-                              fontWeight: FontWeight.w800,
-                              color: lead.scoreBarColor,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Expanded(
-                      flex: 5,
-                      child: Wrap(
-                        spacing: 6,
-                        runSpacing: 4,
-                        children: lead.reasons.map((r) {
-                          return Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 3.5,
-                            ),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFEEF2FF),
-                              borderRadius: BorderRadius.circular(6),
-                            ),
-                            child: Text(
-                              r.label.toUpperCase(),
-                              style: const TextStyle(
-                                fontSize: 10.5,
-                                fontWeight: FontWeight.w700,
-                                color: Color(0xFF4F46E5),
-                                letterSpacing: 0.3,
-                              ),
-                            ),
-                          );
-                        }).toList(),
-                      ),
-                    ),
-                    Expanded(
-                      flex: 2,
-                      child: Text(
-                        lead.lastContact,
-                        style: const TextStyle(
-                          fontSize: 12.5,
+                          fontWeight: FontWeight.w500,
                           color: Color(0xFF667085),
                         ),
                       ),
                     ),
-                    Expanded(
-                      flex: 2,
-                      child: lead.assignedExec != null
-                          ? Center(
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 10,
-                                  vertical: 4,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFEEF0FF),
-                                  borderRadius: BorderRadius.circular(6),
-                                ),
-                                child: Text(
-                                  lead.assignedExec!,
-                                  style: const TextStyle(
-                                    fontSize: 11.5,
-                                    fontWeight: FontWeight.w600,
-                                    color: Color(0xFF4338CA),
-                                  ),
-                                ),
-                              ),
-                            )
-                          : const Center(
+                  )
+                else
+                  ListView.separated(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: _rankedLeads.length,
+                    separatorBuilder: (_, _) =>
+                        const Divider(height: 1, color: Color(0xFFE8EAF0)),
+                    itemBuilder: (context, index) {
+                      final lead = _rankedLeads[index];
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 13,
+                        ),
+                        child: Row(
+                          children: [
+                            SizedBox(
+                              width: 50,
                               child: Text(
-                                '—',
-                                style: TextStyle(
-                                  fontSize: 12.5,
-                                  color: Color(0xFF98A2B3),
+                                '${lead.rank}',
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w700,
+                                  color: Color(0xFF0F172A),
                                 ),
                               ),
                             ),
-                    ),
-                  ],
-                ),
-              );
-            },
+                            Expanded(
+                              flex: 3,
+                              child: Text(
+                                lead.name,
+                                style: const TextStyle(
+                                  fontSize: 13.5,
+                                  fontWeight: FontWeight.w700,
+                                  color: Color(0xFF0F172A),
+                                ),
+                              ),
+                            ),
+                            Expanded(
+                              flex: 4,
+                              child: Text(
+                                lead.collegeBranchYear,
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  color: Color(0xFF475467),
+                                ),
+                              ),
+                            ),
+                            Expanded(
+                              flex: 2,
+                              child: Row(
+                                children: [
+                                  SizedBox(
+                                    width: 48,
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(4),
+                                      child: LinearProgressIndicator(
+                                        value: lead.score / 100,
+                                        minHeight: 6,
+                                        color: lead.scoreBarColor,
+                                        backgroundColor: const Color(
+                                          0xFFE5E7EB,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  const Gap(8),
+                                  Text(
+                                    '${lead.score}',
+                                    style: TextStyle(
+                                      fontSize: 12.5,
+                                      fontWeight: FontWeight.w800,
+                                      color: lead.scoreBarColor,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Expanded(
+                              flex: 4,
+                              child: Wrap(
+                                spacing: 6,
+                                runSpacing: 4,
+                                children: lead.reasons.map((r) {
+                                  return Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 3.5,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFEEF2FF),
+                                      borderRadius: BorderRadius.circular(6),
+                                    ),
+                                    child: Text(
+                                      r.label.toUpperCase(),
+                                      style: const TextStyle(
+                                        fontSize: 10.5,
+                                        fontWeight: FontWeight.w700,
+                                        color: Color(0xFF4F46E5),
+                                        letterSpacing: 0.3,
+                                      ),
+                                    ),
+                                  );
+                                }).toList(),
+                              ),
+                            ),
+                            Expanded(
+                              flex: 2,
+                              child: Text(
+                                lead.lastContact,
+                                style: const TextStyle(
+                                  fontSize: 12.5,
+                                  color: Color(0xFF667085),
+                                ),
+                              ),
+                            ),
+                            Expanded(
+                              flex: 3,
+                              child: lead.assignedExec != null
+                                  ? Center(
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 8,
+                                          vertical: 4,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFFEEF0FF),
+                                          borderRadius: BorderRadius.circular(
+                                            6,
+                                          ),
+                                        ),
+                                        child: Text(
+                                          lead.assignedExec!,
+                                          maxLines: 1,
+                                          softWrap: false,
+                                          overflow: TextOverflow.ellipsis,
+                                          textAlign: TextAlign.center,
+                                          style: const TextStyle(
+                                            fontSize: 11.5,
+                                            fontWeight: FontWeight.w600,
+                                            color: Color(0xFF4338CA),
+                                          ),
+                                        ),
+                                      ),
+                                    )
+                                  : const Center(
+                                      child: Text(
+                                        '—',
+                                        style: TextStyle(
+                                          fontSize: 12.5,
+                                          color: Color(0xFF98A2B3),
+                                        ),
+                                      ),
+                                    ),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+              ],
+            ),
           ),
-      ],
+        );
+      },
     );
   }
 

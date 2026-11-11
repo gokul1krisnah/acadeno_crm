@@ -1006,7 +1006,7 @@ class _SettingsViewState extends State<SettingsView>
                 const Gap(16),
                 SwitchListTile(
                   contentPadding: EdgeInsets.zero,
-                  activeTrackColor: _primary,
+                  activeTrackColor: const Color(0xFF4F46E5),
                   inactiveTrackColor: const Color(0xFFE2E8F0),
                   thumbColor: WidgetStateProperty.all(Colors.white),
                   trackOutlineColor: WidgetStateProperty.all(
@@ -1030,7 +1030,7 @@ class _SettingsViewState extends State<SettingsView>
                 const Gap(8),
                 SwitchListTile(
                   contentPadding: EdgeInsets.zero,
-                  activeTrackColor: _primary,
+                  activeTrackColor: const Color(0xFF4F46E5),
                   inactiveTrackColor: const Color(0xFFE2E8F0),
                   thumbColor: WidgetStateProperty.all(Colors.white),
                   trackOutlineColor: WidgetStateProperty.all(
