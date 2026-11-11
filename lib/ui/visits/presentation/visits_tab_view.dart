@@ -14,8 +14,26 @@ import 'package:acadeno_crm/ui/visits/application/visits_cubit.dart';
 import 'package:acadeno_crm/ui/visits/application/visits_state.dart';
 import 'package:acadeno_crm/ui/visits/data/model/visit_models.dart';
 
-class VisitsTabView extends StatelessWidget {
+class VisitsTabView extends StatefulWidget {
   const VisitsTabView({super.key});
+
+  @override
+  State<VisitsTabView> createState() => _VisitsTabViewState();
+}
+
+class _VisitsTabViewState extends State<VisitsTabView> {
+  double _scrollProgress = 0.0;
+
+  bool _handleScroll(ScrollNotification notification) {
+    if (notification.metrics.axis == Axis.vertical) {
+      final offset = notification.metrics.pixels;
+      final progress = (offset / 24.0).clamp(0.0, 1.0);
+      if (progress != _scrollProgress) {
+        setState(() => _scrollProgress = progress);
+      }
+    }
+    return false;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -24,84 +42,97 @@ class VisitsTabView extends StatelessWidget {
         final pad = context.devicePadding;
         final upcoming = state.upcomingVisits;
         final recent = state.recentVisits;
+        final isEmptyState = upcoming.isEmpty && recent.isEmpty;
 
         return Theme(
           data: Theme.of(context).copyWith(platform: TargetPlatform.iOS),
-          child: RefreshIndicator.adaptive(
-            color: const Color(0xFF4338CA),
-            backgroundColor: Colors.white,
-            onRefresh: () async {
-              await Future.delayed(const Duration(seconds: 3));
-            },
-            child: SingleChildScrollView(
-              physics: const AlwaysScrollableScrollPhysics(
-                parent: BouncingScrollPhysics(),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Top White Header
-                  Container(
-                    width: double.infinity,
-                    decoration: const BoxDecoration(
-                      color: Colors.white,
-                      border: Border(
-                        bottom: BorderSide(color: Color(0xFFEAECF0)),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Top White Header (Always anchored at top)
+              Container(
+                width: double.infinity,
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  border: Border(
+                    bottom: BorderSide(color: Color(0xFFEAECF0)),
+                  ),
+                ),
+                padding: EdgeInsets.fromLTRB(pad, 16, pad, 16),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'College visits',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w800,
+                        color: Color(0xFF0F172A),
+                        letterSpacing: -0.4,
                       ),
                     ),
-                    padding: EdgeInsets.fromLTRB(pad, 16, pad, 16),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text(
-                          'College visits',
-                          style: TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.w800,
-                            color: Color(0xFF0F172A),
-                            letterSpacing: -0.4,
-                          ),
-                        ),
-                        SizedBox(
-                          height: 40,
-                          child: ElevatedButton.icon(
-                            onPressed: () => _showLogVisitModal(context),
-                            icon: const Icon(Icons.add, size: 17),
-                            label: const FittedBox(
-                              fit: BoxFit.scaleDown,
-                              child: Text(
-                                'Log visit',
-                                maxLines: 1,
-                                softWrap: false,
-                                style: TextStyle(
-                                  fontSize: 13.5,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
-                            ),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFFD95D24),
-                              foregroundColor: Colors.white,
-                              elevation: 0,
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 14,
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
+                    SizedBox(
+                      height: 40,
+                      child: ElevatedButton.icon(
+                        onPressed: () => _showLogVisitModal(context),
+                        icon: const Icon(Icons.add, size: 17),
+                        label: const FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            'Log visit',
+                            maxLines: 1,
+                            softWrap: false,
+                            style: TextStyle(
+                              fontSize: 13.5,
+                              fontWeight: FontWeight.w700,
                             ),
                           ),
                         ),
-                      ],
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFD95D24),
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      ),
                     ),
-                  ),
+                  ],
+                ),
+              ),
 
-                  // Body Content
-                  Padding(
-                    padding: EdgeInsets.fromLTRB(pad, 18, pad, 24),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
+              // Body Content (Scrollable with RefreshIndicator and Ambient Shade)
+              Expanded(
+                child: Stack(
+                  children: [
+                    RefreshIndicator.adaptive(
+                      color: const Color(0xFF4338CA),
+                      backgroundColor: Colors.white,
+                      displacement: 20,
+                      onRefresh: () async {
+                        context.read<VisitsCubit>().refresh();
+                        await Future.delayed(
+                          const Duration(milliseconds: 1000),
+                        );
+                      },
+                      child: NotificationListener<ScrollNotification>(
+                        onNotification: _handleScroll,
+                        child: SingleChildScrollView(
+                          physics: isEmptyState
+                              ? const AlwaysScrollableScrollPhysics(
+                                  parent: ClampingScrollPhysics(),
+                                )
+                              : const AlwaysScrollableScrollPhysics(
+                                  parent: BouncingScrollPhysics(),
+                                ),
+                          padding: EdgeInsets.fromLTRB(pad, 18, pad, 24),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
                         if (upcoming.isEmpty && recent.isEmpty) ...[
                           Container(
                             width: double.infinity,
@@ -300,14 +331,45 @@ class VisitsTabView extends StatelessWidget {
                       ],
                     ),
                   ),
-                ],
+                ),
               ),
-            ),
+              // Top Ambient Shade Overlay when scrolling (Smooth gradient shade without cutting)
+              if (_scrollProgress > 0.01)
+                Positioned(
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  height: 24,
+                  child: IgnorePointer(
+                    child: Opacity(
+                      opacity: _scrollProgress.clamp(0.0, 1.0),
+                      child: Container(
+                        decoration: const BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            stops: [0.0, 0.35, 0.70, 1.0],
+                            colors: [
+                              Color(0x18000000),
+                              Color(0x0A000000),
+                              Color(0x03000000),
+                              Colors.transparent,
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+            ],
           ),
-        );
-      },
-    );
-  }
+        ),
+      ],
+    ),
+  );
+},
+);
+}
 
   Future<void> _handleDirections(
     BuildContext context,

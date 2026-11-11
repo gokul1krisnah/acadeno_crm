@@ -28,6 +28,10 @@ class VisitsCubit extends Cubit<VisitsState> {
     );
   }
 
+  void refresh() {
+    _subscribe();
+  }
+
   void clearToast() {
     if (state.toastMessage != null) {
       emit(state.copyWith(clearToast: true));

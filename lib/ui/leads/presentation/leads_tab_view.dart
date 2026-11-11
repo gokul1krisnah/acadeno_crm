@@ -35,7 +35,7 @@ class _LeadsTabViewState extends State<LeadsTabView> {
     if (_isRefreshing) return;
     setState(() => _isRefreshing = true);
     context.read<LeadsCubit>().refresh();
-    await Future.delayed(const Duration(seconds: 3));
+    await Future.delayed(const Duration(milliseconds: 1000));
     if (mounted) {
       setState(() => _isRefreshing = false);
     }

@@ -196,7 +196,7 @@ class _FollowUpsTabViewState extends State<FollowUpsTabView> {
         backgroundColor: Colors.white,
         onRefresh: () async {
           cubit.refresh();
-          await Future.delayed(const Duration(seconds: 3));
+          await Future.delayed(const Duration(milliseconds: 1000));
         },
         child: items.isEmpty
             ? ListView(
