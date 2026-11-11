@@ -121,5 +121,45 @@ void main() {
         'Fri, 1 Jan 2027 · 10:30 AM',
       );
     });
+
+    test('formatTimelineEntry cleans stale Today labels dynamically for Nov 11', () {
+      final nov11 = DateTime(2026, 11, 11, 12, 0);
+
+      // Same-day entry shows Today with time
+      expect(
+        LeadDateHelper.formatTimelineEntry(
+          '11 Nov 2026, 9:20 AM · Assigned to new user by AcadenoAdmin (For 11 Nov)',
+          now: nov11,
+        ),
+        'Today, 9:20 AM · Assigned to new user by AcadenoAdmin (For 11 Nov)',
+      );
+
+      // Yesterday entry (10 Nov) shows Yesterday instead of stale "Today, 10 Nov"
+      expect(
+        LeadDateHelper.formatTimelineEntry(
+          'Today, 10 Nov · Assigned to new user by AcadenoAdmin',
+          now: nov11,
+        ),
+        'Yesterday, 10 Nov · Assigned to new user by AcadenoAdmin',
+      );
+
+      // Past entry (7 Nov) shows 7 Nov instead of stale "Today, 7 Nov"
+      expect(
+        LeadDateHelper.formatTimelineEntry(
+          'Today, 7 Nov · Assigned to new user by AcadenoAdmin',
+          now: nov11,
+        ),
+        '7 Nov · Assigned to new user by AcadenoAdmin',
+      );
+
+      // Legacy entry with plain "Today" shows Earlier
+      expect(
+        LeadDateHelper.formatTimelineEntry(
+          'Today · Interested logged by new user',
+          now: nov11,
+        ),
+        'Earlier · Interested logged by new user',
+      );
+    });
   });
 }

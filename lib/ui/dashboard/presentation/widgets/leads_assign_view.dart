@@ -836,7 +836,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                             ),
                             const Gap(2),
                             Text(
-                              'Assigned To: ${lead.assignedToName}${lead.assignedDateLabel != null ? " (${lead.assignedDateLabel})" : ""}',
+                              'Assigned To: ${lead.assignedToName}${lead.dynamicAssignedDateLabel != null ? " (${lead.dynamicAssignedDateLabel})" : ""}',
                               style: GoogleFonts.inter(
                                 fontSize: 12.5,
                                 fontWeight: FontWeight.w600,
@@ -1208,7 +1208,9 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                                         ),
                                         Expanded(
                                           child: Text(
-                                            t,
+                                            LeadDateHelper.formatTimelineEntry(
+                                              t,
+                                            ),
                                             style: GoogleFonts.inter(
                                               fontSize: 12,
                                               color: const Color(0xFF475467),

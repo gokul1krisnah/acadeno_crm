@@ -202,6 +202,113 @@ abstract final class LeadDateHelper {
     return (dt: dt, hasTime: hasTime);
   }
 
+  /// Formats a raw stored timeline entry so that any relative date ("Today", "Yesterday")
+  /// accurately reflects the CURRENT clock date rather than stale text stored on a previous day.
+  static String formatTimelineEntry(String raw, {DateTime? now}) {
+    final trimmed = raw.trim();
+    if (trimmed.isEmpty) return trimmed;
+
+    final parts = trimmed.split('·').map((s) => s.trim()).toList();
+    if (parts.isEmpty) return trimmed;
+
+    final stampText = parts[0];
+    final actionPart = parts.length > 1 ? parts.sublist(1).join(' · ') : '';
+
+    final ref = now ?? DateTime.now();
+    final today = DateTime(ref.year, ref.month, ref.day);
+
+    // 1. Try to parse a concrete date out of stampText (e.g. "Today, 10 Nov", "Today, 7 Nov", "11 Nov 2026, 9:20 AM")
+    final parsed = parseStamp(stampText, now: ref);
+    if (parsed != null) {
+      final dt = parsed.dt;
+      final entryDay = DateTime(dt.year, dt.month, dt.day);
+      final diff = entryDay.difference(today).inDays;
+
+      String newDateLabel;
+      if (diff == 0) {
+        newDateLabel = parsed.hasTime ? 'Today, ${_hm(dt)}' : 'Today';
+      } else if (diff == -1) {
+        newDateLabel = parsed.hasTime
+            ? 'Yesterday, ${_hm(dt)}'
+            : 'Yesterday, ${dt.day} ${_months[dt.month - 1]}';
+      } else {
+        final yearSuffix = dt.year != ref.year ? ' ${dt.year}' : '';
+        final timeSuffix = parsed.hasTime ? ', ${_hm(dt)}' : '';
+        newDateLabel =
+            '${dt.day} ${_months[dt.month - 1]}$yearSuffix$timeSuffix';
+      }
+
+      return actionPart.isNotEmpty
+          ? '$newDateLabel · $actionPart'
+          : newDateLabel;
+    }
+
+    // 2. If stampText is purely relative like "Today", "Yesterday", "Just now" without any date:
+    final lower = stampText.toLowerCase();
+    if (lower == 'today' || lower == 'yesterday' || lower == 'just now') {
+      // Check if actionPart contains an embedded date, e.g. "(For 11 Nov)" or "(For 10 Nov)"
+      final forDateMatch = RegExp(
+        r'\(For\s+([^\)]+)\)',
+        caseSensitive: false,
+      ).firstMatch(actionPart);
+      if (forDateMatch != null) {
+        final forDateParsed = parseStamp(forDateMatch.group(1)!, now: ref);
+        if (forDateParsed != null) {
+          final diff = DateTime(
+            forDateParsed.dt.year,
+            forDateParsed.dt.month,
+            forDateParsed.dt.day,
+          ).difference(today).inDays;
+          if (diff == 0) {
+            return actionPart.isNotEmpty ? 'Today · $actionPart' : 'Today';
+          } else if (diff == -1) {
+            return actionPart.isNotEmpty
+                ? 'Yesterday · $actionPart'
+                : 'Yesterday';
+          } else {
+            return actionPart.isNotEmpty
+                ? '${forDateParsed.dt.day} ${_months[forDateParsed.dt.month - 1]} · $actionPart'
+                : '${forDateParsed.dt.day} ${_months[forDateParsed.dt.month - 1]}';
+          }
+        }
+      }
+      return actionPart.isNotEmpty ? 'Earlier · $actionPart' : 'Earlier';
+    }
+
+    // 3. Fallback: clean any stale "Today, <date>" at start
+    String cleaned = trimmed;
+    final staleToday = RegExp(
+      r'^Today,\s*(\d{1,2}\s+[A-Za-z]+)',
+      caseSensitive: false,
+    ).firstMatch(cleaned);
+    if (staleToday != null) {
+      final dateStr = staleToday.group(1)!;
+      final parsedDate = parseStamp(dateStr, now: ref);
+      if (parsedDate != null) {
+        final diff = DateTime(
+          parsedDate.dt.year,
+          parsedDate.dt.month,
+          parsedDate.dt.day,
+        ).difference(today).inDays;
+        if (diff == 0) {
+          cleaned = cleaned.replaceFirst(
+            staleToday.group(0)!,
+            'Today, $dateStr',
+          );
+        } else if (diff == -1) {
+          cleaned = cleaned.replaceFirst(
+            staleToday.group(0)!,
+            'Yesterday, $dateStr',
+          );
+        } else {
+          cleaned = cleaned.replaceFirst(staleToday.group(0)!, dateStr);
+        }
+      }
+    }
+
+    return cleaned;
+  }
+
   /// Real-date label for display: `Today, 3:15 PM`, `Yesterday, 9:00 AM`,
   /// `Tomorrow, 10:30 AM`, `5 Nov, 9:15 AM` or `5 Nov 2025`.
   static String relativeStamp(
@@ -540,6 +647,29 @@ class LeadRecord {
       assignedToUid != null &&
       assignedToUid!.trim().isNotEmpty &&
       assignedToName != '—';
+
+  /// Returns the current dynamic date label for assignment (e.g. `'Today, 11 Nov'`,
+  /// `'Yesterday, 10 Nov'`, `'Sat, 7 Nov'`) computed relative to the current clock time.
+  /// Never returns a stale `'Today'` saved into Firestore on a previous day.
+  String? get dynamicAssignedDateLabel {
+    if (assignedDateKey != null && assignedDateKey!.trim().isNotEmpty) {
+      try {
+        final d = DateTime.parse(assignedDateKey!.trim());
+        return LeadDateHelper.dateLabel(d);
+      } catch (_) {}
+    }
+    if (assignedAt != null) {
+      return LeadDateHelper.dateLabel(assignedAt!);
+    }
+    if (assignedDateLabel == null || assignedDateLabel!.trim().isEmpty) {
+      return null;
+    }
+    final parsed = LeadDateHelper.parseStamp(assignedDateLabel!);
+    if (parsed != null) {
+      return LeadDateHelper.dateLabel(parsed.dt);
+    }
+    return assignedDateLabel;
+  }
 
   /// Parses `"NIT Calicut · CSE · 3rd yr"` into `(college, branch, year)`.
   static ({String college, String branch, String year}) parseCollegeBranch(

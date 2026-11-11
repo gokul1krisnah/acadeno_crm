@@ -21,7 +21,9 @@ class LeadExportHelper {
       final source = _escape(l.source);
       final status = _escape(l.status);
       final assignedTo = _escape(l.assignedToName);
-      final assignmentSlot = _escape(l.assignedDateLabel ?? '—');
+      final assignmentSlot = _escape(
+        l.dynamicAssignedDateLabel ?? l.assignedDateLabel ?? '—',
+      );
       final lastContact = _escape(l.lastContact);
       final notes = _escape(l.notes);
       final createdAt = _escape(
