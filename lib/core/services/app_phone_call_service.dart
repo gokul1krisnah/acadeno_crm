@@ -146,20 +146,56 @@ class AppPhoneCallService with WidgetsBindingObserver {
         (lead.fullPhone.isNotEmpty ? lead.fullPhone : lead.maskedPhone)
             .replaceAll(RegExp(r'[^0-9+]'), '');
 
-    int durationSeconds = (elapsedMs / 1000).round();
+    int durationSeconds = 0;
+    bool callWasPlaced = false;
 
-    // Fast non-blocking check on Android Telecom CallLog (at most 80ms)
+    // Fast check on Android Telecom CallLog with quick retry
     if (!kIsWeb && Platform.isAndroid) {
       try {
-        final res = await _channel.invokeMethod<int>('getLastCallDuration', {
+        int? res = await _channel.invokeMethod<int>('getLastCallDuration', {
           'phone': cleanPhone,
           'startTimestamp': startMs,
-        }).timeout(const Duration(milliseconds: 80), onTimeout: () => null);
+        }).timeout(const Duration(milliseconds: 250), onTimeout: () => null);
+
+        // If -1 (no call found yet), give a 300ms window for the system dialer
+        // process to flush the call record to the SQLite CallLog provider
+        if (res == -1) {
+          await Future<void>.delayed(const Duration(milliseconds: 300));
+          res = await _channel.invokeMethod<int>('getLastCallDuration', {
+            'phone': cleanPhone,
+            'startTimestamp': startMs,
+          }).timeout(const Duration(milliseconds: 300), onTimeout: () => -1);
+        }
 
         if (res != null && res >= 0) {
+          // Outgoing call was placed and verified from CallLog
+          callWasPlaced = true;
           durationSeconds = res;
+        } else if (res == -1) {
+          // Explicitly verified: No call was placed by HR
+          callWasPlaced = false;
+        } else {
+          // Permission not granted or query timeout fallback
+          callWasPlaced = elapsedMs >= 3000;
+          durationSeconds = (elapsedMs / 1000).round();
         }
-      } catch (_) {}
+      } catch (e) {
+        debugPrint('[AppPhoneCallService] CallLog check error: $e');
+        callWasPlaced = elapsedMs >= 3000;
+        durationSeconds = (elapsedMs / 1000).round();
+      }
+    } else {
+      // Web / desktop fallback: require at least 3 seconds
+      callWasPlaced = elapsedMs >= 3000;
+      durationSeconds = (elapsedMs / 1000).round();
+    }
+
+    // Only show outcome sheet if the HR actually made the call!
+    if (!callWasPlaced) {
+      debugPrint(
+        '[AppPhoneCallService] No outgoing call placed for ${lead.name}. Skipping outcome sheet.',
+      );
+      return;
     }
 
     // Format duration: e.g. "2m 18s" or "45s" or "0s"

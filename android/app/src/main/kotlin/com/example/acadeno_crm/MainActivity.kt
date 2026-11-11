@@ -1,12 +1,15 @@
 package com.example.acadeno_crm
 
 import android.Manifest
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.CallLog
+import android.telephony.PhoneStateListener
+import android.telephony.TelephonyManager
 import android.view.WindowManager
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -18,11 +21,24 @@ class MainActivity : FlutterActivity() {
     private val securityChannel = "com.acadeno.crm/security"
     private val phoneCallChannel = "com.acadeno.crm/phone_call"
     private val PERMISSION_REQUEST_CODE = 4421
+    private var didPlaceCall = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         // Hardware-level protection: Blocks screenshots, screen recordings, and task switcher previews
         window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
+
+        try {
+            val tm = getSystemService(Context.TELEPHONY_SERVICE) as? TelephonyManager
+            tm?.listen(object : PhoneStateListener() {
+                override fun onCallStateChanged(state: Int, phoneNumber: String?) {
+                    super.onCallStateChanged(state, phoneNumber)
+                    if (state == TelephonyManager.CALL_STATE_OFFHOOK) {
+                        didPlaceCall = true
+                    }
+                }
+            }, PhoneStateListener.LISTEN_CALL_STATE)
+        } catch (_: Exception) {}
     }
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
@@ -101,6 +117,7 @@ class MainActivity : FlutterActivity() {
                     result.success(true)
                 }
                 "launchDialer" -> {
+                    didPlaceCall = false
                     val phone = call.argument<String>("phone") ?: ""
                     try {
                         val cleanPhone = phone.trim()
@@ -128,7 +145,18 @@ class MainActivity : FlutterActivity() {
                     val phone = call.argument<String>("phone") ?: ""
                     val startTimestamp = call.argument<Long>("startTimestamp") ?: 0L
                     val durationSeconds = queryLastCallDuration(phone, startTimestamp)
-                    result.success(durationSeconds)
+                    if (durationSeconds == -2L) {
+                        // Permission not granted: use hardware TelephonyManager state
+                        if (!didPlaceCall) {
+                            result.success(-1L)
+                        } else {
+                            result.success(0L)
+                        }
+                    } else if (durationSeconds == -1L && !didPlaceCall) {
+                        result.success(-1L)
+                    } else {
+                        result.success(durationSeconds)
+                    }
                 }
                 else -> result.notImplemented()
             }
@@ -137,7 +165,7 @@ class MainActivity : FlutterActivity() {
 
     private fun queryLastCallDuration(targetPhone: String, afterTimestamp: Long): Long {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CALL_LOG) != PackageManager.PERMISSION_GRANTED) {
-            return -1L // Return -1 if permission not granted
+            return -2L // Return -2 if permission not granted
         }
 
         try {
@@ -178,7 +206,7 @@ class MainActivity : FlutterActivity() {
                     // Only match outgoing calls placed during this dialing session
                     val isOutgoing = (callType == CallLog.Calls.OUTGOING_TYPE)
                     val isRecent = if (afterTimestamp > 0) {
-                        callDate >= (afterTimestamp - 15000L)
+                        callDate >= (afterTimestamp - 3000L)
                     } else {
                         System.currentTimeMillis() - callDate <= 900000L
                     }

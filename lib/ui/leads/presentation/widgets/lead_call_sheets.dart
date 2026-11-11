@@ -122,10 +122,11 @@ class LeadCallSheets {
                 child: ConstrainedBox(
                   constraints: const BoxConstraints(maxWidth: 440),
                   child: Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       // Top Dark Section: "Follow-ups" header + Call ended card
                       Padding(
-                        padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
+                        padding: const EdgeInsets.fromLTRB(20, 12, 20, 14),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -182,8 +183,8 @@ class LeadCallSheets {
                         ),
                       ),
 
-                      // Bottom White Sheet
-                      Expanded(
+                      // Bottom White Sheet (Hugs content cleanly with Save button docked at bottom)
+                      Flexible(
                         child: Container(
                           width: double.infinity,
                           decoration: const BoxDecoration(
@@ -196,356 +197,368 @@ class LeadCallSheets {
                             top: false,
                             child: StatefulBuilder(
                               builder: (ctx, setSheetState) {
-                                return SingleChildScrollView(
-                                  physics: const BouncingScrollPhysics(),
-                                  padding: EdgeInsets.fromLTRB(
-                                    20,
-                                    12,
-                                    20,
-                                    20 + MediaQuery.viewInsetsOf(ctx).bottom,
-                                  ),
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      // Top Drag Handle
-                                      Center(
-                                        child: Container(
-                                          width: 38,
-                                          height: 4,
-                                          margin: const EdgeInsets.only(bottom: 18),
-                                          decoration: BoxDecoration(
-                                            color: const Color(0xFFCBD5E1),
-                                            borderRadius: BorderRadius.circular(2),
-                                          ),
+                                return Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    // Top Drag Handle
+                                    Center(
+                                      child: Container(
+                                        width: 38,
+                                        height: 4,
+                                        margin: const EdgeInsets.only(top: 12, bottom: 14),
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFFCBD5E1),
+                                          borderRadius: BorderRadius.circular(2),
                                         ),
                                       ),
+                                    ),
 
-                                      // Title: How did the call go?
-                                      const Text(
-                                        'How did the call go?',
-                                        style: TextStyle(
-                                          fontSize: 18.5,
-                                          fontWeight: FontWeight.w800,
-                                          color: Color(0xFF0F172A),
-                                          letterSpacing: -0.3,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 14),
+                                    // Scrollable content area
+                                    Flexible(
+                                      child: SingleChildScrollView(
+                                        physics: const BouncingScrollPhysics(),
+                                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            // Title: How did the call go?
+                                            const Text(
+                                              'How did the call go?',
+                                              style: TextStyle(
+                                                fontSize: 18.5,
+                                                fontWeight: FontWeight.w800,
+                                                color: Color(0xFF0F172A),
+                                                letterSpacing: -0.3,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 14),
 
-                                      // 2x4 Outcomes Grid
-                                      ...outcomeRows.map((row) {
-                                        return Padding(
-                                          padding: const EdgeInsets.only(bottom: 10),
-                                          child: Row(
-                                            children: row.map((item) {
-                                              final name = item.$1;
-                                              final dotColor = item.$2;
-                                              final isSelected =
-                                                  selectedOutcome == name;
+                                            // 2x4 Outcomes Grid
+                                            ...outcomeRows.map((row) {
+                                              return Padding(
+                                                padding: const EdgeInsets.only(bottom: 10),
+                                                child: Row(
+                                                  children: row.map((item) {
+                                                    final name = item.$1;
+                                                    final dotColor = item.$2;
+                                                    final isSelected =
+                                                        selectedOutcome == name;
 
-                                              return Expanded(
-                                                child: Padding(
-                                                  padding: EdgeInsets.only(
-                                                    right: item == row.first ? 5 : 0,
-                                                    left: item == row.last ? 5 : 0,
-                                                  ),
-                                                  child: InkWell(
-                                                    onTap: () {
-                                                      setSheetState(
-                                                        () => selectedOutcome = name,
-                                                      );
-                                                    },
-                                                    borderRadius:
-                                                        BorderRadius.circular(12),
-                                                    child: Container(
-                                                      height: 48,
-                                                      decoration: BoxDecoration(
-                                                        color: isSelected
-                                                            ? const Color(0xFFEA580C)
-                                                            : Colors.white,
-                                                        borderRadius:
-                                                            BorderRadius.circular(12),
-                                                        border: Border.all(
-                                                          color: isSelected
-                                                              ? const Color(0xFFEA580C)
-                                                              : const Color(
-                                                                  0xFFE2E8F0,
-                                                                ),
+                                                    return Expanded(
+                                                      child: Padding(
+                                                        padding: EdgeInsets.only(
+                                                          right: item == row.first ? 5 : 0,
+                                                          left: item == row.last ? 5 : 0,
                                                         ),
-                                                      ),
-                                                      padding:
-                                                          const EdgeInsets.symmetric(
-                                                        horizontal: 14,
-                                                      ),
-                                                      child: Row(
-                                                        children: [
-                                                          Container(
-                                                            width: 8,
-                                                            height: 8,
+                                                        child: InkWell(
+                                                          onTap: () {
+                                                            setSheetState(
+                                                              () => selectedOutcome = name,
+                                                            );
+                                                          },
+                                                          borderRadius:
+                                                              BorderRadius.circular(12),
+                                                          child: Container(
+                                                            height: 48,
                                                             decoration: BoxDecoration(
                                                               color: isSelected
-                                                                  ? Colors.white
-                                                                  : dotColor,
-                                                              shape: BoxShape.circle,
-                                                            ),
-                                                          ),
-                                                          const SizedBox(width: 9),
-                                                          Expanded(
-                                                            child: Text(
-                                                              name,
-                                                              style: TextStyle(
-                                                                fontSize: 13.5,
-                                                                fontWeight:
-                                                                    FontWeight.w700,
+                                                                  ? const Color(0xFFEA580C)
+                                                                  : Colors.white,
+                                                              borderRadius:
+                                                                  BorderRadius.circular(12),
+                                                              border: Border.all(
                                                                 color: isSelected
-                                                                    ? Colors.white
+                                                                    ? const Color(0xFFEA580C)
                                                                     : const Color(
-                                                                        0xFF0F172A,
+                                                                        0xFFE2E8F0,
                                                                       ),
                                                               ),
-                                                              overflow: TextOverflow
-                                                                  .ellipsis,
+                                                            ),
+                                                            padding:
+                                                                const EdgeInsets.symmetric(
+                                                              horizontal: 14,
+                                                            ),
+                                                            child: Row(
+                                                              children: [
+                                                                Container(
+                                                                  width: 8,
+                                                                  height: 8,
+                                                                  decoration: BoxDecoration(
+                                                                    color: isSelected
+                                                                        ? Colors.white
+                                                                        : dotColor,
+                                                                    shape: BoxShape.circle,
+                                                                  ),
+                                                                ),
+                                                                const SizedBox(width: 9),
+                                                                Expanded(
+                                                                  child: Text(
+                                                                    name,
+                                                                    style: TextStyle(
+                                                                      fontSize: 13.5,
+                                                                      fontWeight:
+                                                                          FontWeight.w700,
+                                                                      color: isSelected
+                                                                          ? Colors.white
+                                                                          : const Color(
+                                                                              0xFF0F172A,
+                                                                            ),
+                                                                    ),
+                                                                    overflow: TextOverflow
+                                                                        .ellipsis,
+                                                                  ),
+                                                                ),
+                                                              ],
                                                             ),
                                                           ),
-                                                        ],
+                                                        ),
                                                       ),
+                                                    );
+                                                  }).toList(),
+                                                ),
+                                              );
+                                            }),
+
+                                            // Follow up when? (Shown when Follow-up is selected)
+                                            if (selectedOutcome == 'Follow-up') ...[
+                                              const SizedBox(height: 10),
+                                              const Text(
+                                                'Follow up when?',
+                                                style: TextStyle(
+                                                  fontSize: 14,
+                                                  fontWeight: FontWeight.w700,
+                                                  color: Color(0xFF0F172A),
+                                                ),
+                                              ),
+                                              const SizedBox(height: 10),
+                                              Wrap(
+                                                spacing: 8,
+                                                runSpacing: 8,
+                                                children: [
+                                                  _buildSlotPill(
+                                                    label: 'Today 5 PM',
+                                                    selected: selectedFollowUpSlot ==
+                                                        'Today 5 PM',
+                                                    onTap: () => setSheetState(
+                                                      () => selectedFollowUpSlot =
+                                                          'Today 5 PM',
                                                     ),
                                                   ),
-                                                ),
-                                              );
-                                            }).toList(),
-                                          ),
-                                        );
-                                      }),
+                                                  _buildSlotPill(
+                                                    label: 'Tomorrow 10:30',
+                                                    selected: selectedFollowUpSlot ==
+                                                        'Tomorrow 10:30',
+                                                    onTap: () => setSheetState(
+                                                      () => selectedFollowUpSlot =
+                                                          'Tomorrow 10:30',
+                                                    ),
+                                                  ),
+                                                  _buildSlotPill(
+                                                    label: selectedFollowUpSlot
+                                                                .startsWith('Pick') ||
+                                                            [
+                                                              'Today 5 PM',
+                                                              'Tomorrow 10:30',
+                                                              'In 3 days',
+                                                            ].contains(
+                                                              selectedFollowUpSlot,
+                                                            )
+                                                        ? 'Pick date...'
+                                                        : selectedFollowUpSlot,
+                                                    selected: ![
+                                                      'Today 5 PM',
+                                                      'Tomorrow 10:30',
+                                                      'In 3 days',
+                                                    ].contains(selectedFollowUpSlot),
+                                                    onTap: () async {
+                                                      final now = DateTime.now();
+                                                      final pickedDate =
+                                                          await showDatePicker(
+                                                        context: ctx,
+                                                        initialDate: now.add(
+                                                          const Duration(days: 1),
+                                                        ),
+                                                        firstDate: now,
+                                                        lastDate: now.add(
+                                                          const Duration(days: 90),
+                                                        ),
+                                                      );
+                                                      if (pickedDate != null &&
+                                                          ctx.mounted) {
+                                                        final pickedTime =
+                                                            await showTimePicker(
+                                                          context: ctx,
+                                                          initialTime: const TimeOfDay(
+                                                            hour: 10,
+                                                            minute: 30,
+                                                          ),
+                                                        );
+                                                        if (pickedTime != null &&
+                                                            ctx.mounted) {
+                                                          final dt = DateTime(
+                                                            pickedDate.year,
+                                                            pickedDate.month,
+                                                            pickedDate.day,
+                                                            pickedTime.hour,
+                                                            pickedTime.minute,
+                                                          );
+                                                          setSheetState(() {
+                                                            selectedFollowUpSlot =
+                                                                DateFormat(
+                                                              'EEE, d MMM · h:mm a',
+                                                            ).format(dt);
+                                                          });
+                                                        }
+                                                      }
+                                                    },
+                                                  ),
+                                                  _buildSlotPill(
+                                                    label: 'In 3 days',
+                                                    selected: selectedFollowUpSlot ==
+                                                        'In 3 days',
+                                                    onTap: () => setSheetState(
+                                                      () => selectedFollowUpSlot =
+                                                          'In 3 days',
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ],
 
-                                  // Follow up when? (Shown when Follow-up is selected)
-                                  if (selectedOutcome == 'Follow-up') ...[
-                                    const SizedBox(height: 10),
-                                    const Text(
-                                      'Follow up when?',
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w700,
-                                        color: Color(0xFF0F172A),
+                                            const SizedBox(height: 14),
+
+                                            // Notes (optional)
+                                            const Text(
+                                              'Notes (optional)',
+                                              style: TextStyle(
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.w700,
+                                                color: Color(0xFF0F172A),
+                                              ),
+                                            ),
+                                            const SizedBox(height: 8),
+
+                                            Container(
+                                              decoration: BoxDecoration(
+                                                color: Colors.white,
+                                                borderRadius: BorderRadius.circular(14),
+                                                border: Border.all(
+                                                  color: const Color(0xFFE2E8F0),
+                                                ),
+                                              ),
+                                              padding: const EdgeInsets.symmetric(
+                                                horizontal: 14,
+                                                vertical: 12,
+                                              ),
+                                              child: TextField(
+                                                controller: notesCtrl,
+                                                maxLines: 3,
+                                                minLines: 2,
+                                                style: const TextStyle(
+                                                  fontSize: 13.5,
+                                                  color: Color(0xFF334155),
+                                                  height: 1.4,
+                                                ),
+                                                decoration: const InputDecoration(
+                                                  isDense: true,
+                                                  contentPadding: EdgeInsets.zero,
+                                                  hintText:
+                                                      'Wants fee details and batch timings.\nPrefers WhatsApp.',
+                                                  hintStyle: TextStyle(
+                                                    color: Color(0xFF64748B),
+                                                    fontSize: 13,
+                                                    height: 1.4,
+                                                  ),
+                                                  border: InputBorder.none,
+                                                  enabledBorder: InputBorder.none,
+                                                  focusedBorder: InputBorder.none,
+                                                ),
+                                              ),
+                                            ),
+                                            const SizedBox(height: 12),
+                                          ],
+                                        ),
                                       ),
                                     ),
-                                    const SizedBox(height: 10),
-                                    Wrap(
-                                      spacing: 8,
-                                      runSpacing: 8,
-                                      children: [
-                                        _buildSlotPill(
-                                          label: 'Today 5 PM',
-                                          selected: selectedFollowUpSlot ==
-                                              'Today 5 PM',
-                                          onTap: () => setSheetState(
-                                            () => selectedFollowUpSlot =
-                                                'Today 5 PM',
-                                          ),
-                                        ),
-                                        _buildSlotPill(
-                                          label: 'Tomorrow 10:30',
-                                          selected: selectedFollowUpSlot ==
-                                              'Tomorrow 10:30',
-                                          onTap: () => setSheetState(
-                                            () => selectedFollowUpSlot =
-                                                'Tomorrow 10:30',
-                                          ),
-                                        ),
-                                        _buildSlotPill(
-                                          label: selectedFollowUpSlot
-                                                      .startsWith('Pick') ||
-                                                  [
-                                                    'Today 5 PM',
-                                                    'Tomorrow 10:30',
-                                                    'In 3 days',
-                                                  ].contains(
+
+                                    // Pinned Save Button at the Bottom (Zero extra white space)
+                                    Padding(
+                                      padding: EdgeInsets.fromLTRB(
+                                        20,
+                                        8,
+                                        20,
+                                        16 + MediaQuery.viewInsetsOf(ctx).bottom,
+                                      ),
+                                      child: SizedBox(
+                                        width: double.infinity,
+                                        height: 52,
+                                        child: ElevatedButton(
+                                          onPressed: () async {
+                                            if (ctx.mounted) {
+                                              Navigator.pop(ctx);
+                                            }
+                                            try {
+                                              final result = await cubit
+                                                  .recordCallOutcome(
+                                                    leadId: leadId,
+                                                    leadName: leadName,
+                                                    outcome: selectedOutcome,
+                                                    duration: displayDuration,
+                                                    notes: notesCtrl.text.trim(),
+                                                    followUpTime:
+                                                        selectedFollowUpSlot,
+                                                  );
+                                              followUpsCubit.addFromCallOutcome(
+                                                leadName: leadName,
+                                                collegeInfo: result.collegeInfo,
+                                                outcome: selectedOutcome,
+                                                notes: notesCtrl.text.trim(),
+                                                followUpTimeLabel:
                                                     selectedFollowUpSlot,
-                                                  )
-                                              ? 'Pick date...'
-                                              : selectedFollowUpSlot,
-                                          selected: ![
-                                            'Today 5 PM',
-                                            'Tomorrow 10:30',
-                                            'In 3 days',
-                                          ].contains(selectedFollowUpSlot),
-                                          onTap: () async {
-                                            final now = DateTime.now();
-                                            final pickedDate =
-                                                await showDatePicker(
-                                              context: ctx,
-                                              initialDate: now.add(
-                                                const Duration(days: 1),
-                                              ),
-                                              firstDate: now,
-                                              lastDate: now.add(
-                                                const Duration(days: 90),
-                                              ),
-                                            );
-                                            if (pickedDate != null &&
-                                                ctx.mounted) {
-                                              final pickedTime =
-                                                  await showTimePicker(
-                                                context: ctx,
-                                                initialTime: const TimeOfDay(
-                                                  hour: 10,
-                                                  minute: 30,
-                                                ),
                                               );
-                                              if (pickedTime != null &&
-                                                  ctx.mounted) {
-                                                final dt = DateTime(
-                                                  pickedDate.year,
-                                                  pickedDate.month,
-                                                  pickedDate.day,
-                                                  pickedTime.hour,
-                                                  pickedTime.minute,
+                                              if (context.mounted) {
+                                                SnackBarAlert.showToast(
+                                                  context: context,
+                                                  message:
+                                                      'Outcome saved for $leadName',
                                                 );
-                                                setSheetState(() {
-                                                  selectedFollowUpSlot =
-                                                      DateFormat(
-                                                    'EEE, d MMM · h:mm a',
-                                                  ).format(dt);
-                                                });
                                               }
+                                            } catch (e) {
+                                              debugPrint(
+                                                'recordCallOutcome error: $e',
+                                              );
                                             }
                                           },
-                                        ),
-                                        _buildSlotPill(
-                                          label: 'In 3 days',
-                                          selected: selectedFollowUpSlot ==
-                                              'In 3 days',
-                                          onTap: () => setSheetState(
-                                            () => selectedFollowUpSlot =
-                                                'In 3 days',
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor:
+                                                const Color(0xFFE85926),
+                                            foregroundColor: Colors.white,
+                                            elevation: 0,
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(14),
+                                            ),
+                                          ),
+                                          child: const Text(
+                                            'Save',
+                                            style: TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.w700,
+                                              color: Colors.white,
+                                            ),
                                           ),
                                         ),
-                                      ],
+                                      ),
                                     ),
                                   ],
-
-                                  const SizedBox(height: 18),
-
-                                  // Notes (optional)
-                                  const Text(
-                                    'Notes (optional)',
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w700,
-                                      color: Color(0xFF0F172A),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 10),
-
-                                  Container(
-                                    decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      borderRadius: BorderRadius.circular(14),
-                                      border: Border.all(
-                                        color: const Color(0xFFE2E8F0),
-                                      ),
-                                    ),
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 14,
-                                      vertical: 12,
-                                    ),
-                                    child: TextField(
-                                      controller: notesCtrl,
-                                      maxLines: 3,
-                                      minLines: 2,
-                                      style: const TextStyle(
-                                        fontSize: 13.5,
-                                        color: Color(0xFF334155),
-                                        height: 1.4,
-                                      ),
-                                      decoration: const InputDecoration(
-                                        isDense: true,
-                                        contentPadding: EdgeInsets.zero,
-                                        hintText:
-                                            'Wants fee details and batch timings.\nPrefers WhatsApp.',
-                                        hintStyle: TextStyle(
-                                          color: Color(0xFF64748B),
-                                          fontSize: 13,
-                                          height: 1.4,
-                                        ),
-                                        border: InputBorder.none,
-                                        enabledBorder: InputBorder.none,
-                                        focusedBorder: InputBorder.none,
-                                      ),
-                                    ),
-                                  ),
-
-                                  const SizedBox(height: 22),
-
-                                  // Save Button (Orange, Full Width)
-                                  SizedBox(
-                                    width: double.infinity,
-                                    height: 52,
-                                    child: ElevatedButton(
-                                      onPressed: () async {
-                                        if (ctx.mounted) {
-                                          Navigator.pop(ctx);
-                                        }
-                                        try {
-                                          final result = await cubit
-                                              .recordCallOutcome(
-                                                leadId: leadId,
-                                                leadName: leadName,
-                                                outcome: selectedOutcome,
-                                                duration: displayDuration,
-                                                notes: notesCtrl.text.trim(),
-                                                followUpTime:
-                                                    selectedFollowUpSlot,
-                                              );
-                                          followUpsCubit.addFromCallOutcome(
-                                            leadName: leadName,
-                                            collegeInfo: result.collegeInfo,
-                                            outcome: selectedOutcome,
-                                            notes: notesCtrl.text.trim(),
-                                            followUpTimeLabel:
-                                                selectedFollowUpSlot,
-                                          );
-                                          if (context.mounted) {
-                                            SnackBarAlert.showToast(
-                                              context: context,
-                                              message:
-                                                  'Outcome saved for $leadName',
-                                            );
-                                          }
-                                        } catch (e) {
-                                          debugPrint(
-                                            'recordCallOutcome error: $e',
-                                          );
-                                        }
-                                      },
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor:
-                                            const Color(0xFFE85926),
-                                        foregroundColor: Colors.white,
-                                        elevation: 0,
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(14),
-                                        ),
-                                      ),
-                                      child: const Text(
-                                        'Save',
-                                        style: TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w700,
-                                          color: Colors.white,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            );
-                          },
+                                );
+                              },
+                            ),
+                          ),
                         ),
                       ),
-                    ),
-                  ),
                 ],
               ),
             ),
