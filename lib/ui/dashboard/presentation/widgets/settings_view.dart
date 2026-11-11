@@ -1006,7 +1006,12 @@ class _SettingsViewState extends State<SettingsView>
                 const Gap(16),
                 SwitchListTile(
                   contentPadding: EdgeInsets.zero,
-                  activeThumbColor: _primary,
+                  activeTrackColor: _primary,
+                  inactiveTrackColor: const Color(0xFFE2E8F0),
+                  thumbColor: WidgetStateProperty.all(Colors.white),
+                  trackOutlineColor: WidgetStateProperty.all(
+                    Colors.transparent,
+                  ),
                   title: const Text(
                     'Auto-assign Walk-in Leads to Creator',
                     style: TextStyle(
@@ -1025,7 +1030,12 @@ class _SettingsViewState extends State<SettingsView>
                 const Gap(8),
                 SwitchListTile(
                   contentPadding: EdgeInsets.zero,
-                  activeThumbColor: _primary,
+                  activeTrackColor: _primary,
+                  inactiveTrackColor: const Color(0xFFE2E8F0),
+                  thumbColor: WidgetStateProperty.all(Colors.white),
+                  trackOutlineColor: WidgetStateProperty.all(
+                    Colors.transparent,
+                  ),
                   title: const Text(
                     'Biometric / PIN Screen Lock',
                     style: TextStyle(
