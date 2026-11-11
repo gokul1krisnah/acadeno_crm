@@ -22,6 +22,8 @@ class FollowUpsTabView extends StatefulWidget {
 
 class _FollowUpsTabViewState extends State<FollowUpsTabView> {
   late final PageController _pageController;
+  bool _isProgrammaticScroll = false;
+  int? _targetPageIndex;
 
   @override
   void initState() {
@@ -40,17 +42,51 @@ class _FollowUpsTabViewState extends State<FollowUpsTabView> {
     super.dispose();
   }
 
+  void _onTabTapped(FollowUpsCubit cubit, FollowUpBucket bucket) {
+    final target = bucket.index;
+    if (_pageController.hasClients &&
+        _pageController.page?.round() == target &&
+        !_isProgrammaticScroll) {
+      return;
+    }
+    setState(() {
+      _isProgrammaticScroll = true;
+      _targetPageIndex = target;
+    });
+    cubit.selectFollowUpBucket(bucket);
+    if (_pageController.hasClients) {
+      _pageController
+          .animateToPage(
+            target,
+            duration: const Duration(milliseconds: 280),
+            curve: Curves.easeInOutCubic,
+          )
+          .then((_) {
+            if (mounted) {
+              setState(() {
+                _isProgrammaticScroll = false;
+                _targetPageIndex = null;
+              });
+            }
+          });
+    } else {
+      _isProgrammaticScroll = false;
+      _targetPageIndex = null;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<FollowUpsCubit, FollowUpsState>(
       listener: (context, state) {
         final targetPage = state.selectedFollowUpBucket.index;
-        if (_pageController.hasClients &&
+        if (!_isProgrammaticScroll &&
+            _pageController.hasClients &&
             _pageController.page?.round() != targetPage) {
           _pageController.animateToPage(
             targetPage,
             duration: const Duration(milliseconds: 280),
-            curve: Curves.easeInOut,
+            curve: Curves.easeInOutCubic,
           );
         }
       },
@@ -74,10 +110,10 @@ class _FollowUpsTabViewState extends State<FollowUpsTabView> {
                     const Text(
                       'Follow-ups',
                       style: TextStyle(
-                        fontSize: 26,
-                        fontWeight: FontWeight.w700,
+                        fontSize: 24,
+                        fontWeight: FontWeight.w600,
                         color: Color(0xFF0F172A),
-                        letterSpacing: -0.5,
+                        letterSpacing: -0.4,
                       ),
                     ),
                     const Gap(18),
@@ -91,16 +127,10 @@ class _FollowUpsTabViewState extends State<FollowUpsTabView> {
                             isSelected:
                                 state.selectedFollowUpBucket ==
                                 FollowUpBucket.overdue,
-                            onTap: () {
-                              cubit.selectFollowUpBucket(
-                                FollowUpBucket.overdue,
-                              );
-                              _pageController.animateToPage(
-                                0,
-                                duration: const Duration(milliseconds: 280),
-                                curve: Curves.easeInOut,
-                              );
-                            },
+                            onTap: () => _onTabTapped(
+                              cubit,
+                              FollowUpBucket.overdue,
+                            ),
                           ),
                         ),
                         Expanded(
@@ -109,14 +139,10 @@ class _FollowUpsTabViewState extends State<FollowUpsTabView> {
                             isSelected:
                                 state.selectedFollowUpBucket ==
                                 FollowUpBucket.today,
-                            onTap: () {
-                              cubit.selectFollowUpBucket(FollowUpBucket.today);
-                              _pageController.animateToPage(
-                                1,
-                                duration: const Duration(milliseconds: 280),
-                                curve: Curves.easeInOut,
-                              );
-                            },
+                            onTap: () => _onTabTapped(
+                              cubit,
+                              FollowUpBucket.today,
+                            ),
                           ),
                         ),
                         Expanded(
@@ -125,19 +151,57 @@ class _FollowUpsTabViewState extends State<FollowUpsTabView> {
                             isSelected:
                                 state.selectedFollowUpBucket ==
                                 FollowUpBucket.upcoming,
-                            onTap: () {
-                              cubit.selectFollowUpBucket(
-                                FollowUpBucket.upcoming,
-                              );
-                              _pageController.animateToPage(
-                                2,
-                                duration: const Duration(milliseconds: 280),
-                                curve: Curves.easeInOut,
-                              );
-                            },
+                            onTap: () => _onTabTapped(
+                              cubit,
+                              FollowUpBucket.upcoming,
+                            ),
                           ),
                         ),
                       ],
+                    ),
+                    const Gap(6),
+                    // Single continuous sliding indicator (prevents blinking when crossing intermediate tabs)
+                    SizedBox(
+                      height: 3,
+                      width: double.infinity,
+                      child: Stack(
+                        children: [
+                          Positioned(
+                            bottom: 0,
+                            left: 0,
+                            right: 0,
+                            child: Container(
+                              height: 1,
+                              color: const Color(0xFFF1F5F9),
+                            ),
+                          ),
+                          AnimatedAlign(
+                            alignment: switch (state.selectedFollowUpBucket) {
+                              FollowUpBucket.overdue =>
+                                const Alignment(-1.0, 0.0),
+                              FollowUpBucket.today =>
+                                const Alignment(0.0, 0.0),
+                              FollowUpBucket.upcoming =>
+                                const Alignment(1.0, 0.0),
+                            },
+                            duration: const Duration(milliseconds: 260),
+                            curve: Curves.easeInOutCubic,
+                            child: FractionallySizedBox(
+                              widthFactor: 1 / 3,
+                              child: Center(
+                                child: Container(
+                                  height: 3,
+                                  width: 52,
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFE86938),
+                                    borderRadius: BorderRadius.circular(2),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
@@ -151,6 +215,16 @@ class _FollowUpsTabViewState extends State<FollowUpsTabView> {
                     parent: BouncingScrollPhysics(),
                   ),
                   onPageChanged: (pageIndex) {
+                    if (_isProgrammaticScroll) {
+                      if (_targetPageIndex != null &&
+                          pageIndex == _targetPageIndex) {
+                        setState(() {
+                          _isProgrammaticScroll = false;
+                          _targetPageIndex = null;
+                        });
+                      }
+                      return;
+                    }
                     final bucket = FollowUpBucket.values[pageIndex];
                     cubit.selectFollowUpBucket(bucket);
                   },
@@ -382,38 +456,25 @@ class _TabItem extends StatelessWidget {
       onTap: onTap,
       splashColor: Colors.transparent,
       highlightColor: Colors.transparent,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4),
-            child: FittedBox(
-              fit: BoxFit.scaleDown,
-              child: Text(
-                title,
-                maxLines: 1,
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  letterSpacing: 0.8,
-                  color: isSelected
-                      ? const Color(0xFF0F172A)
-                      : const Color(0xFF94A3B8),
-                ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+        child: Center(
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: AnimatedDefaultTextStyle(
+              duration: const Duration(milliseconds: 200),
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                letterSpacing: 0.8,
+                color: isSelected
+                    ? const Color(0xFF0F172A)
+                    : const Color(0xFF94A3B8),
               ),
+              child: Text(title, maxLines: 1),
             ),
           ),
-          const Gap(8),
-          Container(
-            height: 3,
-            width: double.infinity,
-            margin: const EdgeInsets.symmetric(horizontal: 16),
-            decoration: BoxDecoration(
-              color: isSelected ? const Color(0xFFE86938) : Colors.transparent,
-              borderRadius: BorderRadius.circular(2),
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
