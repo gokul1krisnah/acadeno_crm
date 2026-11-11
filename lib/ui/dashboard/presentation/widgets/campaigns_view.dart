@@ -1272,7 +1272,9 @@ class _CampaignsViewState extends State<CampaignsView> {
                       ),
                       Expanded(
                         flex: 2,
-                        child: Text('LAST CONTACT', style: headerStyle),
+                        child: Center(
+                          child: Text('LAST CONTACT', style: headerStyle),
+                        ),
                       ),
                       Expanded(
                         flex: 3,
@@ -1409,13 +1411,16 @@ class _CampaignsViewState extends State<CampaignsView> {
                               ),
                               Expanded(
                                 flex: 2,
-                                child: Text(
-                                  lead.lastContact,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(
-                                    fontSize: 12.5,
-                                    color: Color(0xFF667085),
+                                child: Center(
+                                  child: Text(
+                                    lead.lastContact,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    textAlign: TextAlign.center,
+                                    style: const TextStyle(
+                                      fontSize: 12.5,
+                                      color: Color(0xFF667085),
+                                    ),
                                   ),
                                 ),
                               ),
