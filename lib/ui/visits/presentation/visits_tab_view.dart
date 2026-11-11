@@ -470,6 +470,9 @@ class VisitsTabView extends StatelessWidget {
       text: visit.interestedCount > 0 ? '${visit.interestedCount}' : '',
     );
     bool isCancelled = visit.statusLabel == 'Cancelled';
+    final cancelReasonCtrl = TextEditingController(
+      text: isCancelled ? visit.metSummary : '',
+    );
 
     showDialog(
       context: context,
@@ -529,8 +532,12 @@ class VisitsTabView extends StatelessWidget {
                         children: [
                           Expanded(
                             child: InkWell(
-                              onTap: () =>
-                                  setSheetState(() => isCancelled = false),
+                              onTap: () {
+                                setSheetState(() {
+                                  isCancelled = false;
+                                  formKey.currentState?.reset();
+                                });
+                              },
                               borderRadius: BorderRadius.circular(10),
                               child: Container(
                                 decoration: BoxDecoration(
@@ -579,8 +586,12 @@ class VisitsTabView extends StatelessWidget {
                           ),
                           Expanded(
                             child: InkWell(
-                              onTap: () =>
-                                  setSheetState(() => isCancelled = true),
+                              onTap: () {
+                                setSheetState(() {
+                                  isCancelled = true;
+                                  formKey.currentState?.reset();
+                                });
+                              },
                               borderRadius: BorderRadius.circular(10),
                               child: Container(
                                 decoration: BoxDecoration(
@@ -635,8 +646,10 @@ class VisitsTabView extends StatelessWidget {
                     // Inputs matching Log Visit Figma styling with Native Form Validation
                     if (!isCancelled) ...[
                       TextFormField(
+                        key: const ValueKey('completed_persons_met'),
                         controller: metCtrl,
                         validator: (v) {
+                          if (isCancelled) return null;
                           if (v == null || v.trim().isEmpty) {
                             return 'Please enter persons met';
                           }
@@ -713,9 +726,11 @@ class VisitsTabView extends StatelessWidget {
                         children: [
                           Expanded(
                             child: TextFormField(
+                              key: const ValueKey('completed_leads_collected'),
                               controller: leadsCtrl,
                               keyboardType: TextInputType.number,
                               validator: (v) {
+                                if (isCancelled) return null;
                                 if (v == null || v.trim().isEmpty) {
                                   return 'Enter count';
                                 }
@@ -794,9 +809,11 @@ class VisitsTabView extends StatelessWidget {
                           const SizedBox(width: 10),
                           Expanded(
                             child: TextFormField(
+                              key: const ValueKey('completed_interested_count'),
                               controller: interestedCtrl,
                               keyboardType: TextInputType.number,
                               validator: (v) {
+                                if (isCancelled) return null;
                                 if (v == null || v.trim().isEmpty) {
                                   return 'Enter count';
                                 }
@@ -876,8 +893,10 @@ class VisitsTabView extends StatelessWidget {
                       ),
                       const SizedBox(height: 14),
                       TextFormField(
+                        key: const ValueKey('completed_next_action'),
                         controller: nextCtrl,
                         validator: (v) {
+                          if (isCancelled) return null;
                           if (v == null || v.trim().isEmpty) {
                             return 'Please enter next action & follow-up';
                           }
@@ -950,8 +969,10 @@ class VisitsTabView extends StatelessWidget {
                       ),
                     ] else ...[
                       TextFormField(
-                        controller: metCtrl,
+                        key: const ValueKey('cancelled_reason_notes'),
+                        controller: cancelReasonCtrl,
                         validator: (v) {
+                          if (!isCancelled) return null;
                           if (v == null || v.trim().isEmpty) {
                             return 'Please enter cancellation reason & notes';
                           }
@@ -1035,7 +1056,9 @@ class VisitsTabView extends StatelessWidget {
                           if (isCancelled) {
                             cubit.cancelCollegeVisit(
                               visitId: visit.id,
-                              reason: metCtrl.text.trim(),
+                              reason: cancelReasonCtrl.text.trim().isNotEmpty
+                                  ? cancelReasonCtrl.text.trim()
+                                  : metCtrl.text.trim(),
                             );
                           } else {
                             cubit.recordVisitOutcome(

@@ -143,7 +143,7 @@ class MainActivity : FlutterActivity() {
                 }
                 "getLastCallDuration" -> {
                     val phone = call.argument<String>("phone") ?: ""
-                    val startTimestamp = call.argument<Long>("startTimestamp") ?: 0L
+                    val startTimestamp = (call.argument<Number>("startTimestamp"))?.toLong() ?: 0L
                     val durationSeconds = queryLastCallDuration(phone, startTimestamp)
                     if (durationSeconds == -2L) {
                         // Permission not granted: use hardware TelephonyManager state
@@ -154,8 +154,10 @@ class MainActivity : FlutterActivity() {
                         }
                     } else if (durationSeconds == -1L && !didPlaceCall) {
                         result.success(-1L)
-                    } else {
+                    } else if (durationSeconds >= 0L) {
                         result.success(durationSeconds)
+                    } else {
+                        result.success(-1L)
                     }
                 }
                 else -> result.notImplemented()

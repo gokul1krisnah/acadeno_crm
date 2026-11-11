@@ -571,9 +571,12 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
                             child: InkWell(
                               onTap: isSaving
                                   ? null
-                                  : () => setDialogState(
-                                        () => isCancelled = false,
-                                      ),
+                                  : () {
+                                      setDialogState(() {
+                                        isCancelled = false;
+                                        formKey.currentState?.reset();
+                                      });
+                                    },
                               borderRadius: BorderRadius.circular(10),
                               child: Container(
                                 decoration: BoxDecoration(
@@ -624,9 +627,12 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
                             child: InkWell(
                               onTap: isSaving
                                   ? null
-                                  : () => setDialogState(
-                                        () => isCancelled = true,
-                                      ),
+                                  : () {
+                                      setDialogState(() {
+                                        isCancelled = true;
+                                        formKey.currentState?.reset();
+                                      });
+                                    },
                               borderRadius: BorderRadius.circular(10),
                               child: Container(
                                 decoration: BoxDecoration(
@@ -680,6 +686,7 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
 
                     // Inputs matching Log Visit Figma styling with Native Form Validation
                     TextFormField(
+                      key: ValueKey('visit_outcome_notes_$isCancelled'),
                       controller: notesCtrl,
                       validator: (v) {
                         if (v == null || v.trim().isEmpty) {
@@ -761,9 +768,11 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
                     if (!isCancelled) ...[
                       const SizedBox(height: 14),
                       TextFormField(
+                        key: const ValueKey('visit_outcome_leads'),
                         controller: leadsCtrl,
                         keyboardType: TextInputType.number,
                         validator: (v) {
+                          if (isCancelled) return null;
                           if (v == null || v.trim().isEmpty) {
                             return 'Please enter student leads count';
                           }

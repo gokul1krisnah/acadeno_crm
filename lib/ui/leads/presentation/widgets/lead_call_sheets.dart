@@ -183,21 +183,27 @@ class LeadCallSheets {
                         ),
                       ),
 
+                      // Spacer pushes sheet to bottom and absorbs extra vertical room
+                      const Spacer(),
+
                       // Bottom White Sheet (Hugs content cleanly with Save button docked at bottom)
-                      Flexible(
-                        child: Container(
-                          width: double.infinity,
-                          decoration: const BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.vertical(
-                              top: Radius.circular(28),
-                            ),
+                      Container(
+                        width: double.infinity,
+                        decoration: const BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.vertical(
+                            top: Radius.circular(28),
                           ),
-                          child: SafeArea(
-                            top: false,
-                            child: StatefulBuilder(
-                              builder: (ctx, setSheetState) {
-                                return Column(
+                        ),
+                        child: SafeArea(
+                          top: false,
+                          child: StatefulBuilder(
+                            builder: (ctx, setSheetState) {
+                              return ConstrainedBox(
+                                constraints: BoxConstraints(
+                                  maxHeight: MediaQuery.sizeOf(ctx).height * 0.78,
+                                ),
+                                child: Column(
                                   mainAxisSize: MainAxisSize.min,
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
@@ -489,7 +495,9 @@ class LeadCallSheets {
                                         20,
                                         8,
                                         20,
-                                        16 + MediaQuery.viewInsetsOf(ctx).bottom,
+                                        16 +
+                                            MediaQuery.paddingOf(ctx).bottom +
+                                            MediaQuery.viewInsetsOf(ctx).bottom,
                                       ),
                                       child: SizedBox(
                                         width: double.infinity,
@@ -553,9 +561,9 @@ class LeadCallSheets {
                                       ),
                                     ),
                                   ],
-                                );
-                              },
-                            ),
+                                ),
+                              );
+                            },
                           ),
                         ),
                       ),

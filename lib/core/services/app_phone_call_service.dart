@@ -155,39 +155,33 @@ class AppPhoneCallService with WidgetsBindingObserver {
         int? res = await _channel.invokeMethod<int>('getLastCallDuration', {
           'phone': cleanPhone,
           'startTimestamp': startMs,
-        }).timeout(const Duration(milliseconds: 250), onTimeout: () => null);
+        }).timeout(const Duration(milliseconds: 300), onTimeout: () => null);
 
-        // If -1 (no call found yet), give a 300ms window for the system dialer
+        // If -1 (no call found yet), give a 350ms window for the system dialer
         // process to flush the call record to the SQLite CallLog provider
         if (res == -1) {
-          await Future<void>.delayed(const Duration(milliseconds: 300));
+          await Future<void>.delayed(const Duration(milliseconds: 350));
           res = await _channel.invokeMethod<int>('getLastCallDuration', {
             'phone': cleanPhone,
             'startTimestamp': startMs,
-          }).timeout(const Duration(milliseconds: 300), onTimeout: () => -1);
+          }).timeout(const Duration(milliseconds: 350), onTimeout: () => -1);
         }
 
         if (res != null && res >= 0) {
           // Outgoing call was placed and verified from CallLog
           callWasPlaced = true;
           durationSeconds = res;
-        } else if (res == -1) {
+        } else {
           // Explicitly verified: No call was placed by HR
           callWasPlaced = false;
-        } else {
-          // Permission not granted or query timeout fallback
-          callWasPlaced = elapsedMs >= 3000;
-          durationSeconds = (elapsedMs / 1000).round();
         }
       } catch (e) {
         debugPrint('[AppPhoneCallService] CallLog check error: $e');
-        callWasPlaced = elapsedMs >= 3000;
-        durationSeconds = (elapsedMs / 1000).round();
+        callWasPlaced = false;
       }
     } else {
-      // Web / desktop fallback: require at least 3 seconds
-      callWasPlaced = elapsedMs >= 3000;
-      durationSeconds = (elapsedMs / 1000).round();
+      // Non-Android platforms: strictly do not show without verified call
+      callWasPlaced = false;
     }
 
     // Only show outcome sheet if the HR actually made the call!
