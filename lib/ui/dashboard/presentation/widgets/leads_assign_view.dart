@@ -2429,7 +2429,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
         }
 
         const h = TextStyle(
-          fontSize: 11.5,
+          fontSize: 11,
           fontWeight: FontWeight.w700,
           color: Color(0xFF475467),
           letterSpacing: 0.5,
@@ -2438,12 +2438,12 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
           children: [
             Container(
               color: const Color(0xFFF8FAFC),
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Expanded(
-                    flex: 4,
+                    flex: 5,
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
@@ -2451,22 +2451,25 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                           value: allSelectedOnPage,
                           onChanged: (v) => cubit.toggleSelectAllOnPage(v ?? false),
                         ),
-                        const Gap(16),
+                        const Gap(20),
                         const Text('NAME', style: h),
                       ],
                     ),
                   ),
                   const Expanded(
-                    flex: 4,
+                    flex: 9,
                     child: Text('COLLEGE - BRANCH', style: h),
                   ),
-                  const Expanded(flex: 3, child: Text('SOURCE', style: h)),
-                  const Expanded(flex: 2, child: Text('STATUS', style: h)),
-                  const Expanded(
-                    flex: 2,
-                    child: Text('LAST CONTACT', style: h),
+                  const Expanded(flex: 4, child: Text('SOURCE', style: h)),
+                  const Expanded(flex: 3, child: Text('STATUS', style: h)),
+                  Expanded(
+                    flex: 3,
+                    child: Text(
+                      'LAST\nCONTACT',
+                      style: h.copyWith(height: 1.2),
+                    ),
                   ),
-                  const Expanded(flex: 2, child: Text('ASSIGNED TO', style: h)),
+                  const Expanded(flex: 3, child: Text('ASSIGNED TO', style: h)),
                 ],
               ),
             ),
@@ -2485,14 +2488,14 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                           ? const Color(0xFFF5F6FF)
                           : Colors.white,
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 24,
-                        vertical: 18,
+                        horizontal: 20,
+                        vertical: 14,
                       ),
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           Expanded(
-                            flex: 4,
+                            flex: 5,
                             child: Row(
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
@@ -2501,7 +2504,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                                   onChanged: (v) =>
                                       cubit.toggleLeadSelection(r.id, v ?? false),
                                 ),
-                                const Gap(16),
+                                const Gap(20),
                                 Expanded(
                                   child: Column(
                                     crossAxisAlignment:
@@ -2511,7 +2514,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                                     children: [
                                       Text(
                                         r.name,
-                                        maxLines: 1,
+                                        maxLines: 2,
                                         overflow: TextOverflow.ellipsis,
                                         style: GoogleFonts.poppins(
                                           fontSize: 16,
@@ -2541,7 +2544,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                             ),
                           ),
                           Expanded(
-                            flex: 4,
+                            flex: 9,
                             child: Align(
                               alignment: Alignment.centerLeft,
                               child: Text(
@@ -2557,7 +2560,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                             ),
                           ),
                           Expanded(
-                            flex: 3,
+                            flex: 4,
                             child: Align(
                               alignment: Alignment.centerLeft,
                               child: Text(
@@ -2573,14 +2576,14 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                             ),
                           ),
                           Expanded(
-                            flex: 2,
+                            flex: 3,
                             child: Align(
                               alignment: Alignment.centerLeft,
                               child: _statusBadge(r.status),
                             ),
                           ),
                           Expanded(
-                            flex: 2,
+                            flex: 3,
                             child: Align(
                               alignment: Alignment.centerLeft,
                               child: Text(
@@ -2594,7 +2597,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                             ),
                           ),
                           Expanded(
-                            flex: 2,
+                            flex: 3,
                             child: Align(
                               alignment: Alignment.centerLeft,
                               child: Text(
