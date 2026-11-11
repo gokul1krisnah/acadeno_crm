@@ -298,6 +298,8 @@ class _SettingsViewState extends State<SettingsView>
                 child: TabBar(
                   controller: _tabController,
                   isScrollable: true,
+                  tabAlignment: TabAlignment.start,
+                  padding: EdgeInsets.zero,
                   onTap: (_) => setState(() {}),
                   labelColor: _primary,
                   unselectedLabelColor: _muted,
