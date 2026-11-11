@@ -369,56 +369,29 @@ class _DashboardViewState extends State<_DashboardView> {
                               children: [
                                 if (!showSidebar &&
                                     state.selectedNavIndex != 0) ...[
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      InkWell(
-                                        onTap: () => _scaffoldKey.currentState
-                                            ?.openDrawer(),
-                                        borderRadius: BorderRadius.circular(8),
-                                        child: Container(
-                                          width: 40,
-                                          height: 40,
-                                          decoration: BoxDecoration(
-                                            color: Colors.white,
-                                            borderRadius: BorderRadius.circular(
-                                              8,
-                                            ),
-                                            border: Border.all(color: _border),
+                                  Align(
+                                    alignment: Alignment.centerLeft,
+                                    child: InkWell(
+                                      onTap: () => _scaffoldKey.currentState
+                                          ?.openDrawer(),
+                                      borderRadius: BorderRadius.circular(8),
+                                      child: Container(
+                                        width: 40,
+                                        height: 40,
+                                        decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          borderRadius: BorderRadius.circular(
+                                            8,
                                           ),
-                                          child: const Icon(
-                                            Icons.menu_rounded,
-                                            color: _text,
-                                            size: 22,
-                                          ),
+                                          border: Border.all(color: _border),
+                                        ),
+                                        child: const Icon(
+                                          Icons.menu_rounded,
+                                          color: _text,
+                                          size: 22,
                                         ),
                                       ),
-                                      InkWell(
-                                        onTap: _logout,
-                                        borderRadius: BorderRadius.circular(12),
-                                        child: Container(
-                                          width: 40,
-                                          height: 40,
-                                          decoration: BoxDecoration(
-                                            color: const Color(0xFFF9FAFB),
-                                            borderRadius: BorderRadius.circular(
-                                              12,
-                                            ),
-                                            border: Border.all(
-                                              color: const Color(0xFFF3F4F6),
-                                              width: 1,
-                                            ),
-                                          ),
-                                          alignment: Alignment.center,
-                                          child: SvgPicture.asset(
-                                            'assets/svgs/logout.svg',
-                                            width: 16,
-                                            height: 16,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
+                                    ),
                                   ),
                                   const SizedBox(height: 14),
                                 ],
