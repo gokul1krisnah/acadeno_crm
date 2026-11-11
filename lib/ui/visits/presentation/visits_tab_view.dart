@@ -1740,17 +1740,17 @@ class _UpcomingVisitCard extends StatelessWidget {
                 color: Colors.transparent,
                 child: InkWell(
                   onTap: onDelete,
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(8),
                   child: Container(
-                    padding: const EdgeInsets.all(9),
+                    padding: const EdgeInsets.all(6.5),
                     decoration: BoxDecoration(
                       color: const Color(0xFFFEF2F2),
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(8),
                       border: Border.all(color: const Color(0xFFFECACA)),
                     ),
                     child: const Icon(
                       CupertinoIcons.trash,
-                      size: 18,
+                      size: 14,
                       color: Color(0xFFDC2626),
                     ),
                   ),
@@ -2038,19 +2038,19 @@ class _RecentVisitCard extends StatelessWidget {
                               color: Colors.transparent,
                               child: InkWell(
                                 onTap: onDelete,
-                                borderRadius: BorderRadius.circular(10),
+                                borderRadius: BorderRadius.circular(8),
                                 child: Container(
-                                  padding: const EdgeInsets.all(8),
+                                  padding: const EdgeInsets.all(5.5),
                                   decoration: BoxDecoration(
                                     color: const Color(0xFFFEF2F2),
-                                    borderRadius: BorderRadius.circular(10),
+                                    borderRadius: BorderRadius.circular(8),
                                     border: Border.all(
                                       color: const Color(0xFFFECACA),
                                     ),
                                   ),
                                   child: const Icon(
                                     CupertinoIcons.trash,
-                                    size: 15,
+                                    size: 13,
                                     color: Color(0xFFDC2626),
                                   ),
                                 ),
