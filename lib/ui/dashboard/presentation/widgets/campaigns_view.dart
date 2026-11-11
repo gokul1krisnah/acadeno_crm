@@ -1224,7 +1224,7 @@ class _CampaignsViewState extends State<CampaignsView> {
 
   Widget _buildDesktopRankedTable() {
     const headerStyle = TextStyle(
-      fontSize: 11,
+      fontSize: 11.5,
       fontWeight: FontWeight.w700,
       color: Color(0xFF475467),
       letterSpacing: 0.5,
@@ -1232,16 +1232,18 @@ class _CampaignsViewState extends State<CampaignsView> {
 
     return LayoutBuilder(
       builder: (context, constraints) {
+        final double tableWidth =
+            constraints.maxWidth < 1180 ? 1180.0 : constraints.maxWidth;
+
         return SingleChildScrollView(
           scrollDirection: Axis.horizontal,
-          child: ConstrainedBox(
-            constraints: BoxConstraints(
-              minWidth: constraints.maxWidth < 950 ? 950 : constraints.maxWidth,
-            ),
+          child: SizedBox(
+            width: tableWidth,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Container(
+                  color: const Color(0xFFF8FAFC),
                   padding: const EdgeInsets.symmetric(
                     horizontal: 20,
                     vertical: 14,
@@ -1252,8 +1254,9 @@ class _CampaignsViewState extends State<CampaignsView> {
                     ),
                   ),
                   child: const Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      SizedBox(width: 50, child: Text('#', style: headerStyle)),
+                      SizedBox(width: 44, child: Text('#', style: headerStyle)),
                       Expanded(flex: 3, child: Text('NAME', style: headerStyle)),
                       Expanded(
                         flex: 4,
@@ -1261,7 +1264,7 @@ class _CampaignsViewState extends State<CampaignsView> {
                       ),
                       Expanded(flex: 2, child: Text('SCORE', style: headerStyle)),
                       Expanded(
-                        flex: 4,
+                        flex: 5,
                         child: Text(
                           'REASONS FOR HIGH SCORE',
                           style: headerStyle,
@@ -1295,165 +1298,169 @@ class _CampaignsViewState extends State<CampaignsView> {
                     ),
                   )
                 else
-                  ListView.separated(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: _rankedLeads.length,
-                    separatorBuilder: (_, _) =>
-                        const Divider(height: 1, color: Color(0xFFE8EAF0)),
-                    itemBuilder: (context, index) {
-                      final lead = _rankedLeads[index];
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 20,
-                          vertical: 13,
-                        ),
-                        child: Row(
-                          children: [
-                            SizedBox(
-                              width: 50,
-                              child: Text(
-                                '${lead.rank}',
-                                style: const TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w700,
-                                  color: Color(0xFF0F172A),
+                  for (var index = 0; index < _rankedLeads.length; index++) ...[
+                    if (index > 0)
+                      const Divider(height: 1, color: Color(0xFFE8EAF0)),
+                    Builder(
+                      builder: (context) {
+                        final lead = _rankedLeads[index];
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 14,
+                          ),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              SizedBox(
+                                width: 44,
+                                child: Text(
+                                  '${lead.rank}',
+                                  style: const TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w700,
+                                    color: Color(0xFF0F172A),
+                                  ),
                                 ),
                               ),
-                            ),
-                            Expanded(
-                              flex: 3,
-                              child: Text(
-                                lead.name,
-                                style: const TextStyle(
-                                  fontSize: 13.5,
-                                  fontWeight: FontWeight.w700,
-                                  color: Color(0xFF0F172A),
+                              Expanded(
+                                flex: 3,
+                                child: Text(
+                                  lead.name,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                    fontSize: 13.5,
+                                    fontWeight: FontWeight.w700,
+                                    color: Color(0xFF0F172A),
+                                  ),
                                 ),
                               ),
-                            ),
-                            Expanded(
-                              flex: 4,
-                              child: Text(
-                                lead.collegeBranchYear,
-                                style: const TextStyle(
-                                  fontSize: 13,
-                                  color: Color(0xFF475467),
+                              Expanded(
+                                flex: 4,
+                                child: Text(
+                                  lead.collegeBranchYear,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                    fontSize: 13,
+                                    color: Color(0xFF475467),
+                                  ),
                                 ),
                               ),
-                            ),
-                            Expanded(
-                              flex: 2,
-                              child: Row(
-                                children: [
-                                  SizedBox(
-                                    width: 48,
-                                    child: ClipRRect(
-                                      borderRadius: BorderRadius.circular(4),
-                                      child: LinearProgressIndicator(
-                                        value: lead.score / 100,
-                                        minHeight: 6,
+                              Expanded(
+                                flex: 2,
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    SizedBox(
+                                      width: 48,
+                                      child: ClipRRect(
+                                        borderRadius: BorderRadius.circular(4),
+                                        child: LinearProgressIndicator(
+                                          value: lead.score / 100,
+                                          minHeight: 6,
+                                          color: lead.scoreBarColor,
+                                          backgroundColor: const Color(
+                                            0xFFE5E7EB,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    const Gap(8),
+                                    Text(
+                                      '${lead.score}',
+                                      style: TextStyle(
+                                        fontSize: 12.5,
+                                        fontWeight: FontWeight.w800,
                                         color: lead.scoreBarColor,
-                                        backgroundColor: const Color(
-                                          0xFFE5E7EB,
-                                        ),
                                       ),
                                     ),
-                                  ),
-                                  const Gap(8),
-                                  Text(
-                                    '${lead.score}',
-                                    style: TextStyle(
-                                      fontSize: 12.5,
-                                      fontWeight: FontWeight.w800,
-                                      color: lead.scoreBarColor,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            Expanded(
-                              flex: 4,
-                              child: Wrap(
-                                spacing: 6,
-                                runSpacing: 4,
-                                children: lead.reasons.map((r) {
-                                  return Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 8,
-                                      vertical: 3.5,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: const Color(0xFFEEF2FF),
-                                      borderRadius: BorderRadius.circular(6),
-                                    ),
-                                    child: Text(
-                                      r.label.toUpperCase(),
-                                      style: const TextStyle(
-                                        fontSize: 10.5,
-                                        fontWeight: FontWeight.w700,
-                                        color: Color(0xFF4F46E5),
-                                        letterSpacing: 0.3,
-                                      ),
-                                    ),
-                                  );
-                                }).toList(),
-                              ),
-                            ),
-                            Expanded(
-                              flex: 2,
-                              child: Text(
-                                lead.lastContact,
-                                style: const TextStyle(
-                                  fontSize: 12.5,
-                                  color: Color(0xFF667085),
+                                  ],
                                 ),
                               ),
-                            ),
-                            Expanded(
-                              flex: 3,
-                              child: lead.assignedExec != null
-                                  ? Center(
-                                      child: Container(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 8,
-                                          vertical: 4,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          color: const Color(0xFFEEF0FF),
-                                          borderRadius: BorderRadius.circular(
-                                            6,
-                                          ),
-                                        ),
-                                        child: Text(
-                                          lead.assignedExec!,
-                                          maxLines: 1,
-                                          softWrap: false,
-                                          overflow: TextOverflow.ellipsis,
-                                          textAlign: TextAlign.center,
-                                          style: const TextStyle(
-                                            fontSize: 11.5,
-                                            fontWeight: FontWeight.w600,
-                                            color: Color(0xFF4338CA),
-                                          ),
-                                        ),
+                              Expanded(
+                                flex: 5,
+                                child: Wrap(
+                                  spacing: 6,
+                                  runSpacing: 4,
+                                  children: lead.reasons.map((r) {
+                                    return Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 8,
+                                        vertical: 3.5,
                                       ),
-                                    )
-                                  : const Center(
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFEEF2FF),
+                                        borderRadius: BorderRadius.circular(6),
+                                      ),
                                       child: Text(
-                                        '—',
-                                        style: TextStyle(
-                                          fontSize: 12.5,
-                                          color: Color(0xFF98A2B3),
+                                        r.label.toUpperCase(),
+                                        style: const TextStyle(
+                                          fontSize: 10.5,
+                                          fontWeight: FontWeight.w700,
+                                          color: Color(0xFF4F46E5),
+                                          letterSpacing: 0.3,
                                         ),
                                       ),
-                                    ),
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
+                                    );
+                                  }).toList(),
+                                ),
+                              ),
+                              Expanded(
+                                flex: 2,
+                                child: Text(
+                                  lead.lastContact,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                    fontSize: 12.5,
+                                    color: Color(0xFF667085),
+                                  ),
+                                ),
+                              ),
+                              Expanded(
+                                flex: 3,
+                                child: lead.assignedExec != null
+                                    ? Center(
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 10,
+                                            vertical: 4,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: const Color(0xFFEEF0FF),
+                                            borderRadius:
+                                                BorderRadius.circular(6),
+                                          ),
+                                          child: Text(
+                                            lead.assignedExec!,
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: const TextStyle(
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w700,
+                                              color: Color(0xFF4338CA),
+                                            ),
+                                          ),
+                                        ),
+                                      )
+                                    : const Center(
+                                        child: Text(
+                                          '—',
+                                          style: TextStyle(
+                                            color: Color(0xFF94A3B8),
+                                            fontSize: 13,
+                                          ),
+                                        ),
+                                      ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                  ],
               ],
             ),
           ),

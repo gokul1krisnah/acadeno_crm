@@ -1337,23 +1337,38 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
   }
 
   Widget _statusBadge(String status) {
-    final (Color bg, Color fg) = switch (status) {
-      'Follow-up' => (const Color(0xFFFFF1E6), const Color(0xFFB45309)),
-      'Interested' => (const Color(0xFFDCFCE7), const Color(0xFF15803D)),
-      'Not interested' => (const Color(0xFFFEE2E2), const Color(0xFFB91C1C)),
-      'Converted' => (const Color(0xFFEDE9FE), const Color(0xFF4338CA)),
-      'Assigned' => (const Color(0xFFE8EDFF), const Color(0xFF3730A3)),
+    final s = status.trim().toLowerCase();
+    final (Color bg, Color fg) = switch (s) {
+      'contacted' || 'interested' => (
+          const Color(0xFFDCFCE7),
+          const Color(0xFF15803D),
+        ),
+      'assigned' => (const Color(0xFFEEF2FF), const Color(0xFF4338CA)),
+      'follow-up' || 'followup' => (
+          const Color(0xFFFFF1E6),
+          const Color(0xFFB45309),
+        ),
+      'not interested' => (
+          const Color(0xFFFEE2E2),
+          const Color(0xFFB91C1C),
+        ),
+      'converted' => (const Color(0xFFEDE9FE), const Color(0xFF4338CA)),
+      'new' => (const Color(0xFFF1F5F9), const Color(0xFF475467)),
       _ => (const Color(0xFFF1F5F9), const Color(0xFF334155)),
     };
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4.5),
       decoration: BoxDecoration(
         color: bg,
-        borderRadius: BorderRadius.circular(6),
+        borderRadius: BorderRadius.circular(16),
       ),
       child: Text(
-        status,
-        style: TextStyle(color: fg, fontSize: 12, fontWeight: FontWeight.w600),
+        status.isEmpty ? '—' : status,
+        style: TextStyle(
+          color: fg,
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+        ),
       ),
     );
   }
@@ -2414,16 +2429,16 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
         }
 
         const h = TextStyle(
-          fontSize: 11,
+          fontSize: 11.5,
           fontWeight: FontWeight.w700,
-          color: _muted,
-          letterSpacing: 0.4,
+          color: Color(0xFF475467),
+          letterSpacing: 0.5,
         );
         return Column(
           children: [
             Container(
               color: const Color(0xFFF8FAFC),
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
@@ -2437,7 +2452,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                   ),
                   const Expanded(flex: 3, child: Text('NAME', style: h)),
                   const Expanded(
-                    flex: 3,
+                    flex: 4,
                     child: Text('COLLEGE - BRANCH', style: h),
                   ),
                   const Expanded(flex: 2, child: Text('SOURCE', style: h)),
@@ -2450,9 +2465,9 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                 ],
               ),
             ),
-            const Divider(height: 1),
+            const Divider(height: 1, color: Color(0xFFF1F5F9)),
             for (var i = 0; i < rows.length; i++) ...[
-              if (i > 0) const Divider(height: 1),
+              if (i > 0) const Divider(height: 1, color: Color(0xFFF1F5F9)),
               Builder(
                 builder: (_) {
                   final r = rows[i];
@@ -2465,8 +2480,8 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                           ? const Color(0xFFF5F6FF)
                           : Colors.white,
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 10,
+                        horizontal: 20,
+                        vertical: 14,
                       ),
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.center,
@@ -2514,14 +2529,15 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                             ),
                           ),
                           Expanded(
-                            flex: 3,
+                            flex: 4,
                             child: Text(
                               r.collegeBranch,
-                              maxLines: 1,
+                              maxLines: 2,
                               overflow: TextOverflow.ellipsis,
                               style: const TextStyle(
                                 fontSize: 13,
-                                color: _text,
+                                color: Color(0xFF334155),
+                                fontWeight: FontWeight.w500,
                               ),
                             ),
                           ),
@@ -2529,11 +2545,12 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                             flex: 2,
                             child: Text(
                               r.source,
-                              maxLines: 1,
+                              maxLines: 2,
                               overflow: TextOverflow.ellipsis,
                               style: const TextStyle(
                                 fontSize: 13,
-                                color: _text,
+                                color: Color(0xFF334155),
+                                fontWeight: FontWeight.w500,
                               ),
                             ),
                           ),
@@ -2550,7 +2567,8 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                               r.lastContact,
                               style: const TextStyle(
                                 fontSize: 13,
-                                color: _text,
+                                color: Color(0xFF334155),
+                                fontWeight: FontWeight.w500,
                               ),
                             ),
                           ),
@@ -2562,7 +2580,8 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                               overflow: TextOverflow.ellipsis,
                               style: const TextStyle(
                                 fontSize: 13,
-                                color: _text,
+                                color: Color(0xFF334155),
+                                fontWeight: FontWeight.w500,
                               ),
                             ),
                           ),
