@@ -102,58 +102,201 @@ class VisitsTabView extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // UPCOMING · ASSIGNED TO YOU
-                        const Text(
-                          'UPCOMING · ASSIGNED TO YOU',
-                          style: TextStyle(
-                            fontSize: 11.5,
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: 0.7,
-                            color: Color(0xFF667085),
-                          ),
-                        ),
-                        const Gap(10),
-                        ...upcoming.map(
-                          (visit) => Padding(
-                            padding: const EdgeInsets.only(bottom: 14),
-                            child: _UpcomingVisitCard(
-                              visit: visit,
-                              onDirections: () =>
-                                  _handleDirections(context, visit),
-                              onRecordOutcome: () =>
-                                  _showRecordOutcomeSheet(context, visit),
-                              onDelete: () =>
-                                  _confirmDeleteVisit(context, visit),
+                        if (upcoming.isEmpty && recent.isEmpty) ...[
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 24,
+                              vertical: 36,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
+                                color: const Color(0xFFE2E8F0),
+                                width: 1.2,
+                              ),
+                              boxShadow: const [
+                                BoxShadow(
+                                  color: Color(0x04000000),
+                                  blurRadius: 6,
+                                  offset: Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Container(
+                                  width: 52,
+                                  height: 52,
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFF8FAFC),
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                      color: const Color(0xFFE2E8F0),
+                                    ),
+                                  ),
+                                  alignment: Alignment.center,
+                                  child: const Icon(
+                                    CupertinoIcons.calendar_today,
+                                    color: Color(0xFF94A3B8),
+                                    size: 24,
+                                  ),
+                                ),
+                                const Gap(16),
+                                const Text(
+                                  'No planned visits',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontSize: 16.5,
+                                    fontWeight: FontWeight.w700,
+                                    color: Color(0xFF0F172A),
+                                    letterSpacing: -0.2,
+                                  ),
+                                ),
+                                const Gap(6),
+                                const Text(
+                                  'You have no college campus visits scheduled right now.\nTap "Log visit" above to schedule a new visit.',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w400,
+                                    color: Color(0xFF64748B),
+                                    height: 1.4,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                        ),
-                        const Gap(10),
+                        ] else ...[
+                          // UPCOMING · ASSIGNED TO YOU
+                          const Text(
+                            'UPCOMING · ASSIGNED TO YOU',
+                            style: TextStyle(
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 0.7,
+                              color: Color(0xFF667085),
+                            ),
+                          ),
+                          const Gap(10),
+                          if (upcoming.isEmpty)
+                            Container(
+                              width: double.infinity,
+                              margin: const EdgeInsets.only(bottom: 14),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 20,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(14),
+                                border: Border.all(
+                                  color: const Color(0xFFF1F5F9),
+                                  width: 1.2,
+                                ),
+                              ),
+                              child: const Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    CupertinoIcons.calendar_badge_minus,
+                                    size: 18,
+                                    color: Color(0xFF94A3B8),
+                                  ),
+                                  Gap(8),
+                                  Text(
+                                    'No planned visits scheduled',
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w500,
+                                      color: Color(0xFF64748B),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            )
+                          else
+                            ...upcoming.map(
+                              (visit) => Padding(
+                                padding: const EdgeInsets.only(bottom: 14),
+                                child: _UpcomingVisitCard(
+                                  visit: visit,
+                                  onDirections: () =>
+                                      _handleDirections(context, visit),
+                                  onRecordOutcome: () =>
+                                      _showRecordOutcomeSheet(context, visit),
+                                  onDelete: () =>
+                                      _confirmDeleteVisit(context, visit),
+                                ),
+                              ),
+                            ),
+                          const Gap(10),
 
-                        // RECENT
-                        const Text(
-                          'RECENT',
-                          style: TextStyle(
-                            fontSize: 11.5,
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: 0.7,
-                            color: Color(0xFF667085),
-                          ),
-                        ),
-                        const Gap(10),
-                        ...recent.map(
-                          (visit) => Padding(
-                            padding: const EdgeInsets.only(bottom: 12),
-                            child: _RecentVisitCard(
-                              visit: visit,
-                              onDirections: () =>
-                                  _handleDirections(context, visit),
-                              onRecordOutcome: () =>
-                                  _showRecordOutcomeSheet(context, visit),
-                              onDelete: () =>
-                                  _confirmDeleteVisit(context, visit),
+                          // RECENT
+                          const Text(
+                            'RECENT',
+                            style: TextStyle(
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 0.7,
+                              color: Color(0xFF667085),
                             ),
                           ),
-                        ),
+                          const Gap(10),
+                          if (recent.isEmpty)
+                            Container(
+                              width: double.infinity,
+                              margin: const EdgeInsets.only(bottom: 12),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 20,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(14),
+                                border: Border.all(
+                                  color: const Color(0xFFF1F5F9),
+                                  width: 1.2,
+                                ),
+                              ),
+                              child: const Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    CupertinoIcons.clock,
+                                    size: 18,
+                                    color: Color(0xFF94A3B8),
+                                  ),
+                                  Gap(8),
+                                  Text(
+                                    'No past visits recorded yet',
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w500,
+                                      color: Color(0xFF64748B),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            )
+                          else
+                            ...recent.map(
+                              (visit) => Padding(
+                                padding: const EdgeInsets.only(bottom: 12),
+                                child: _RecentVisitCard(
+                                  visit: visit,
+                                  onDirections: () =>
+                                      _handleDirections(context, visit),
+                                  onRecordOutcome: () =>
+                                      _showRecordOutcomeSheet(context, visit),
+                                  onDelete: () =>
+                                      _confirmDeleteVisit(context, visit),
+                                ),
+                              ),
+                            ),
+                        ],
                       ],
                     ),
                   ),
