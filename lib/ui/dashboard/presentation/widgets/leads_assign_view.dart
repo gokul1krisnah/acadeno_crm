@@ -212,20 +212,23 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                             ),
                           ),
                           const Gap(4),
-                          CheckboxListTile(
-                            value: confirmReassign,
-                            onChanged: (v) =>
-                                setD(() => confirmReassign = v ?? false),
-                            dense: true,
-                            contentPadding: EdgeInsets.zero,
-                            controlAffinity: ListTileControlAffinity.leading,
-                            activeColor: _primary,
-                            title: const Text(
-                              'Reassign these leads to the selected HR',
-                              style: TextStyle(
-                                fontSize: 12.5,
-                                fontWeight: FontWeight.w600,
-                                color: _text,
+                          Material(
+                            color: Colors.transparent,
+                            child: CheckboxListTile(
+                              value: confirmReassign,
+                              onChanged: (v) =>
+                                  setD(() => confirmReassign = v ?? false),
+                              dense: true,
+                              contentPadding: EdgeInsets.zero,
+                              controlAffinity: ListTileControlAffinity.leading,
+                              activeColor: _primary,
+                              title: const Text(
+                                'Reassign these leads to the selected HR',
+                                style: TextStyle(
+                                  fontSize: 12.5,
+                                  fontWeight: FontWeight.w600,
+                                  color: _text,
+                                ),
                               ),
                             ),
                           ),

@@ -1243,12 +1243,12 @@ class _CampaignsViewState extends State<CampaignsView> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Container(
-                  color: const Color(0xFFF8FAFC),
                   padding: const EdgeInsets.symmetric(
                     horizontal: 20,
                     vertical: 14,
                   ),
                   decoration: const BoxDecoration(
+                    color: Color(0xFFF8FAFC),
                     border: Border(
                       bottom: BorderSide(color: Color(0xFFE8EAF0)),
                     ),

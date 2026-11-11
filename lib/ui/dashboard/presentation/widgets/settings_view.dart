@@ -1151,30 +1151,33 @@ class _SettingsViewState extends State<SettingsView>
     required Widget child,
   }) {
     final isMobile = MediaQuery.of(context).size.width < 640;
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.all(isMobile ? 14 : 20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: _border),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: TextStyle(
-              fontSize: isMobile ? 15 : 16,
-              fontWeight: FontWeight.w700,
-              color: _text,
+    return Material(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        width: double.infinity,
+        padding: EdgeInsets.all(isMobile ? 14 : 20),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: _border),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: isMobile ? 15 : 16,
+                fontWeight: FontWeight.w700,
+                color: _text,
+              ),
             ),
-          ),
-          const Gap(3),
-          Text(subtitle, style: const TextStyle(fontSize: 12.5, color: _muted)),
-          const Gap(16),
-          child,
-        ],
+            const Gap(3),
+            Text(subtitle, style: const TextStyle(fontSize: 12.5, color: _muted)),
+            const Gap(16),
+            child,
+          ],
+        ),
       ),
     );
   }
