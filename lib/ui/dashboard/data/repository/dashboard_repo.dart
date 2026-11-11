@@ -126,16 +126,39 @@ class DashboardRepository {
     );
   }
 
+  Future<({bool success, String? link, String? error})> sendPasswordReset(
+    String email, {
+    String? uid,
+    String? newPassword,
+    String userName = '',
+  }) async {
+    final res = await _rds.sendPasswordReset(
+      email,
+      uid: uid,
+      newPassword: newPassword,
+    );
+    if (res.success) {
+      await _rds.appendAuditLog(
+        action: newPassword != null
+            ? 'Updated user password directly'
+            : (res.link != null
+                ? 'Generated direct password reset link'
+                : 'Sent password reset email'),
+        target: userName.isEmpty ? email : '$userName ($email)',
+        category: 'password_reset',
+      );
+    }
+    return res;
+  }
+
   Future<void> sendPasswordResetEmail(
     String email, {
     String userName = '',
   }) async {
-    await _rds.sendPasswordResetEmail(email);
-    await _rds.appendAuditLog(
-      action: 'Sent password reset email',
-      target: userName.isEmpty ? email : '$userName ($email)',
-      category: 'password_reset',
-    );
+    final res = await sendPasswordReset(email, userName: userName);
+    if (!res.success && res.error != null) {
+      throw Exception(res.error);
+    }
   }
 
   Future<void> deleteUser(String uid, {String userName = ''}) async {

@@ -1,6 +1,8 @@
+import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:http/http.dart' as http;
 
 class DashboardRds {
   DashboardRds({FirebaseFirestore? firestore, FirebaseAuth? firebaseAuth})
@@ -188,8 +190,74 @@ class DashboardRds {
     );
   }
 
+  Future<({bool success, String? link, String? error})> sendPasswordReset(
+    String email, {
+    String? uid,
+    String? newPassword,
+  }) async {
+    final cleanEmail = email.trim().toLowerCase();
+
+    // 1. Try serverless backend API on Vercel / Cloud
+    try {
+      final response = await http
+          .post(
+            Uri.parse('/api/reset-password'),
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode({
+              'email': cleanEmail,
+              if (uid != null && uid.isNotEmpty) 'uid': uid,
+              if (newPassword != null && newPassword.isNotEmpty)
+                'newPassword': newPassword,
+            }),
+          )
+          .timeout(const Duration(seconds: 8));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data is Map && data['success'] == true) {
+          final link = data['link']?.toString();
+          return (success: true, link: link, error: null);
+        }
+      } else if (response.statusCode == 404 || response.statusCode == 400) {
+        final data = jsonDecode(response.body);
+        final err = data is Map ? data['error']?.toString() : null;
+        if (err != null && err.isNotEmpty) {
+          return (success: false, link: null, error: err);
+        }
+      }
+    } catch (_) {
+      // Backend endpoint unavailable (e.g. running offline or local dev without server)
+    }
+
+    // 2. Client-side Firebase Auth fallback
+    if (newPassword != null && newPassword.isNotEmpty) {
+      return (
+        success: false,
+        link: null,
+        error:
+            'Direct password change requires the backend admin service. Use Send Reset Email instead.',
+      );
+    }
+
+    try {
+      await _firebaseAuth.sendPasswordResetEmail(email: cleanEmail);
+      return (success: true, link: null, error: null);
+    } on FirebaseAuthException catch (e) {
+      return (
+        success: false,
+        link: null,
+        error: e.message ?? 'Firebase Auth failed to dispatch reset email.',
+      );
+    } catch (e) {
+      return (success: false, link: null, error: e.toString());
+    }
+  }
+
   Future<void> sendPasswordResetEmail(String email) async {
-    await _firebaseAuth.sendPasswordResetEmail(email: email.trim());
+    final res = await sendPasswordReset(email);
+    if (!res.success && res.error != null) {
+      throw Exception(res.error);
+    }
   }
 
   Future<void> deleteUser(String uid) {

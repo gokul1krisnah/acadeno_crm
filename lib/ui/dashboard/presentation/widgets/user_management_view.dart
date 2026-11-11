@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../shared/snackbar_alerts/snack_alert.dart';
 import '../../application/dashboard_cubit.dart';
@@ -144,49 +145,769 @@ class _UserManagementViewState extends State<UserManagementView> {
       SnackBarAlert.showToast(
         context: context,
         message: 'Cannot reset password: user does not have a valid email.',
+        isWarning: true,
       );
       return;
     }
+
+    final newPassCtrl = TextEditingController(
+      text: 'Acadeno@${DateTime.now().year}!',
+    );
+    int selectedTab = 0; // 0: Reset Link, 1: Set Password Directly
+    bool isLoading = false;
+    bool obscurePassword = false;
+    String? directLink;
+    String? statusMessage;
+    bool isSuccess = false;
+    bool isError = false;
+
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Row(
-          children: [
-            Icon(Icons.lock_reset_rounded, color: Color(0xFF4F46E5)),
-            Gap(8),
-            Text(
-              'Reset Password',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+      barrierDismissible: !isLoading,
+      builder: (dialogCtx) => StatefulBuilder(
+        builder: (ctx, setDialogState) {
+          final screenWidth = MediaQuery.of(ctx).size.width;
+          final dialogWidth = (screenWidth - 32).clamp(320.0, 520.0);
+
+          Future<void> sendResetLink() async {
+            setDialogState(() {
+              isLoading = true;
+              statusMessage = null;
+              isError = false;
+              isSuccess = false;
+              directLink = null;
+            });
+
+            final res = await cubit.sendPasswordReset(
+              user.email,
+              uid: user.uid,
+              userName: user.name,
+            );
+
+            if (!dialogCtx.mounted) return;
+            setDialogState(() {
+              isLoading = false;
+              if (res.success) {
+                isSuccess = true;
+                directLink = res.link;
+                statusMessage = res.link != null
+                    ? 'Direct password reset link generated successfully!'
+                    : 'Password reset email dispatched to ${user.email}.';
+              } else {
+                isError = true;
+                statusMessage = res.error ?? 'Failed to send password reset.';
+              }
+            });
+          }
+
+          Future<void> setPasswordDirectly() async {
+            final pass = newPassCtrl.text.trim();
+            if (pass.length < 6) {
+              setDialogState(() {
+                isError = true;
+                statusMessage = 'Password must be at least 6 characters.';
+              });
+              return;
+            }
+
+            setDialogState(() {
+              isLoading = true;
+              statusMessage = null;
+              isError = false;
+              isSuccess = false;
+              directLink = null;
+            });
+
+            final res = await cubit.sendPasswordReset(
+              user.email,
+              uid: user.uid,
+              newPassword: pass,
+              userName: user.name,
+            );
+
+            if (!dialogCtx.mounted) return;
+            setDialogState(() {
+              isLoading = false;
+              if (res.success) {
+                isSuccess = true;
+                statusMessage = 'Password updated directly for ${user.email}!';
+              } else {
+                isError = true;
+                statusMessage =
+                    res.error ?? 'Failed to update user password directly.';
+              }
+            });
+          }
+
+          Future<void> shareViaWhatsApp(String text) async {
+            final url = Uri.parse(
+              'https://api.whatsapp.com/send?text=${Uri.encodeComponent(text)}',
+            );
+            try {
+              if (await canLaunchUrl(url)) {
+                await launchUrl(url, mode: LaunchMode.externalApplication);
+              } else {
+                await Clipboard.setData(ClipboardData(text: text));
+                if (dialogCtx.mounted) {
+                  SnackBarAlert.showToast(
+                    context: dialogCtx,
+                    message: 'Copied message to clipboard!',
+                  );
+                }
+              }
+            } catch (_) {
+              await Clipboard.setData(ClipboardData(text: text));
+              if (dialogCtx.mounted) {
+                SnackBarAlert.showToast(
+                  context: dialogCtx,
+                  message: 'Copied message to clipboard!',
+                );
+              }
+            }
+          }
+
+          return AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
             ),
-          ],
-        ),
-        content: Text(
-          'Send a password reset link to ${user.email}?\n\n'
-          'The user will receive an email allowing them to securely choose a new password.',
-          style: const TextStyle(fontSize: 13.5, color: Color(0xFF334155)),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF4F46E5),
-              foregroundColor: Colors.white,
-              elevation: 0,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
+            contentPadding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
+            titlePadding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
+            title: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF4F46E5).withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(
+                    Icons.lock_reset_rounded,
+                    color: Color(0xFF4F46E5),
+                    size: 22,
+                  ),
+                ),
+                const Gap(12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text(
+                        'Reset Password',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: _textDark,
+                        ),
+                      ),
+                      Text(
+                        '${user.name} · ${user.email}',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: _textMuted,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.close_rounded, size: 20, color: _textMuted),
+                  onPressed: () => Navigator.pop(dialogCtx),
+                ),
+              ],
+            ),
+            content: SizedBox(
+              width: dialogWidth,
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // Segmented Tab Picker
+                    Container(
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF1F5F9),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      padding: const EdgeInsets.all(3),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(8),
+                              onTap: () {
+                                setDialogState(() {
+                                  selectedTab = 0;
+                                  isError = false;
+                                  statusMessage = null;
+                                });
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(vertical: 8),
+                                decoration: BoxDecoration(
+                                  color: selectedTab == 0
+                                      ? Colors.white
+                                      : Colors.transparent,
+                                  borderRadius: BorderRadius.circular(8),
+                                  boxShadow: selectedTab == 0
+                                      ? [
+                                          BoxShadow(
+                                            color: Colors.black.withValues(alpha: 0.05),
+                                            blurRadius: 4,
+                                            offset: const Offset(0, 1),
+                                          ),
+                                        ]
+                                      : null,
+                                ),
+                                alignment: Alignment.center,
+                                child: Text(
+                                  'Send / Generate Link',
+                                  style: TextStyle(
+                                    fontSize: 12.5,
+                                    fontWeight: selectedTab == 0
+                                        ? FontWeight.w600
+                                        : FontWeight.normal,
+                                    color: selectedTab == 0
+                                        ? const Color(0xFF4F46E5)
+                                        : _textMuted,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          Expanded(
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(8),
+                              onTap: () {
+                                setDialogState(() {
+                                  selectedTab = 1;
+                                  isError = false;
+                                  statusMessage = null;
+                                });
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(vertical: 8),
+                                decoration: BoxDecoration(
+                                  color: selectedTab == 1
+                                      ? Colors.white
+                                      : Colors.transparent,
+                                  borderRadius: BorderRadius.circular(8),
+                                  boxShadow: selectedTab == 1
+                                      ? [
+                                          BoxShadow(
+                                            color: Colors.black.withValues(alpha: 0.05),
+                                            blurRadius: 4,
+                                            offset: const Offset(0, 1),
+                                          ),
+                                        ]
+                                      : null,
+                                ),
+                                alignment: Alignment.center,
+                                child: Text(
+                                  'Set Password Directly',
+                                  style: TextStyle(
+                                    fontSize: 12.5,
+                                    fontWeight: selectedTab == 1
+                                        ? FontWeight.w600
+                                        : FontWeight.normal,
+                                    color: selectedTab == 1
+                                        ? const Color(0xFF4F46E5)
+                                        : _textMuted,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const Gap(16),
+
+                    // TAB 0: Send / Generate Reset Link
+                    if (selectedTab == 0) ...[
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF8FAFC),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: const Color(0xFFE2E8F0)),
+                        ),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Icon(
+                              Icons.info_outline_rounded,
+                              size: 18,
+                              color: Color(0xFF64748B),
+                            ),
+                            const Gap(8),
+                            Expanded(
+                              child: Text(
+                                'Generate a direct password reset link for ${user.email}. If emails end up in spam or are delayed, you can copy the link directly and share it over WhatsApp.',
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: Color(0xFF475569),
+                                  height: 1.4,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const Gap(16),
+
+                      if (isSuccess) ...[
+                        Container(
+                          padding: const EdgeInsets.all(14),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF0FDF4),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: const Color(0xFFBBF7D0)),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  const Icon(
+                                    Icons.check_circle_rounded,
+                                    color: Color(0xFF16A34A),
+                                    size: 20,
+                                  ),
+                                  const Gap(8),
+                                  Expanded(
+                                    child: Text(
+                                      directLink != null
+                                          ? 'Password Reset Link Ready!'
+                                          : 'Reset Email Sent Successfully!',
+                                      style: const TextStyle(
+                                        fontSize: 13.5,
+                                        fontWeight: FontWeight.w600,
+                                        color: Color(0xFF15803D),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const Gap(8),
+                              if (directLink != null) ...[
+                                Container(
+                                  width: double.infinity,
+                                  padding: const EdgeInsets.all(10),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: Border.all(
+                                      color: const Color(0xFF86EFAC),
+                                    ),
+                                  ),
+                                  child: SelectableText(
+                                    directLink!,
+                                    style: const TextStyle(
+                                      fontSize: 11.5,
+                                      fontFamily: 'monospace',
+                                      color: Color(0xFF0F172A),
+                                    ),
+                                    maxLines: 3,
+                                  ),
+                                ),
+                                const Gap(12),
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: OutlinedButton.icon(
+                                        style: OutlinedButton.styleFrom(
+                                          padding: const EdgeInsets.symmetric(
+                                            vertical: 10,
+                                          ),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(8),
+                                          ),
+                                        ),
+                                        icon: const Icon(Icons.copy_rounded, size: 16),
+                                        label: const Text('Copy Link'),
+                                        onPressed: () async {
+                                          await Clipboard.setData(
+                                            ClipboardData(text: directLink!),
+                                          );
+                                          if (dialogCtx.mounted) {
+                                            SnackBarAlert.showToast(
+                                              context: dialogCtx,
+                                              message:
+                                                  'Reset link copied to clipboard!',
+                                            );
+                                          }
+                                        },
+                                      ),
+                                    ),
+                                    const Gap(8),
+                                    Expanded(
+                                      child: ElevatedButton.icon(
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: const Color(0xFF25D366),
+                                          foregroundColor: Colors.white,
+                                          elevation: 0,
+                                          padding: const EdgeInsets.symmetric(
+                                            vertical: 10,
+                                          ),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(8),
+                                          ),
+                                        ),
+                                        icon: const Icon(
+                                          Icons.chat_bubble_outline_rounded,
+                                          size: 16,
+                                        ),
+                                        label: const Text('WhatsApp'),
+                                        onPressed: () {
+                                          shareViaWhatsApp(
+                                            'Hi ${user.name},\nHere is your ACADENO CRM password reset link:\n$directLink\n\nOpen this link in your browser to choose a new password.',
+                                          );
+                                        },
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ] else ...[
+                                Text(
+                                  'A reset email has been dispatched to ${user.email}.\n\n'
+                                  '⚠️ Important: Please tell ${user.name} to check their Spam / Junk / Promotions folder if it does not appear in their inbox within 1-2 minutes.',
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    color: Color(0xFF166534),
+                                    height: 1.4,
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
+                      ] else ...[
+                        ElevatedButton.icon(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF4F46E5),
+                            foregroundColor: Colors.white,
+                            elevation: 0,
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                          onPressed: isLoading ? null : sendResetLink,
+                          icon: isLoading
+                              ? const SizedBox(
+                                  width: 16,
+                                  height: 16,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.white,
+                                  ),
+                                )
+                              : const Icon(Icons.send_rounded, size: 16),
+                          label: Text(
+                            isLoading
+                                ? 'Generating Link...'
+                                : 'Generate & Send Reset Link',
+                            style: const TextStyle(fontWeight: FontWeight.w600),
+                          ),
+                        ),
+                      ],
+                    ],
+
+                    // TAB 1: Set Password Directly
+                    if (selectedTab == 1) ...[
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF8FAFC),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: const Color(0xFFE2E8F0)),
+                        ),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Icon(
+                              Icons.key_rounded,
+                              size: 18,
+                              color: Color(0xFF64748B),
+                            ),
+                            const Gap(8),
+                            const Expanded(
+                              child: Text(
+                                'Directly set a new password in Firebase Authentication. No email confirmation required — the user can log in immediately.',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Color(0xFF475569),
+                                  height: 1.4,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const Gap(14),
+
+                      TextField(
+                        controller: newPassCtrl,
+                        obscureText: obscurePassword,
+                        decoration: InputDecoration(
+                          labelText: 'New Password',
+                          labelStyle: const TextStyle(fontSize: 13, color: _textMuted),
+                          prefixIcon: const Icon(
+                            Icons.lock_outline_rounded,
+                            size: 18,
+                            color: _textMuted,
+                          ),
+                          suffixIcon: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                icon: Icon(
+                                  obscurePassword
+                                      ? Icons.visibility_outlined
+                                      : Icons.visibility_off_outlined,
+                                  size: 18,
+                                  color: _textMuted,
+                                ),
+                                onPressed: () {
+                                  setDialogState(() {
+                                    obscurePassword = !obscurePassword;
+                                  });
+                                },
+                              ),
+                              IconButton(
+                                tooltip: 'Generate Random Password',
+                                icon: const Icon(
+                                  Icons.refresh_rounded,
+                                  size: 18,
+                                  color: Color(0xFF4F46E5),
+                                ),
+                                onPressed: () {
+                                  setDialogState(() {
+                                    final yr = DateTime.now().year;
+                                    final rnd = (100 +
+                                            DateTime.now().millisecond % 900)
+                                        .toString();
+                                    newPassCtrl.text = 'Acadeno@$yr#$rnd';
+                                  });
+                                },
+                              ),
+                            ],
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: const BorderSide(color: _borderColor),
+                          ),
+                        ),
+                      ),
+                      const Gap(16),
+
+                      if (isSuccess) ...[
+                        Container(
+                          padding: const EdgeInsets.all(14),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF0FDF4),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: const Color(0xFFBBF7D0)),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Row(
+                                children: [
+                                  Icon(
+                                    Icons.check_circle_rounded,
+                                    color: Color(0xFF16A34A),
+                                    size: 20,
+                                  ),
+                                  Gap(8),
+                                  Text(
+                                    'Password Changed Successfully!',
+                                    style: TextStyle(
+                                      fontSize: 13.5,
+                                      fontWeight: FontWeight.w600,
+                                      color: Color(0xFF15803D),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const Gap(8),
+                              Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.all(10),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(
+                                    color: const Color(0xFF86EFAC),
+                                  ),
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    SelectableText(
+                                      'Email: ${user.email}',
+                                      style: const TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                    const Gap(4),
+                                    SelectableText(
+                                      'Password: ${newPassCtrl.text.trim()}',
+                                      style: const TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                        color: Color(0xFF0F172A),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const Gap(12),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: OutlinedButton.icon(
+                                      style: OutlinedButton.styleFrom(
+                                        padding: const EdgeInsets.symmetric(
+                                          vertical: 10,
+                                        ),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(8),
+                                        ),
+                                      ),
+                                      icon: const Icon(Icons.copy_rounded, size: 16),
+                                      label: const Text('Copy Credentials'),
+                                      onPressed: () async {
+                                        final txt =
+                                            'ACADENO CRM Login Credentials\nEmail: ${user.email}\nPassword: ${newPassCtrl.text.trim()}';
+                                        await Clipboard.setData(
+                                          ClipboardData(text: txt),
+                                        );
+                                        if (dialogCtx.mounted) {
+                                          SnackBarAlert.showToast(
+                                            context: dialogCtx,
+                                            message:
+                                                'Credentials copied to clipboard!',
+                                          );
+                                        }
+                                      },
+                                    ),
+                                  ),
+                                  const Gap(8),
+                                  Expanded(
+                                    child: ElevatedButton.icon(
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: const Color(0xFF25D366),
+                                        foregroundColor: Colors.white,
+                                        elevation: 0,
+                                        padding: const EdgeInsets.symmetric(
+                                          vertical: 10,
+                                        ),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(8),
+                                        ),
+                                      ),
+                                      icon: const Icon(
+                                        Icons.chat_bubble_outline_rounded,
+                                        size: 16,
+                                      ),
+                                      label: const Text('WhatsApp'),
+                                      onPressed: () {
+                                        shareViaWhatsApp(
+                                          'Hi ${user.name},\nYour ACADENO CRM credentials have been updated:\n\nEmail: ${user.email}\nPassword: ${newPassCtrl.text.trim()}\n\nPlease log in and update your password if desired.',
+                                        );
+                                      },
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ] else ...[
+                        ElevatedButton.icon(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF4F46E5),
+                            foregroundColor: Colors.white,
+                            elevation: 0,
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                          onPressed: isLoading ? null : setPasswordDirectly,
+                          icon: isLoading
+                              ? const SizedBox(
+                                  width: 16,
+                                  height: 16,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.white,
+                                  ),
+                                )
+                              : const Icon(Icons.check_circle_rounded, size: 16),
+                          label: Text(
+                            isLoading
+                                ? 'Updating Password...'
+                                : 'Set Password Immediately',
+                            style: const TextStyle(fontWeight: FontWeight.w600),
+                          ),
+                        ),
+                      ],
+                    ],
+
+                    // Error banner
+                    if (isError && statusMessage != null) ...[
+                      const Gap(14),
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFEF2F2),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: const Color(0xFFFECACA)),
+                        ),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Icon(
+                              Icons.error_outline_rounded,
+                              color: Color(0xFFDC2626),
+                              size: 18,
+                            ),
+                            const Gap(8),
+                            Expanded(
+                              child: Text(
+                                statusMessage!,
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: Color(0xFFB91C1C),
+                                  height: 1.3,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
               ),
             ),
-            onPressed: () {
-              Navigator.pop(ctx);
-              cubit.sendPasswordResetEmail(user.email, userName: user.name);
-            },
-            child: const Text('Send Reset Email'),
-          ),
-        ],
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(dialogCtx),
+                child: const Text('Close'),
+              ),
+            ],
+          );
+        },
       ),
     );
   }

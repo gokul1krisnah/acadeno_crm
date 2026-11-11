@@ -275,28 +275,64 @@ class DashboardCubit extends Cubit<DashboardState> {
     }
   }
 
+  Future<({bool success, String? link, String? error})> sendPasswordReset(
+    String email, {
+    String? uid,
+    String? newPassword,
+    String userName = '',
+  }) async {
+    try {
+      final res = await _repository.sendPasswordReset(
+        email,
+        uid: uid,
+        newPassword: newPassword,
+        userName: userName,
+      );
+      if (res.success) {
+        auditEntries.insert(
+          0,
+          AuditLogEntry(
+            actor: currentActorLabel,
+            action: newPassword != null
+                ? 'Updated user password directly'
+                : (res.link != null
+                    ? 'Generated direct password reset link'
+                    : 'Sent password reset email'),
+            target: userName.isEmpty ? email : userName,
+            timestamp: 'Just now · IST',
+            category: 'password_reset',
+          ),
+        );
+      }
+      return res;
+    } catch (e) {
+      return (success: false, link: null, error: e.toString());
+    }
+  }
+
   Future<void> sendPasswordResetEmail(
     String email, {
     String userName = '',
   }) async {
     try {
-      await _repository.sendPasswordResetEmail(email, userName: userName);
-      auditEntries.insert(
-        0,
-        AuditLogEntry(
-          actor: currentActorLabel,
-          action: 'Sent password reset email',
-          target: userName.isEmpty ? email : userName,
-          timestamp: 'Just now · IST',
-          category: 'password_reset',
-        ),
-      );
-      emit(
-        DashboardActionSuccess(
-          message: 'Password reset link sent to $email',
-          selectedNavIndex: state.selectedNavIndex,
-        ),
-      );
+      final res = await sendPasswordReset(email, userName: userName);
+      if (res.success) {
+        emit(
+          DashboardActionSuccess(
+            message: res.link != null
+                ? 'Password reset link generated for $email'
+                : 'Password reset link sent to $email',
+            selectedNavIndex: state.selectedNavIndex,
+          ),
+        );
+      } else {
+        emit(
+          DashboardActionFailure(
+            message: res.error ?? 'Password reset failed',
+            selectedNavIndex: state.selectedNavIndex,
+          ),
+        );
+      }
     } catch (e) {
       emit(
         DashboardActionFailure(

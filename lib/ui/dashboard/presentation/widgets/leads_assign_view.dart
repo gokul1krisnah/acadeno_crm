@@ -2167,6 +2167,40 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
     );
   }
 
+  Widget _buildFigmaCheckbox({
+    required bool value,
+    required ValueChanged<bool?> onChanged,
+    Color activeColor = _primary,
+  }) {
+    return InkWell(
+      onTap: () => onChanged(!value),
+      borderRadius: BorderRadius.circular(4),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 2),
+        child: Container(
+          width: 16,
+          height: 16,
+          decoration: BoxDecoration(
+            color: value ? activeColor : Colors.transparent,
+            borderRadius: BorderRadius.circular(2.5),
+            border: Border.all(
+              color: value ? activeColor : const Color(0xFF64748B),
+              width: 1.0,
+            ),
+          ),
+          alignment: Alignment.center,
+          child: value
+              ? const Icon(
+                  Icons.check_rounded,
+                  size: 12,
+                  color: Colors.white,
+                )
+              : null,
+        ),
+      ),
+    );
+  }
+
   Widget _buildTableContent(
     BuildContext context,
     AdminLeadsState state,
@@ -2305,13 +2339,16 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                             : Colors.white,
                         padding: const EdgeInsets.all(12),
                         child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
-                            Checkbox(
-                              value: isSelected,
-                              activeColor: _primary,
-                              onChanged: (v) =>
-                                  cubit.toggleLeadSelection(r.id, v ?? false),
+                            Container(
+                              width: 36,
+                              alignment: Alignment.centerLeft,
+                              child: _buildFigmaCheckbox(
+                                value: isSelected,
+                                onChanged: (v) =>
+                                    cubit.toggleLeadSelection(r.id, v ?? false),
+                              ),
                             ),
                             Expanded(
                               child: Column(
@@ -2324,24 +2361,37 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                                       Expanded(
                                         child: Text(
                                           r.name,
-                                          style: const TextStyle(
-                                            fontWeight: FontWeight.w700,
-                                            fontSize: 14,
+                                          style: GoogleFonts.poppins(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w600,
+                                            height: 24 / 16,
+                                            letterSpacing: 0,
+                                            color: _text,
                                           ),
                                         ),
                                       ),
                                       _statusBadge(r.status),
                                     ],
                                   ),
-                                  const Gap(2),
                                   Text(
-                                    '${r.phone} · ${r.collegeBranch}',
+                                    r.phone,
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w500,
+                                      height: 16 / 12,
+                                      letterSpacing: 0,
+                                      color: const Color(0xFF8A94A6),
+                                    ),
+                                  ),
+                                  const Gap(6),
+                                  Text(
+                                    '${r.collegeBranch} · ${r.source}',
                                     style: const TextStyle(
                                       color: _muted,
                                       fontSize: 12,
                                     ),
                                   ),
-                                  const Gap(6),
+                                  const Gap(2),
                                   Text(
                                     'Source: ${r.source} · Last: ${r.lastContact} · Assigned: ${r.assignedToName}',
                                     style: const TextStyle(
@@ -2375,12 +2425,13 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
               color: const Color(0xFFF8FAFC),
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
               child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  SizedBox(
-                    width: 40,
-                    child: Checkbox(
+                  Container(
+                    width: 36,
+                    alignment: Alignment.centerLeft,
+                    child: _buildFigmaCheckbox(
                       value: allSelectedOnPage,
-                      activeColor: _primary,
                       onChanged: (v) => cubit.toggleSelectAllOnPage(v ?? false),
                     ),
                   ),
@@ -2418,12 +2469,13 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                         vertical: 10,
                       ),
                       child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          SizedBox(
-                            width: 40,
-                            child: Checkbox(
+                          Container(
+                            width: 36,
+                            alignment: Alignment.centerLeft,
+                            child: _buildFigmaCheckbox(
                               value: isSelected,
-                              activeColor: _primary,
                               onChanged: (v) =>
                                   cubit.toggleLeadSelection(r.id, v ?? false),
                             ),
@@ -2432,23 +2484,30 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                             flex: 3,
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Text(
                                   r.name,
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.w700,
-                                    fontSize: 13.5,
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                    height: 24 / 16,
+                                    letterSpacing: 0,
                                     color: _text,
                                   ),
                                 ),
-                                const Gap(2),
                                 Text(
                                   r.phone,
-                                  style: const TextStyle(
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: GoogleFonts.poppins(
                                     fontSize: 12,
-                                    color: _muted,
+                                    fontWeight: FontWeight.w500,
+                                    height: 16 / 12,
+                                    letterSpacing: 0,
+                                    color: const Color(0xFF8A94A6),
                                   ),
                                 ),
                               ],
