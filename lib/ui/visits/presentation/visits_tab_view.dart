@@ -1766,6 +1766,21 @@ class _UpcomingVisitCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final initials = visit.staffInitials.isNotEmpty
+        ? visit.staffInitials
+        : (visit.staffNames.trim().isNotEmpty
+              ? [
+                  visit.staffNames
+                      .trim()
+                      .split(' ')
+                      .firstWhere(
+                        (s) => s.isNotEmpty,
+                        orElse: () => 'E',
+                      )[0]
+                      .toUpperCase(),
+                ]
+              : const ['EX']);
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -1876,7 +1891,7 @@ class _UpcomingVisitCard extends StatelessWidget {
           Row(
             children: [
               SizedBox(
-                width: visit.staffInitials.length > 1 ? 50 : 28,
+                width: initials.length > 1 ? 50 : 28,
                 height: 28,
                 child: Stack(
                   children: [
@@ -1890,7 +1905,7 @@ class _UpcomingVisitCard extends StatelessWidget {
                       ),
                       alignment: Alignment.center,
                       child: Text(
-                        visit.staffInitials.first,
+                        initials.isNotEmpty ? initials.first : 'EX',
                         style: const TextStyle(
                           fontSize: 10,
                           fontWeight: FontWeight.w800,
@@ -1898,7 +1913,7 @@ class _UpcomingVisitCard extends StatelessWidget {
                         ),
                       ),
                     ),
-                    if (visit.staffInitials.length > 1)
+                    if (initials.length > 1)
                       Positioned(
                         left: 20,
                         child: Container(
@@ -1911,7 +1926,7 @@ class _UpcomingVisitCard extends StatelessWidget {
                           ),
                           alignment: Alignment.center,
                           child: Text(
-                            visit.staffInitials[1],
+                            initials[1],
                             style: const TextStyle(
                               fontSize: 10,
                               fontWeight: FontWeight.w800,
@@ -1926,7 +1941,9 @@ class _UpcomingVisitCard extends StatelessWidget {
               const Gap(8),
               Expanded(
                 child: Text(
-                  visit.staffNames,
+                  visit.staffNames.isNotEmpty
+                      ? visit.staffNames
+                      : 'Assigned Staff',
                   style: const TextStyle(
                     fontSize: 12.5,
                     color: Color(0xFF475467),

@@ -468,6 +468,20 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
                                       : purposeCtrl.text.trim(),
                                   'assignedStaff': staffCtrl.text.trim(),
                                   'staffNames': staffCtrl.text.trim(),
+                                  'staffInitials': staffCtrl.text
+                                      .trim()
+                                      .split(',')
+                                      .map((s) => s.trim())
+                                      .where((s) => s.isNotEmpty)
+                                      .map(
+                                        (s) => s
+                                            .split(' ')
+                                            .where((p) => p.isNotEmpty)
+                                            .map((p) => p[0].toUpperCase())
+                                            .join(),
+                                      )
+                                      .where((s) => s.isNotEmpty)
+                                      .toList(),
                                   'status': 'Planned',
                                   'statusLabel': 'Planned',
                                   'outcomeNotes': 'Scheduled campus visit.',

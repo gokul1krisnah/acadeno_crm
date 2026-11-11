@@ -29,9 +29,36 @@ class VisitsRds {
         final status = (data['status'] ?? data['statusLabel'] ?? 'Planned')
             .toString();
         final rawInitials = data['staffInitials'];
-        final List<String> staffInitials = rawInitials is List
-            ? rawInitials.map((e) => e.toString()).toList()
+        final staffNames = (data['staffNames'] ?? data['assignedStaff'] ?? '')
+            .toString()
+            .trim();
+
+        List<String> staffInitials = rawInitials is List
+            ? rawInitials
+                .map((e) => e.toString().trim())
+                .where((e) => e.isNotEmpty)
+                .toList()
             : const [];
+
+        if (staffInitials.isEmpty) {
+          if (staffNames.isNotEmpty) {
+            final parts = staffNames.split(RegExp(r'[,&]|\band\b'));
+            final derived = <String>[];
+            for (final part in parts) {
+              final trimmed = part.trim();
+              if (trimmed.isEmpty) continue;
+              final words = trimmed.split(' ').where((w) => w.isNotEmpty).toList();
+              if (words.length >= 2) {
+                derived.add('${words.first[0]}${words.last[0]}'.toUpperCase());
+              } else if (words.isNotEmpty && words.first.isNotEmpty) {
+                derived.add(words.first[0].toUpperCase());
+              }
+            }
+            staffInitials = derived.isNotEmpty ? derived : const ['EX'];
+          } else {
+            staffInitials = const ['EX'];
+          }
+        }
 
         return ExecutiveCollegeVisit(
           id: doc.id,
@@ -42,8 +69,7 @@ class VisitsRds {
           statusLabel: status,
           purpose: (data['purpose'] ?? '').toString(),
           staffInitials: staffInitials,
-          staffNames: (data['staffNames'] ?? data['assignedStaff'] ?? '')
-              .toString(),
+          staffNames: staffNames.isNotEmpty ? staffNames : 'Assigned Staff',
           leadsCollected: (data['leadsCollected'] as num?)?.toInt() ?? 0,
           interestedCount: (data['interestedCount'] as num?)?.toInt() ?? 0,
           metSummary: (data['metSummary'] ?? data['outcomeNotes'] ?? '')
