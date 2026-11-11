@@ -201,7 +201,7 @@ class FollowUpTimeHelper {
           baseDate.year,
           baseDate.month,
           baseDate.day,
-          18,
+          10,
           0,
         );
       } else {
@@ -213,20 +213,36 @@ class FollowUpTimeHelper {
           0,
         );
       }
+    } else if (baseDate != null && !baseDate.isBefore(todayMidnight)) {
+      // If the lead was assigned to today or a future date via assignedDateKey,
+      // but resolvedDateTime ended up in the past (e.g. from an old stale follow-up text),
+      // the explicit current/future assignment date takes precedence!
+      if (resolvedDateTime.isBefore(todayMidnight)) {
+        resolvedDateTime = DateTime(
+          baseDate.year,
+          baseDate.month,
+          baseDate.day,
+          resolvedDateTime.hour == 18 ? 10 : resolvedDateTime.hour,
+          resolvedDateTime.minute,
+        );
+      }
     }
-
-    // Determine overdue status
-    final isPast = resolvedDateTime.isBefore(now);
-    final isOverdue = statusLower == 'overdue' || isPast;
-
-    FollowUpBucket bucket;
-    String displayLabel;
 
     final itemDay = DateTime(
       resolvedDateTime.year,
       resolvedDateTime.month,
       resolvedDateTime.day,
     );
+
+    // CRITICAL: A follow-up scheduled for tomorrow or a future date can NEVER be overdue!
+    final isFuture = itemDay.isAfter(todayMidnight);
+
+    // Determine overdue status
+    final isPast = resolvedDateTime.isBefore(now);
+    final isOverdue = !isFuture && (statusLower == 'overdue' || isPast);
+
+    FollowUpBucket bucket;
+    String displayLabel;
 
     if (isOverdue) {
       bucket = FollowUpBucket.overdue;

@@ -842,35 +842,37 @@ class FirestoreLeadsBackend implements LeadsBackend {
           final existingAssign = LeadAssignmentModel.fromFirestore(
             existingAssignSnap,
           );
-          if (existingAssign.executiveUid == executive.uid && !allowReassign) {
-            throw AssignmentConflictException(
-              '${lead.name} is already assigned to ${executive.name} for $dateLabel.',
-            );
-          }
-          if (existingAssign.executiveUid != executive.uid && !allowReassign) {
+          if (existingAssign.executiveUid == executive.uid) {
+            // Already assigned to this same executive for this date: allow updating smoothly
+            prevExecUid = existingAssign.executiveUid;
+            prevExecName = existingAssign.executiveName;
+            isReassignment = false;
+          } else if (existingAssign.executiveUid != executive.uid && !allowReassign) {
             throw AssignmentConflictException(
               '${lead.name} is already assigned to ${existingAssign.executiveName} for $dateLabel. Confirm reassignment to proceed.',
             );
+          } else {
+            prevExecUid = existingAssign.executiveUid;
+            prevExecName = existingAssign.executiveName;
+            isReassignment = existingAssign.executiveUid != executive.uid;
           }
-          prevExecUid = existingAssign.executiveUid;
-          prevExecName = existingAssign.executiveName;
-          isReassignment = existingAssign.executiveUid != executive.uid;
         } else if (lead.assignedDateKey == dateKey &&
             lead.assignedToUid != null &&
             lead.assignedToUid!.isNotEmpty) {
-          if (lead.assignedToUid == executive.uid && !allowReassign) {
-            throw AssignmentConflictException(
-              '${lead.name} is already assigned to ${executive.name} for $dateLabel.',
-            );
-          }
-          if (lead.assignedToUid != executive.uid && !allowReassign) {
+          if (lead.assignedToUid == executive.uid) {
+            // Already assigned to this same executive for this date: allow updating smoothly
+            prevExecUid = lead.assignedToUid;
+            prevExecName = lead.assignedToName;
+            isReassignment = false;
+          } else if (lead.assignedToUid != executive.uid && !allowReassign) {
             throw AssignmentConflictException(
               '${lead.name} is already assigned to ${lead.assignedToName} for $dateLabel. Confirm reassignment to proceed.',
             );
+          } else {
+            prevExecUid = lead.assignedToUid;
+            prevExecName = lead.assignedToName;
+            isReassignment = lead.assignedToUid != executive.uid;
           }
-          prevExecUid = lead.assignedToUid;
-          prevExecName = lead.assignedToName;
-          isReassignment = lead.assignedToUid != executive.uid;
         }
 
         if (isReassignment) {
@@ -922,16 +924,23 @@ class FirestoreLeadsBackend implements LeadsBackend {
 
         final updatedTimeline = <String>[timelineEntry, ...lead.timeline];
 
+        final effectiveStatus = (nextLeadStatus == 'overdue' || nextLeadStatus == 'New')
+            ? 'Assigned'
+            : nextLeadStatus;
+        final formattedFollowUp = '$dateLabel · 10:00 AM';
+
         tx.update(_leads.doc(lead.id), {
           'assignedToUid': executive.uid,
           'assignedToName': executive.name,
           'assignedTo': executive.name,
           'assignedDateKey': dateKey,
           'assignedDateLabel': dateLabel,
+          'followUpTime': formattedFollowUp,
+          'isOverdue': false,
           'assignedByUid': actor.uid,
           'assignedByName': actor.name,
           'assignedAt': FieldValue.serverTimestamp(),
-          'status': nextLeadStatus,
+          'status': effectiveStatus,
           'isDone': false,
           'timeline': updatedTimeline,
           'updatedAt': FieldValue.serverTimestamp(),
@@ -1058,24 +1067,48 @@ class FirestoreLeadsBackend implements LeadsBackend {
     // 1. Identify currently authenticated user's Firebase UID & verify active profile
     final actor = await _verifyCurrentActor(requireAdminOrManager: false);
     final effectiveDateKey = dateKey ?? LeadDateHelper.todayDateKey();
+    final todayKey = LeadDateHelper.todayDateKey();
 
-    // 2. Query ONLY this executive's assignments for the target date.
-    // Use synchronous .map to prevent targetId desynchronization & WatchChangeAggregator crashes on Web (RL-5, RL-6)
-    yield* _assignments
-        .where('executiveUid', isEqualTo: actor.uid)
-        .where('dateKey', isEqualTo: effectiveDateKey)
+    // 2. Query ALL leads assigned to this executive in real-time from the authoritative leads collection
+    yield* _leads
+        .where('assignedToUid', isEqualTo: actor.uid)
         .snapshots()
-        .map((assignmentSnap) {
-          if (assignmentSnap.docs.isEmpty) {
-            return const <ExecutiveLeadItem>[];
-          }
+        .map((snap) {
+          final items = <ExecutiveLeadItem>[];
+          for (final doc in snap.docs) {
+            final data = doc.data();
+            final aDateKey = (data['assignedDateKey'] ?? '').toString().trim();
+            final aDateLabel =
+                (data['assignedDateLabel'] ?? '').toString().toLowerCase();
 
-          return assignmentSnap.docs.map((doc) {
-            final assignment = LeadAssignmentModel.fromFirestore(doc);
-            return assignment.toFallbackLeadRecord().toExecutiveLeadItem(
-              assignment: assignment,
-            );
-          }).toList();
+            bool isForTargetDate = false;
+            if (aDateKey.isNotEmpty) {
+              isForTargetDate = (aDateKey == effectiveDateKey);
+            } else if (aDateLabel.contains('today') &&
+                effectiveDateKey == todayKey) {
+              isForTargetDate = true;
+            } else if (effectiveDateKey == todayKey) {
+              // If no explicit date key was specified, check assignedAt or active status
+              final ts = data['assignedAt'] ?? data['createdAt'];
+              if (ts is Timestamp) {
+                final d = ts.toDate();
+                if (LeadDateHelper.dateKey(d) == todayKey) {
+                  isForTargetDate = true;
+                }
+              } else {
+                final s = (data['status'] ?? '').toString().toLowerCase();
+                if (s == 'assigned' || s == 'new') {
+                  isForTargetDate = true;
+                }
+              }
+            }
+
+            if (isForTargetDate) {
+              final lead = LeadRecord.fromFirestore(doc);
+              items.add(lead.toExecutiveLeadItem());
+            }
+          }
+          return items;
         });
   }
 

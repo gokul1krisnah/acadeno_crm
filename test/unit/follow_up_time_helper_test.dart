@@ -67,6 +67,37 @@ void main() {
       expect(eval.isOverdue, isFalse);
       expect(eval.displayLabel, contains('Tomorrow · 10:30 AM'));
     });
+
+    test(
+      'TC-FU-005: Lead assigned to next day or future date appears in Upcoming even if previous status was overdue',
+      () {
+        final eval = FollowUpTimeHelper.evaluate(
+          rawFollowUpTime: null,
+          assignedDateKey: '2026-11-04',
+          status: 'overdue',
+          currentTime: fixedNow,
+        );
+
+        expect(eval.bucket, equals(FollowUpBucket.upcoming));
+        expect(eval.isOverdue, isFalse);
+        expect(eval.displayLabel, contains('Tomorrow'));
+      },
+    );
+
+    test(
+      'TC-FU-006: Lead assigned to future date overrides stale past follow-up text and lands in Upcoming',
+      () {
+        final eval = FollowUpTimeHelper.evaluate(
+          rawFollowUpTime: 'Yesterday 5 PM',
+          assignedDateKey: '2026-11-05',
+          status: 'assigned',
+          currentTime: fixedNow,
+        );
+
+        expect(eval.bucket, equals(FollowUpBucket.upcoming));
+        expect(eval.isOverdue, isFalse);
+      },
+    );
   });
 
   group(
