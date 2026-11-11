@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:gap/gap.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -139,7 +140,7 @@ class SessionSecurityService {
           content: Row(
             children: [
               const Icon(Icons.gpp_bad_rounded, color: Colors.white, size: 22),
-              const SizedBox(width: 10),
+              const Gap(10),
               Expanded(
                 child: Text(
                   reasonMessage,

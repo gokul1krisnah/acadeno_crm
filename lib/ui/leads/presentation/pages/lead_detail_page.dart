@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:gap/gap.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -342,7 +343,7 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
                           size: 18,
                           color: Color(0xFFEF8144),
                         ),
-                        SizedBox(width: 10),
+                        Gap(10),
                         Text(
                           'Log Call Outcome',
                           style: TextStyle(
@@ -362,7 +363,7 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
                           size: 18,
                           color: Color(0xFF15803D),
                         ),
-                        SizedBox(width: 10),
+                        Gap(10),
                         Text(
                           'WhatsApp Templates',
                           style: TextStyle(
@@ -375,7 +376,7 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
                   ),
                 ],
               ),
-              const SizedBox(width: 4),
+              const Gap(4),
             ],
             bottom: PreferredSize(
               preferredSize: const Size.fromHeight(1),
@@ -427,7 +428,7 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
                                   ),
                                 ),
                               ),
-                              const SizedBox(width: 14),
+                              const Gap(14),
                               Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -447,7 +448,7 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
                                             overflow: TextOverflow.ellipsis,
                                           ),
                                         ),
-                                        const SizedBox(width: 8),
+                                        const Gap(8),
                                         Container(
                                           padding: const EdgeInsets.symmetric(
                                             horizontal: 10,
@@ -472,7 +473,7 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
                                         ),
                                       ],
                                     ),
-                                    const SizedBox(height: 3),
+                                    const Gap(3),
                                     Text(
                                       effectivePhone.isNotEmpty
                                           ? effectivePhone
@@ -488,7 +489,7 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
                               ),
                             ],
                           ),
-                          const SizedBox(height: 16),
+                          const Gap(16),
                           Row(
                             children: [
                               Expanded(
@@ -530,7 +531,7 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
                                   ),
                                 ),
                               ),
-                              const SizedBox(width: 12),
+                              const Gap(12),
                               Expanded(
                                 child: SizedBox(
                                   height: 46,
@@ -574,7 +575,7 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
                       ),
                     ),
 
-                    const SizedBox(height: 12),
+                    const Gap(12),
 
                     // 2. Next Follow-Up Banner Card
                     Container(
@@ -603,7 +604,7 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
                               size: 20,
                             ),
                           ),
-                          const SizedBox(width: 12),
+                          const Gap(12),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -617,7 +618,7 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
                                     letterSpacing: 0.5,
                                   ),
                                 ),
-                                const SizedBox(height: 2),
+                                const Gap(2),
                                 Text(
                                   effectiveFollowUp,
                                   style: const TextStyle(
@@ -626,7 +627,7 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
                                     color: Color(0xFF0F172A),
                                   ),
                                 ),
-                                const SizedBox(height: 2),
+                                const Gap(2),
                                 Text(
                                   liveNotes.isNotEmpty
                                       ? liveNotes
@@ -679,7 +680,7 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
                       ),
                     ),
 
-                    const SizedBox(height: 12),
+                    const Gap(12),
 
                     // 3. Details Card
                     Container(
@@ -702,7 +703,7 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
                               letterSpacing: 0.6,
                             ),
                           ),
-                          const SizedBox(height: 14),
+                          const Gap(14),
                           Row(
                             children: [
                               Expanded(
@@ -716,7 +717,7 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
                                         color: Color(0xFF64748B),
                                       ),
                                     ),
-                                    const SizedBox(height: 3),
+                                    const Gap(3),
                                     Text(
                                       collegeDisplay,
                                       style: const TextStyle(
@@ -739,7 +740,7 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
                                         color: Color(0xFF64748B),
                                       ),
                                     ),
-                                    const SizedBox(height: 3),
+                                    const Gap(3),
                                     Text(
                                       branchYearDisplay,
                                       style: const TextStyle(
@@ -753,7 +754,7 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
                               ),
                             ],
                           ),
-                          const SizedBox(height: 14),
+                          const Gap(14),
                           Row(
                             children: [
                               Expanded(
@@ -767,7 +768,7 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
                                         color: Color(0xFF64748B),
                                       ),
                                     ),
-                                    const SizedBox(height: 3),
+                                    const Gap(3),
                                     Text(
                                       sourceDisplay,
                                       style: const TextStyle(
@@ -790,7 +791,7 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
                                         color: Color(0xFF64748B),
                                       ),
                                     ),
-                                    const SizedBox(height: 3),
+                                    const Gap(3),
                                     Text(
                                       effectiveEmail,
                                       style: const TextStyle(
@@ -804,7 +805,7 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
                               ),
                             ],
                           ),
-                          const SizedBox(height: 14),
+                          const Gap(14),
                           const Text(
                             'Interests',
                             style: TextStyle(
@@ -812,7 +813,7 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
                               color: Color(0xFF64748B),
                             ),
                           ),
-                          const SizedBox(height: 8),
+                          const Gap(8),
                           Wrap(
                             spacing: 8,
                             runSpacing: 6,
@@ -841,7 +842,7 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
                       ),
                     ),
 
-                    const SizedBox(height: 12),
+                    const Gap(12),
 
                     // 4. Activity · Visible to whole team Card (Live Data from Firestore)
                     Container(
@@ -864,7 +865,7 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
                               letterSpacing: 0.6,
                             ),
                           ),
-                          const SizedBox(height: 16),
+                          const Gap(16),
                           ...parsedTimeline.asMap().entries.map((entry) {
                             final idx = entry.key;
                             final item = entry.value;
@@ -881,7 +882,7 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
                         ],
                       ),
                     ),
-                    const SizedBox(height: 24),
+                    const Gap(24),
                   ],
                 ),
               ),
@@ -1064,7 +1065,7 @@ class _ActivityTimelineItem extends StatelessWidget {
             width: 16,
             child: Column(
               children: [
-                const SizedBox(height: 4),
+                const Gap(4),
                 Container(
                   width: 10,
                   height: 10,
@@ -1083,7 +1084,7 @@ class _ActivityTimelineItem extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(width: 10),
+          const Gap(10),
           // Content
           Expanded(
             child: Padding(
@@ -1113,7 +1114,7 @@ class _ActivityTimelineItem extends StatelessWidget {
                     ],
                   ),
                   if (subtitle.isNotEmpty) ...[
-                    const SizedBox(height: 2),
+                    const Gap(2),
                     Text(
                       subtitle,
                       style: const TextStyle(
@@ -1123,7 +1124,7 @@ class _ActivityTimelineItem extends StatelessWidget {
                     ),
                   ],
                   if (note != null && note!.isNotEmpty) ...[
-                    const SizedBox(height: 8),
+                    const Gap(8),
                     Container(
                       width: double.infinity,
                       padding: const EdgeInsets.symmetric(

@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:gap/gap.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -326,7 +327,7 @@ class _AdminAccountDialogState extends State<AdminAccountDialog>
                       size: 24,
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  const Gap(12),
                   const Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -353,7 +354,7 @@ class _AdminAccountDialogState extends State<AdminAccountDialog>
                   ),
                 ],
               ),
-              const SizedBox(height: 20),
+              const Gap(20),
 
               // Active Admin Card
               Container(
@@ -379,7 +380,7 @@ class _AdminAccountDialogState extends State<AdminAccountDialog>
                         ),
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    const Gap(12),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -394,7 +395,7 @@ class _AdminAccountDialogState extends State<AdminAccountDialog>
                                   color: textDark,
                                 ),
                               ),
-                              const SizedBox(width: 8),
+                              const Gap(8),
                               Container(
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: 7,
@@ -415,7 +416,7 @@ class _AdminAccountDialogState extends State<AdminAccountDialog>
                               ),
                             ],
                           ),
-                          const SizedBox(height: 2),
+                          const Gap(2),
                           Text(
                             currentEmail,
                             style: const TextStyle(
@@ -429,7 +430,7 @@ class _AdminAccountDialogState extends State<AdminAccountDialog>
                   ],
                 ),
               ),
-              const SizedBox(height: 20),
+              const Gap(20),
 
               // Tab Bar
               Container(
@@ -463,7 +464,7 @@ class _AdminAccountDialogState extends State<AdminAccountDialog>
                   ],
                 ),
               ),
-              const SizedBox(height: 16),
+              const Gap(16),
 
               // Tab Bar Content
               SizedBox(
@@ -499,7 +500,7 @@ class _AdminAccountDialogState extends State<AdminAccountDialog>
             'New Admin Gmail / Email',
             style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700),
           ),
-          const SizedBox(height: 6),
+          const Gap(6),
           TextField(
             controller: _emailController,
             keyboardType: TextInputType.emailAddress,
@@ -513,12 +514,12 @@ class _AdminAccountDialogState extends State<AdminAccountDialog>
               ),
             ),
           ),
-          const SizedBox(height: 12),
+          const Gap(12),
           const Text(
             'Current Password (to verify changes)',
             style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700),
           ),
-          const SizedBox(height: 6),
+          const Gap(6),
           TextField(
             controller: _emailPasswordController,
             obscureText: _obscureEmailPass,
@@ -540,7 +541,7 @@ class _AdminAccountDialogState extends State<AdminAccountDialog>
               ),
             ),
           ),
-          const SizedBox(height: 18),
+          const Gap(18),
           SizedBox(
             width: double.infinity,
             height: 42,
@@ -601,7 +602,7 @@ class _AdminAccountDialogState extends State<AdminAccountDialog>
               ),
             ),
           ),
-          const SizedBox(height: 10),
+          const Gap(10),
           TextField(
             controller: _newPasswordController,
             obscureText: _obscureNewPass,
@@ -623,7 +624,7 @@ class _AdminAccountDialogState extends State<AdminAccountDialog>
               ),
             ),
           ),
-          const SizedBox(height: 10),
+          const Gap(10),
           TextField(
             controller: _confirmPasswordController,
             obscureText: _obscureConfirmPass,
@@ -645,7 +646,7 @@ class _AdminAccountDialogState extends State<AdminAccountDialog>
               ),
             ),
           ),
-          const SizedBox(height: 14),
+          const Gap(14),
           SizedBox(
             width: double.infinity,
             height: 42,
@@ -689,7 +690,7 @@ class _AdminAccountDialogState extends State<AdminAccountDialog>
             'Admin Full Name',
             style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700),
           ),
-          const SizedBox(height: 6),
+          const Gap(6),
           TextField(
             controller: _nameController,
             decoration: InputDecoration(
@@ -702,12 +703,12 @@ class _AdminAccountDialogState extends State<AdminAccountDialog>
               ),
             ),
           ),
-          const SizedBox(height: 12),
+          const Gap(12),
           const Text(
             'Assigned Role',
             style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700),
           ),
-          const SizedBox(height: 6),
+          const Gap(6),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             decoration: BoxDecoration(
@@ -718,7 +719,7 @@ class _AdminAccountDialogState extends State<AdminAccountDialog>
             child: const Row(
               children: [
                 Icon(Icons.shield_outlined, size: 18, color: Color(0xFF16A34A)),
-                SizedBox(width: 8),
+                Gap(8),
                 Text(
                   'Admin (Super Administrator)',
                   style: TextStyle(
@@ -730,7 +731,7 @@ class _AdminAccountDialogState extends State<AdminAccountDialog>
               ],
             ),
           ),
-          const SizedBox(height: 20),
+          const Gap(20),
           SizedBox(
             width: double.infinity,
             height: 42,

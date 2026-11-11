@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:gap/gap.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -282,12 +283,12 @@ class _SettingsViewState extends State<SettingsView>
                   color: _text,
                 ),
               ),
-              const SizedBox(height: 4),
+              const Gap(4),
               const Text(
                 'Manage administrator credentials, security policies, and organizational configurations.',
                 style: TextStyle(fontSize: 13, color: _muted),
               ),
-              const SizedBox(height: 18),
+              const Gap(18),
 
               // Tab Selector
               Container(
@@ -330,7 +331,7 @@ class _SettingsViewState extends State<SettingsView>
           ),
         ),
 
-        const SizedBox(height: 16),
+        const Gap(16),
 
         // Active Tab Content
         Builder(
@@ -376,7 +377,7 @@ class _SettingsViewState extends State<SettingsView>
                     color: _text,
                   ),
                 ),
-                const SizedBox(height: 6),
+                const Gap(6),
                 if (isMobile) ...[
                   SizedBox(
                     height: 48,
@@ -403,7 +404,7 @@ class _SettingsViewState extends State<SettingsView>
                       ),
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  const Gap(12),
                   SizedBox(
                     width: double.infinity,
                     height: 48,
@@ -467,7 +468,7 @@ class _SettingsViewState extends State<SettingsView>
                           ),
                         ),
                       ),
-                      const SizedBox(width: 12),
+                      const Gap(12),
                       SizedBox(
                         height: 48,
                         child: ElevatedButton(
@@ -506,7 +507,7 @@ class _SettingsViewState extends State<SettingsView>
             ),
           ),
 
-          const SizedBox(height: 16),
+          const Gap(16),
 
           // 2. Email Address Card
           _buildCard(
@@ -523,7 +524,7 @@ class _SettingsViewState extends State<SettingsView>
                     color: _text,
                   ),
                 ),
-                const SizedBox(height: 6),
+                const Gap(6),
                 TextField(
                   controller: _emailController,
                   decoration: InputDecoration(
@@ -546,7 +547,7 @@ class _SettingsViewState extends State<SettingsView>
                     ),
                   ),
                 ),
-                const SizedBox(height: 12),
+                const Gap(12),
                 const Text(
                   'Current Password (for authorization)',
                   style: TextStyle(
@@ -555,7 +556,7 @@ class _SettingsViewState extends State<SettingsView>
                     color: _text,
                   ),
                 ),
-                const SizedBox(height: 6),
+                const Gap(6),
                 TextField(
                   controller: _emailPasswordController,
                   obscureText: _obscureEmailPass,
@@ -591,7 +592,7 @@ class _SettingsViewState extends State<SettingsView>
                     ),
                   ),
                 ),
-                const SizedBox(height: 16),
+                const Gap(16),
                 SizedBox(
                   width: isMobile ? double.infinity : null,
                   height: 48,
@@ -628,7 +629,7 @@ class _SettingsViewState extends State<SettingsView>
             ),
           ),
 
-          const SizedBox(height: 16),
+          const Gap(16),
 
           // 3. Password Card
           _buildCard(
@@ -646,7 +647,7 @@ class _SettingsViewState extends State<SettingsView>
                     color: _text,
                   ),
                 ),
-                const SizedBox(height: 6),
+                const Gap(6),
                 TextField(
                   controller: _currentPasswordController,
                   obscureText: _obscureCurrentPass,
@@ -682,7 +683,7 @@ class _SettingsViewState extends State<SettingsView>
                     ),
                   ),
                 ),
-                const SizedBox(height: 12),
+                const Gap(12),
                 if (isMobile) ...[
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -695,7 +696,7 @@ class _SettingsViewState extends State<SettingsView>
                           color: _text,
                         ),
                       ),
-                      const SizedBox(height: 6),
+                      const Gap(6),
                       TextField(
                         controller: _newPasswordController,
                         obscureText: _obscureNewPass,
@@ -733,7 +734,7 @@ class _SettingsViewState extends State<SettingsView>
                       ),
                     ],
                   ),
-                  const SizedBox(height: 12),
+                  const Gap(12),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -745,7 +746,7 @@ class _SettingsViewState extends State<SettingsView>
                           color: _text,
                         ),
                       ),
-                      const SizedBox(height: 6),
+                      const Gap(6),
                       TextField(
                         controller: _confirmPasswordController,
                         obscureText: _obscureConfirmPass,
@@ -798,7 +799,7 @@ class _SettingsViewState extends State<SettingsView>
                                 color: _text,
                               ),
                             ),
-                            const SizedBox(height: 6),
+                            const Gap(6),
                             TextField(
                               controller: _newPasswordController,
                               obscureText: _obscureNewPass,
@@ -837,7 +838,7 @@ class _SettingsViewState extends State<SettingsView>
                           ],
                         ),
                       ),
-                      const SizedBox(width: 12),
+                      const Gap(12),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -850,7 +851,7 @@ class _SettingsViewState extends State<SettingsView>
                                 color: _text,
                               ),
                             ),
-                            const SizedBox(height: 6),
+                            const Gap(6),
                             TextField(
                               controller: _confirmPasswordController,
                               obscureText: _obscureConfirmPass,
@@ -893,7 +894,7 @@ class _SettingsViewState extends State<SettingsView>
                     ],
                   ),
                 ],
-                const SizedBox(height: 16),
+                const Gap(16),
                 SizedBox(
                   width: isMobile ? double.infinity : null,
                   height: 48,
@@ -970,7 +971,7 @@ class _SettingsViewState extends State<SettingsView>
             ),
           ),
 
-          const SizedBox(height: 16),
+          const Gap(16),
 
           _buildCard(
             title: 'Lead Management & Escalations',
@@ -987,7 +988,7 @@ class _SettingsViewState extends State<SettingsView>
                     if (val != null) setState(() => _defaultCallsTarget = val);
                   },
                 ),
-                const SizedBox(height: 16),
+                const Gap(16),
                 AcadenoDropdown.strings(
                   label: 'Overdue Follow-up Escalation Threshold',
                   value: _overdueEscalationHours,
@@ -998,7 +999,7 @@ class _SettingsViewState extends State<SettingsView>
                     }
                   },
                 ),
-                const SizedBox(height: 16),
+                const Gap(16),
                 SwitchListTile(
                   contentPadding: EdgeInsets.zero,
                   activeThumbColor: _primary,
@@ -1017,7 +1018,7 @@ class _SettingsViewState extends State<SettingsView>
                   value: _autoAssignWalkIns,
                   onChanged: (v) => setState(() => _autoAssignWalkIns = v),
                 ),
-                const SizedBox(height: 8),
+                const Gap(8),
                 SwitchListTile(
                   contentPadding: EdgeInsets.zero,
                   activeThumbColor: _primary,
@@ -1091,7 +1092,7 @@ class _SettingsViewState extends State<SettingsView>
             ),
           ),
 
-          const SizedBox(height: 16),
+          const Gap(16),
 
           _buildCard(
             title: 'Application Version & Environment',
@@ -1152,9 +1153,9 @@ class _SettingsViewState extends State<SettingsView>
               color: _text,
             ),
           ),
-          const SizedBox(height: 3),
+          const Gap(3),
           Text(subtitle, style: const TextStyle(fontSize: 12.5, color: _muted)),
-          const SizedBox(height: 16),
+          const Gap(16),
           child,
         ],
       ),
@@ -1175,7 +1176,7 @@ class _SettingsViewState extends State<SettingsView>
               color: _muted,
             ),
           ),
-          const SizedBox(height: 4),
+          const Gap(4),
           Text(
             value,
             style: const TextStyle(
@@ -1224,7 +1225,7 @@ class _SettingsViewState extends State<SettingsView>
     return Row(
       children: [
         Icon(icon, size: 18, color: color),
-        const SizedBox(width: 10),
+        const Gap(10),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,

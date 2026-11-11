@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:gap/gap.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:acadeno_crm/shared/widgets/college_selector_field.dart';
 import 'package:acadeno_crm/shared/extensions/build_context_extension.dart';
@@ -127,12 +128,12 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                             color: _text,
                           ),
                         ),
-                        const SizedBox(height: 4),
+                        const Gap(4),
                         Text(
                           'Assignment Date: ${state.selectedDateLabel} (${state.selectedDateKey})',
                           style: const TextStyle(fontSize: 13, color: _muted),
                         ),
-                        const SizedBox(height: 4),
+                        const Gap(4),
                         Text(
                           'Leads Selected: ${selectedLeads.length}',
                           style: const TextStyle(fontSize: 13, color: _muted),
@@ -140,7 +141,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                       ],
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  const Gap(12),
                   const Text(
                     'SELECTED LEADS',
                     style: TextStyle(
@@ -150,7 +151,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                       letterSpacing: 0.4,
                     ),
                   ),
-                  const SizedBox(height: 6),
+                  const Gap(6),
                   ConstrainedBox(
                     constraints: const BoxConstraints(maxHeight: 160),
                     child: SingleChildScrollView(
@@ -191,7 +192,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                     ),
                   ),
                   if (conflicts.isNotEmpty) ...[
-                    const SizedBox(height: 12),
+                    const Gap(12),
                     Container(
                       padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
@@ -210,7 +211,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                               color: Color(0xFF92400E),
                             ),
                           ),
-                          const SizedBox(height: 4),
+                          const Gap(4),
                           CheckboxListTile(
                             value: confirmReassign,
                             onChanged: (v) =>
@@ -318,7 +319,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                           color: const Color(0xFF0F172A),
                         ),
                       ),
-                      const SizedBox(height: 6),
+                      const Gap(6),
                       Text(
                         'Type a 10-digit phone number to check duplicates before saving.',
                         style: GoogleFonts.inter(
@@ -329,7 +330,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                           color: const Color(0xFF64748B),
                         ),
                       ),
-                      const SizedBox(height: 18),
+                      const Gap(18),
                       if (backendError != null) ...[
                         Container(
                           width: double.infinity,
@@ -349,7 +350,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                                 size: 18,
                                 color: Color(0xFFDC2626),
                               ),
-                              const SizedBox(width: 8),
+                              const Gap(8),
                               Expanded(
                                 child: Text(
                                   backendError!,
@@ -411,7 +412,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                         ),
                         validator: LeadPhoneValidator.validate,
                       ),
-                      const SizedBox(height: 14),
+                      const Gap(14),
                       TextFormField(
                         controller: nameC,
                         style: GoogleFonts.inter(
@@ -457,7 +458,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                         validator: (v) =>
                             (v == null || v.trim().isEmpty) ? 'Required' : null,
                       ),
-                      const SizedBox(height: 14),
+                      const Gap(14),
                       Text(
                         'College · Branch · Year',
                         style: GoogleFonts.inter(
@@ -467,7 +468,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                           color: const Color(0xFF94A3B8),
                         ),
                       ),
-                      const SizedBox(height: 6),
+                      const Gap(6),
                       TextFormField(
                         controller: collegeC,
                         style: GoogleFonts.inter(
@@ -511,7 +512,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                           ),
                         ),
                       ),
-                      const SizedBox(height: 14),
+                      const Gap(14),
                       Text(
                         'Source Event / Consent',
                         style: GoogleFonts.inter(
@@ -520,7 +521,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                           color: const Color(0xFF334155),
                         ),
                       ),
-                      const SizedBox(height: 6),
+                      const Gap(6),
                       Container(
                         height: 54,
                         decoration: BoxDecoration(
@@ -578,7 +579,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                           ),
                         ),
                       ),
-                      const SizedBox(height: 20),
+                      const Gap(20),
                       Row(
                         children: [
                           Expanded(
@@ -606,7 +607,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                               ),
                             ),
                           ),
-                          const SizedBox(width: 12),
+                          const Gap(12),
                           Expanded(
                             child: SizedBox(
                               height: 48,
@@ -803,7 +804,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                               color: _muted,
                             ),
                           ),
-                          const SizedBox(height: 2),
+                          const Gap(2),
                           Text(
                             'Assigned To: ${lead.assignedToName}${lead.assignedDateLabel != null ? " (${lead.assignedDateLabel})" : ""}',
                             style: const TextStyle(
@@ -824,7 +825,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                         ],
                       ),
                     ),
-                    const SizedBox(height: 12),
+                    const Gap(12),
                     TextFormField(
                       controller: nameC,
                       decoration: InputDecoration(
@@ -837,7 +838,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                       validator: (v) =>
                           (v == null || v.trim().isEmpty) ? 'Required' : null,
                     ),
-                    const SizedBox(height: 12),
+                    const Gap(12),
                     TextFormField(
                       controller: phoneC,
                       keyboardType: TextInputType.phone,
@@ -850,7 +851,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                       ),
                       validator: LeadPhoneValidator.validate,
                     ),
-                    const SizedBox(height: 12),
+                    const Gap(12),
                     CollegeSelectorField(
                       controller: collegeC,
                       additionalColleges: state.allLeads
@@ -863,7 +864,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                           .where((s) => s.isNotEmpty)
                           .toList(),
                     ),
-                    const SizedBox(height: 12),
+                    const Gap(12),
                     Row(
                       children: [
                         Expanded(
@@ -901,7 +902,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                             ),
                           ),
                         ),
-                        const SizedBox(width: 10),
+                        const Gap(10),
                         Expanded(
                           child: DropdownButtonFormField<String>(
                             initialValue: selectedStatus,
@@ -939,7 +940,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 12),
+                    const Gap(12),
                     TextFormField(
                       controller: notesC,
                       maxLines: 2,
@@ -952,7 +953,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                       ),
                     ),
                     if (lead.timeline.isNotEmpty) ...[
-                      const SizedBox(height: 12),
+                      const Gap(12),
                       const Text(
                         'TIMELINE',
                         style: TextStyle(
@@ -961,7 +962,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                           color: _muted,
                         ),
                       ),
-                      const SizedBox(height: 4),
+                      const Gap(4),
                       ...lead.timeline
                           .take(4)
                           .map(
@@ -1076,7 +1077,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
             color: _text,
           ),
         ),
-        const SizedBox(height: 6),
+        const Gap(6),
         Container(
           height: 40,
           padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -1160,7 +1161,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                         letterSpacing: -0.5,
                       ),
                     ),
-                    const SizedBox(height: 4),
+                    const Gap(4),
                     Text(
                       '${state.allLeads.length} leads · filter, select and assign to HR for a day',
                       style: const TextStyle(color: _muted, fontSize: 13),
@@ -1198,7 +1199,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                         ),
                       ),
                     ),
-                    const SizedBox(width: 10),
+                    const Gap(10),
                     SizedBox(
                       height: 40,
                       child: OutlinedButton.icon(
@@ -1226,7 +1227,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                         ),
                       ),
                     ),
-                    const SizedBox(width: 10),
+                    const Gap(10),
                     SizedBox(
                       height: 40,
                       child: OutlinedButton.icon(
@@ -1276,7 +1277,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                         ),
                       ),
                     ),
-                    const SizedBox(width: 10),
+                    const Gap(10),
                     SizedBox(
                       height: 40,
                       child: ElevatedButton.icon(
@@ -1308,7 +1309,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       titleCol,
-                      const SizedBox(height: 12),
+                      const Gap(12),
                       SingleChildScrollView(
                         scrollDirection: Axis.horizontal,
                         child: actionButtons,
@@ -1324,14 +1325,14 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Expanded(child: titleCol),
-                      const SizedBox(width: 16),
+                      const Gap(16),
                       actionButtons,
                     ],
                   ),
                 );
               },
             ),
-            const SizedBox(height: 18),
+            const Gap(18),
 
             // Filter Bar Card
             Container(
@@ -1354,7 +1355,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                           color: _text,
                         ),
                       ),
-                      const SizedBox(height: 6),
+                      const Gap(6),
                       SizedBox(
                         height: 40,
                         child: TextField(
@@ -1461,15 +1462,15 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                     return Row(
                       children: [
                         Expanded(flex: 3, child: searchField),
-                        const SizedBox(width: 10),
+                        const Gap(10),
                         Expanded(flex: 2, child: fSource),
-                        const SizedBox(width: 10),
+                        const Gap(10),
                         Expanded(flex: 2, child: fCollege),
-                        const SizedBox(width: 10),
+                        const Gap(10),
                         Expanded(flex: 2, child: fBranch),
-                        const SizedBox(width: 10),
+                        const Gap(10),
                         Expanded(flex: 2, child: fYear),
-                        const SizedBox(width: 10),
+                        const Gap(10),
                         Expanded(flex: 2, child: fStatus),
                       ],
                     );
@@ -1496,9 +1497,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                 },
               ),
             ),
-            const SizedBox(
-              height: 16,
-            ), // Dark Bulk Selection & Assignment Bar (Always shown; grey & disabled if no tick selected)
+            const Gap(16), // Dark Bulk Selection & Assignment Bar (Always shown; grey & disabled if no tick selected)
             // Dark Bulk Selection & Assignment Bar (Responsive mobile-friendly layout)
             LayoutBuilder(
               builder: (context, barC) {
@@ -1613,7 +1612,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                           ),
                         ),
                       ),
-                      const SizedBox(width: 6),
+                      const Gap(6),
                       InkWell(
                         onTap: () async {
                           final now = DateTime.now();
@@ -1718,15 +1717,15 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                             fontWeight: FontWeight.w700,
                           ),
                         ),
-                        const SizedBox(height: 12),
+                        const Gap(12),
                         Row(
                           children: [
                             Expanded(child: execDropdown),
-                            const SizedBox(width: 8),
+                            const Gap(8),
                             Expanded(child: dateDropdown),
                           ],
                         ),
-                        const SizedBox(height: 12),
+                        const Gap(12),
                         assignBtn,
                       ],
                     ),
@@ -1795,7 +1794,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                 );
               },
             ),
-            const SizedBox(height: 16),
+            const Gap(16),
 
             // Leads Table Card (Loading, Error, Empty, or Data rows)
             Container(
@@ -1812,7 +1811,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                 allSelectedOnPage,
               ),
             ),
-            const SizedBox(height: 14),
+            const Gap(14),
 
             // Pagination Footer
             Wrap(
@@ -1844,7 +1843,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                           : null,
                       child: const Text('Previous'),
                     ),
-                    const SizedBox(width: 8),
+                    const Gap(8),
                     OutlinedButton(
                       style: OutlinedButton.styleFrom(
                         backgroundColor: Colors.white,
@@ -1885,7 +1884,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
             mainAxisSize: MainAxisSize.min,
             children: [
               CircularProgressIndicator(color: _primary),
-              SizedBox(height: 12),
+              Gap(12),
               Text(
                 'Loading leads from Firestore...',
                 style: TextStyle(
@@ -1914,7 +1913,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                 size: 36,
                 color: const Color(0xFFB91C1C),
               ),
-              const SizedBox(height: 10),
+              const Gap(10),
               Text(
                 state.isPermissionDenied
                     ? 'Permission Denied'
@@ -1925,13 +1924,13 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                   color: _text,
                 ),
               ),
-              const SizedBox(height: 4),
+              const Gap(4),
               Text(
                 state.errorMessage!,
                 textAlign: TextAlign.center,
                 style: const TextStyle(fontSize: 13, color: _muted),
               ),
-              const SizedBox(height: 14),
+              const Gap(14),
               OutlinedButton.icon(
                 onPressed: cubit.refresh,
                 icon: const Icon(CupertinoIcons.refresh, size: 16),
@@ -1951,7 +1950,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
             mainAxisSize: MainAxisSize.min,
             children: [
               const Icon(Icons.inbox_outlined, size: 36, color: _muted),
-              const SizedBox(height: 10),
+              const Gap(10),
               Text(
                 state.allLeads.isEmpty
                     ? 'No leads in Firestore yet'
@@ -1962,7 +1961,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                   color: _text,
                 ),
               ),
-              const SizedBox(height: 4),
+              const Gap(4),
               Text(
                 state.allLeads.isEmpty
                     ? 'Click "+ Add lead" to create your first lead record.'
@@ -1971,7 +1970,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                 style: const TextStyle(fontSize: 13, color: _muted),
               ),
               if (state.allLeads.isNotEmpty) ...[
-                const SizedBox(height: 12),
+                const Gap(12),
                 OutlinedButton(
                   onPressed: () {
                     _searchC.clear();
@@ -2035,7 +2034,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                                       _statusBadge(r.status),
                                     ],
                                   ),
-                                  const SizedBox(height: 2),
+                                  const Gap(2),
                                   Text(
                                     '${r.phone} · ${r.collegeBranch}',
                                     style: const TextStyle(
@@ -2043,7 +2042,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                                       fontSize: 12,
                                     ),
                                   ),
-                                  const SizedBox(height: 6),
+                                  const Gap(6),
                                   Text(
                                     'Source: ${r.source} · Last: ${r.lastContact} · Assigned: ${r.assignedToName}',
                                     style: const TextStyle(
@@ -2145,7 +2144,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                                     color: _text,
                                   ),
                                 ),
-                                const SizedBox(height: 2),
+                                const Gap(2),
                                 Text(
                                   r.phone,
                                   style: const TextStyle(

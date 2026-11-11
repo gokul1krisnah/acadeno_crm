@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:gap/gap.dart';
 import 'package:flutter/material.dart';
 import '../../core/services/offline_queue_service.dart';
 
@@ -112,7 +113,7 @@ class OfflineStatusBar extends StatelessWidget {
                     color: Color(0xFFFDE68A),
                     size: 14,
                   ),
-                  SizedBox(width: 4),
+                  Gap(4),
                   Text(
                     'Retry',
                     style: TextStyle(
@@ -182,7 +183,7 @@ class OfflineStatusBar extends StatelessWidget {
               child: Row(
                 children: [
                   leadingIcon,
-                  const SizedBox(width: 10),
+                  const Gap(10),
                   Expanded(
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
@@ -211,7 +212,7 @@ class OfflineStatusBar extends StatelessWidget {
                     ),
                   ),
                   if (trailingAction != null) ...[
-                    const SizedBox(width: 8),
+                    const Gap(8),
                     trailingAction,
                   ],
                 ],

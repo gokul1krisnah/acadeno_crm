@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:gap/gap.dart';
 import 'package:acadeno_crm/shared/widgets/acadeno_dropdown.dart';
 import '../../../../core/utils/native_file_picker.dart';
 import '../../../../core/utils/file_download_helper.dart';
@@ -72,7 +73,7 @@ class _ImportLeadsBodyState extends State<_ImportLeadsBody> {
                             letterSpacing: -0.5,
                           ),
                         ),
-                        SizedBox(height: 4),
+                        Gap(4),
                         Text(
                           'From Excel (.xlsx) or Google Sheets (saved as .csv). Duplicate phone numbers are detected automatically.',
                           style: TextStyle(
@@ -122,7 +123,7 @@ class _ImportLeadsBodyState extends State<_ImportLeadsBody> {
                         children: [
                           titleCol,
                           if (resetBtn != null) ...[
-                            const SizedBox(height: 10),
+                            const Gap(10),
                             resetBtn,
                           ],
                         ],
@@ -135,18 +136,18 @@ class _ImportLeadsBodyState extends State<_ImportLeadsBody> {
                       children: [
                         Expanded(child: titleCol),
                         if (resetBtn != null) ...[
-                          const SizedBox(width: 16),
+                          const Gap(16),
                           resetBtn,
                         ],
                       ],
                     );
                   },
                 ),
-                const SizedBox(height: 18),
+                const Gap(18),
 
                 // 3-Step Stepper
                 _buildStepper(context, state, isMobile),
-                const SizedBox(height: 18),
+                const Gap(18),
 
                 // Step Body
                 if (state.currentStep == 1)
@@ -197,9 +198,9 @@ class _ImportLeadsBodyState extends State<_ImportLeadsBody> {
       return Column(
         children: [
           steps[0],
-          const SizedBox(height: 8),
+          const Gap(8),
           steps[1],
-          const SizedBox(height: 8),
+          const Gap(8),
           steps[2],
         ],
       );
@@ -208,9 +209,9 @@ class _ImportLeadsBodyState extends State<_ImportLeadsBody> {
     return Row(
       children: [
         Expanded(child: steps[0]),
-        const SizedBox(width: 12),
+        const Gap(12),
         Expanded(child: steps[1]),
-        const SizedBox(width: 12),
+        const Gap(12),
         Expanded(child: steps[2]),
       ],
     );
@@ -281,7 +282,7 @@ class _ImportLeadsBodyState extends State<_ImportLeadsBody> {
               ),
               child: circleChild,
             ),
-            const SizedBox(width: 12),
+            const Gap(12),
             Text(
               label,
               style: TextStyle(
@@ -328,7 +329,7 @@ class _ImportLeadsBodyState extends State<_ImportLeadsBody> {
               color: Color(0xFF0F172A),
             ),
           ),
-          const SizedBox(height: 14),
+          const Gap(14),
           Wrap(
             spacing: 16,
             runSpacing: 14,
@@ -368,7 +369,7 @@ class _ImportLeadsBodyState extends State<_ImportLeadsBody> {
               ),
             ],
           ),
-          const SizedBox(height: 24),
+          const Gap(24),
 
           // Template & Fast Testing Row
           isMobile
@@ -383,7 +384,7 @@ class _ImportLeadsBodyState extends State<_ImportLeadsBody> {
                         color: Color(0xFF0F172A),
                       ),
                     ),
-                    const SizedBox(height: 6),
+                    const Gap(6),
                     TextButton.icon(
                       style: TextButton.styleFrom(
                         foregroundColor: const Color(0xFF4338CA),
@@ -439,7 +440,7 @@ class _ImportLeadsBodyState extends State<_ImportLeadsBody> {
                     ),
                   ],
                 ),
-          const SizedBox(height: 10),
+          const Gap(10),
 
           // Upload Dropzone
           InkWell(
@@ -460,7 +461,7 @@ class _ImportLeadsBodyState extends State<_ImportLeadsBody> {
                   ? Column(
                       children: const [
                         CircularProgressIndicator(strokeWidth: 2.5),
-                        SizedBox(height: 14),
+                        Gap(14),
                         Text(
                           'Parsing file and normalizing 10-digit Indian numbers...',
                           style: TextStyle(
@@ -484,7 +485,7 @@ class _ImportLeadsBodyState extends State<_ImportLeadsBody> {
                             color: Color(0xFF4338CA),
                           ),
                         ),
-                        const SizedBox(height: 12),
+                        const Gap(12),
                         Text(
                           state.fileName.isNotEmpty
                               ? 'Selected file: ${state.fileName}'
@@ -495,7 +496,7 @@ class _ImportLeadsBodyState extends State<_ImportLeadsBody> {
                             color: Color(0xFF0F172A),
                           ),
                         ),
-                        const SizedBox(height: 6),
+                        const Gap(6),
                         const Text(
                           'Supported columns: Name, Phone, Email, College, Branch, Year, Course, Notes, Consent\nIndian mobile numbers are automatically cleaned and verified by their last 10 digits.',
                           textAlign: TextAlign.center,
@@ -505,7 +506,7 @@ class _ImportLeadsBodyState extends State<_ImportLeadsBody> {
                             height: 1.4,
                           ),
                         ),
-                        const SizedBox(height: 14),
+                        const Gap(14),
                         ElevatedButton.icon(
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFFEF8144),
@@ -569,7 +570,7 @@ class _ImportLeadsBodyState extends State<_ImportLeadsBody> {
               letterSpacing: -0.3,
             ),
           ),
-          const SizedBox(height: 4),
+          const Gap(4),
           const Text(
             'View the result before importing',
             style: TextStyle(
@@ -579,7 +580,7 @@ class _ImportLeadsBodyState extends State<_ImportLeadsBody> {
               color: Color(0xFF64748B),
             ),
           ),
-          const SizedBox(height: 16),
+          const Gap(16),
 
           // 3 Summary Cards (Figma on mobile: width 133, height 114, gap 12; unchanged on laptop)
           if (isMobile)
@@ -594,7 +595,7 @@ class _ImportLeadsBodyState extends State<_ImportLeadsBody> {
                     bg: const Color(0xFFE6F4EA),
                     fg: const Color(0xFF15803D),
                   ),
-                  const SizedBox(width: 12),
+                  const Gap(12),
                   _buildFigmaMobileBox(
                     count: '${state.existingLeadsCount}',
                     label: _skipExisting
@@ -603,7 +604,7 @@ class _ImportLeadsBodyState extends State<_ImportLeadsBody> {
                     bg: const Color(0xFFE8F1FD),
                     fg: const Color(0xFF1D4ED8),
                   ),
-                  const SizedBox(width: 12),
+                  const Gap(12),
                   _buildFigmaMobileBox(
                     count: '${state.skippedLeadsCount}',
                     label: 'Invalid duplicates skipped',
@@ -624,7 +625,7 @@ class _ImportLeadsBodyState extends State<_ImportLeadsBody> {
                     fg: const Color(0xFF15803D),
                   ),
                 ),
-                const SizedBox(width: 14),
+                const Gap(14),
                 Expanded(
                   child: _buildSummaryBanner(
                     count: '${state.existingLeadsCount}',
@@ -635,7 +636,7 @@ class _ImportLeadsBodyState extends State<_ImportLeadsBody> {
                     fg: const Color(0xFF1D4ED8),
                   ),
                 ),
-                const SizedBox(width: 14),
+                const Gap(14),
                 Expanded(
                   child: _buildSummaryBanner(
                     count: '${state.skippedLeadsCount}',
@@ -647,7 +648,7 @@ class _ImportLeadsBodyState extends State<_ImportLeadsBody> {
               ],
             ),
 
-          const SizedBox(height: 20),
+          const Gap(20),
 
           // Lead Filters Header
           const Row(
@@ -657,7 +658,7 @@ class _ImportLeadsBodyState extends State<_ImportLeadsBody> {
                 size: 18,
                 color: Color(0xFF1E1B4B),
               ),
-              SizedBox(width: 6),
+              Gap(6),
               Text(
                 'Lead Filters',
                 style: TextStyle(
@@ -669,7 +670,7 @@ class _ImportLeadsBodyState extends State<_ImportLeadsBody> {
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          const Gap(12),
 
           // Filter bar and Policy toggle
           Wrap(
@@ -719,7 +720,7 @@ class _ImportLeadsBodyState extends State<_ImportLeadsBody> {
                         color: Color(0xFF475467),
                       ),
                     ),
-                    const SizedBox(width: 8),
+                    const Gap(8),
                     Switch(
                       value: _skipExisting,
                       activeThumbColor: const Color(0xFF4338CA),
@@ -732,7 +733,7 @@ class _ImportLeadsBodyState extends State<_ImportLeadsBody> {
 
           // Attention Table (only shown when rows match filter)
           if (state.filteredItems.isNotEmpty) ...[
-            const SizedBox(height: 14),
+            const Gap(14),
             Container(
               width: double.infinity,
               decoration: BoxDecoration(
@@ -748,7 +749,7 @@ class _ImportLeadsBodyState extends State<_ImportLeadsBody> {
 
           // Bottom Action Button (Import Leads)
           if (state.importableTotal > 0) ...[
-            const SizedBox(height: 22),
+            const Gap(22),
             SizedBox(
               height: 44,
               width: isMobile ? double.infinity : null,
@@ -777,7 +778,7 @@ class _ImportLeadsBodyState extends State<_ImportLeadsBody> {
                               color: Colors.white,
                             ),
                           ),
-                          const SizedBox(width: 10),
+                          const Gap(10),
                           Text(
                             'Importing (${state.processedCount}/${state.totalCandidates})...',
                             style: const TextStyle(fontWeight: FontWeight.w600),
@@ -850,7 +851,7 @@ class _ImportLeadsBodyState extends State<_ImportLeadsBody> {
               color: fg,
             ),
           ),
-          const SizedBox(height: 3),
+          const Gap(3),
           Text(
             label,
             style: TextStyle(
@@ -894,7 +895,7 @@ class _ImportLeadsBodyState extends State<_ImportLeadsBody> {
               letterSpacing: -0.5,
             ),
           ),
-          const SizedBox(height: 8),
+          const Gap(8),
           Text(
             label,
             maxLines: 2,
@@ -1072,7 +1073,7 @@ class _ImportLeadsBodyState extends State<_ImportLeadsBody> {
                             ),
                           ),
                         ),
-                        const SizedBox(width: 6),
+                        const Gap(6),
                         Checkbox(
                           value: !item.isExcluded,
                           activeColor: const Color(0xFF4338CA),
@@ -1156,7 +1157,7 @@ class _ImportLeadsBodyState extends State<_ImportLeadsBody> {
                 'Phone: ${item.phone.isEmpty ? "—" : item.phone} · ${item.collegeBranch}',
                 style: const TextStyle(fontSize: 12, color: Color(0xFF475467)),
               ),
-              const SizedBox(height: 6),
+              const Gap(6),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
@@ -1226,7 +1227,7 @@ class _ImportLeadsBodyState extends State<_ImportLeadsBody> {
               color: Color(0xFF15803D),
             ),
           ),
-          const SizedBox(height: 16),
+          const Gap(16),
           Text(
             '$totalImported leads imported successfully!',
             style: const TextStyle(
@@ -1235,7 +1236,7 @@ class _ImportLeadsBodyState extends State<_ImportLeadsBody> {
               color: Color(0xFF0F172A),
             ),
           ),
-          const SizedBox(height: 6),
+          const Gap(6),
           Text(
             'Source: ${state.sourceEvent} · Consent: ${state.consentBasis}\n$newCreated new leads created · $enrichedOrSkipped existing profiles handled · $skippedCount invalid/duplicate rows skipped.',
             textAlign: TextAlign.center,
@@ -1245,7 +1246,7 @@ class _ImportLeadsBodyState extends State<_ImportLeadsBody> {
               height: 1.5,
             ),
           ),
-          const SizedBox(height: 24),
+          const Gap(24),
 
           Wrap(
             spacing: 12,
@@ -1382,7 +1383,7 @@ class _ImportLeadsBodyState extends State<_ImportLeadsBody> {
                     isDense: true,
                   ),
                 ),
-                const SizedBox(height: 10),
+                const Gap(10),
                 TextField(
                   controller: phoneCtrl,
                   decoration: const InputDecoration(
@@ -1391,7 +1392,7 @@ class _ImportLeadsBodyState extends State<_ImportLeadsBody> {
                     isDense: true,
                   ),
                 ),
-                const SizedBox(height: 10),
+                const Gap(10),
                 TextField(
                   controller: emailCtrl,
                   decoration: const InputDecoration(
@@ -1400,7 +1401,7 @@ class _ImportLeadsBodyState extends State<_ImportLeadsBody> {
                     isDense: true,
                   ),
                 ),
-                const SizedBox(height: 10),
+                const Gap(10),
                 Row(
                   children: [
                     Expanded(
@@ -1414,7 +1415,7 @@ class _ImportLeadsBodyState extends State<_ImportLeadsBody> {
                         ),
                       ),
                     ),
-                    const SizedBox(width: 8),
+                    const Gap(8),
                     Expanded(
                       child: TextField(
                         controller: branchCtrl,
@@ -1427,7 +1428,7 @@ class _ImportLeadsBodyState extends State<_ImportLeadsBody> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 10),
+                const Gap(10),
                 TextField(
                   controller: yearCtrl,
                   decoration: const InputDecoration(
@@ -1491,7 +1492,7 @@ class _ImportLeadsBodyState extends State<_ImportLeadsBody> {
                 fontWeight: FontWeight.w600,
               ),
             ),
-            const SizedBox(height: 12),
+            const Gap(12),
             Text(
               '• ${state.newLeadsCount} new leads will be created in Firestore leads collection.',
               style: const TextStyle(fontSize: 12.5, color: Color(0xFF475467)),
@@ -1510,7 +1511,7 @@ class _ImportLeadsBodyState extends State<_ImportLeadsBody> {
               '• ${state.skippedLeadsCount} invalid or duplicate rows will be skipped.',
               style: const TextStyle(fontSize: 12.5, color: Color(0xFF475467)),
             ),
-            const SizedBox(height: 10),
+            const Gap(10),
             Text(
               'Source Event: ${state.sourceEvent}',
               style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),

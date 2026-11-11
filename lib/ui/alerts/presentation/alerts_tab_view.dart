@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:gap/gap.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -54,7 +55,7 @@ class AlertsTabView extends StatelessWidget {
                               height: 28,
                               fit: BoxFit.contain,
                             ),
-                            const SizedBox(width: 10),
+                            const Gap(10),
                             Text(
                               'Alerts',
                               style: GoogleFonts.inter(
@@ -114,7 +115,7 @@ class AlertsTabView extends StatelessWidget {
                                   size: 48,
                                   color: Color(0xFF10B981),
                                 ),
-                                const SizedBox(height: 12),
+                                const Gap(12),
                                 Text(
                                   'All caught up!',
                                   style: GoogleFonts.inter(
@@ -123,7 +124,7 @@ class AlertsTabView extends StatelessWidget {
                                     color: const Color(0xFF0F172A),
                                   ),
                                 ),
-                                const SizedBox(height: 4),
+                                const Gap(4),
                                 Text(
                                   'No pending alerts or overdue tasks right now.',
                                   style: GoogleFonts.inter(
@@ -146,7 +147,7 @@ class AlertsTabView extends StatelessWidget {
                                 color: const Color(0xFF8E8EA9),
                               ),
                             ),
-                            const SizedBox(height: 10),
+                            const Gap(10),
                             for (final item in todayList)
                               Padding(
                                 padding: const EdgeInsets.only(bottom: 12),
@@ -155,7 +156,7 @@ class AlertsTabView extends StatelessWidget {
                                   onTap: () => _handleAlertTap(context, item),
                                 ),
                               ),
-                            const SizedBox(height: 12),
+                            const Gap(12),
                           ],
 
                           // 2. YESTERDAY Section
@@ -169,7 +170,7 @@ class AlertsTabView extends StatelessWidget {
                                 color: const Color(0xFF8E8EA9),
                               ),
                             ),
-                            const SizedBox(height: 10),
+                            const Gap(10),
                             for (final item in yesterdayList)
                               Padding(
                                 padding: const EdgeInsets.only(bottom: 12),
@@ -178,7 +179,7 @@ class AlertsTabView extends StatelessWidget {
                                   onTap: () => _handleAlertTap(context, item),
                                 ),
                               ),
-                            const SizedBox(height: 12),
+                            const Gap(12),
                           ],
 
                           // 3. EARLIER Section
@@ -192,7 +193,7 @@ class AlertsTabView extends StatelessWidget {
                                 color: const Color(0xFF8E8EA9),
                               ),
                             ),
-                            const SizedBox(height: 10),
+                            const Gap(10),
                             for (final item in earlierList)
                               Padding(
                                 padding: const EdgeInsets.only(bottom: 12),
@@ -251,7 +252,7 @@ class AlertsTabView extends StatelessWidget {
                         borderRadius: BorderRadius.circular(14),
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    const Gap(12),
                     Expanded(
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -265,7 +266,7 @@ class AlertsTabView extends StatelessWidget {
                               borderRadius: BorderRadius.circular(4),
                             ),
                           ),
-                          const SizedBox(height: 8),
+                          const Gap(8),
                           Container(
                             height: 12,
                             width: 200,
@@ -335,7 +336,7 @@ class _AlertCard extends StatelessWidget {
                   alignment: Alignment.center,
                   child: _buildCategorySvg(item.iconType),
                 ),
-                const SizedBox(width: 12), // gap: 12px
+                const Gap(12), // gap: 12px
                 // Text column: Heading & Subtitle
                 Expanded(
                   child: Column(
@@ -360,7 +361,7 @@ class _AlertCard extends StatelessWidget {
                               ),
                             ),
                           ),
-                          const SizedBox(width: 8),
+                          const Gap(8),
                           Text(
                             item.timeLabel,
                             style: GoogleFonts.inter(
@@ -371,7 +372,7 @@ class _AlertCard extends StatelessWidget {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 2),
+                      const Gap(2),
                       // Subtitle text
                       Text(
                         item.subtitle,

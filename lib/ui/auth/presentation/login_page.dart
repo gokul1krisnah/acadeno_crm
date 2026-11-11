@@ -1,4 +1,5 @@
 import 'package:acadeno_crm/core/router/app_router.dart';
+import 'package:gap/gap.dart';
 import 'package:acadeno_crm/shared/extensions/build_context_extension.dart';
 import 'package:acadeno_crm/shared/snackbar_alerts/snack_alert.dart';
 import 'package:acadeno_crm/shared/theme/app_colors.dart';
@@ -152,7 +153,7 @@ class _LoginViewState extends State<_LoginView> {
                                   crossAxisAlignment:
                                       CrossAxisAlignment.stretch,
                                   children: [
-                                    const SizedBox(height: 44),
+                                    const Gap(44),
 
                                     // ---- LOGO (full logo on sign-in) ----
                                     Center(
@@ -162,10 +163,10 @@ class _LoginViewState extends State<_LoginView> {
                                         fit: BoxFit.contain,
                                       ),
                                     ),
-                                    const SizedBox(height: AppSpace.s32),
+                                    const Gap(AppSpace.s32),
 
                                     Text('Lead Manager', style: _heading(26)),
-                                    const SizedBox(height: AppSpace.s8),
+                                    const Gap(AppSpace.s8),
                                     Text(
                                       'Acadeno Research & Innovation Centre',
                                       style: _body(
@@ -173,10 +174,10 @@ class _LoginViewState extends State<_LoginView> {
                                         color: AppColors.secondary,
                                       ),
                                     ),
-                                    const SizedBox(height: AppSpace.s24 + 4),
+                                    const Gap(AppSpace.s24 + 4),
 
                                     const _Label('Work email'),
-                                    const SizedBox(height: AppSpace.s8),
+                                    const Gap(AppSpace.s8),
                                     TextFormField(
                                       controller: _emailController,
                                       keyboardType: TextInputType.emailAddress,
@@ -195,10 +196,10 @@ class _LoginViewState extends State<_LoginView> {
                                         return null;
                                       },
                                     ),
-                                    const SizedBox(height: AppSpace.s20),
+                                    const Gap(AppSpace.s20),
 
                                     const _Label('Password'),
-                                    const SizedBox(height: AppSpace.s8),
+                                    const Gap(AppSpace.s8),
                                     TextFormField(
                                       controller: _passwordController,
                                       obscureText: _obscurePassword,
@@ -227,7 +228,7 @@ class _LoginViewState extends State<_LoginView> {
                                           ? 'Password is required.'
                                           : null,
                                     ),
-                                    const SizedBox(height: AppSpace.s12),
+                                    const Gap(AppSpace.s12),
 
                                     // Forgot password (44px touch target)
                                     Align(
@@ -262,7 +263,7 @@ class _LoginViewState extends State<_LoginView> {
                                         ),
                                       ),
                                     ),
-                                    const SizedBox(height: AppSpace.s12),
+                                    const Gap(AppSpace.s12),
 
                                     // Primary button
                                     SizedBox(
@@ -299,7 +300,7 @@ class _LoginViewState extends State<_LoginView> {
                                     ),
 
                                     const Spacer(),
-                                    const SizedBox(height: AppSpace.s24),
+                                    const Gap(AppSpace.s24),
 
                                     // Info card
                                     Container(
@@ -324,7 +325,7 @@ class _LoginViewState extends State<_LoginView> {
                                               color: AppColors.secondary,
                                             ),
                                           ),
-                                          const SizedBox(width: AppSpace.s12),
+                                          const Gap(AppSpace.s12),
                                           Expanded(
                                             child: Text(
                                               'Accounts are created by your admin. '
@@ -339,7 +340,7 @@ class _LoginViewState extends State<_LoginView> {
                                         ],
                                       ),
                                     ),
-                                    const SizedBox(height: AppSpace.s20),
+                                    const Gap(AppSpace.s20),
                                   ],
                                 ),
                               ),

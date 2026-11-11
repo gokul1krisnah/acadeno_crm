@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:gap/gap.dart';
 import 'package:acadeno_crm/shared/widgets/acadeno_dropdown.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
@@ -58,7 +59,7 @@ class _UserManagementViewState extends State<UserManagementView> {
         title: const Row(
           children: [
             Icon(Icons.phonelink_erase_rounded, color: Color(0xFFD97706)),
-            SizedBox(width: 8),
+            Gap(8),
             Text('Reset Phone Binding', style: TextStyle(fontSize: 16)),
           ],
         ),
@@ -153,7 +154,7 @@ class _UserManagementViewState extends State<UserManagementView> {
         title: const Row(
           children: [
             Icon(Icons.lock_reset_rounded, color: Color(0xFF4F46E5)),
-            SizedBox(width: 8),
+            Gap(8),
             Text(
               'Reset Password',
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
@@ -263,7 +264,7 @@ class _UserManagementViewState extends State<UserManagementView> {
                     size: 20,
                   ),
                 ),
-                const SizedBox(width: 12),
+                const Gap(12),
                 Expanded(
                   child: Text(
                     byUid
@@ -291,7 +292,7 @@ class _UserManagementViewState extends State<UserManagementView> {
                           : 'Provision login credentials in Firebase Auth and assign role permissions in Firestore.',
                       style: const TextStyle(fontSize: 12.5, color: _textMuted),
                     ),
-                    const SizedBox(height: 16),
+                    const Gap(16),
                     if (byUid) ...[
                       TextFormField(
                         controller: uidCtrl,
@@ -303,7 +304,7 @@ class _UserManagementViewState extends State<UserManagementView> {
                             ? 'UID is required'
                             : null,
                       ),
-                      const SizedBox(height: 12),
+                      const Gap(12),
                     ],
                     TextFormField(
                       controller: nameCtrl,
@@ -315,7 +316,7 @@ class _UserManagementViewState extends State<UserManagementView> {
                           ? 'Full name is required'
                           : null,
                     ),
-                    const SizedBox(height: 12),
+                    const Gap(12),
                     TextFormField(
                       controller: emailCtrl,
                       keyboardType: TextInputType.emailAddress,
@@ -334,7 +335,7 @@ class _UserManagementViewState extends State<UserManagementView> {
                       },
                     ),
                     if (!byUid) ...[
-                      const SizedBox(height: 12),
+                      const Gap(12),
                       TextFormField(
                         controller: passCtrl,
                         obscureText: obscurePassword,
@@ -359,7 +360,7 @@ class _UserManagementViewState extends State<UserManagementView> {
                             : null,
                       ),
                     ],
-                    const SizedBox(height: 12),
+                    const Gap(12),
                     DropdownButtonFormField<String>(
                       initialValue: selectedRole,
                       isExpanded: true,
@@ -516,12 +517,12 @@ class _UserManagementViewState extends State<UserManagementView> {
                       height: 1.4,
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  const Gap(16),
                   const Text(
                     'Reassign open leads & follow-ups to:',
                     style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
                   ),
-                  const SizedBox(height: 8),
+                  const Gap(8),
                   DropdownButtonFormField<String>(
                     initialValue: reassignTarget,
                     isExpanded: true,
@@ -681,12 +682,12 @@ class _UserManagementViewState extends State<UserManagementView> {
                     size: 40,
                     color: Color(0xFFDC2626),
                   ),
-                  const SizedBox(height: 12),
+                  const Gap(12),
                   const Text(
                     'Unable to load users',
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
-                  const SizedBox(height: 8),
+                  const Gap(8),
                   Text(
                     '',
                     style: const TextStyle(
@@ -695,7 +696,7 @@ class _UserManagementViewState extends State<UserManagementView> {
                     ),
                     textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: 16),
+                  const Gap(16),
                   ElevatedButton(
                     onPressed: () => setState(() {
                       _usersStream = cubit.watchAllUsers();
@@ -755,7 +756,7 @@ class _UserManagementViewState extends State<UserManagementView> {
                         letterSpacing: -0.5,
                       ),
                     ),
-                    SizedBox(height: 4),
+                    Gap(4),
                     Text(
                       'Add new team accounts, assign roles, and manage system access.',
                       style: TextStyle(fontSize: 13, color: _textMuted),
@@ -831,7 +832,7 @@ class _UserManagementViewState extends State<UserManagementView> {
                     ? Row(
                         children: [
                           Expanded(child: addByUidBtn),
-                          const SizedBox(width: 10),
+                          const Gap(10),
                           Expanded(child: addUserBtn),
                         ],
                       )
@@ -839,7 +840,7 @@ class _UserManagementViewState extends State<UserManagementView> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           addByUidBtn,
-                          const SizedBox(width: 10),
+                          const Gap(10),
                           addUserBtn,
                         ],
                       );
@@ -849,7 +850,7 @@ class _UserManagementViewState extends State<UserManagementView> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       titleCol,
-                      const SizedBox(height: 12),
+                      const Gap(12),
                       actionBtns,
                     ],
                   );
@@ -862,14 +863,14 @@ class _UserManagementViewState extends State<UserManagementView> {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Expanded(child: titleCol),
-                      const SizedBox(width: 16),
+                      const Gap(16),
                       actionBtns,
                     ],
                   ),
                 );
               },
             ),
-            const SizedBox(height: 20),
+            const Gap(20),
 
             // Search & Filter Toolbar
             LayoutBuilder(
@@ -917,11 +918,11 @@ class _UserManagementViewState extends State<UserManagementView> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       searchField,
-                      const SizedBox(height: 10),
+                      const Gap(10),
                       Row(
                         children: [
                           Expanded(child: _buildRoleFilterDropdown()),
-                          const SizedBox(width: 10),
+                          const Gap(10),
                           Expanded(child: _buildStatusFilterDropdown()),
                         ],
                       ),
@@ -933,15 +934,15 @@ class _UserManagementViewState extends State<UserManagementView> {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Expanded(flex: 5, child: searchField),
-                    const SizedBox(width: 12),
+                    const Gap(12),
                     Expanded(flex: 3, child: _buildRoleFilterDropdown()),
-                    const SizedBox(width: 12),
+                    const Gap(12),
                     Expanded(flex: 2, child: _buildStatusFilterDropdown()),
                   ],
                 );
               },
             ),
-            const SizedBox(height: 14),
+            const Gap(14),
 
             // Badges
             Wrap(
@@ -973,7 +974,7 @@ class _UserManagementViewState extends State<UserManagementView> {
                   ),
               ],
             ),
-            const SizedBox(height: 20),
+            const Gap(20),
 
             // User List / Table Card
             Container(
@@ -1004,7 +1005,7 @@ class _UserManagementViewState extends State<UserManagementView> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 16),
+                  const Gap(16),
                   if (snapshot.connectionState == ConnectionState.waiting &&
                       !snapshot.hasData)
                     const Center(
@@ -1023,7 +1024,7 @@ class _UserManagementViewState extends State<UserManagementView> {
                             'Error loading users: ${snapshot.error}',
                             style: const TextStyle(color: Colors.red),
                           ),
-                          const SizedBox(height: 8),
+                          const Gap(8),
                           OutlinedButton.icon(
                             onPressed: () {
                               setState(() {
@@ -1047,7 +1048,7 @@ class _UserManagementViewState extends State<UserManagementView> {
                               size: 48,
                               color: Color(0xFFCBD5E1),
                             ),
-                            const SizedBox(height: 12),
+                            const Gap(12),
                             Text(
                               allUsers.isEmpty
                                   ? 'No team users in database yet.'
@@ -1057,7 +1058,7 @@ class _UserManagementViewState extends State<UserManagementView> {
                                 fontSize: 14,
                               ),
                             ),
-                            const SizedBox(height: 12),
+                            const Gap(12),
                             if (allUsers.isEmpty)
                               ElevatedButton.icon(
                                 style: ElevatedButton.styleFrom(
@@ -1296,7 +1297,7 @@ class _UserManagementViewState extends State<UserManagementView> {
                                 ),
                               ),
                             ),
-                            const SizedBox(width: 10),
+                            const Gap(10),
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -1323,7 +1324,7 @@ class _UserManagementViewState extends State<UserManagementView> {
                                         ),
                                       ),
                                       if (isMe) ...[
-                                        const SizedBox(width: 6),
+                                        const Gap(6),
                                         Container(
                                           padding: const EdgeInsets.symmetric(
                                             horizontal: 5,
@@ -1375,7 +1376,7 @@ class _UserManagementViewState extends State<UserManagementView> {
                                 color: _textDark,
                               ),
                             ),
-                            const SizedBox(height: 2),
+                            const Gap(2),
                             InkWell(
                               onTap: () => _copyToClipboard(user.uid, 'UID'),
                               child: Row(
@@ -1393,7 +1394,7 @@ class _UserManagementViewState extends State<UserManagementView> {
                                       ),
                                     ),
                                   ),
-                                  const SizedBox(width: 4),
+                                  const Gap(4),
                                   const Icon(
                                     Icons.copy_rounded,
                                     size: 12,
@@ -1490,7 +1491,7 @@ class _UserManagementViewState extends State<UserManagementView> {
                                   ? const Color(0xFF10B981)
                                   : const Color(0xFFF59E0B),
                             ),
-                            const SizedBox(width: 8),
+                            const Gap(8),
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -1512,7 +1513,7 @@ class _UserManagementViewState extends State<UserManagementView> {
                                       fontWeight: FontWeight.w700,
                                     ),
                                   ),
-                                  const SizedBox(height: 1),
+                                  const Gap(1),
                                   Text(
                                     user.deviceBound
                                         ? 'REGISTERED PHONE'
@@ -1609,7 +1610,7 @@ class _UserManagementViewState extends State<UserManagementView> {
                             onPressed: () =>
                                 _confirmForceSignOut(context, cubit, user),
                           ),
-                          const SizedBox(width: 4),
+                          const Gap(4),
                           if (isMe)
                             IconButton(
                               padding: EdgeInsets.zero,
@@ -1684,7 +1685,7 @@ class _UserManagementViewState extends State<UserManagementView> {
     return Column(
       children: [
         for (var i = 0; i < users.length; i++) ...[
-          if (i > 0) const SizedBox(height: 12),
+          if (i > 0) const Gap(12),
           Builder(
             builder: (_) {
               final user = users[i];
@@ -1717,7 +1718,7 @@ class _UserManagementViewState extends State<UserManagementView> {
                             ),
                           ),
                         ),
-                        const SizedBox(width: 10),
+                        const Gap(10),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -1776,7 +1777,7 @@ class _UserManagementViewState extends State<UserManagementView> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 8),
+                    const Gap(8),
                     InkWell(
                       onTap: () => _copyToClipboard(user.uid, 'UID'),
                       child: Row(
@@ -1797,7 +1798,7 @@ class _UserManagementViewState extends State<UserManagementView> {
                               ),
                             ),
                           ),
-                          const SizedBox(width: 4),
+                          const Gap(4),
                           const Icon(
                             Icons.copy_rounded,
                             size: 12,
@@ -1806,7 +1807,7 @@ class _UserManagementViewState extends State<UserManagementView> {
                         ],
                       ),
                     ),
-                    const SizedBox(height: 10),
+                    const Gap(10),
                     Row(
                       children: [
                         const Text(
@@ -1817,7 +1818,7 @@ class _UserManagementViewState extends State<UserManagementView> {
                             color: _textMuted,
                           ),
                         ),
-                        const SizedBox(width: 8),
+                        const Gap(8),
                         Expanded(
                           child: Container(
                             height: 32,
@@ -1870,7 +1871,7 @@ class _UserManagementViewState extends State<UserManagementView> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 8),
+                    const Gap(8),
                     Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 10,
@@ -1892,7 +1893,7 @@ class _UserManagementViewState extends State<UserManagementView> {
                                 ? const Color(0xFF16A34A)
                                 : const Color(0xFFD97706),
                           ),
-                          const SizedBox(width: 6),
+                          const Gap(6),
                           Expanded(
                             child: Text(
                               'Device: ${user.deviceName} (${user.deviceBound ? "Registered" : "Pending"})',
@@ -1926,7 +1927,7 @@ class _UserManagementViewState extends State<UserManagementView> {
                         ],
                       ),
                     ),
-                    const SizedBox(height: 8),
+                    const Gap(8),
                     Wrap(
                       spacing: 8,
                       runSpacing: 4,

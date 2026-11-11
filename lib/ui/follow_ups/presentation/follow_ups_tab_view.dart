@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:gap/gap.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:acadeno_crm/shared/theme/app_svgs.dart';
 import 'package:flutter/material.dart';
@@ -79,7 +80,7 @@ class _FollowUpsTabViewState extends State<FollowUpsTabView> {
                         letterSpacing: -0.5,
                       ),
                     ),
-                    const SizedBox(height: 18),
+                    const Gap(18),
 
                     // Flat Tab Headers: OVERDUE | TODAY | UPCOMING (Equally distributed)
                     Row(
@@ -223,7 +224,7 @@ class _FollowUpsTabViewState extends State<FollowUpsTabView> {
                 ),
                 padding: EdgeInsets.fromLTRB(pad, 14, pad, 24),
                 itemCount: items.length,
-                separatorBuilder: (_, _) => const SizedBox(height: 12),
+                separatorBuilder: (_, _) => const Gap(12),
                 itemBuilder: (context, index) {
                   final item = items[index];
                   return _FollowUpCard(
@@ -281,12 +282,12 @@ class _FollowUpsTabViewState extends State<FollowUpsTabView> {
                     color: Color(0xFF0F172A),
                   ),
                 ),
-                const SizedBox(height: 4),
+                const Gap(4),
                 const Text(
                   'Executives can snooze or mark done their own follow-ups; overdue escalations to managers cannot be silenced.',
                   style: TextStyle(fontSize: 12, color: Color(0xFF667085)),
                 ),
-                const SizedBox(height: 12),
+                const Gap(12),
                 ListTile(
                   contentPadding: EdgeInsets.zero,
                   leading: const Icon(
@@ -402,7 +403,7 @@ class _TabItem extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(height: 8),
+          const Gap(8),
           Container(
             height: 3,
             width: double.infinity,
@@ -473,7 +474,7 @@ class _FollowUpCard extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
-              const SizedBox(width: 10),
+              const Gap(10),
               Flexible(
                 child: Text(
                   item.timeLabel.isNotEmpty
@@ -491,7 +492,7 @@ class _FollowUpCard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 5),
+          const Gap(5),
 
           // Row 2: College · Branch · Year
           Text(
@@ -505,7 +506,7 @@ class _FollowUpCard extends StatelessWidget {
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),
-          const SizedBox(height: 16),
+          const Gap(16),
 
           // Row 3: Call Now (Orange) | Snooze (Ice-blue) | Checkmark (Ice-blue)
           Row(
@@ -545,7 +546,7 @@ class _FollowUpCard extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(width: 10),
+              const Gap(10),
               Expanded(
                 flex: 2,
                 child: SizedBox(
@@ -581,7 +582,7 @@ class _FollowUpCard extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(width: 10),
+              const Gap(10),
               Expanded(
                 flex: 2,
                 child: SizedBox(

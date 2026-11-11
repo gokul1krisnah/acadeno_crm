@@ -1,4 +1,5 @@
 import 'package:acadeno_crm/ui/follow_ups/data/model/follow_up_models.dart';
+import 'package:gap/gap.dart';
 import 'package:acadeno_crm/ui/follow_ups/data/model/follow_up_time_helper.dart';
 import 'package:acadeno_crm/core/utils/url_dialer_helper.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -234,7 +235,7 @@ class _DashboardViewState extends State<_DashboardView> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 16),
+                const Gap(16),
                 const Text(
                   'Sign out of Dashboard?',
                   style: TextStyle(
@@ -243,7 +244,7 @@ class _DashboardViewState extends State<_DashboardView> {
                     color: Color(0xFF0F172A),
                   ),
                 ),
-                const SizedBox(height: 6),
+                const Gap(6),
                 const Text(
                   'Are you sure you want to end your current dashboard administrative session?',
                   style: TextStyle(
@@ -252,7 +253,7 @@ class _DashboardViewState extends State<_DashboardView> {
                     height: 1.4,
                   ),
                 ),
-                const SizedBox(height: 24),
+                const Gap(24),
                 Row(
                   children: [
                     Expanded(
@@ -276,7 +277,7 @@ class _DashboardViewState extends State<_DashboardView> {
                         ),
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    const Gap(12),
                     Expanded(
                       child: SizedBox(
                         height: 46,
@@ -393,7 +394,7 @@ class _DashboardViewState extends State<_DashboardView> {
                                       ),
                                     ),
                                   ),
-                                  const SizedBox(height: 14),
+                                  const Gap(14),
                                 ],
                                 if (state.selectedNavIndex == 0) ...[
                                   StreamBuilder<
@@ -426,7 +427,7 @@ class _DashboardViewState extends State<_DashboardView> {
                                                 isMobile: isMobile,
                                                 showMenuButton: !showSidebar,
                                               ),
-                                              const SizedBox(height: 20),
+                                              const Gap(20),
                                               if (_searchQuery
                                                   .trim()
                                                   .isNotEmpty) ...[
@@ -444,10 +445,10 @@ class _DashboardViewState extends State<_DashboardView> {
                                                         .setSearchQuery('');
                                                   },
                                                 ),
-                                                const SizedBox(height: 20),
+                                                const Gap(20),
                                               ],
                                               _stats(rawLeads, activeUsers),
-                                              const SizedBox(height: 24),
+                                              const Gap(24),
                                               if (wide)
                                                 Row(
                                                   crossAxisAlignment:
@@ -462,9 +463,7 @@ class _DashboardViewState extends State<_DashboardView> {
                                                                 activeUsers,
                                                             leads: rawLeads,
                                                           ),
-                                                          const SizedBox(
-                                                            height: 20,
-                                                          ),
+                                                          const Gap(20),
                                                           _OverdueFollowUps(
                                                             leads: rawLeads,
                                                             onReassign: () =>
@@ -475,7 +474,7 @@ class _DashboardViewState extends State<_DashboardView> {
                                                         ],
                                                       ),
                                                     ),
-                                                    const SizedBox(width: 20),
+                                                    const Gap(20),
                                                     Expanded(
                                                       flex: 42,
                                                       child: Column(
@@ -483,9 +482,7 @@ class _DashboardViewState extends State<_DashboardView> {
                                                           _Conversions(
                                                             leads: rawLeads,
                                                           ),
-                                                          const SizedBox(
-                                                            height: 20,
-                                                          ),
+                                                          const Gap(20),
                                                           _CollegeVisits(
                                                             onPlanVisit: () =>
                                                                 cubit.selectNav(
@@ -504,17 +501,17 @@ class _DashboardViewState extends State<_DashboardView> {
                                                       activeUsers: activeUsers,
                                                       leads: rawLeads,
                                                     ),
-                                                    const SizedBox(height: 16),
+                                                    const Gap(16),
                                                     _Conversions(
                                                       leads: rawLeads,
                                                     ),
-                                                    const SizedBox(height: 16),
+                                                    const Gap(16),
                                                     _OverdueFollowUps(
                                                       leads: rawLeads,
                                                       onReassign: () =>
                                                           cubit.selectNav(1),
                                                     ),
-                                                    const SizedBox(height: 16),
+                                                    const Gap(16),
                                                     _CollegeVisits(
                                                       onPlanVisit: () =>
                                                           cubit.selectNav(4),
@@ -682,7 +679,7 @@ class _DashboardViewState extends State<_DashboardView> {
                     ),
                   ),
                 ),
-                const SizedBox(width: 10),
+                const Gap(10),
                 Expanded(
                   child: OutlinedButton(
                     onPressed: _logout,
@@ -755,7 +752,7 @@ class _DashboardViewState extends State<_DashboardView> {
                     ),
                   ),
                 ),
-                const SizedBox(width: 12),
+                const Gap(12),
                 Expanded(
                   child: Text(
                     item.label,
@@ -810,7 +807,7 @@ class _DashboardViewState extends State<_DashboardView> {
                     ),
                   ),
                 ),
-                const SizedBox(width: 10),
+                const Gap(10),
               ],
               Expanded(
                 child: Column(
@@ -825,7 +822,7 @@ class _DashboardViewState extends State<_DashboardView> {
                         letterSpacing: -0.4,
                       ),
                     ),
-                    const SizedBox(height: 2),
+                    const Gap(2),
                     InkWell(
                       onTap: _pickDashboardDate,
                       borderRadius: BorderRadius.circular(6),
@@ -843,9 +840,9 @@ class _DashboardViewState extends State<_DashboardView> {
               ),
             ],
           ),
-          const SizedBox(height: 14),
+          const Gap(14),
           _buildFigmaSearchBar(width: double.infinity),
-          const SizedBox(height: 10),
+          const Gap(10),
           SizedBox(
             height: 50,
             child: ElevatedButton.icon(
@@ -877,7 +874,7 @@ class _DashboardViewState extends State<_DashboardView> {
             onPressed: () => _scaffoldKey.currentState?.openDrawer(),
             icon: const Icon(Icons.menu_rounded, color: _text),
           ),
-          const SizedBox(width: 8),
+          const Gap(8),
         ],
         Expanded(
           child: Column(
@@ -892,7 +889,7 @@ class _DashboardViewState extends State<_DashboardView> {
                   letterSpacing: -0.4,
                 ),
               ),
-              const SizedBox(height: 2),
+              const Gap(2),
               InkWell(
                 onTap: _pickDashboardDate,
                 borderRadius: BorderRadius.circular(6),
@@ -908,12 +905,12 @@ class _DashboardViewState extends State<_DashboardView> {
             ],
           ),
         ),
-        const SizedBox(width: 16),
+        const Gap(16),
         ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 460),
           child: _buildFigmaSearchBar(width: 460),
         ),
-        const SizedBox(width: 14),
+        const Gap(14),
         SizedBox(
           height: 50,
           child: ElevatedButton.icon(
@@ -1095,7 +1092,7 @@ class _DashboardViewState extends State<_DashboardView> {
                   size: 20,
                 ),
               ),
-              const SizedBox(width: 12),
+              const Gap(12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -1112,7 +1109,7 @@ class _DashboardViewState extends State<_DashboardView> {
                             ),
                           ),
                         ),
-                        const SizedBox(width: 8),
+                        const Gap(8),
                         Container(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 8,
@@ -1133,7 +1130,7 @@ class _DashboardViewState extends State<_DashboardView> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 2),
+                    const Gap(2),
                     const Text(
                       'Live lookup across Leads, Team Directory, and Campus Visits',
                       style: TextStyle(fontSize: 12, color: _muted),
@@ -1152,7 +1149,7 @@ class _DashboardViewState extends State<_DashboardView> {
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          const Gap(16),
           if (totalMatches == 0)
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 24),
@@ -1164,7 +1161,7 @@ class _DashboardViewState extends State<_DashboardView> {
                       size: 40,
                       color: Color(0xFFCBD5E1),
                     ),
-                    const SizedBox(height: 10),
+                    const Gap(10),
                     Text(
                       'No results found matching "$query"',
                       style: const TextStyle(
@@ -1173,7 +1170,7 @@ class _DashboardViewState extends State<_DashboardView> {
                         color: Color(0xFF64748B),
                       ),
                     ),
-                    const SizedBox(height: 4),
+                    const Gap(4),
                     const Text(
                       'Try searching by student name, mobile number, college, or team member name.',
                       style: TextStyle(fontSize: 12, color: Color(0xFF94A3B8)),
@@ -1213,7 +1210,7 @@ class _DashboardViewState extends State<_DashboardView> {
                   ),
                 ],
               ),
-              const SizedBox(height: 10),
+              const Gap(10),
               ...matchedLeads.take(5).map((l) {
                 final name = (l['name'] ?? l['studentName'] ?? 'Lead')
                     .toString();
@@ -1264,7 +1261,7 @@ class _DashboardViewState extends State<_DashboardView> {
                           ),
                         ),
                       ),
-                      const SizedBox(width: 12),
+                      const Gap(12),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -1281,7 +1278,7 @@ class _DashboardViewState extends State<_DashboardView> {
                                     ),
                                   ),
                                 ),
-                                const SizedBox(width: 8),
+                                const Gap(8),
                                 Container(
                                   padding: const EdgeInsets.symmetric(
                                     horizontal: 7,
@@ -1302,7 +1299,7 @@ class _DashboardViewState extends State<_DashboardView> {
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 2),
+                            const Gap(2),
                             Text(
                               '$college${course.isNotEmpty ? ' · $course' : ''} · Assigned: $assigned',
                               maxLines: 1,
@@ -1315,7 +1312,7 @@ class _DashboardViewState extends State<_DashboardView> {
                           ],
                         ),
                       ),
-                      const SizedBox(width: 10),
+                      const Gap(10),
                       if (phone.isNotEmpty)
                         IconButton(
                           tooltip: 'Call $name',
@@ -1355,7 +1352,7 @@ class _DashboardViewState extends State<_DashboardView> {
 
             // TEAM SECTION
             if (matchedUsers.isNotEmpty) ...[
-              const SizedBox(height: 12),
+              const Gap(12),
               Text(
                 'TEAM MEMBERS (${matchedUsers.length})',
                 style: const TextStyle(
@@ -1365,7 +1362,7 @@ class _DashboardViewState extends State<_DashboardView> {
                   letterSpacing: 0.8,
                 ),
               ),
-              const SizedBox(height: 8),
+              const Gap(8),
               ...matchedUsers.take(3).map((u) {
                 return Container(
                   margin: const EdgeInsets.only(bottom: 8),
@@ -1392,7 +1389,7 @@ class _DashboardViewState extends State<_DashboardView> {
                           ),
                         ),
                       ),
-                      const SizedBox(width: 12),
+                      const Gap(12),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -1442,7 +1439,7 @@ class _DashboardViewState extends State<_DashboardView> {
 
             // COLLEGE VISITS SECTION
             if (matchedVisits.isNotEmpty) ...[
-              const SizedBox(height: 12),
+              const Gap(12),
               Text(
                 'CAMPUS VISITS (${matchedVisits.length})',
                 style: const TextStyle(
@@ -1452,7 +1449,7 @@ class _DashboardViewState extends State<_DashboardView> {
                   letterSpacing: 0.8,
                 ),
               ),
-              const SizedBox(height: 8),
+              const Gap(8),
               ...matchedVisits.map((v) {
                 final name = (v['collegeName'] ?? 'College').toString();
                 final purpose = (v['purpose'] ?? '').toString();
@@ -1474,7 +1471,7 @@ class _DashboardViewState extends State<_DashboardView> {
                         size: 20,
                         color: _primary,
                       ),
-                      const SizedBox(width: 12),
+                      const Gap(12),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -1624,7 +1621,7 @@ class _DashboardViewState extends State<_DashboardView> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               for (var i = 0; i < cards.length; i++) ...[
-                if (i > 0) const SizedBox(width: 12),
+                if (i > 0) const Gap(12),
                 Expanded(child: cards[i]),
               ],
             ],
@@ -1711,7 +1708,7 @@ class _StatCard extends StatelessWidget {
                 if (icon != null) Icon(icon, color: Colors.white, size: 18),
               ],
             ),
-            const SizedBox(height: 10),
+            const Gap(10),
             FittedBox(
               fit: BoxFit.scaleDown,
               alignment: Alignment.centerLeft,
@@ -1725,7 +1722,7 @@ class _StatCard extends StatelessWidget {
                 ),
               ),
             ),
-            const SizedBox(height: 6),
+            const Gap(6),
             Text(
               sub,
               maxLines: 1,
@@ -1769,7 +1766,7 @@ class _StatCard extends StatelessWidget {
               if (icon != null) Icon(icon, color: color, size: 18),
             ],
           ),
-          const SizedBox(height: 10),
+          const Gap(10),
           FittedBox(
             fit: BoxFit.scaleDown,
             alignment: Alignment.centerLeft,
@@ -1783,7 +1780,7 @@ class _StatCard extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(height: 6),
+          const Gap(6),
           Text(
             sub,
             maxLines: 1,
@@ -1874,7 +1871,7 @@ class _TeamToday extends StatelessWidget {
                   color: _text,
                 ),
               ),
-              const SizedBox(width: 8),
+              const Gap(8),
               Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 7,
@@ -1895,7 +1892,7 @@ class _TeamToday extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 18),
+          const Gap(18),
           if (rows.isEmpty)
             const Padding(
               padding: EdgeInsets.symmetric(vertical: 24),
@@ -1908,7 +1905,7 @@ class _TeamToday extends StatelessWidget {
             )
           else
             for (var i = 0; i < rows.length; i++) ...[
-              if (i > 0) const SizedBox(height: 20),
+              if (i > 0) const Gap(20),
               Builder(
                 builder: (_) {
                   final r = rows[i];
@@ -1939,7 +1936,7 @@ class _TeamToday extends StatelessWidget {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 8),
+                      const Gap(8),
                       ClipRRect(
                         borderRadius: BorderRadius.circular(4),
                         child: LinearProgressIndicator(
@@ -1949,7 +1946,7 @@ class _TeamToday extends StatelessWidget {
                           backgroundColor: const Color(0xFFF1F5F9),
                         ),
                       ),
-                      const SizedBox(height: 10),
+                      const Gap(10),
                       Wrap(
                         spacing: 8,
                         runSpacing: 6,
@@ -2116,7 +2113,7 @@ class _Conversions extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 18),
+          const Gap(18),
           if (displaySources.isEmpty)
             const Padding(
               padding: EdgeInsets.symmetric(vertical: 24),
@@ -2150,7 +2147,7 @@ class _Conversions extends StatelessWidget {
                         ),
                       ),
                     ),
-                    const SizedBox(width: 8),
+                    const Gap(8),
                     Expanded(
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(4),
@@ -2166,7 +2163,7 @@ class _Conversions extends StatelessWidget {
                         ),
                       ),
                     ),
-                    const SizedBox(width: 10),
+                    const Gap(10),
                     Text(
                       '${r.$3 > 0 ? ((r.$2 / r.$3) * 100).round() : 0}%',
                       style: TextStyle(
@@ -2175,7 +2172,7 @@ class _Conversions extends StatelessWidget {
                         color: r.$2 > 0 ? const Color(0xFF16A34A) : _muted,
                       ),
                     ),
-                    const SizedBox(width: 8),
+                    const Gap(8),
                     SizedBox(
                       width: 48,
                       child: Text(
@@ -2265,7 +2262,7 @@ class _OverdueFollowUps extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          const Gap(16),
           if (overdue.isEmpty)
             Container(
               padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 14),
@@ -2281,7 +2278,7 @@ class _OverdueFollowUps extends StatelessWidget {
                     color: Color(0xFF15803D),
                     size: 20,
                   ),
-                  SizedBox(width: 10),
+                  Gap(10),
                   Expanded(
                     child: Text(
                       'All follow-ups are up to date! No overdue calls.',
@@ -2297,7 +2294,7 @@ class _OverdueFollowUps extends StatelessWidget {
             )
           else
             for (var i = 0; i < overdue.take(4).length; i++) ...[
-              if (i > 0) const SizedBox(height: 14),
+              if (i > 0) const Gap(14),
               Builder(
                 builder: (_) {
                   final l = overdue[i];
@@ -2321,7 +2318,7 @@ class _OverdueFollowUps extends StatelessWidget {
                                 color: _text,
                               ),
                             ),
-                            const SizedBox(height: 2),
+                            const Gap(2),
                             Text(
                               'Assigned: $assigned · $college',
                               maxLines: 1,
@@ -2332,7 +2329,7 @@ class _OverdueFollowUps extends StatelessWidget {
                               ),
                             ),
                             if (course.isNotEmpty) ...[
-                              const SizedBox(height: 2),
+                              const Gap(2),
                               Text(
                                 course,
                                 style: const TextStyle(
@@ -2345,7 +2342,7 @@ class _OverdueFollowUps extends StatelessWidget {
                           ],
                         ),
                       ),
-                      const SizedBox(width: 10),
+                      const Gap(10),
                       SizedBox(
                         width: 102,
                         height: 34,
@@ -2455,7 +2452,7 @@ class _CollegeVisits extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          const Gap(16),
           StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
             stream: FirebaseFirestore.instance
                 .collection('college_visits')
@@ -2474,7 +2471,7 @@ class _CollegeVisits extends StatelessWidget {
               return Column(
                 children: [
                   for (var i = 0; i < displayVisits.length; i++) ...[
-                    if (i > 0) const SizedBox(height: 14),
+                    if (i > 0) const Gap(14),
                     Builder(
                       builder: (_) {
                         final v = displayVisits[i];
@@ -2524,7 +2521,7 @@ class _CollegeVisits extends StatelessWidget {
                                             ),
                                           ),
                                         ),
-                                        const SizedBox(width: 4),
+                                        const Gap(4),
                                         const Icon(
                                           Icons.directions_outlined,
                                           size: 13,
@@ -2532,7 +2529,7 @@ class _CollegeVisits extends StatelessWidget {
                                         ),
                                       ],
                                     ),
-                                    const SizedBox(height: 2),
+                                    const Gap(2),
                                     Text(
                                       desc,
                                       maxLines: 1,
@@ -2546,7 +2543,7 @@ class _CollegeVisits extends StatelessWidget {
                                 ),
                               ),
                             ),
-                            const SizedBox(width: 8),
+                            const Gap(8),
                             Container(
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 10,

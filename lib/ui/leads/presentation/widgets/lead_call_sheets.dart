@@ -1,4 +1,5 @@
 import '../pages/lead_detail_page.dart';
+import 'package:gap/gap.dart';
 import 'package:intl/intl.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:acadeno_crm/shared/widgets/college_selector_field.dart';
@@ -139,7 +140,7 @@ class LeadCallSheets {
                                 letterSpacing: -0.5,
                               ),
                             ),
-                            const SizedBox(height: 14),
+                            const Gap(14),
                             Container(
                               width: double.infinity,
                               padding: const EdgeInsets.symmetric(
@@ -164,7 +165,7 @@ class LeadCallSheets {
                                       color: Color(0xFF94A3B8),
                                     ),
                                   ),
-                                  const SizedBox(height: 4),
+                                  const Gap(4),
                                   Text(
                                     leadName,
                                     maxLines: 1,
@@ -239,7 +240,7 @@ class LeadCallSheets {
                                                 letterSpacing: -0.3,
                                               ),
                                             ),
-                                            const SizedBox(height: 14),
+                                            const Gap(14),
 
                                             // 2x4 Outcomes Grid
                                             ...outcomeRows.map((row) {
@@ -298,7 +299,7 @@ class LeadCallSheets {
                                                                     shape: BoxShape.circle,
                                                                   ),
                                                                 ),
-                                                                const SizedBox(width: 9),
+                                                                const Gap(9),
                                                                 Expanded(
                                                                   child: Text(
                                                                     name,
@@ -329,7 +330,7 @@ class LeadCallSheets {
 
                                             // Follow up when? (Shown when Follow-up is selected)
                                             if (selectedOutcome == 'Follow-up') ...[
-                                              const SizedBox(height: 10),
+                                              const Gap(10),
                                               const Text(
                                                 'Follow up when?',
                                                 style: TextStyle(
@@ -338,7 +339,7 @@ class LeadCallSheets {
                                                   color: Color(0xFF0F172A),
                                                 ),
                                               ),
-                                              const SizedBox(height: 10),
+                                              const Gap(10),
                                               Wrap(
                                                 spacing: 8,
                                                 runSpacing: 8,
@@ -433,7 +434,7 @@ class LeadCallSheets {
                                               ),
                                             ],
 
-                                            const SizedBox(height: 14),
+                                            const Gap(14),
 
                                             // Notes (optional)
                                             const Text(
@@ -444,7 +445,7 @@ class LeadCallSheets {
                                                 color: Color(0xFF0F172A),
                                               ),
                                             ),
-                                            const SizedBox(height: 8),
+                                            const Gap(8),
 
                                             Container(
                                               decoration: BoxDecoration(
@@ -483,7 +484,7 @@ class LeadCallSheets {
                                                 ),
                                               ),
                                             ),
-                                            const SizedBox(height: 12),
+                                            const Gap(12),
                                           ],
                                         ),
                                       ),
@@ -684,7 +685,7 @@ class LeadCallSheets {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    const Gap(16),
                     const Text(
                       'WhatsApp Quick Templates',
                       style: TextStyle(
@@ -693,7 +694,7 @@ class LeadCallSheets {
                         color: Color(0xFF0F172A),
                       ),
                     ),
-                    const SizedBox(height: 6),
+                    const Gap(6),
                     Text(
                       'Choose a pre-filled template to send to ${lead.name}',
                       style: const TextStyle(
@@ -701,7 +702,7 @@ class LeadCallSheets {
                         color: Color(0xFF64748B),
                       ),
                     ),
-                    const SizedBox(height: 14),
+                    const Gap(14),
                     ...templates.map((tpl) {
                       return Padding(
                         padding: const EdgeInsets.only(bottom: 10),
@@ -730,7 +731,7 @@ class LeadCallSheets {
                                   size: 18,
                                   color: Color(0xFF15803D),
                                 ),
-                                const SizedBox(width: 12),
+                                const Gap(12),
                                 Expanded(
                                   child: Column(
                                     crossAxisAlignment:
@@ -744,7 +745,7 @@ class LeadCallSheets {
                                           color: Color(0xFF0F172A),
                                         ),
                                       ),
-                                      const SizedBox(height: 2),
+                                      const Gap(2),
                                       Text(
                                         tpl.$2,
                                         style: const TextStyle(
@@ -840,7 +841,7 @@ class LeadCallSheets {
                           color: const Color(0xFF0F172A),
                         ),
                       ),
-                      const SizedBox(height: 6),
+                      const Gap(6),
                       // Short Heading (Inter Regular 400, 13px, line-height 21.13px)
                       Text(
                         'Type a 10-digit phone number to check duplicates before saving.',
@@ -852,7 +853,7 @@ class LeadCallSheets {
                           color: const Color(0xFF64748B),
                         ),
                       ),
-                      const SizedBox(height: 18),
+                      const Gap(18),
 
                       // Phone Lookup Row: Phone input (height 54) + Check button (width 98, height 54)
                       Row(
@@ -910,7 +911,7 @@ class LeadCallSheets {
                               ),
                             ),
                           ),
-                          const SizedBox(width: 10),
+                          const Gap(10),
                           // Check button (Figma spec: width 98, height 54, borderRadius 12, padding 24px)
                           SizedBox(
                             width: 98,
@@ -957,7 +958,7 @@ class LeadCallSheets {
                         ],
                       ),
                       if (lookupFeedback != null) ...[
-                        const SizedBox(height: 12),
+                        const Gap(12),
                         Container(
                           width: double.infinity,
                           padding: const EdgeInsets.symmetric(
@@ -981,7 +982,7 @@ class LeadCallSheets {
                                     ? const Color(0xFFDC2626)
                                     : const Color(0xFF16A34A),
                               ),
-                              const SizedBox(width: 8),
+                              const Gap(8),
                               Expanded(
                                 child: Text(
                                   lookupFeedback!,
@@ -998,7 +999,7 @@ class LeadCallSheets {
                           ),
                         ),
                       ],
-                      const SizedBox(height: 14),
+                      const Gap(14),
 
                       // Student Name (Figma spec: width 343, height 54, borderRadius 12, borderWidth 1, padding 16)
                       SizedBox(
@@ -1049,7 +1050,7 @@ class LeadCallSheets {
                           ),
                         ),
                       ),
-                      const SizedBox(height: 14),
+                      const Gap(14),
 
                       // College Selection Label
                       Text(
@@ -1060,7 +1061,7 @@ class LeadCallSheets {
                           color: const Color(0xFF334155),
                         ),
                       ),
-                      const SizedBox(height: 6),
+                      const Gap(6),
                       // College Selection Dropdown (Figma styling: height 54, borderRadius 12, padding 16)
                       Container(
                         height: 54,
@@ -1110,7 +1111,7 @@ class LeadCallSheets {
                           ),
                         ),
                       ),
-                      const SizedBox(height: 14),
+                      const Gap(14),
 
                       // COLLEGE · BRANCH · YEAR Label
                       Text(
@@ -1122,7 +1123,7 @@ class LeadCallSheets {
                           color: const Color(0xFF94A3B8),
                         ),
                       ),
-                      const SizedBox(height: 6),
+                      const Gap(6),
                       // Editable College · Branch · Year text input (height 54, borderRadius 12)
                       SizedBox(
                         height: 54,
@@ -1170,7 +1171,7 @@ class LeadCallSheets {
                           ),
                         ),
                       ),
-                      const SizedBox(height: 4),
+                      const Gap(4),
                       Text(
                         'You can freely edit or fine-tune college, bran...',
                         style: GoogleFonts.inter(
@@ -1178,7 +1179,7 @@ class LeadCallSheets {
                           color: const Color(0xFF94A3B8),
                         ),
                       ),
-                      const SizedBox(height: 14),
+                      const Gap(14),
 
                       // Source Event / Consent Label
                       Text(
@@ -1189,7 +1190,7 @@ class LeadCallSheets {
                           color: const Color(0xFF334155),
                         ),
                       ),
-                      const SizedBox(height: 6),
+                      const Gap(6),
                       // Source Event Dropdown (height 54, borderRadius 12, padding 16)
                       Container(
                         height: 54,
@@ -1244,7 +1245,7 @@ class LeadCallSheets {
                           ),
                         ),
                       ),
-                      const SizedBox(height: 20),
+                      const Gap(20),
 
                       // Save Button (Figma spec: width 343, height 44, borderRadius 16, padding-top 14.5, padding-bottom 15.5)
                       SizedBox(
@@ -1373,7 +1374,7 @@ class LeadCallSheets {
                             color: Color(0xFF0F172A),
                           ),
                         ),
-                        const SizedBox(height: 4),
+                        const Gap(4),
                         Text(
                           '${user.displayName} · ${user.roleLabel} · Joined ${user.joinedLabel}\nPermanent read-only call log',
                           style: const TextStyle(
@@ -1401,7 +1402,7 @@ class LeadCallSheets {
                   ),
                 ],
               ),
-              const SizedBox(height: 18),
+              const Gap(18),
               // Responsive metric boxes with 10 left/right padding, height 84, gap 4px, radius 16
               Row(
                 children: [
@@ -1413,7 +1414,7 @@ class LeadCallSheets {
                       bgColor: const Color(0xFFF3E8FF).withValues(alpha: 0.55),
                     ),
                   ),
-                  const SizedBox(width: 4),
+                  const Gap(4),
                   Expanded(
                     child: _buildRecordMetricBox(
                       value: '$interestedCount',
@@ -1422,7 +1423,7 @@ class LeadCallSheets {
                       bgColor: const Color(0xFFE0F2FE),
                     ),
                   ),
-                  const SizedBox(width: 4),
+                  const Gap(4),
                   Expanded(
                     child: _buildRecordMetricBox(
                       value: '$convertedCount',
@@ -1433,7 +1434,7 @@ class LeadCallSheets {
                   ),
                 ],
               ),
-              const SizedBox(height: 22),
+              const Gap(22),
               const Text(
                 'RECENT PERMANENT CALL LOGS (READ-ONLY)',
                 style: TextStyle(
@@ -1443,7 +1444,7 @@ class LeadCallSheets {
                   letterSpacing: 0.5,
                 ),
               ),
-              const SizedBox(height: 12),
+              const Gap(12),
               Flexible(
                 child: SingleChildScrollView(
                   child: Column(
@@ -1463,7 +1464,7 @@ class LeadCallSheets {
                                 size: 36,
                                 color: Colors.grey.shade400,
                               ),
-                              const SizedBox(height: 8),
+                              const Gap(8),
                               Text(
                                 'No call records logged yet',
                                 style: TextStyle(
@@ -1472,7 +1473,7 @@ class LeadCallSheets {
                                   color: Colors.grey.shade600,
                                 ),
                               ),
-                              const SizedBox(height: 4),
+                              const Gap(4),
                               Text(
                                 'Calls you make will be recorded here with duration and outcome.',
                                 textAlign: TextAlign.center,
@@ -1513,7 +1514,7 @@ class LeadCallSheets {
                                         ),
                                       ),
                                     ),
-                                    const SizedBox(width: 8),
+                                    const Gap(8),
                                     Text(
                                       '${rec.duration.isNotEmpty ? "${rec.duration} · " : ""}${rec.timestamp}',
                                       style: const TextStyle(
@@ -1523,7 +1524,7 @@ class LeadCallSheets {
                                     ),
                                   ],
                                 ),
-                                const SizedBox(height: 4),
+                                const Gap(4),
                                 Text(
                                   rec.notes.isNotEmpty
                                       ? rec.notes
@@ -1581,7 +1582,7 @@ class LeadCallSheets {
                 ),
               ),
             ),
-            const SizedBox(height: 4),
+            const Gap(4),
             FittedBox(
               fit: BoxFit.scaleDown,
               alignment: Alignment.centerLeft,

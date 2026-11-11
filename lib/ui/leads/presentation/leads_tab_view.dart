@@ -1,4 +1,5 @@
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:gap/gap.dart';
 import 'package:acadeno_crm/shared/theme/app_svgs.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:acadeno_crm/core/services/app_phone_call_service.dart';
@@ -70,7 +71,7 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const SizedBox(height: 22),
+                      const Gap(22),
                       const Text(
                         'Log Out',
                         style: TextStyle(
@@ -81,7 +82,7 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                           letterSpacing: -0.2,
                         ),
                       ),
-                      const SizedBox(height: 8),
+                      const Gap(8),
                       const Padding(
                         padding: EdgeInsets.symmetric(horizontal: 24),
                         child: Text(
@@ -96,7 +97,7 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                           ),
                         ),
                       ),
-                      const SizedBox(height: 20),
+                      const Gap(20),
                       const Divider(
                         height: 1,
                         thickness: 1,
@@ -124,7 +125,7 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                   BlendMode.srcIn,
                                 ),
                               ),
-                              const SizedBox(width: 8),
+                              const Gap(8),
                               const Text(
                                 'Log Out',
                                 style: TextStyle(
@@ -141,7 +142,7 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                     ],
                   ),
                 ),
-                const SizedBox(height: 10),
+                const Gap(10),
 
                 // Bottom Cancel Button (Expands with device width, 10px padding from device, height 58, padding 16/24, border-radius 24)
                 Container(
@@ -255,7 +256,7 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                         height: 40,
                         fit: BoxFit.contain,
                       ),
-                      const SizedBox(width: 10),
+                      const Gap(10),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -271,7 +272,7 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                 letterSpacing: -0.3,
                               ),
                             ),
-                            const SizedBox(height: 2),
+                            const Gap(2),
                             Text(
                               homeState.todayLabel,
                               maxLines: 1,
@@ -313,7 +314,7 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                   size: 14,
                                   color: Color(0xFFD97706),
                                 ),
-                                const SizedBox(width: 4),
+                                const Gap(4),
                                 Text(
                                   '$pending syncing',
                                   style: const TextStyle(
@@ -352,7 +353,7 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 16),
+                  const Gap(16),
 
                   // 2. Three Metric Cards Row (Static display metrics — no tap navigation or toggles)
                   Row(
@@ -367,7 +368,7 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                           labelColor: const Color(0xFF6366F1),
                         ),
                       ),
-                      const SizedBox(width: 10),
+                      const Gap(10),
                       Expanded(
                         child: _MetricBox(
                           value: '${followUpsState.todayFollowUps.length}',
@@ -377,7 +378,7 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                           labelColor: const Color(0xFF0EA5E9),
                         ),
                       ),
-                      const SizedBox(width: 10),
+                      const Gap(10),
                       Expanded(
                         child: _MetricBox(
                           value: '${followUpsState.overdueFollowUps.length}',
@@ -389,7 +390,7 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 16),
+                  const Gap(16),
 
                   // 3. Progress Bar
                   ClipRRect(
@@ -405,7 +406,7 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  const Gap(8),
                   Text(
                     "${state.progressPercent}% of today's calls done · ${state.callsLeftCount} left",
                     style: const TextStyle(
@@ -451,7 +452,7 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                   color: Color(0xFF94A3B8),
                                 ),
                               ),
-                              const SizedBox(height: 10),
+                              const Gap(10),
                               Builder(
                                 builder: (_) {
                                   final hasOverdue = followUpsState
@@ -520,7 +521,7 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                                           0xFFEA580C,
                                                         ),
                                                       ),
-                                                      const SizedBox(width: 6),
+                                                      const Gap(6),
                                                       Flexible(
                                                         child: Text(
                                                           overdueTag,
@@ -541,7 +542,7 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                                       ),
                                                     ],
                                                   ),
-                                                  const SizedBox(height: 8),
+                                                  const Gap(8),
                                                   Text(
                                                     topOverdue.leadName,
                                                     maxLines: 2,
@@ -555,7 +556,7 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                                       letterSpacing: -0.3,
                                                     ),
                                                   ),
-                                                  const SizedBox(height: 6),
+                                                  const Gap(6),
                                                   Text(
                                                     '${topOverdue.collegeInfo.isNotEmpty ? topOverdue.collegeInfo : 'Student'} · ${topOverdue.note.isNotEmpty ? topOverdue.note : 'Follow-up call scheduled'}',
                                                     maxLines: 3,
@@ -570,7 +571,7 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                                 ],
                                               ),
                                             ),
-                                            const SizedBox(width: 14),
+                                            const Gap(14),
                                             InkWell(
                                               onTap: () => AppPhoneCallService
                                                   .instance
@@ -650,7 +651,7 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                                           0xFFEA580C,
                                                         ),
                                                       ),
-                                                      const SizedBox(width: 6),
+                                                      const Gap(6),
                                                       Flexible(
                                                         child: Text(
                                                           '${dueLead.statusTag} · Due Today',
@@ -671,7 +672,7 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                                       ),
                                                     ],
                                                   ),
-                                                  const SizedBox(height: 8),
+                                                  const Gap(8),
                                                   Text(
                                                     dueLead.name,
                                                     maxLines: 2,
@@ -685,7 +686,7 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                                       letterSpacing: -0.3,
                                                     ),
                                                   ),
-                                                  const SizedBox(height: 6),
+                                                  const Gap(6),
                                                   Text(
                                                     '${dueLead.collegeInfo} · ${dueLead.campaignTag}',
                                                     maxLines: 3,
@@ -700,7 +701,7 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                                 ],
                                               ),
                                             ),
-                                            const SizedBox(width: 14),
+                                            const Gap(14),
                                             InkWell(
                                               onTap: () => AppPhoneCallService
                                                   .instance
@@ -761,7 +762,7 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                           color: Color(0xFF15803D),
                                           size: 20,
                                         ),
-                                        SizedBox(width: 10),
+                                        Gap(10),
                                         Expanded(
                                           child: Text(
                                             'No urgent pending calls right now',
@@ -777,7 +778,7 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                   );
                                 },
                               ),
-                              const SizedBox(height: 18),
+                              const Gap(18),
 
                               // Quick Actions: Add Walk-in Lead & My Record (Responsive flex boxes)
                               Row(
@@ -823,7 +824,7 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                                 width: 14,
                                                 height: 14,
                                               ),
-                                              const SizedBox(width: 7),
+                                              const Gap(7),
                                               const Text(
                                                 'Add Walk-in Lead',
                                                 maxLines: 1,
@@ -840,7 +841,7 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                       ),
                                     ),
                                   ),
-                                  const SizedBox(width: 10),
+                                  const Gap(10),
                                   Expanded(
                                     child: InkWell(
                                       onTap: () =>
@@ -882,7 +883,7 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                                 width: 14,
                                                 height: 14,
                                               ),
-                                              const SizedBox(width: 7),
+                                              const Gap(7),
                                               const Text(
                                                 'My Record',
                                                 maxLines: 1,
@@ -901,7 +902,7 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                   ),
                                 ],
                               ),
-                              const SizedBox(height: 22),
+                              const Gap(22),
 
                               // 5. TODAY'S CALLS Header with Pending / Completed switcher
                               Row(
@@ -921,7 +922,7 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                       ),
                                     ),
                                   ),
-                                  const SizedBox(width: 8),
+                                  const Gap(8),
                                   Flexible(
                                     flex: 3,
                                     child: Align(
@@ -952,7 +953,7 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                                       true,
                                                     ),
                                               ),
-                                              const SizedBox(width: 4),
+                                              const Gap(4),
                                               _CallTabPill(
                                                 label:
                                                     'Completed (${state.doneLeads.length})',
@@ -971,7 +972,7 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                   ),
                                 ],
                               ),
-                              const SizedBox(height: 12),
+                              const Gap(12),
 
                               // 6. Call Cards List (Loading, Error/Permission, Empty, or Assigned Leads)
                               if (state.isLoading && state.leads.isEmpty)
@@ -993,7 +994,7 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                       CircularProgressIndicator(
                                         color: Color(0xFF4338CA),
                                       ),
-                                      SizedBox(height: 12),
+                                      Gap(12),
                                       Text(
                                         'Loading your assigned calls for today...',
                                         style: TextStyle(
@@ -1025,7 +1026,7 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                         color: const Color(0xFFB42318),
                                         size: 32,
                                       ),
-                                      const SizedBox(height: 8),
+                                      const Gap(8),
                                       Text(
                                         state.isPermissionDenied
                                             ? 'Access Restricted'
@@ -1036,7 +1037,7 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                           color: Color(0xFF0F172A),
                                         ),
                                       ),
-                                      const SizedBox(height: 4),
+                                      const Gap(4),
                                       Text(
                                         state.errorMessage!,
                                         textAlign: TextAlign.center,
@@ -1045,7 +1046,7 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                           color: Color(0xFF667085),
                                         ),
                                       ),
-                                      const SizedBox(height: 12),
+                                      const Gap(12),
                                       OutlinedButton.icon(
                                         onPressed: _isRefreshing
                                             ? null
@@ -1108,7 +1109,7 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                           ),
                                         ),
                                       ),
-                                      const SizedBox(height: 20),
+                                      const Gap(20),
 
                                       // Title
                                       Text(
@@ -1124,7 +1125,7 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                           height: 1.3,
                                         ),
                                       ),
-                                      const SizedBox(height: 8),
+                                      const Gap(8),
 
                                       // Subtitle
                                       const Text(
@@ -1137,7 +1138,7 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                           height: 1.4,
                                         ),
                                       ),
-                                      const SizedBox(height: 24),
+                                      const Gap(24),
 
                                       // Action Buttons (Responsive flex row)
                                       Row(
@@ -1223,9 +1224,7 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                                                 BlendMode.srcIn,
                                                               ),
                                                         ),
-                                                        const SizedBox(
-                                                          width: 14.23,
-                                                        ),
+                                                        const Gap(14.23),
                                                         const Flexible(
                                                           child: FittedBox(
                                                             fit: BoxFit
@@ -1254,7 +1253,7 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                                 ),
                                               ),
                                             ),
-                                            const SizedBox(width: 10),
+                                            const Gap(10),
                                           ],
 
                                           // Refresh Button (Figma: flex 5, height 44, radius 12, border 1px #E2E8F0, 3-sec loading indicator)
@@ -1306,9 +1305,7 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                                         const CupertinoActivityIndicator(
                                                           radius: 7.5,
                                                         ),
-                                                        const SizedBox(
-                                                          width: 7,
-                                                        ),
+                                                        const Gap(7),
                                                         const Text(
                                                           'Refreshing...',
                                                           style: TextStyle(
@@ -1330,9 +1327,7 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                                             0xFF475467,
                                                           ),
                                                         ),
-                                                        const SizedBox(
-                                                          width: 7,
-                                                        ),
+                                                        const Gap(7),
                                                         const Text(
                                                           'Refresh',
                                                           style: TextStyle(
@@ -1363,7 +1358,7 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                   physics: const NeverScrollableScrollPhysics(),
                                   itemCount: displayedLeads.length,
                                   separatorBuilder: (_, _) =>
-                                      const SizedBox(height: 10),
+                                      const Gap(10),
                                   itemBuilder: (context, index) {
                                     final item = displayedLeads[index];
                                     return _TodayLeadCard(
@@ -1379,7 +1374,7 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                     );
                                   },
                                 ),
-                              const SizedBox(height: 16),
+                              const Gap(16),
                             ],
                           ),
                         ),
@@ -1467,7 +1462,7 @@ class _MetricBox extends StatelessWidget {
                   letterSpacing: -0.5,
                 ),
               ),
-              const SizedBox(height: 4),
+              const Gap(4),
               Text(
                 label,
                 style: TextStyle(
@@ -1536,7 +1531,7 @@ class _TodayLeadCard extends StatelessWidget {
                 ),
               ),
             ),
-            const SizedBox(width: 14),
+            const Gap(14),
 
             // Center Details
             Expanded(
@@ -1553,7 +1548,7 @@ class _TodayLeadCard extends StatelessWidget {
                       color: Color(0xFF0F172A),
                     ),
                   ),
-                  const SizedBox(height: 2),
+                  const Gap(2),
                   Text(
                     item.collegeInfo,
                     maxLines: 1,
@@ -1563,7 +1558,7 @@ class _TodayLeadCard extends StatelessWidget {
                       color: Color(0xFF64748B),
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  const Gap(8),
                   Row(
                     children: [
                       Flexible(
@@ -1590,7 +1585,7 @@ class _TodayLeadCard extends StatelessWidget {
                           ),
                         ),
                       ),
-                      const SizedBox(width: 8),
+                      const Gap(8),
                       Flexible(
                         child: Text(
                           item.campaignTag,
@@ -1605,7 +1600,7 @@ class _TodayLeadCard extends StatelessWidget {
                     ],
                   ),
                   if (item.isLocked && item.lockedMessage != null) ...[
-                    const SizedBox(height: 6),
+                    const Gap(6),
                     Row(
                       children: [
                         const Icon(
@@ -1613,7 +1608,7 @@ class _TodayLeadCard extends StatelessWidget {
                           size: 13.5,
                           color: Color(0xFFB45309),
                         ),
-                        const SizedBox(width: 4),
+                        const Gap(4),
                         Expanded(
                           child: Text(
                             item.lockedMessage!,
@@ -1635,7 +1630,7 @@ class _TodayLeadCard extends StatelessWidget {
 
             // Right Phone Button (hidden when locked by another executive)
             if (!item.isLocked) ...[
-              const SizedBox(width: 10),
+              const Gap(10),
               InkWell(
                 onTap: onTapCall,
                 borderRadius: BorderRadius.circular(22),

@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:gap/gap.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -84,7 +85,7 @@ class _TeamManagementViewState extends State<TeamManagementView> {
                     height: 1.4,
                   ),
                 ),
-                const SizedBox(height: 14),
+                const Gap(14),
                 TextField(
                   controller: reasonCtrl,
                   maxLines: 2,
@@ -205,7 +206,7 @@ class _TeamManagementViewState extends State<TeamManagementView> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           CircularProgressIndicator(color: Color(0xFFEF8144)),
-                          SizedBox(height: 16),
+                          Gap(16),
                           Text(
                             'Loading team analytics and performance...',
                             style: TextStyle(
@@ -232,7 +233,7 @@ class _TeamManagementViewState extends State<TeamManagementView> {
                             color: Color(0xFFDC2626),
                             size: 36,
                           ),
-                          const SizedBox(height: 12),
+                          const Gap(12),
                           Text(
                             'Could not load team data: ${usersSnap.error}',
                             style: const TextStyle(
@@ -240,7 +241,7 @@ class _TeamManagementViewState extends State<TeamManagementView> {
                               fontSize: 13.5,
                             ),
                           ),
-                          const SizedBox(height: 12),
+                          const Gap(12),
                           OutlinedButton.icon(
                             onPressed: () {
                               setState(() {
@@ -285,7 +286,7 @@ class _TeamManagementViewState extends State<TeamManagementView> {
                                 letterSpacing: -0.5,
                               ),
                             ),
-                            SizedBox(height: 4),
+                            Gap(4),
                             Text(
                               'Real-time team analytics, live conversion tracking, and member performance',
                               style: TextStyle(
@@ -341,7 +342,7 @@ class _TeamManagementViewState extends State<TeamManagementView> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               titleCol,
-                              const SizedBox(height: 12),
+                              const Gap(12),
                               exportBtn,
                             ],
                           );
@@ -354,26 +355,26 @@ class _TeamManagementViewState extends State<TeamManagementView> {
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
                               Expanded(child: titleCol),
-                              const SizedBox(width: 16),
+                              const Gap(16),
                               exportBtn,
                             ],
                           ),
                         );
                       },
                     ),
-                    const SizedBox(height: 20),
+                    const Gap(20),
 
                     // Quick Stats Row (Computed from actual live Firestore leads)
                     _buildTeamSummaryStats(filteredLeads),
-                    const SizedBox(height: 20),
+                    const Gap(20),
 
                     // Team Performance Comparison Table (Live data per user)
                     _buildTeamPerformanceCard(activeUsers, filteredLeads),
-                    const SizedBox(height: 20),
+                    const Gap(20),
 
                     // Active Executives Snapshot
                     _buildActiveExecutivesSnapshot(activeUsers),
-                    const SizedBox(height: 20),
+                    const Gap(20),
 
                     // Append-Only Security & Admin Audit Log
                     _buildAuditLogCard(cubit),
@@ -531,7 +532,7 @@ class _TeamManagementViewState extends State<TeamManagementView> {
               ),
             ],
           ),
-          const SizedBox(height: 8),
+          const Gap(8),
           Text(
             value,
             style: const TextStyle(
@@ -540,7 +541,7 @@ class _TeamManagementViewState extends State<TeamManagementView> {
               color: Color(0xFF0F172A),
             ),
           ),
-          const SizedBox(height: 4),
+          const Gap(4),
           Text(
             subtext,
             style: TextStyle(
@@ -586,7 +587,7 @@ class _TeamManagementViewState extends State<TeamManagementView> {
                       color: Color(0xFF0F172A),
                     ),
                   ),
-                  SizedBox(height: 2),
+                  Gap(2),
                   Text(
                     'Assigned vs Contacted, Interested, Completed, Converted, and Pending',
                     style: TextStyle(fontSize: 12, color: Color(0xFF667085)),
@@ -639,7 +640,7 @@ class _TeamManagementViewState extends State<TeamManagementView> {
               ),
             ],
           ),
-          const SizedBox(height: 14),
+          const Gap(14),
 
           if (activeUsers.isEmpty)
             const Padding(
@@ -900,12 +901,12 @@ class _TeamManagementViewState extends State<TeamManagementView> {
               color: Color(0xFF0F172A),
             ),
           ),
-          const SizedBox(height: 2),
+          const Gap(2),
           const Text(
             'Real-time status of Admins and HR & Operation Managers currently active',
             style: TextStyle(fontSize: 12, color: Color(0xFF667085)),
           ),
-          const SizedBox(height: 14),
+          const Gap(14),
           if (activeUsers.isEmpty)
             const Padding(
               padding: EdgeInsets.all(12),
@@ -948,7 +949,7 @@ class _TeamManagementViewState extends State<TeamManagementView> {
                               ),
                             ),
                           ),
-                          const SizedBox(width: 10),
+                          const Gap(10),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -963,7 +964,7 @@ class _TeamManagementViewState extends State<TeamManagementView> {
                                     color: Color(0xFF0F172A),
                                   ),
                                 ),
-                                const SizedBox(height: 2),
+                                const Gap(2),
                                 Text(
                                   user.roleLabel.toUpperCase(),
                                   maxLines: 1,
@@ -1019,12 +1020,12 @@ class _TeamManagementViewState extends State<TeamManagementView> {
               color: Color(0xFF0F172A),
             ),
           ),
-          const SizedBox(height: 2),
+          const Gap(2),
           const Text(
             'Every sign-in, import, bulk assignment, role change, device reset, and watermarked export is permanently recorded.',
             style: TextStyle(fontSize: 12, color: Color(0xFF667085)),
           ),
-          const SizedBox(height: 12),
+          const Gap(12),
           if (cubit.auditEntries.isEmpty)
             const Padding(
               padding: EdgeInsets.symmetric(vertical: 12),
@@ -1066,7 +1067,7 @@ class _TeamManagementViewState extends State<TeamManagementView> {
                             ),
                           ),
                         ),
-                        const SizedBox(width: 8),
+                        const Gap(8),
                         Flexible(
                           child: Text(
                             '${entry.action} — ${entry.target}',

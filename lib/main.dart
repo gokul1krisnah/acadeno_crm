@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:gap/gap.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -111,7 +112,7 @@ class _AcadenoAppState extends State<AcadenoApp> with WidgetsBindingObserver {
                   size: 20,
                 ),
               ),
-              const SizedBox(width: 12),
+              const Gap(12),
               Expanded(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -126,7 +127,7 @@ class _AcadenoAppState extends State<AcadenoApp> with WidgetsBindingObserver {
                       ),
                     ),
                     if (body.isNotEmpty) ...[
-                      const SizedBox(height: 3),
+                      const Gap(3),
                       Text(
                         body,
                         style: const TextStyle(

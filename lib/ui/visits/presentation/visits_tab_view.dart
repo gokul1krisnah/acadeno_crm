@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:gap/gap.dart';
 import 'package:intl/intl.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:acadeno_crm/shared/utilities/link_launcher.dart';
@@ -111,7 +112,7 @@ class VisitsTabView extends StatelessWidget {
                             color: Color(0xFF667085),
                           ),
                         ),
-                        const SizedBox(height: 10),
+                        const Gap(10),
                         ...upcoming.map(
                           (visit) => Padding(
                             padding: const EdgeInsets.only(bottom: 14),
@@ -126,7 +127,7 @@ class VisitsTabView extends StatelessWidget {
                             ),
                           ),
                         ),
-                        const SizedBox(height: 10),
+                        const Gap(10),
 
                         // RECENT
                         const Text(
@@ -138,7 +139,7 @@ class VisitsTabView extends StatelessWidget {
                             color: Color(0xFF667085),
                           ),
                         ),
-                        const SizedBox(height: 10),
+                        const Gap(10),
                         ...recent.map(
                           (visit) => Padding(
                             padding: const EdgeInsets.only(bottom: 12),
@@ -176,7 +177,7 @@ class VisitsTabView extends StatelessWidget {
         content: Row(
           children: [
             const Icon(Icons.navigation_rounded, color: Colors.white, size: 18),
-            const SizedBox(width: 10),
+            const Gap(10),
             Expanded(
               child: Text(
                 'Opening Google Maps navigation for $college...',
@@ -234,7 +235,7 @@ class VisitsTabView extends StatelessWidget {
                         color: Color(0xFF4338CA),
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    const Gap(12),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -259,7 +260,7 @@ class VisitsTabView extends StatelessWidget {
                     ),
                   ],
                 ),
-                const SizedBox(height: 16),
+                const Gap(16),
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.all(12),
@@ -279,7 +280,7 @@ class VisitsTabView extends StatelessWidget {
                             size: 16,
                             color: Color(0xFF4338CA),
                           ),
-                          const SizedBox(width: 6),
+                          const Gap(6),
                           Expanded(
                             child: Text(
                               'Destination: ${visit.collegeName}',
@@ -293,7 +294,7 @@ class VisitsTabView extends StatelessWidget {
                         ],
                       ),
                       if (visit.purpose.isNotEmpty) ...[
-                        const SizedBox(height: 6),
+                        const Gap(6),
                         Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -302,7 +303,7 @@ class VisitsTabView extends StatelessWidget {
                               size: 16,
                               color: Color(0xFF64748B),
                             ),
-                            const SizedBox(width: 6),
+                            const Gap(6),
                             Expanded(
                               child: Text(
                                 'Purpose: ${visit.purpose}',
@@ -315,7 +316,7 @@ class VisitsTabView extends StatelessWidget {
                           ],
                         ),
                       ],
-                      const SizedBox(height: 6),
+                      const Gap(6),
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -324,7 +325,7 @@ class VisitsTabView extends StatelessWidget {
                             size: 16,
                             color: Color(0xFF64748B),
                           ),
-                          const SizedBox(width: 6),
+                          const Gap(6),
                           Expanded(
                             child: Text(
                               'Assigned: ${visit.staffNames}',
@@ -339,7 +340,7 @@ class VisitsTabView extends StatelessWidget {
                     ],
                   ),
                 ),
-                const SizedBox(height: 18),
+                const Gap(18),
                 Row(
                   children: [
                     Expanded(
@@ -361,7 +362,7 @@ class VisitsTabView extends StatelessWidget {
                         ),
                       ),
                     ),
-                    const SizedBox(width: 10),
+                    const Gap(10),
                     Expanded(
                       flex: 2,
                       child: ElevatedButton.icon(
@@ -509,7 +510,7 @@ class VisitsTabView extends StatelessWidget {
                         color: const Color(0xFF0F172A),
                       ),
                     ),
-                    const SizedBox(height: 6),
+                    const Gap(6),
                     Text(
                       '${visit.collegeName} · Outcome & student attendance',
                       style: GoogleFonts.inter(
@@ -519,7 +520,7 @@ class VisitsTabView extends StatelessWidget {
                         color: const Color(0xFF64748B),
                       ),
                     ),
-                    const SizedBox(height: 18),
+                    const Gap(18),
 
                     // Modern Segmented Status Toggle (Completed vs Cancelled)
                     Container(
@@ -567,7 +568,7 @@ class VisitsTabView extends StatelessWidget {
                                           ? const Color(0xFF15803D)
                                           : const Color(0xFF94A3B8),
                                     ),
-                                    const SizedBox(width: 6),
+                                    const Gap(6),
                                     Text(
                                       'Completed',
                                       style: GoogleFonts.inter(
@@ -621,7 +622,7 @@ class VisitsTabView extends StatelessWidget {
                                           ? const Color(0xFFDC2626)
                                           : const Color(0xFF94A3B8),
                                     ),
-                                    const SizedBox(width: 6),
+                                    const Gap(6),
                                     Text(
                                       'Cancelled',
                                       style: GoogleFonts.inter(
@@ -642,7 +643,7 @@ class VisitsTabView extends StatelessWidget {
                         ],
                       ),
                     ),
-                    const SizedBox(height: 14),
+                    const Gap(14),
 
                     // Inputs matching Log Visit Figma styling with Native Form Validation
                     if (!isCancelled) ...[
@@ -721,7 +722,7 @@ class VisitsTabView extends StatelessWidget {
                           ),
                         ),
                       ),
-                      const SizedBox(height: 14),
+                      const Gap(14),
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -807,7 +808,7 @@ class VisitsTabView extends StatelessWidget {
                               ),
                             ),
                           ),
-                          const SizedBox(width: 10),
+                          const Gap(10),
                           Expanded(
                             child: TextFormField(
                               key: const ValueKey('completed_interested_count'),
@@ -892,7 +893,7 @@ class VisitsTabView extends StatelessWidget {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 14),
+                      const Gap(14),
                       TextFormField(
                         key: const ValueKey('completed_next_action'),
                         controller: nextCtrl,
@@ -1045,7 +1046,7 @@ class VisitsTabView extends StatelessWidget {
                         ),
                       ),
                     ],
-                    const SizedBox(height: 20),
+                    const Gap(20),
 
                     // Primary Action Button (Same as Log Visit)
                     SizedBox(
@@ -1162,7 +1163,7 @@ class VisitsTabView extends StatelessWidget {
                           color: const Color(0xFF0F172A),
                         ),
                       ),
-                      const SizedBox(height: 6),
+                      const Gap(6),
                       Text(
                         'Schedule campus seminar, workshop, or student drive',
                         style: GoogleFonts.inter(
@@ -1172,7 +1173,7 @@ class VisitsTabView extends StatelessWidget {
                           color: const Color(0xFF64748B),
                         ),
                       ),
-                      const SizedBox(height: 18),
+                      const Gap(18),
                       TextFormField(
                         controller: collegeCtrl,
                         validator: (v) {
@@ -1246,7 +1247,7 @@ class VisitsTabView extends StatelessWidget {
                           ),
                         ),
                       ),
-                      const SizedBox(height: 14),
+                      const Gap(14),
                       InkWell(
                         onTap: () async {
                           final picked = await showDatePicker(
@@ -1334,7 +1335,7 @@ class VisitsTabView extends StatelessWidget {
                           ),
                         ),
                       ),
-                      const SizedBox(height: 14),
+                      const Gap(14),
                       TextFormField(
                         controller: subCtrl,
                         validator: (v) {
@@ -1408,7 +1409,7 @@ class VisitsTabView extends StatelessWidget {
                           ),
                         ),
                       ),
-                      const SizedBox(height: 14),
+                      const Gap(14),
                       TextFormField(
                         controller: purposeCtrl,
                         validator: (v) {
@@ -1482,7 +1483,7 @@ class VisitsTabView extends StatelessWidget {
                           ),
                         ),
                       ),
-                      const SizedBox(height: 20),
+                      const Gap(20),
                       SizedBox(
                         width: double.infinity,
                         height: 48,
@@ -1591,7 +1592,7 @@ class _UpcomingVisitCard extends StatelessWidget {
                         color: Color(0xFF3730A3),
                       ),
                     ),
-                    const SizedBox(height: 1),
+                    const Gap(1),
                     Text(
                       visit.dayNumber,
                       style: const TextStyle(
@@ -1603,7 +1604,7 @@ class _UpcomingVisitCard extends StatelessWidget {
                   ],
                 ),
               ),
-              const SizedBox(width: 12),
+              const Gap(12),
 
               // College & Subtitle
               Expanded(
@@ -1618,7 +1619,7 @@ class _UpcomingVisitCard extends StatelessWidget {
                         color: Color(0xFF0F172A),
                       ),
                     ),
-                    const SizedBox(height: 2),
+                    const Gap(2),
                     Text(
                       visit.subtitle,
                       style: const TextStyle(
@@ -1630,7 +1631,7 @@ class _UpcomingVisitCard extends StatelessWidget {
                   ],
                 ),
               ),
-              const SizedBox(width: 8),
+              const Gap(8),
 
               // Planned Status Pill
               Container(
@@ -1653,7 +1654,7 @@ class _UpcomingVisitCard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          const Gap(12),
 
           // Purpose
           Text(
@@ -1664,7 +1665,7 @@ class _UpcomingVisitCard extends StatelessWidget {
               height: 1.35,
             ),
           ),
-          const SizedBox(height: 12),
+          const Gap(12),
 
           // Overlapping Avatars (AR + RM) + Names
           Row(
@@ -1717,7 +1718,7 @@ class _UpcomingVisitCard extends StatelessWidget {
                   ],
                 ),
               ),
-              const SizedBox(width: 8),
+              const Gap(8),
               Expanded(
                 child: Text(
                   visit.staffNames,
@@ -1729,7 +1730,7 @@ class _UpcomingVisitCard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 14),
+          const Gap(14),
 
           // Action Buttons Row: Delete if Cancelled, otherwise Directions | Record outcome
           if (visit.statusLabel.toLowerCase() == 'cancelled')
@@ -1791,7 +1792,7 @@ class _UpcomingVisitCard extends StatelessWidget {
                     ),
                   ),
                 ),
-                const SizedBox(width: 10),
+                const Gap(10),
                 Expanded(
                   child: SizedBox(
                     height: 42,
@@ -1950,7 +1951,7 @@ class _RecentVisitCard extends StatelessWidget {
                               color: Color(0xFF166534),
                             ),
                           ),
-                          const SizedBox(height: 1),
+                          const Gap(1),
                           Text(
                             day,
                             style: const TextStyle(
@@ -1963,7 +1964,7 @@ class _RecentVisitCard extends StatelessWidget {
                         ],
                       ),
                     ),
-                    const SizedBox(width: 14),
+                    const Gap(14),
 
                     // Title, Subtitle & Status
                     Expanded(
@@ -1982,7 +1983,7 @@ class _RecentVisitCard extends StatelessWidget {
                             overflow: TextOverflow.ellipsis,
                           ),
                           if (subtitle.isNotEmpty) ...[
-                            const SizedBox(height: 3),
+                            const Gap(3),
                             Text(
                               subtitle,
                               style: const TextStyle(
@@ -1994,7 +1995,7 @@ class _RecentVisitCard extends StatelessWidget {
                               overflow: TextOverflow.ellipsis,
                             ),
                           ],
-                          const SizedBox(height: 5),
+                          const Gap(5),
                           Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
@@ -2008,7 +2009,7 @@ class _RecentVisitCard extends StatelessWidget {
                                       : const Color(0xFF047857),
                                 ),
                               ),
-                              const SizedBox(width: 6),
+                              const Gap(6),
                               Text(
                                 isCancelled ? 'CANCELLED' : 'COMPLETED',
                                 style: TextStyle(
@@ -2025,7 +2026,7 @@ class _RecentVisitCard extends StatelessWidget {
                         ],
                       ),
                     ),
-                    const SizedBox(width: 8),
+                    const Gap(8),
 
                     // Direction & Outcome or Delete Button
                     Column(
@@ -2079,7 +2080,7 @@ class _RecentVisitCard extends StatelessWidget {
                                         size: 14,
                                         color: Color(0xFF334155),
                                       ),
-                                      SizedBox(width: 4),
+                                      Gap(4),
                                       Text(
                                         'Outcome',
                                         style: TextStyle(
@@ -2122,7 +2123,7 @@ class _RecentVisitCard extends StatelessWidget {
                                       size: 14,
                                       color: Color(0xFF4F46E5),
                                     ),
-                                    SizedBox(width: 4),
+                                    Gap(4),
                                     Text(
                                       'Direction',
                                       style: TextStyle(
@@ -2137,7 +2138,7 @@ class _RecentVisitCard extends StatelessWidget {
                             ),
                           ),
                           if (onRecordOutcome != null) ...[
-                            const SizedBox(height: 6),
+                            const Gap(6),
                             Material(
                               color: Colors.transparent,
                               child: InkWell(
@@ -2160,7 +2161,7 @@ class _RecentVisitCard extends StatelessWidget {
                                         size: 14,
                                         color: Color(0xFF334155),
                                       ),
-                                      SizedBox(width: 3),
+                                      Gap(3),
                                       Text(
                                         'Outcome',
                                         style: TextStyle(
@@ -2180,7 +2181,7 @@ class _RecentVisitCard extends StatelessWidget {
                     ),
                   ],
                 ),
-                const SizedBox(height: 16),
+                const Gap(16),
 
                 // Middle Box: Actual Real Data $leads LEADS | $interested INTERESTED
                 Container(
@@ -2211,7 +2212,7 @@ class _RecentVisitCard extends StatelessWidget {
                                     color: Color(0xFF0F172A),
                                   ),
                                 ),
-                                const SizedBox(width: 6),
+                                const Gap(6),
                                 const Text(
                                   'LEADS',
                                   style: TextStyle(
@@ -2247,7 +2248,7 @@ class _RecentVisitCard extends StatelessWidget {
                                     color: Color(0xFF0F172A),
                                   ),
                                 ),
-                                const SizedBox(width: 6),
+                                const Gap(6),
                                 const Text(
                                   'INTERESTED',
                                   style: TextStyle(
@@ -2265,7 +2266,7 @@ class _RecentVisitCard extends StatelessWidget {
                     ],
                   ),
                 ),
-                const SizedBox(height: 16),
+                const Gap(16),
 
                 // Bottom Met Box (Exact Figma Spec)
                 Container(
@@ -2305,7 +2306,7 @@ class _RecentVisitCard extends StatelessWidget {
                           ],
                         ),
                       ),
-                      const SizedBox(height: 6),
+                      const Gap(6),
                       RichText(
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,

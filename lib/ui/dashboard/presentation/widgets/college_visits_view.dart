@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:gap/gap.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -95,7 +96,7 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
                         color: const Color(0xFF0F172A),
                       ),
                     ),
-                    const SizedBox(height: 6),
+                    const Gap(6),
                     Text(
                       'Schedule campus outreach, seminar, or student drive',
                       style: GoogleFonts.inter(
@@ -105,7 +106,7 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
                         color: const Color(0xFF64748B),
                       ),
                     ),
-                    const SizedBox(height: 18),
+                    const Gap(18),
                     TextFormField(
                       controller: collegeCtrl,
                       validator: (v) {
@@ -179,7 +180,7 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 14),
+                    const Gap(14),
                     SizedBox(
                       height: 54,
                       child: TextField(
@@ -258,7 +259,7 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 14),
+                    const Gap(14),
                     TextFormField(
                       controller: purposeCtrl,
                       validator: (v) {
@@ -332,7 +333,7 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 14),
+                    const Gap(14),
                     TextFormField(
                       controller: staffCtrl,
                       validator: (v) {
@@ -406,7 +407,7 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 22),
+                    const Gap(22),
                     Row(
                       children: [
                         Expanded(
@@ -430,7 +431,7 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
                             ),
                           ),
                         ),
-                        const SizedBox(width: 12),
+                        const Gap(12),
                         Expanded(
                           child: SizedBox(
                             height: 48,
@@ -546,7 +547,7 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
                         color: const Color(0xFF0F172A),
                       ),
                     ),
-                    const SizedBox(height: 6),
+                    const Gap(6),
                     Text(
                       '${visit.collegeName} · Outcome & student attendance',
                       style: GoogleFonts.inter(
@@ -556,7 +557,7 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
                         color: const Color(0xFF64748B),
                       ),
                     ),
-                    const SizedBox(height: 18),
+                    const Gap(18),
 
                     // Modern Segmented Status Toggle (Completed vs Cancelled)
                     Container(
@@ -606,7 +607,7 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
                                           ? const Color(0xFF15803D)
                                           : const Color(0xFF94A3B8),
                                     ),
-                                    const SizedBox(width: 6),
+                                    const Gap(6),
                                     Text(
                                       'Completed',
                                       style: GoogleFonts.inter(
@@ -662,7 +663,7 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
                                           ? const Color(0xFFDC2626)
                                           : const Color(0xFF94A3B8),
                                     ),
-                                    const SizedBox(width: 6),
+                                    const Gap(6),
                                     Text(
                                       'Cancelled',
                                       style: GoogleFonts.inter(
@@ -683,7 +684,7 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
                         ],
                       ),
                     ),
-                    const SizedBox(height: 14),
+                    const Gap(14),
 
                     // Inputs matching Log Visit Figma styling with Native Form Validation
                     TextFormField(
@@ -767,7 +768,7 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
                       ),
                     ),
                     if (!isCancelled) ...[
-                      const SizedBox(height: 14),
+                      const Gap(14),
                       TextFormField(
                         key: const ValueKey('visit_outcome_leads'),
                         controller: leadsCtrl,
@@ -849,7 +850,7 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
                         ),
                       ),
                     ],
-                    const SizedBox(height: 20),
+                    const Gap(20),
 
                     // Primary Button (same as Log Visit)
                     SizedBox(
@@ -1114,7 +1115,7 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
                         letterSpacing: -0.5,
                       ),
                     ),
-                    const SizedBox(height: 4),
+                    const Gap(4),
                     Text(
                       'Plan campus outreach, log HOD/faculty meetings, and track $totalLeads leads ($totalConversions conversions) generated',
                       style: const TextStyle(
@@ -1154,7 +1155,7 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
                 if (isMobile) {
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [titleCol, const SizedBox(height: 12), planBtn],
+                    children: [titleCol, const Gap(12), planBtn],
                   );
                 }
 
@@ -1165,14 +1166,14 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Expanded(child: titleCol),
-                      const SizedBox(width: 16),
+                      const Gap(16),
                       planBtn,
                     ],
                   ),
                 );
               },
             ),
-            const SizedBox(height: 18),
+            const Gap(18),
 
             ...visits.map((visit) {
               final isCompleted = visit.status == 'Completed';
@@ -1349,7 +1350,7 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
                                     statusBadge,
                                   ],
                                 ),
-                                const SizedBox(height: 12),
+                                const Gap(12),
                                 actionButtons,
                               ],
                             );
@@ -1374,19 +1375,19 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
                                         overflow: TextOverflow.ellipsis,
                                       ),
                                     ),
-                                    const SizedBox(width: 12),
+                                    const Gap(12),
                                     statusBadge,
                                   ],
                                 ),
                               ),
-                              const SizedBox(width: 16),
+                              const Gap(16),
                               actionButtons,
                             ],
                           );
                         },
                       ),
                     ),
-                    const SizedBox(height: 14),
+                    const Gap(14),
                     RichText(
                       text: TextSpan(
                         style: const TextStyle(
@@ -1436,7 +1437,7 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
                       ),
                     ),
                     if (visit.leadsCollected > 0 || visit.conversions > 0) ...[
-                      const SizedBox(height: 12),
+                      const Gap(12),
                       Wrap(
                         spacing: 8,
                         runSpacing: 8,

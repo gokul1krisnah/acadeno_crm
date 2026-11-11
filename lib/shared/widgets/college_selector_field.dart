@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:gap/gap.dart';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
@@ -202,7 +203,7 @@ class _CollegeSelectorFieldState extends State<CollegeSelectorField> {
 
         // 2. Extra field if Other is selected
         if (_isOther) ...[
-          const SizedBox(height: 10),
+          const Gap(10),
           TextFormField(
             controller: _customCollegeCtrl,
             onChanged: _onCustomCollegeChanged,
@@ -235,7 +236,7 @@ class _CollegeSelectorFieldState extends State<CollegeSelectorField> {
           ),
         ],
 
-        const SizedBox(height: 10),
+        const Gap(10),
 
         // 3. Fully editable text field for [College · Branch · Year]
         TextFormField(

@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:gap/gap.dart';
 import 'package:acadeno_crm/ui/follow_ups/data/model/follow_up_time_helper.dart';
 import 'package:acadeno_crm/shared/widgets/acadeno_dropdown.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -99,7 +100,7 @@ class _FollowUpsViewState extends State<FollowUpsView> {
                   size: 18,
                   color: const Color(0xFF4338CA),
                 ),
-                const SizedBox(width: 10),
+                const Gap(10),
                 Text(exec, style: const TextStyle(fontWeight: FontWeight.w600)),
               ],
             ),
@@ -301,7 +302,7 @@ class _FollowUpsViewState extends State<FollowUpsView> {
                                 letterSpacing: -0.5,
                               ),
                             ),
-                            const SizedBox(height: 4),
+                            const Gap(4),
                             Text(
                               '$totalOpenAll open follow-ups across ${executives.length} team members · $totalOverdueAll overdue (live from database)',
                               style: const TextStyle(
@@ -313,7 +314,7 @@ class _FollowUpsViewState extends State<FollowUpsView> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 18),
+                    const Gap(18),
 
                     // Bulk Reassign Bar
                     // Bulk Reassign Bar (Responsive)
@@ -342,7 +343,7 @@ class _FollowUpsViewState extends State<FollowUpsView> {
                                       color: Color(0xFF4338CA),
                                       size: 18,
                                     ),
-                                    SizedBox(width: 8),
+                                    Gap(8),
                                     Text(
                                       'Move all open follow-ups',
                                       style: TextStyle(
@@ -353,7 +354,7 @@ class _FollowUpsViewState extends State<FollowUpsView> {
                                     ),
                                   ],
                                 ),
-                                const SizedBox(height: 12),
+                                const Gap(12),
                                 Row(
                                   children: [
                                     Expanded(
@@ -385,7 +386,7 @@ class _FollowUpsViewState extends State<FollowUpsView> {
                                     ),
                                   ],
                                 ),
-                                const SizedBox(height: 12),
+                                const Gap(12),
                                 SizedBox(
                                   height: 40,
                                   child: ElevatedButton(
@@ -502,7 +503,7 @@ class _FollowUpsViewState extends State<FollowUpsView> {
                         );
                       },
                     ),
-                    const SizedBox(height: 16),
+                    const Gap(16),
 
                     // Filter row
                     Wrap(
@@ -513,7 +514,7 @@ class _FollowUpsViewState extends State<FollowUpsView> {
                         _buildFilterPill('All open ($openCount)'),
                         _buildFilterPill('Overdue only ($overdueCount)'),
                         _buildFilterPill('Due today ($dueTodayCount)'),
-                        const SizedBox(width: 4),
+                        const Gap(4),
                         Container(
                           height: 38,
                           padding: const EdgeInsets.symmetric(horizontal: 14),
@@ -561,7 +562,7 @@ class _FollowUpsViewState extends State<FollowUpsView> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 16),
+                    const Gap(16),
 
                     // Cards/Table
                     if (filteredItems.isEmpty)
@@ -763,7 +764,7 @@ class _FollowUpsViewState extends State<FollowUpsView> {
             ),
           ],
         ),
-        const SizedBox(height: 4),
+        const Gap(4),
         Text(
           '${item.phone} · ${item.collegeBranch}',
           style: const TextStyle(fontSize: 13, color: Color(0xFF475467)),
@@ -771,7 +772,7 @@ class _FollowUpsViewState extends State<FollowUpsView> {
           overflow: TextOverflow.ellipsis,
         ),
         if (item.note.isNotEmpty) ...[
-          const SizedBox(height: 5),
+          const Gap(5),
           Text(
             'Note: ${item.note}',
             style: const TextStyle(
@@ -807,17 +808,17 @@ class _FollowUpsViewState extends State<FollowUpsView> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 iconWidget,
-                const SizedBox(width: 12),
+                const Gap(12),
                 Expanded(child: studentInfoWidget),
               ],
             ),
-            const SizedBox(height: 14),
+            const Gap(14),
             Row(children: [Flexible(child: assignedBadge)]),
-            const SizedBox(height: 10),
+            const Gap(10),
             Row(
               children: [
                 Expanded(child: SizedBox(height: 34, child: reassignBtn)),
-                const SizedBox(width: 10),
+                const Gap(10),
                 Expanded(child: SizedBox(height: 34, child: markDoneBtn)),
               ],
             ),
@@ -841,16 +842,16 @@ class _FollowUpsViewState extends State<FollowUpsView> {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           iconWidget,
-          const SizedBox(width: 14),
+          const Gap(14),
           Expanded(child: studentInfoWidget),
-          const SizedBox(width: 16),
+          const Gap(16),
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               assignedBadge,
-              const SizedBox(width: 8),
+              const Gap(8),
               SizedBox(width: 102, height: 34, child: reassignBtn),
-              const SizedBox(width: 8),
+              const Gap(8),
               SizedBox(height: 34, child: markDoneBtn),
             ],
           ),

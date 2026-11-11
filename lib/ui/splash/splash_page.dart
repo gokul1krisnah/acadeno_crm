@@ -1,4 +1,5 @@
 import 'package:acadeno_crm/core/router/app_router.dart';
+import 'package:gap/gap.dart';
 import 'package:acadeno_crm/shared/extensions/build_context_extension.dart';
 import 'package:acadeno_crm/shared/theme/app_colors.dart';
 import 'package:acadeno_crm/shared/theme/app_images.dart';
@@ -172,7 +173,7 @@ class _SplashPageState extends State<SplashPage>
                         ),
                       ),
                     ),
-                    const SizedBox(height: 18),
+                    const Gap(18),
 
                     // Clean Subtitle Text
                     Opacity(

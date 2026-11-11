@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:gap/gap.dart';
 
 /// A standardized item model for [AcadenoDropdown].
 class AcadenoDropdownItem<T> {
@@ -166,7 +167,7 @@ class AcadenoDropdown<T> extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              if (item.icon != null) ...[item.icon!, const SizedBox(width: 8)],
+              if (item.icon != null) ...[item.icon!, const Gap(8)],
               Text(
                 item.label,
                 overflow: TextOverflow.ellipsis,
@@ -177,7 +178,7 @@ class AcadenoDropdown<T> extends StatelessWidget {
                 ),
               ),
               if (item.subtitle != null) ...[
-                const SizedBox(width: 6),
+                const Gap(6),
                 Text(
                   item.subtitle!,
                   style: const TextStyle(
@@ -205,7 +206,7 @@ class AcadenoDropdown<T> extends StatelessWidget {
               color: Color(0xFF374151),
             ),
           ),
-          const SizedBox(height: 6),
+          const Gap(6),
           dropdownWidget,
         ],
       );

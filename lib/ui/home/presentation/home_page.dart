@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:gap/gap.dart';
 import 'package:acadeno_crm/core/router/app_router.dart';
 import 'package:acadeno_crm/shared/extensions/build_context_extension.dart';
 import 'package:acadeno_crm/shared/snackbar_alerts/snack_alert.dart';
@@ -243,7 +244,7 @@ class _ExecutiveBottomNavBar extends StatelessWidget {
                           : const Color(0xFF64748B),
                     ),
                   ),
-                  const SizedBox(height: 3),
+                  const Gap(3),
                   Text(
                     item.$2,
                     style: TextStyle(

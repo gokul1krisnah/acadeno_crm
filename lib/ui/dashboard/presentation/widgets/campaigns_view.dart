@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:gap/gap.dart';
 import 'package:acadeno_crm/ui/leads/data/model/lead_models.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -590,28 +591,28 @@ class _CampaignsViewState extends State<CampaignsView> {
                     hintText: 'e.g. Cloud & DevOps Bootcamp',
                   ),
                 ),
-                const SizedBox(height: 12),
+                const Gap(12),
                 TextField(
                   controller: badgeCtrl,
                   decoration: const InputDecoration(
                     labelText: 'Start date label',
                   ),
                 ),
-                const SizedBox(height: 12),
+                const Gap(12),
                 TextField(
                   controller: topicsCtrl,
                   decoration: const InputDecoration(
                     labelText: 'Target topics (comma separated)',
                   ),
                 ),
-                const SizedBox(height: 12),
+                const Gap(12),
                 TextField(
                   controller: branchesCtrl,
                   decoration: const InputDecoration(
                     labelText: 'Target branches',
                   ),
                 ),
-                const SizedBox(height: 12),
+                const Gap(12),
                 TextField(
                   controller: yearsCtrl,
                   decoration: const InputDecoration(labelText: 'Target years'),
@@ -718,7 +719,7 @@ class _CampaignsViewState extends State<CampaignsView> {
                           ),
                         ),
                       ),
-                      const SizedBox(height: 8),
+                      const Gap(8),
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton.icon(
@@ -781,7 +782,7 @@ class _CampaignsViewState extends State<CampaignsView> {
                       ),
                     ],
                   ),
-            const SizedBox(height: 12),
+            const Gap(12),
 
             // Campaign Summary Card
             Container(
@@ -797,7 +798,7 @@ class _CampaignsViewState extends State<CampaignsView> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         _buildCampaignInfoLeft(campaign),
-                        const SizedBox(height: 16),
+                        const Gap(16),
                         _buildCampaignStatsRight(campaign, isMobile: true),
                       ],
                     )
@@ -805,12 +806,12 @@ class _CampaignsViewState extends State<CampaignsView> {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Expanded(child: _buildCampaignInfoLeft(campaign)),
-                        const SizedBox(width: 24),
+                        const Gap(24),
                         _buildCampaignStatsRight(campaign, isMobile: false),
                       ],
                     ),
             ),
-            const SizedBox(height: 14),
+            const Gap(14),
 
             // Split Top Leads Bar (Indigo border)
             // Split Top Leads Bar (Responsive Indigo border)
@@ -983,9 +984,9 @@ class _CampaignsViewState extends State<CampaignsView> {
                             ),
                           ],
                         ),
-                        const SizedBox(height: 12),
+                        const Gap(12),
                         execPills,
-                        const SizedBox(height: 12),
+                        const Gap(12),
                         assignBtn,
                       ],
                     ),
@@ -1029,7 +1030,7 @@ class _CampaignsViewState extends State<CampaignsView> {
                               color: Color(0xFF475467),
                             ),
                           ),
-                          const SizedBox(width: 14),
+                          const Gap(14),
                           assignBtn,
                         ],
                       ),
@@ -1038,7 +1039,7 @@ class _CampaignsViewState extends State<CampaignsView> {
                 );
               },
             ),
-            const SizedBox(height: 14),
+            const Gap(14),
 
             // Ranked Leads Table / Mobile List
             Container(
@@ -1093,7 +1094,7 @@ class _CampaignsViewState extends State<CampaignsView> {
             ),
           ],
         ),
-        const SizedBox(height: 10),
+        const Gap(10),
         Wrap(
           spacing: 18,
           runSpacing: 6,
@@ -1103,7 +1104,7 @@ class _CampaignsViewState extends State<CampaignsView> {
             _buildMetaInline('Years: ', campaign.years),
           ],
         ),
-        const SizedBox(height: 8),
+        const Gap(8),
         const Text(
           'SCORE = BRANCH MATCH 30 · INTEREST MATCH 30 · ATTENDED SIMILAR EVENT 20 · WARM LEAD 15 · TARGET YEAR 10 -\nRECENT LEAD 5 · CALLED IN LAST 7 DAYS -25 · NOT INTERESTED -30',
           style: TextStyle(
@@ -1161,9 +1162,9 @@ class _CampaignsViewState extends State<CampaignsView> {
       return Row(
         children: [
           Expanded(child: boxes[0]),
-          const SizedBox(width: 8),
+          const Gap(8),
           Expanded(child: boxes[1]),
-          const SizedBox(width: 8),
+          const Gap(8),
           Expanded(child: boxes[2]),
         ],
       );
@@ -1173,9 +1174,9 @@ class _CampaignsViewState extends State<CampaignsView> {
       mainAxisSize: MainAxisSize.min,
       children: [
         SizedBox(width: 112, child: boxes[0]),
-        const SizedBox(width: 10),
+        const Gap(10),
         SizedBox(width: 104, child: boxes[1]),
-        const SizedBox(width: 10),
+        const Gap(10),
         SizedBox(width: 104, child: boxes[2]),
       ],
     );
@@ -1203,7 +1204,7 @@ class _CampaignsViewState extends State<CampaignsView> {
               ),
             ),
           ),
-          const SizedBox(height: 4),
+          const Gap(4),
           FittedBox(
             fit: BoxFit.scaleDown,
             child: Text(
@@ -1338,7 +1339,7 @@ class _CampaignsViewState extends State<CampaignsView> {
                               ),
                             ),
                           ),
-                          const SizedBox(width: 8),
+                          const Gap(8),
                           Text(
                             '${lead.score}',
                             style: TextStyle(
@@ -1452,7 +1453,7 @@ class _CampaignsViewState extends State<CampaignsView> {
       physics: const NeverScrollableScrollPhysics(),
       padding: const EdgeInsets.all(16),
       itemCount: _rankedLeads.length,
-      separatorBuilder: (_, _) => const SizedBox(height: 12),
+      separatorBuilder: (_, _) => const Gap(12),
       itemBuilder: (context, index) {
         final lead = _rankedLeads[index];
         return Container(
@@ -1487,7 +1488,7 @@ class _CampaignsViewState extends State<CampaignsView> {
                             ),
                           ),
                         ),
-                        const SizedBox(width: 8),
+                        const Gap(8),
                         Expanded(
                           child: Text(
                             lead.name,
@@ -1504,7 +1505,7 @@ class _CampaignsViewState extends State<CampaignsView> {
                     ),
                   ),
                   if (lead.assignedExec != null) ...[
-                    const SizedBox(width: 8),
+                    const Gap(8),
                     Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 8,
@@ -1526,7 +1527,7 @@ class _CampaignsViewState extends State<CampaignsView> {
                   ],
                 ],
               ),
-              const SizedBox(height: 6),
+              const Gap(6),
               Text(
                 lead.collegeBranchYear,
                 style: const TextStyle(
@@ -1534,7 +1535,7 @@ class _CampaignsViewState extends State<CampaignsView> {
                   color: Color(0xFF475467),
                 ),
               ),
-              const SizedBox(height: 8),
+              const Gap(8),
               Row(
                 children: [
                   Expanded(
@@ -1548,7 +1549,7 @@ class _CampaignsViewState extends State<CampaignsView> {
                       ),
                     ),
                   ),
-                  const SizedBox(width: 10),
+                  const Gap(10),
                   Text(
                     'Score ${lead.score}',
                     style: TextStyle(
@@ -1559,7 +1560,7 @@ class _CampaignsViewState extends State<CampaignsView> {
                   ),
                 ],
               ),
-              const SizedBox(height: 10),
+              const Gap(10),
               Wrap(
                 spacing: 6,
                 runSpacing: 6,
@@ -1607,12 +1608,12 @@ class _CampaignsViewState extends State<CampaignsView> {
                       color: const Color(0xFF0F172A),
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  const Gap(4),
                   const Text(
                     'Rank and assign historical leads automatically for upcoming events',
                     style: TextStyle(fontSize: 13, color: Color(0xFF667085)),
                   ),
-                  const SizedBox(height: 12),
+                  const Gap(12),
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton.icon(
@@ -1641,7 +1642,7 @@ class _CampaignsViewState extends State<CampaignsView> {
                           color: Color(0xFF0F172A),
                         ),
                       ),
-                      SizedBox(height: 4),
+                      Gap(4),
                       Text(
                         'Rank and assign historical leads automatically for upcoming events',
                         style: TextStyle(
@@ -1662,7 +1663,7 @@ class _CampaignsViewState extends State<CampaignsView> {
                   ),
                 ],
               ),
-        const SizedBox(height: 18),
+        const Gap(18),
         ...List.generate(_campaigns.length, (index) {
           final c = _campaigns[index];
           return Container(
@@ -1710,7 +1711,7 @@ class _CampaignsViewState extends State<CampaignsView> {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 6),
+                      const Gap(6),
                       Text(
                         'Topics: ${c.topics} · Branches: ${c.branches}',
                         style: const TextStyle(
@@ -1718,7 +1719,7 @@ class _CampaignsViewState extends State<CampaignsView> {
                           color: Color(0xFF475467),
                         ),
                       ),
-                      const SizedBox(height: 12),
+                      const Gap(12),
                       SizedBox(
                         width: double.infinity,
                         child: OutlinedButton(
@@ -1773,7 +1774,7 @@ class _CampaignsViewState extends State<CampaignsView> {
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 6),
+                            const Gap(6),
                             Text(
                               'Topics: ${c.topics} · Branches: ${c.branches}',
                               style: const TextStyle(
