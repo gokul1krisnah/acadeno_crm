@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:gap/gap.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -440,8 +441,8 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
                                       );
                                     },
                                     icon: const Icon(
-                                      Icons.phone_outlined,
-                                      size: 18,
+                                      CupertinoIcons.phone_fill,
+                                      size: 17,
                                       color: Colors.white,
                                     ),
                                     label: const FittedBox(
@@ -458,7 +459,7 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
                                       ),
                                     ),
                                     style: ElevatedButton.styleFrom(
-                                      backgroundColor: const Color(0xFF4F46E5),
+                                      backgroundColor: const Color(0xFFEF8144),
                                       foregroundColor: Colors.white,
                                       elevation: 0,
                                       shape: RoundedRectangleBorder(
@@ -545,7 +546,7 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
                               ),
                             ),
                             child: const Icon(
-                              Icons.calendar_today_outlined,
+                              CupertinoIcons.calendar,
                               color: Color(0xFFC2410C),
                               size: 20,
                             ),
