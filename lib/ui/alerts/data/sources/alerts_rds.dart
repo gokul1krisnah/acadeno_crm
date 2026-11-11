@@ -187,6 +187,7 @@ class AlertsRds {
     }
 
     void onListen() {
+      purgeOldNotifications();
       if (executiveUid != null && executiveUid.isNotEmpty) {
         subscribeForUid(executiveUid);
       } else {
@@ -233,6 +234,7 @@ class AlertsRds {
     final todayKey = LeadDateHelper.todayDateKey();
     final yesterdayDate = startOfToday.subtract(const Duration(days: 1));
     final yesterdayKey = LeadDateHelper.dateKey(yesterdayDate);
+    final threeDaysAgo = startOfToday.subtract(const Duration(days: 3));
 
     // =========================================================================
     // 1. Process Genuine Alerts from Firestore `alerts` Collection
@@ -242,6 +244,18 @@ class AlertsRds {
 
       // Check and purge fake / mock test records from database
       if (_isFakeOrTestAlert(data, uid)) {
+        doc.reference.delete().catchError((_) {});
+        continue;
+      }
+
+      final createdAt = _parseDateTime(
+        data['createdAt'],
+        data['timestamp'],
+      ).toLocal();
+      if (createdAt.millisecondsSinceEpoch == 0) continue;
+
+      // Automatically purge/delete notifications older than 3 days from Firestore
+      if (createdAt.isBefore(threeDaysAgo)) {
         doc.reference.delete().catchError((_) {});
         continue;
       }
@@ -258,12 +272,6 @@ class AlertsRds {
       final rawTitle = (data['title'] ?? 'Notification').toString();
       final subtitle = (data['subtitle'] ?? '').toString();
       final category = (data['category'] ?? '').toString();
-
-      final createdAt = _parseDateTime(
-        data['createdAt'],
-        data['timestamp'],
-      ).toLocal();
-      if (createdAt.millisecondsSinceEpoch == 0) continue;
 
       final itemDay = DateTime(createdAt.year, createdAt.month, createdAt.day);
       final isToday =
@@ -354,6 +362,11 @@ class AlertsRds {
                 ? startOfToday.add(const Duration(hours: 9))
                 : yesterdayDate)
           : firstCreatedAt;
+
+      // Do not display assignment notifications older than 3 days
+      if (effectiveCreatedAt.isBefore(threeDaysAgo)) {
+        return;
+      }
 
       final isToday = dKey == todayKey;
       final isYesterday = dKey == yesterdayKey;
@@ -474,6 +487,9 @@ class AlertsRds {
 
       if (callAt.millisecondsSinceEpoch == 0) continue;
 
+      // Do not show call log notifications older than 3 days
+      if (callAt.isBefore(threeDaysAgo)) continue;
+
       final isToday =
           callAt.isAfter(startOfToday) || callAt.isAtSameMomentAs(startOfToday);
 
@@ -535,15 +551,31 @@ class AlertsRds {
       );
     }
 
-    // Deduplicate items by ID
+    // Deduplicate items by ID and strictly drop notifications older than 3 days
     final deduplicated = <String, ExecutiveAlertItem>{};
     for (final item in liveAlerts) {
+      if (item.createdAt.isBefore(threeDaysAgo)) continue;
       deduplicated[item.id] = item;
     }
 
     final result = deduplicated.values.toList();
     result.sort((a, b) => b.createdAt.compareTo(a.createdAt));
     return result;
+  }
+
+  /// Automatically purges notifications older than 3 days directly from Firestore
+  Future<void> purgeOldNotifications() async {
+    try {
+      final cutoff = DateTime.now().subtract(const Duration(days: 3));
+      final snap = await _firestore.collection('alerts').get();
+      for (final doc in snap.docs) {
+        final data = doc.data();
+        final dt = _parseDateTime(data['createdAt'], data['timestamp']);
+        if (dt.millisecondsSinceEpoch > 0 && dt.isBefore(cutoff)) {
+          await doc.reference.delete().catchError((_) {});
+        }
+      }
+    } catch (_) {}
   }
 
   /// Mark all alerts as read for the user in Firestore
