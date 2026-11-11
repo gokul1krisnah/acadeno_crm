@@ -1342,19 +1342,12 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
   Widget _statusBadge(String status) {
     final s = status.trim().toLowerCase();
     final (Color bg, Color fg) = switch (s) {
-      'contacted' || 'interested' => (
-          const Color(0xFFDCFCE7),
-          const Color(0xFF15803D),
-        ),
+      'contacted' ||
+      'interested' => (const Color(0xFFDCFCE7), const Color(0xFF15803D)),
       'assigned' => (const Color(0xFFEEF2FF), const Color(0xFF4338CA)),
-      'follow-up' || 'followup' => (
-          const Color(0xFFFFF1E6),
-          const Color(0xFFB45309),
-        ),
-      'not interested' => (
-          const Color(0xFFFEE2E2),
-          const Color(0xFFB91C1C),
-        ),
+      'follow-up' ||
+      'followup' => (const Color(0xFFFFF1E6), const Color(0xFFB45309)),
+      'not interested' => (const Color(0xFFFEE2E2), const Color(0xFFB91C1C)),
       'converted' => (const Color(0xFFEDE9FE), const Color(0xFF4338CA)),
       'overdue' || 'new' => (const Color(0xFFF1F5F9), const Color(0xFF475467)),
       _ => (const Color(0xFFF1F5F9), const Color(0xFF334155)),
@@ -1367,11 +1360,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
       ),
       child: Text(
         status.isEmpty ? '—' : status,
-        style: TextStyle(
-          color: fg,
-          fontSize: 12,
-          fontWeight: FontWeight.w600,
-        ),
+        style: TextStyle(color: fg, fontSize: 12, fontWeight: FontWeight.w600),
       ),
     );
   }
@@ -1814,7 +1803,9 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                 },
               ),
             ),
-            const Gap(16), // Dark Bulk Selection & Assignment Bar (Always shown; grey & disabled if no tick selected)
+            const Gap(
+              16,
+            ), // Dark Bulk Selection & Assignment Bar (Always shown; grey & disabled if no tick selected)
             // Dark Bulk Selection & Assignment Bar (Responsive mobile-friendly layout)
             LayoutBuilder(
               builder: (context, barC) {
@@ -2206,11 +2197,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
         ),
         alignment: Alignment.center,
         child: value
-            ? const Icon(
-                Icons.check_rounded,
-                size: 12,
-                color: Colors.white,
-              )
+            ? const Icon(Icons.check_rounded, size: 12, color: Colors.white)
             : null,
       ),
     );
@@ -2449,7 +2436,8 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                       children: [
                         _buildFigmaCheckbox(
                           value: allSelectedOnPage,
-                          onChanged: (v) => cubit.toggleSelectAllOnPage(v ?? false),
+                          onChanged: (v) =>
+                              cubit.toggleSelectAllOnPage(v ?? false),
                         ),
                         const Gap(20),
                         const Text('NAME', style: h),
@@ -2501,8 +2489,10 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                               children: [
                                 _buildFigmaCheckbox(
                                   value: isSelected,
-                                  onChanged: (v) =>
-                                      cubit.toggleLeadSelection(r.id, v ?? false),
+                                  onChanged: (v) => cubit.toggleLeadSelection(
+                                    r.id,
+                                    v ?? false,
+                                  ),
                                 ),
                                 const Gap(20),
                                 Expanded(
