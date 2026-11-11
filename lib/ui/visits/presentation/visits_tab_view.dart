@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:acadeno_crm/shared/utilities/link_launcher.dart';
 import 'package:acadeno_crm/shared/widgets/college_selector_field.dart';
 import 'package:acadeno_crm/shared/snackbar_alerts/snack_alert.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -1732,34 +1733,25 @@ class _UpcomingVisitCard extends StatelessWidget {
 
           // Action Buttons Row: Delete if Cancelled, otherwise Directions | Record outcome
           if (visit.statusLabel.toLowerCase() == 'cancelled')
-            SizedBox(
-              height: 42,
-              width: double.infinity,
-              child: OutlinedButton.icon(
-                onPressed: onDelete,
-                icon: const Icon(
-                  Icons.delete_outline_rounded,
-                  size: 17,
-                  color: Color(0xFFDC2626),
-                ),
-                label: const FittedBox(
-                  fit: BoxFit.scaleDown,
-                  child: Text(
-                    'Delete visit',
-                    maxLines: 1,
-                    softWrap: false,
-                    style: TextStyle(
-                      fontSize: 13.5,
-                      fontWeight: FontWeight.w700,
+            Align(
+              alignment: Alignment.centerRight,
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: onDelete,
+                  borderRadius: BorderRadius.circular(10),
+                  child: Container(
+                    padding: const EdgeInsets.all(9),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFEF2F2),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: const Color(0xFFFECACA)),
+                    ),
+                    child: const Icon(
+                      CupertinoIcons.trash,
+                      size: 18,
                       color: Color(0xFFDC2626),
                     ),
-                  ),
-                ),
-                style: OutlinedButton.styleFrom(
-                  backgroundColor: const Color(0xFFFEF2F2),
-                  side: const BorderSide(color: Color(0xFFFECACA)),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(11),
                   ),
                 ),
               ),
@@ -2047,10 +2039,7 @@ class _RecentVisitCard extends StatelessWidget {
                                 onTap: onDelete,
                                 borderRadius: BorderRadius.circular(10),
                                 child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 10,
-                                    vertical: 6,
-                                  ),
+                                  padding: const EdgeInsets.all(8),
                                   decoration: BoxDecoration(
                                     color: const Color(0xFFFEF2F2),
                                     borderRadius: BorderRadius.circular(10),
@@ -2058,24 +2047,10 @@ class _RecentVisitCard extends StatelessWidget {
                                       color: const Color(0xFFFECACA),
                                     ),
                                   ),
-                                  child: const Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Icon(
-                                        Icons.delete_outline_rounded,
-                                        size: 14,
-                                        color: Color(0xFFDC2626),
-                                      ),
-                                      SizedBox(width: 4),
-                                      Text(
-                                        'Delete',
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w700,
-                                          color: Color(0xFFDC2626),
-                                        ),
-                                      ),
-                                    ],
+                                  child: const Icon(
+                                    CupertinoIcons.trash,
+                                    size: 15,
+                                    color: Color(0xFFDC2626),
                                   ),
                                 ),
                               ),

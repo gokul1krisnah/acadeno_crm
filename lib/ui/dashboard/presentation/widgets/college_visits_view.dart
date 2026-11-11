@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
@@ -1241,35 +1242,27 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
                             crossAxisAlignment: WrapCrossAlignment.center,
                             children: [
                               if (isCancelled)
-                                OutlinedButton.icon(
-                                  onPressed: () =>
-                                      _confirmDeleteVisit(context, visit),
-                                  icon: const Icon(
-                                    Icons.delete_outline_rounded,
-                                    size: 14,
-                                    color: Color(0xFFDC2626),
-                                  ),
-                                  label: const Text(
-                                    'Delete',
-                                    style: TextStyle(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w600,
-                                      color: Color(0xFFDC2626),
+                                Material(
+                                  color: Colors.transparent,
+                                  child: InkWell(
+                                    onTap: () =>
+                                        _confirmDeleteVisit(context, visit),
+                                    borderRadius: BorderRadius.circular(10),
+                                    child: Container(
+                                      padding: const EdgeInsets.all(8),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFFEF2F2),
+                                        borderRadius: BorderRadius.circular(10),
+                                        border: Border.all(
+                                          color: const Color(0xFFFECACA),
+                                        ),
+                                      ),
+                                      child: const Icon(
+                                        CupertinoIcons.trash,
+                                        size: 15,
+                                        color: Color(0xFFDC2626),
+                                      ),
                                     ),
-                                  ),
-                                  style: OutlinedButton.styleFrom(
-                                    visualDensity: VisualDensity.compact,
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 16,
-                                      vertical: 10,
-                                    ),
-                                    side: const BorderSide(
-                                      color: Color(0xFFFECACA),
-                                    ),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(20),
-                                    ),
-                                    backgroundColor: const Color(0xFFFEF2F2),
                                   ),
                                 )
                               else ...[
