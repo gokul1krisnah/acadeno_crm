@@ -176,20 +176,19 @@ class _SidebarNavItemState extends State<_SidebarNavItem> {
   Widget build(BuildContext context) {
     final isSelected = widget.isSelected;
     final item = widget.item;
-    final isActiveOrHovered = isSelected || _isHovered;
 
     // Hover background color with increased lightness for a luminous, clean peach tint
     final Color bgColor = isSelected
         ? const Color(0xFFFFEDE2)
         : (_isHovered ? const Color(0xFFFFF6F0) : Colors.transparent);
 
-    final Color contentColor = isActiveOrHovered
+    final Color contentColor = isSelected
         ? _orangeAccent
-        : const Color(0xFF475569);
+        : (_isHovered ? _orangeAccent : const Color(0xFF475569));
 
-    final Color iconColor = isActiveOrHovered
+    final Color iconColor = isSelected
         ? _orangeAccent
-        : const Color(0xFF64748B);
+        : (_isHovered ? _orangeAccent : const Color(0xFF64748B));
 
     // Exact Figma Specs:
     // width: 223 (in 240px sidebar: 8.5px horizontal margin on each side)
@@ -221,7 +220,7 @@ class _SidebarNavItemState extends State<_SidebarNavItem> {
               onTap: widget.onTap,
               child: CustomPaint(
                 foregroundPainter: _FigmaRightBorderPainter(
-                  color: isActiveOrHovered ? _orangeAccent : Colors.transparent,
+                  color: isSelected ? _orangeAccent : Colors.transparent,
                   radius: 12.0,
                   strokeWidth: 4.0,
                 ),

@@ -2778,11 +2778,10 @@ class _DesktopLeadTableRowState extends State<_DesktopLeadTableRow> {
   Widget build(BuildContext context) {
     final r = widget.lead;
     final isSelected = widget.isSelected;
-    final isActiveOrHovered = isSelected || _isHovered;
 
     // Exact same colors & curve as the navbar selection/hover:
-    // Selected: #FFEDE2 warm brand peach
-    // Hovered: #FFF6F0 lighter luminous peach
+    // Selected: #FFEDE2 warm brand peach + right curved stroke
+    // Hovered: #FFF6F0 lighter luminous peach (color only, no right stroke)
     // Idle: Colors.white
     final Color bgColor = isSelected
         ? const Color(0xFFFFEDE2)
@@ -2821,7 +2820,7 @@ class _DesktopLeadTableRowState extends State<_DesktopLeadTableRow> {
               highlightColor: _primary.withValues(alpha: 0.04),
               child: CustomPaint(
                 foregroundPainter: _FigmaRightBorderPainter(
-                  color: isActiveOrHovered ? _primary : Colors.transparent,
+                  color: isSelected ? _primary : Colors.transparent,
                   radius: 12.0,
                   strokeWidth: 4.0,
                 ),
@@ -2859,9 +2858,7 @@ class _DesktopLeadTableRowState extends State<_DesktopLeadTableRow> {
                                       fontWeight: FontWeight.w600,
                                       height: 24 / 16,
                                       letterSpacing: 0,
-                                      color: isActiveOrHovered
-                                          ? const Color(0xFF0F172A)
-                                          : const Color(0xFF111827),
+                                      color: const Color(0xFF111827),
                                     ),
                                   ),
                                   const Gap(2),
@@ -3004,7 +3001,6 @@ class _MobileLeadCardRowState extends State<_MobileLeadCardRow> {
   Widget build(BuildContext context) {
     final r = widget.lead;
     final isSelected = widget.isSelected;
-    final isActiveOrHovered = isSelected || _isHovered;
 
     final Color bgColor = isSelected
         ? const Color(0xFFFFEDE2)
@@ -3043,7 +3039,7 @@ class _MobileLeadCardRowState extends State<_MobileLeadCardRow> {
               highlightColor: _primary.withValues(alpha: 0.04),
               child: CustomPaint(
                 foregroundPainter: _FigmaRightBorderPainter(
-                  color: isActiveOrHovered ? _primary : Colors.transparent,
+                  color: isSelected ? _primary : Colors.transparent,
                   radius: 12.0,
                   strokeWidth: 4.0,
                 ),
@@ -3076,9 +3072,7 @@ class _MobileLeadCardRowState extends State<_MobileLeadCardRow> {
                                       fontWeight: FontWeight.w600,
                                       height: 24 / 16,
                                       letterSpacing: 0,
-                                      color: isActiveOrHovered
-                                          ? const Color(0xFF0F172A)
-                                          : _text,
+                                      color: _text,
                                     ),
                                   ),
                                 ),
