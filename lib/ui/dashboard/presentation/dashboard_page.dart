@@ -2194,6 +2194,32 @@ class _DashboardViewState extends State<_DashboardView> {
         }
 
         if (w >= 740) {
+          if (cards.length == 5) {
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(child: cards[0]),
+                    const Gap(16),
+                    Expanded(child: cards[1]),
+                    const Gap(16),
+                    Expanded(child: cards[2]),
+                  ],
+                ),
+                const Gap(16),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(child: cards[3]),
+                    const Gap(16),
+                    Expanded(child: cards[4]),
+                  ],
+                ),
+              ],
+            );
+          }
           final cardW = ((w - 2 * 16) / 3).floorToDouble() - 1;
           return Wrap(
             spacing: 16,
