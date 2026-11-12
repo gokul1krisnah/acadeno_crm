@@ -1,3 +1,4 @@
+import 'dart:io' as io show Platform;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:gap/gap.dart';
 import 'package:flutter/foundation.dart';
@@ -34,6 +35,16 @@ Future<void> main() async {
   await AppSecurityService.instance.enableScreenshotProtection();
 
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
+  // Set Firebase Auth locale to eliminate "Ignoring header X-Firebase-Locale because its value was null"
+  try {
+    if (!kIsWeb) {
+      final loc = io.Platform.localeName;
+      FirebaseAuth.instance.setLanguageCode(loc.isNotEmpty ? loc : 'en');
+    } else {
+      FirebaseAuth.instance.setLanguageCode('en');
+    }
+  } catch (_) {}
 
   // Enable offline persistence & auto-reconnection for Firestore on mobile
   if (!kIsWeb) {
