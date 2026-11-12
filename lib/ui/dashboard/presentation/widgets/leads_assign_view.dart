@@ -1964,6 +1964,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                   width: isMobileBar ? double.infinity : 97,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
+                      alignment: Alignment.center,
                       backgroundColor: state.selectedLeadIds.isEmpty
                           ? const Color(0xFF1F2937)
                           : const Color(0xFFEF8144),
@@ -1973,10 +1974,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                       disabledBackgroundColor: const Color(0xFF1F2937),
                       disabledForegroundColor: const Color(0xFF64748B),
                       elevation: 0,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 24,
-                        vertical: 8,
-                      ),
+                      padding: EdgeInsets.zero,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
@@ -1987,19 +1985,27 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                             state.isSubmitting
                         ? null
                         : () => _openReviewAssignmentDialog(context, state),
-                    child: FittedBox(
-                      fit: BoxFit.scaleDown,
-                      child: Text(
-                        isMobileBar && state.selectedLeadIds.isNotEmpty
-                            ? 'Assign ${state.selectedLeadIds.length} Selected Leads'
-                            : 'Assign',
-                        textAlign: TextAlign.center,
-                        style: AppTypography.figmaButton(
-                          color: state.selectedLeadIds.isEmpty
-                              ? const Color(0xFF64748B)
-                              : Colors.white,
-                        ),
-                      ),
+                    child: Center(
+                      child: isMobileBar && state.selectedLeadIds.isNotEmpty
+                          ? FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Text(
+                                'Assign ${state.selectedLeadIds.length} Selected Leads',
+                                textAlign: TextAlign.center,
+                                style: AppTypography.figmaButton(
+                                  color: Colors.white,
+                                ),
+                              ),
+                            )
+                          : Text(
+                              'Assign',
+                              textAlign: TextAlign.center,
+                              style: AppTypography.figmaButton(
+                                color: state.selectedLeadIds.isEmpty
+                                    ? const Color(0xFF64748B)
+                                    : Colors.white,
+                              ),
+                            ),
                     ),
                   ),
                 );

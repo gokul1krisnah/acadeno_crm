@@ -933,6 +933,7 @@ class _CampaignsViewState extends State<CampaignsView> {
                   child: ElevatedButton(
                     onPressed: _assignCampaignLeads,
                     style: ElevatedButton.styleFrom(
+                      alignment: Alignment.center,
                       backgroundColor: const Color(0xFFEF8144),
                       foregroundColor: Colors.white,
                       elevation: 0,
@@ -941,10 +942,12 @@ class _CampaignsViewState extends State<CampaignsView> {
                         borderRadius: BorderRadius.circular(9),
                       ),
                     ),
-                    child: Text(
-                      'Assign For Tomorrow',
-                      textAlign: TextAlign.center,
-                      style: AppTypography.figmaButton(color: Colors.white),
+                    child: Center(
+                      child: Text(
+                        'Assign For Tomorrow',
+                        textAlign: TextAlign.center,
+                        style: AppTypography.figmaButton(color: Colors.white),
+                      ),
                     ),
                   ),
                 );

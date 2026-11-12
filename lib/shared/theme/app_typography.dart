@@ -101,5 +101,5 @@ abstract class AppTypography {
     height: 20 / 14,
     letterSpacing: 14 * 0.0117,
     color: color,
-  );
+  ).copyWith(leadingDistribution: TextLeadingDistribution.even);
 }

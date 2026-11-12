@@ -708,6 +708,7 @@ class _DashboardViewState extends State<_DashboardView> {
                   child: OutlinedButton(
                     onPressed: _logout,
                     style: OutlinedButton.styleFrom(
+                      alignment: Alignment.center,
                       foregroundColor: const Color(0xFFDC2626),
                       side: const BorderSide(color: Color(0xFFFCA5A5)),
                       shape: const StadiumBorder(),
@@ -717,11 +718,13 @@ class _DashboardViewState extends State<_DashboardView> {
                       ),
                       visualDensity: VisualDensity.compact,
                     ),
-                    child: Text(
-                      'Logout',
-                      textAlign: TextAlign.center,
-                      style: AppTypography.figmaButton(
-                        color: const Color(0xFFDC2626),
+                    child: Center(
+                      child: Text(
+                        'Logout',
+                        textAlign: TextAlign.center,
+                        style: AppTypography.figmaButton(
+                          color: const Color(0xFFDC2626),
+                        ),
                       ),
                     ),
                   ),
@@ -2375,20 +2378,17 @@ class _OverdueFollowUps extends StatelessWidget {
                         child: OutlinedButton(
                           onPressed: onReassign,
                           style: OutlinedButton.styleFrom(
+                            alignment: Alignment.center,
                             foregroundColor: const Color(0xFF4338CA),
                             side: const BorderSide(
                               color: Color(0xFF4338CA),
                               width: 1,
                             ),
                             shape: const StadiumBorder(),
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 6,
-                            ),
+                            padding: EdgeInsets.zero,
                             visualDensity: VisualDensity.compact,
                           ),
-                          child: FittedBox(
-                            fit: BoxFit.scaleDown,
+                          child: Center(
                             child: Text(
                               'Reassign',
                               textAlign: TextAlign.center,
