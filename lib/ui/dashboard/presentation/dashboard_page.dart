@@ -1744,6 +1744,7 @@ class _DashboardViewState extends State<_DashboardView> {
         sub: '$totalAssigned assigned to team',
         color: const Color(0xFF4338CA),
         valueColor: Colors.white,
+        svgAsset: 'assets/svgs/stat_total_leads.svg',
         icon: Icons.groups_rounded,
         isSolidHero: true,
       ),
@@ -1753,7 +1754,8 @@ class _DashboardViewState extends State<_DashboardView> {
         sub: '$contactedPct% of assigned',
         color: const Color(0xFF3F3FB4),
         valueColor: const Color(0xFF3F3FB4),
-        icon: Icons.phone_outlined,
+        svgAsset: 'assets/svgs/stat_phone.svg',
+        icon: Icons.phone_rounded,
       ),
       _StatCard(
         label: 'Follow-ups Due',
@@ -1761,7 +1763,8 @@ class _DashboardViewState extends State<_DashboardView> {
         sub: 'Across ${activeUsers.length} active members',
         color: const Color(0xFFE96849),
         valueColor: const Color(0xFFE96849),
-        icon: Icons.calendar_today_outlined,
+        svgAsset: 'assets/svgs/stat_calendar_check.svg',
+        icon: Icons.calendar_today_rounded,
       ),
       _StatCard(
         label: 'Overdue / Pending',
@@ -1769,7 +1772,8 @@ class _DashboardViewState extends State<_DashboardView> {
         sub: 'Requires team attention',
         color: const Color(0xFF4C0CBF),
         valueColor: const Color(0xFF4C0CBF),
-        icon: Icons.hourglass_empty_rounded,
+        svgAsset: 'assets/svgs/stat_hourglass.svg',
+        icon: Icons.hourglass_full_rounded,
       ),
       _StatCard(
         label: 'Converted Leads',
@@ -1777,10 +1781,10 @@ class _DashboardViewState extends State<_DashboardView> {
         sub: '$conversionPct% conversion rate',
         color: const Color(0xFF22C55E),
         valueColor: const Color(0xFF22C55E),
+        svgAsset: 'assets/svgs/stat_star.svg',
         icon: Icons.star_rounded,
       ),
     ];
-
     return LayoutBuilder(
       builder: (context, constraints) {
         final w = constraints.maxWidth;
@@ -1844,6 +1848,7 @@ class _StatCard extends StatelessWidget {
   final Color color;
   final Color? valueColor;
   final IconData? icon;
+  final String? svgAsset;
   final bool isSolidHero;
 
   const _StatCard({
@@ -1853,6 +1858,7 @@ class _StatCard extends StatelessWidget {
     required this.color,
     this.valueColor,
     this.icon,
+    this.svgAsset,
     this.isSolidHero = false,
   });
 
@@ -1907,7 +1913,17 @@ class _StatCard extends StatelessWidget {
                           ),
                         ),
                       ),
-                      if (icon != null)
+                      if (svgAsset != null)
+                        SvgPicture.asset(
+                          svgAsset!,
+                          width: isMobile ? 15 : 18,
+                          height: isMobile ? 15 : 18,
+                          colorFilter: const ColorFilter.mode(
+                            Colors.white,
+                            BlendMode.srcIn,
+                          ),
+                        )
+                      else if (icon != null)
                         Icon(icon, color: Colors.white, size: isMobile ? 14 : 16),
                     ],
                   ),
@@ -1977,8 +1993,14 @@ class _StatCard extends StatelessWidget {
                   ),
                 ),
               ),
-              if (icon != null)
-                Icon(icon, color: const Color(0xFF718096), size: isMobile ? 14 : 16),
+              if (svgAsset != null)
+                SvgPicture.asset(
+                  svgAsset!,
+                  width: isMobile ? 15 : 18,
+                  height: isMobile ? 15 : 18,
+                )
+              else if (icon != null)
+                Icon(icon, color: color, size: isMobile ? 14 : 16),
             ],
           ),
           const Gap(8),

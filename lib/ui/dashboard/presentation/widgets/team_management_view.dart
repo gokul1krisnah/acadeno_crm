@@ -1,3 +1,4 @@
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -551,10 +552,14 @@ class _TeamManagementViewState extends State<TeamManagementView> {
                         height: 20 / 14,
                       ),
                     ),
-                    const Icon(
-                      Icons.groups_rounded,
-                      size: 18,
-                      color: Colors.white,
+                    SvgPicture.asset(
+                      'assets/svgs/stat_total_leads.svg',
+                      width: 18,
+                      height: 18,
+                      colorFilter: const ColorFilter.mode(
+                        Colors.white,
+                        BlendMode.srcIn,
+                      ),
                     ),
                   ],
                 ),
@@ -625,10 +630,10 @@ class _TeamManagementViewState extends State<TeamManagementView> {
                   height: 20 / 14,
                 ),
               ),
-              const Icon(
-                CupertinoIcons.phone_fill,
-                size: 16,
-                color: Color(0xFF3F3FB4),
+              SvgPicture.asset(
+                'assets/svgs/stat_phone.svg',
+                width: 18,
+                height: 18,
               ),
             ],
           ),
@@ -708,10 +713,10 @@ class _TeamManagementViewState extends State<TeamManagementView> {
                   height: 20 / 14,
                 ),
               ),
-              const Icon(
-                CupertinoIcons.hourglass,
-                size: 16,
-                color: Color(0xFF4C0CBF),
+              SvgPicture.asset(
+                'assets/svgs/stat_hourglass.svg',
+                width: 18,
+                height: 18,
               ),
             ],
           ),
@@ -779,10 +784,10 @@ class _TeamManagementViewState extends State<TeamManagementView> {
                   height: 20 / 14,
                 ),
               ),
-              const Icon(
-                CupertinoIcons.star_fill,
-                size: 16,
-                color: Color(0xFF22C55E),
+              SvgPicture.asset(
+                'assets/svgs/stat_star.svg',
+                width: 18,
+                height: 18,
               ),
             ],
           ),
