@@ -1100,11 +1100,9 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
           (acc, v) => acc + v.conversions,
         );
 
-        return ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 1000),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
               LayoutBuilder(
                 builder: (context, c) {
                   final isMobile =
@@ -1180,7 +1178,7 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
                     width: double.infinity,
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Expanded(child: titleCol),
                         const Gap(24),
@@ -1626,8 +1624,7 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
                   );
                 }),
             ],
-          ),
-        );
+          );
       },
     );
   }
