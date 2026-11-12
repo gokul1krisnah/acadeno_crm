@@ -14,6 +14,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../application/dashboard_cubit.dart';
 import '../application/dashboard_state.dart';
@@ -366,8 +367,8 @@ class _DashboardViewState extends State<_DashboardView> {
                           child: SingleChildScrollView(
                             physics: const ClampingScrollPhysics(),
                             padding: EdgeInsets.symmetric(
-                              horizontal: pad.clamp(16.0, 24.0),
-                              vertical: pad.clamp(16.0, 20.0),
+                              horizontal: pad.clamp(16.0, 32.0),
+                              vertical: pad.clamp(16.0, 32.0),
                             ),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -431,7 +432,7 @@ class _DashboardViewState extends State<_DashboardView> {
                                                 isMobile: isMobile,
                                                 showMenuButton: !showSidebar,
                                               ),
-                                              const Gap(20),
+                                              const Gap(32),
                                               if (_searchQuery
                                                   .trim()
                                                   .isNotEmpty) ...[
@@ -449,10 +450,10 @@ class _DashboardViewState extends State<_DashboardView> {
                                                         .setSearchQuery('');
                                                   },
                                                 ),
-                                                const Gap(20),
+                                                const Gap(24),
                                               ],
                                               _stats(rawLeads, activeUsers),
-                                              const Gap(24),
+                                              const Gap(32),
                                               if (wide)
                                                 Row(
                                                   crossAxisAlignment:
@@ -467,7 +468,7 @@ class _DashboardViewState extends State<_DashboardView> {
                                                                 activeUsers,
                                                             leads: rawLeads,
                                                           ),
-                                                          const Gap(20),
+                                                          const Gap(24),
                                                           _OverdueFollowUps(
                                                             leads: rawLeads,
                                                             onReassign: () =>
@@ -478,7 +479,7 @@ class _DashboardViewState extends State<_DashboardView> {
                                                         ],
                                                       ),
                                                     ),
-                                                    const Gap(20),
+                                                    const Gap(24),
                                                     Expanded(
                                                       flex: 42,
                                                       child: Column(
@@ -486,7 +487,7 @@ class _DashboardViewState extends State<_DashboardView> {
                                                           _Conversions(
                                                             leads: rawLeads,
                                                           ),
-                                                          const Gap(20),
+                                                          const Gap(24),
                                                           _CollegeVisits(
                                                             onPlanVisit: () =>
                                                                 cubit.selectNav(
@@ -840,13 +841,14 @@ class _DashboardViewState extends State<_DashboardView> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       'Dashboard',
-                      style: TextStyle(
+                      style: GoogleFonts.inter(
                         fontSize: 24,
                         fontWeight: FontWeight.w700,
-                        color: _text,
-                        letterSpacing: -0.4,
+                        color: const Color(0xFF2D312E),
+                        letterSpacing: -0.4102,
+                        height: 36 / 30,
                       ),
                     ),
                     const Gap(2),
@@ -854,11 +856,13 @@ class _DashboardViewState extends State<_DashboardView> {
                       onTap: _pickDashboardDate,
                       borderRadius: BorderRadius.circular(6),
                       child: Text(
-                        _today,
-                        style: const TextStyle(
-                          color: _muted,
-                          fontSize: 12.5,
-                          fontWeight: FontWeight.w500,
+                        '$_today ·',
+                        style: GoogleFonts.inter(
+                          color: const Color(0xFF718096),
+                          fontSize: 13,
+                          fontWeight: FontWeight.w400,
+                          letterSpacing: -0.3418,
+                          height: 20 / 14,
                         ),
                       ),
                     ),
@@ -869,25 +873,38 @@ class _DashboardViewState extends State<_DashboardView> {
           ),
           const Gap(14),
           _buildFigmaSearchBar(width: double.infinity),
-          const Gap(10),
+          const Gap(12),
           SizedBox(
-            height: 50,
-            child: ElevatedButton.icon(
+            height: 56,
+            child: ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: _orangeAccent,
+                backgroundColor: const Color(0xFFEF8144),
                 foregroundColor: Colors.white,
                 elevation: 0,
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 11),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              icon: const Icon(Icons.add, size: 18),
-              label: Text(
-                "Assign Today's Leads",
-                textAlign: TextAlign.center,
-                style: AppTypography.figmaButton(color: Colors.white),
-              ),
               onPressed: () => context.read<DashboardCubit>().selectNav(1),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.add, size: 14, color: Colors.white),
+                  const Gap(8),
+                  Text(
+                    "Assign Today's Leads",
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.inter(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      height: 20 / 14,
+                      color: Colors.white,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ],
@@ -908,25 +925,28 @@ class _DashboardViewState extends State<_DashboardView> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
+              Text(
                 'Dashboard',
-                style: TextStyle(
-                  fontSize: 26,
+                style: GoogleFonts.inter(
+                  fontSize: 30,
                   fontWeight: FontWeight.w700,
-                  color: _text,
-                  letterSpacing: -0.4,
+                  color: const Color(0xFF2D312E),
+                  letterSpacing: -0.4102,
+                  height: 36 / 30,
                 ),
               ),
-              const Gap(2),
+              const Gap(4),
               InkWell(
                 onTap: _pickDashboardDate,
                 borderRadius: BorderRadius.circular(6),
                 child: Text(
-                  _today,
-                  style: const TextStyle(
-                    color: _muted,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
+                  '$_today ·',
+                  style: GoogleFonts.inter(
+                    color: const Color(0xFF718096),
+                    fontSize: 14,
+                    fontWeight: FontWeight.w400,
+                    letterSpacing: -0.3418,
+                    height: 20 / 14,
                   ),
                 ),
               ),
@@ -935,29 +955,41 @@ class _DashboardViewState extends State<_DashboardView> {
         ),
         const Gap(16),
         ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 460),
-          child: _buildFigmaSearchBar(width: 460),
+          constraints: const BoxConstraints(maxWidth: 400),
+          child: _buildFigmaSearchBar(width: 400),
         ),
-        const Gap(14),
+        const Gap(16),
         SizedBox(
-          height: 50,
-          child: ElevatedButton.icon(
+          height: 56,
+          child: ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: _orangeAccent,
+              backgroundColor: const Color(0xFFEF8144),
               foregroundColor: Colors.white,
               elevation: 0,
-              padding: const EdgeInsets.symmetric(horizontal: 22),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 11),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
             ),
-            icon: const Icon(Icons.add, size: 18),
-            label: Text(
-              "Assign Today's Leads",
-              textAlign: TextAlign.center,
-              style: AppTypography.figmaButton(color: Colors.white),
-            ),
             onPressed: () => context.read<DashboardCubit>().selectNav(1),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.add, size: 14, color: Colors.white),
+                const Gap(8),
+                Text(
+                  "Assign Today's Leads",
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.inter(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    height: 20 / 14,
+                    color: Colors.white,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ],
@@ -967,7 +999,7 @@ class _DashboardViewState extends State<_DashboardView> {
   Widget _buildFigmaSearchBar({double? width}) {
     return Container(
       width: width,
-      height: 50,
+      height: 55,
       decoration: BoxDecoration(
         color: const Color(0xFFFFFFFF),
         borderRadius: BorderRadius.circular(12),
@@ -983,10 +1015,10 @@ class _DashboardViewState extends State<_DashboardView> {
           });
           context.read<AdminLeadsCubit>().setSearchQuery(val.trim());
         },
-        style: const TextStyle(
-          fontSize: 14.5,
-          color: _text,
-          fontWeight: FontWeight.w500,
+        style: GoogleFonts.inter(
+          fontSize: 14,
+          color: const Color(0xFF111827),
+          fontWeight: FontWeight.w400,
         ),
         decoration: InputDecoration(
           isDense: true,
@@ -995,27 +1027,27 @@ class _DashboardViewState extends State<_DashboardView> {
           enabledBorder: InputBorder.none,
           focusedBorder: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(
-            horizontal: 14,
-            vertical: 12,
+            horizontal: 16,
+            vertical: 14,
           ),
           prefixIcon: const Padding(
-            padding: EdgeInsets.only(left: 14, right: 10),
+            padding: EdgeInsets.only(left: 16, right: 12),
             child: Icon(
               Icons.search_rounded,
-              size: 20,
-              color: Color(0xFF94A3B8),
+              size: 18,
+              color: Color(0xFF9CA3AF),
             ),
           ),
           prefixIconConstraints: const BoxConstraints(
-            minWidth: 44,
-            minHeight: 20,
+            minWidth: 46,
+            minHeight: 18,
           ),
           suffixIcon: _searchQuery.isNotEmpty
               ? IconButton(
                   icon: const Icon(
                     Icons.clear_rounded,
                     size: 18,
-                    color: _muted,
+                    color: Color(0xFF9CA3AF),
                   ),
                   onPressed: () {
                     setState(() {
@@ -1027,9 +1059,9 @@ class _DashboardViewState extends State<_DashboardView> {
                 )
               : null,
           hintText: 'Search',
-          hintStyle: const TextStyle(
-            fontSize: 14.5,
-            color: Color(0xFF94A3B8),
+          hintStyle: GoogleFonts.inter(
+            fontSize: 14,
+            color: const Color(0xFF9CA3AF),
             fontWeight: FontWeight.w400,
           ),
         ),
@@ -1608,7 +1640,8 @@ class _DashboardViewState extends State<_DashboardView> {
         label: 'Total Leads',
         value: '$totalLeads',
         sub: '$totalAssigned assigned to team',
-        color: _primary,
+        color: const Color(0xFF4338CA),
+        valueColor: Colors.white,
         icon: Icons.groups_rounded,
         isSolidHero: true,
       ),
@@ -1616,28 +1649,32 @@ class _DashboardViewState extends State<_DashboardView> {
         label: 'Calls / Contacted',
         value: '$contactedCount/$totalAssigned',
         sub: '$contactedPct% of assigned',
-        color: _primary,
+        color: const Color(0xFF3F3FB4),
+        valueColor: const Color(0xFF3F3FB4),
         icon: Icons.phone_outlined,
       ),
       _StatCard(
         label: 'Follow-ups Due',
         value: '$followUpsCount',
         sub: 'Across ${activeUsers.length} active members',
-        color: _orangeAccent,
+        color: const Color(0xFFE96849),
+        valueColor: const Color(0xFFE96849),
         icon: Icons.calendar_today_outlined,
       ),
       _StatCard(
         label: 'Overdue / Pending',
         value: '$overdueCount',
         sub: 'Requires team attention',
-        color: const Color(0xFF6B21A8),
+        color: const Color(0xFF4C0CBF),
+        valueColor: const Color(0xFF4C0CBF),
         icon: Icons.hourglass_empty_rounded,
       ),
       _StatCard(
         label: 'Converted Leads',
         value: '$convertedCount',
         sub: '$conversionPct% conversion rate',
-        color: const Color(0xFF16A34A),
+        color: const Color(0xFF22C55E),
+        valueColor: const Color(0xFF22C55E),
         icon: Icons.star_rounded,
       ),
     ];
@@ -1645,23 +1682,23 @@ class _DashboardViewState extends State<_DashboardView> {
     return LayoutBuilder(
       builder: (context, constraints) {
         final w = constraints.maxWidth;
-        if (w >= 900) {
+        if (w >= 1000) {
           return Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               for (var i = 0; i < cards.length; i++) ...[
-                if (i > 0) const Gap(12),
+                if (i > 0) const Gap(24),
                 Expanded(child: cards[i]),
               ],
             ],
           );
         }
 
-        if (w >= 560) {
+        if (w >= 640) {
           final cardW = (w - 24) / 3;
           return Wrap(
-            spacing: 12,
-            runSpacing: 12,
+            spacing: 16,
+            runSpacing: 16,
             children: cards
                 .map((c) => SizedBox(width: cardW, child: c))
                 .toList(),
@@ -1688,6 +1725,7 @@ class _DashboardViewState extends State<_DashboardView> {
 class _StatCard extends StatelessWidget {
   final String label, value, sub;
   final Color color;
+  final Color? valueColor;
   final IconData? icon;
   final bool isSolidHero;
 
@@ -1696,6 +1734,7 @@ class _StatCard extends StatelessWidget {
     required this.value,
     required this.sub,
     required this.color,
+    this.valueColor,
     this.icon,
     this.isSolidHero = false,
   });
@@ -1704,62 +1743,85 @@ class _StatCard extends StatelessWidget {
   Widget build(BuildContext context) {
     if (isSolidHero) {
       return Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+        height: 140,
+        clipBehavior: Clip.antiAlias,
         decoration: BoxDecoration(
-          color: _primary,
-          borderRadius: BorderRadius.circular(14),
-          boxShadow: const [
-            BoxShadow(
-              color: Color(0x1F3F37C9),
-              blurRadius: 10,
-              offset: Offset(0, 4),
-            ),
-          ],
+          color: color,
+          borderRadius: BorderRadius.circular(16),
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: Stack(
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Text(
-                    label,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 12.5,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-                if (icon != null) Icon(icon, color: Colors.white, size: 18),
-              ],
-            ),
-            const Gap(10),
-            FittedBox(
-              fit: BoxFit.scaleDown,
-              alignment: Alignment.centerLeft,
-              child: Text(
-                value,
-                style: const TextStyle(
-                  fontSize: 26,
-                  fontWeight: FontWeight.w800,
-                  color: Colors.white,
-                  letterSpacing: -0.5,
+            Positioned(
+              right: -48,
+              top: -48,
+              child: Container(
+                width: 96,
+                height: 96,
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Color(0x0DFFFFFF),
                 ),
               ),
             ),
-            const Gap(6),
-            Text(
-              sub,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                color: Color(0xFFD5D3FF),
-                fontSize: 11.5,
-                fontWeight: FontWeight.w500,
+            Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          label,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.inter(
+                            color: const Color(0xE6FFFFFF),
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                            letterSpacing: -0.5195,
+                            height: 20 / 14,
+                          ),
+                        ),
+                      ),
+                      if (icon != null)
+                        Icon(icon, color: Colors.white, size: 16),
+                    ],
+                  ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          value,
+                          style: GoogleFonts.inter(
+                            fontSize: 36,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                            height: 40 / 36,
+                          ),
+                        ),
+                      ),
+                      const Gap(4),
+                      Text(
+                        sub,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.inter(
+                          color: const Color(0xCCFFFFFF),
+                          fontSize: 10,
+                          fontWeight: FontWeight.w400,
+                          letterSpacing: -0.2344,
+                          height: 15 / 10,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
           ],
@@ -1768,14 +1830,16 @@ class _StatCard extends StatelessWidget {
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+      height: 140,
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: _border),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE2E8E5), width: 1),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -1785,40 +1849,49 @@ class _StatCard extends StatelessWidget {
                   label,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: Color(0xFF64748B),
-                    fontSize: 12.5,
-                    fontWeight: FontWeight.w600,
+                  style: GoogleFonts.inter(
+                    color: const Color(0xFF718096),
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    letterSpacing: -0.5,
+                    height: 20 / 14,
                   ),
                 ),
               ),
-              if (icon != null) Icon(icon, color: color, size: 18),
+              if (icon != null)
+                Icon(icon, color: const Color(0xFF718096), size: 16),
             ],
           ),
-          const Gap(10),
-          FittedBox(
-            fit: BoxFit.scaleDown,
-            alignment: Alignment.centerLeft,
-            child: Text(
-              value,
-              style: TextStyle(
-                fontSize: 26,
-                fontWeight: FontWeight.w800,
-                color: color,
-                letterSpacing: -0.5,
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  value,
+                  style: GoogleFonts.inter(
+                    fontSize: 36,
+                    fontWeight: FontWeight.w700,
+                    color: valueColor ?? color,
+                    height: 40 / 36,
+                  ),
+                ),
               ),
-            ),
-          ),
-          const Gap(6),
-          Text(
-            sub,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              color: Color(0xFF94A3B8),
-              fontSize: 11.5,
-              fontWeight: FontWeight.w500,
-            ),
+              const Gap(4),
+              Text(
+                sub,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: GoogleFonts.inter(
+                  color: const Color(0xFFA0AEC0),
+                  fontSize: 10,
+                  fontWeight: FontWeight.w400,
+                  letterSpacing: -0.3,
+                  height: 15 / 10,
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -1881,167 +1954,229 @@ class _TeamToday extends StatelessWidget {
     }).toList();
 
     return Container(
-      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: _border),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFF3F4F6), width: 1),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x0D000000),
+            blurRadius: 2,
+            offset: Offset(0, 1),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              const Text(
-                'Team Today',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                  color: _text,
-                ),
+          Container(
+            padding: const EdgeInsets.all(24),
+            decoration: const BoxDecoration(
+              border: Border(
+                bottom: BorderSide(color: Color(0xFFF9FAFB), width: 1),
               ),
-              const Gap(8),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 7,
-                  vertical: 2.5,
-                ),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF0FDF4),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Text(
-                  '• LIVE',
-                  style: TextStyle(
-                    color: Color(0xFF16A34A),
-                    fontSize: 10.5,
-                    fontWeight: FontWeight.w800,
+            ),
+            child: Row(
+              children: [
+                Text(
+                  'Team Today',
+                  style: GoogleFonts.inter(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: const Color(0xFF111827),
+                    letterSpacing: 0.0527,
+                    height: 28 / 18,
                   ),
                 ),
-              ),
-            ],
-          ),
-          const Gap(18),
-          if (rows.isEmpty)
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 24),
-              child: Center(
-                child: Text(
-                  'No active team members registered yet.',
-                  style: TextStyle(color: _muted, fontSize: 13),
-                ),
-              ),
-            )
-          else
-            for (var i = 0; i < rows.length; i++) ...[
-              if (i > 0) const Gap(20),
-              Builder(
-                builder: (_) {
-                  final r = rows[i];
-                  final progress = r.assigned > 0
-                      ? (r.called / r.assigned).clamp(0.0, 1.0)
-                      : 0.0;
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                const Gap(12),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 2,
+                  ),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFDCFCE7),
+                    borderRadius: BorderRadius.circular(9999),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            r.name,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.w700,
-                              fontSize: 14,
-                              color: _text,
-                            ),
-                          ),
-                          Text(
-                            '${r.called} / ${r.assigned} leads',
-                            style: const TextStyle(
-                              fontSize: 12.5,
-                              fontWeight: FontWeight.w700,
-                              color: _primary,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const Gap(8),
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(4),
-                        child: LinearProgressIndicator(
-                          value: progress,
-                          minHeight: 5,
-                          color: _primary,
-                          backgroundColor: const Color(0xFFF1F5F9),
+                      Container(
+                        width: 6,
+                        height: 6,
+                        decoration: const BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Color(0xFF22C55E),
                         ),
                       ),
-                      const Gap(10),
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 6,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 3,
-                            ),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFEFF6FF),
-                              borderRadius: BorderRadius.circular(6),
-                            ),
-                            child: Text(
-                              'INTERESTED: ${r.interested}',
-                              style: const TextStyle(
-                                color: Color(0xFF2563EB),
-                                fontSize: 11,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                          ),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 3,
-                            ),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFF0FDF4),
-                              borderRadius: BorderRadius.circular(6),
-                            ),
-                            child: Text(
-                              'CONVERTED: ${r.converted}',
-                              style: const TextStyle(
-                                color: Color(0xFF16A34A),
-                                fontSize: 11,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                          ),
-                          if (r.overdue > 0)
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 3,
-                              ),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFFFF7ED),
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                              child: Text(
-                                'OVERDUE: ${r.overdue}',
-                                style: const TextStyle(
-                                  color: Color(0xFFEA580C),
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
-                            ),
-                        ],
+                      const Gap(6),
+                      Text(
+                        'LIVE',
+                        style: GoogleFonts.inter(
+                          color: const Color(0xFF15803D),
+                          fontSize: 10,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 0.3027,
+                          height: 15 / 10,
+                        ),
                       ),
                     ],
-                  );
-                },
-              ),
-            ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(24),
+            child: rows.isEmpty
+                ? Center(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 24),
+                      child: Text(
+                        'No active team members registered yet.',
+                        style: GoogleFonts.inter(
+                          color: _muted,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ),
+                  )
+                : Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      for (var i = 0; i < rows.length; i++) ...[
+                        if (i > 0) const Gap(32),
+                        Builder(
+                          builder: (_) {
+                            final r = rows[i];
+                            final progress = r.assigned > 0
+                                ? (r.called / r.assigned).clamp(0.0, 1.0)
+                                : 0.0;
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      r.name,
+                                      style: GoogleFonts.inter(
+                                        fontWeight: FontWeight.w700,
+                                        fontSize: 16,
+                                        color: const Color(0xFF111827),
+                                        letterSpacing: 0.0156,
+                                        height: 24 / 16,
+                                      ),
+                                    ),
+                                    Text(
+                                      '${r.called} / ${r.assigned} leads',
+                                      style: GoogleFonts.inter(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w700,
+                                        color: const Color(0xFF3F3FB4),
+                                        letterSpacing: -0.0957,
+                                        height: 20 / 14,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const Gap(8),
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(9999),
+                                  child: LinearProgressIndicator(
+                                    value: progress,
+                                    minHeight: 6,
+                                    color: const Color(0xFF3F3FB4),
+                                    backgroundColor: const Color(0xFFF3F4F6),
+                                  ),
+                                ),
+                                const Gap(8),
+                                Wrap(
+                                  spacing: 8,
+                                  runSpacing: 6,
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 12,
+                                        vertical: 4,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFEFF6FF),
+                                        borderRadius: BorderRadius.circular(8),
+                                        border: Border.all(
+                                          color: const Color(0xFFDBEAFE),
+                                          width: 1,
+                                        ),
+                                      ),
+                                      child: Text(
+                                        'INTERESTED: ${r.interested}',
+                                        style: GoogleFonts.inter(
+                                          color: const Color(0xFF2563EB),
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w700,
+                                          height: 16.5 / 11,
+                                        ),
+                                      ),
+                                    ),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 12,
+                                        vertical: 4,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFF0FDF4),
+                                        borderRadius: BorderRadius.circular(8),
+                                        border: Border.all(
+                                          color: const Color(0xFFDCFCE7),
+                                          width: 1,
+                                        ),
+                                      ),
+                                      child: Text(
+                                        'CONVERTED: ${r.converted}',
+                                        style: GoogleFonts.inter(
+                                          color: const Color(0xFF16A34A),
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w700,
+                                          height: 16.5 / 11,
+                                        ),
+                                      ),
+                                    ),
+                                    if (r.overdue > 0)
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 12,
+                                          vertical: 4,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFFFFF7ED),
+                                          borderRadius:
+                                              BorderRadius.circular(8),
+                                          border: Border.all(
+                                            color: const Color(0xFFFFEDD5),
+                                            width: 1,
+                                          ),
+                                        ),
+                                        child: Text(
+                                          'OVERDUE: ${r.overdue}',
+                                          style: GoogleFonts.inter(
+                                            color: const Color(0xFFEA580C),
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.w700,
+                                            height: 16.5 / 11,
+                                          ),
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                              ],
+                            );
+                          },
+                        ),
+                      ],
+                    ],
+                  ),
+          ),
         ],
       ),
     );
@@ -2112,111 +2247,161 @@ class _Conversions extends StatelessWidget {
         : const [];
 
     return Container(
-      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: _border),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFF3F4F6), width: 1),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x0D000000),
+            blurRadius: 1,
+            offset: Offset(0, 1),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                'Conversions by source',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                  color: _text,
-                ),
+          Container(
+            padding: const EdgeInsets.all(24),
+            decoration: const BoxDecoration(
+              border: Border(
+                bottom: BorderSide(color: Color(0xFFF9FAFB), width: 1),
               ),
-              Text(
-                '${leads.length} leads',
-                style: const TextStyle(
-                  color: _muted,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
-          ),
-          const Gap(18),
-          if (displaySources.isEmpty)
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 24),
-              child: Center(
-                child: Text(
-                  'No source conversion data recorded yet.',
-                  style: TextStyle(
-                    color: _muted,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Conversions by source',
+                  style: GoogleFonts.inter(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: const Color(0xFF111827),
+                    letterSpacing: 0.0527,
+                    height: 28 / 18,
                   ),
                 ),
-              ),
-            )
-          else
-            for (final r in displaySources.take(6))
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 6),
-                child: Row(
-                  children: [
-                    SizedBox(
-                      width: 120,
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF9FAFB),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    '${leads.length} leads',
+                    style: GoogleFonts.inter(
+                      color: const Color(0xFF6B7280),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.0117,
+                      height: 16 / 12,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(24),
+            child: displaySources.isEmpty
+                ? Center(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 24),
                       child: Text(
-                        r.$1,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          fontSize: 12.5,
-                          color: Color(0xFF475569),
+                        'No source conversion data recorded yet.',
+                        style: GoogleFonts.inter(
+                          color: _muted,
+                          fontSize: 13,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
                     ),
-                    const Gap(8),
-                    Expanded(
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(4),
-                        child: LinearProgressIndicator(
-                          value: r.$3 > 0 ? (r.$2 / r.$3).clamp(0.0, 1.0) : 0.0,
-                          minHeight: 7,
-                          color: r.$2 > 0
-                              ? const Color(0xFF16A34A)
-                              : (r.$1.toLowerCase().contains('direct')
-                                    ? _orangeAccent
-                                    : _primary),
-                          backgroundColor: const Color(0xFFF1F5F9),
+                  )
+                : Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      for (var i = 0; i < displaySources.take(6).length; i++) ...[
+                        if (i > 0) const Gap(20),
+                        Builder(
+                          builder: (_) {
+                            final r = displaySources[i];
+                            return Row(
+                              children: [
+                                SizedBox(
+                                  width: 128,
+                                  child: Text(
+                                    r.$1,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: GoogleFonts.inter(
+                                      fontSize: 12,
+                                      color: const Color(0xFF6B7280),
+                                      fontWeight: FontWeight.w500,
+                                      height: 16 / 12,
+                                    ),
+                                  ),
+                                ),
+                                const Gap(16),
+                                Expanded(
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(9999),
+                                    child: LinearProgressIndicator(
+                                      value: r.$3 > 0
+                                          ? (r.$2 / r.$3).clamp(0.0, 1.0)
+                                          : 0.0,
+                                      minHeight: 12,
+                                      color: r.$2 > 0
+                                          ? const Color(0xFFFB923C)
+                                          : const Color(0xFF3F3FB4),
+                                      backgroundColor: const Color(0xFFF9FAFB),
+                                    ),
+                                  ),
+                                ),
+                                const Gap(16),
+                                SizedBox(
+                                  width: 52,
+                                  child: RichText(
+                                    textAlign: TextAlign.right,
+                                    text: TextSpan(
+                                      children: [
+                                        TextSpan(
+                                          text: '${r.$2}',
+                                          style: GoogleFonts.inter(
+                                            fontSize: 20,
+                                            fontWeight: FontWeight.w700,
+                                            color: const Color(0xFF111827),
+                                            height: 16 / 20,
+                                          ),
+                                        ),
+                                        TextSpan(
+                                          text: ' ',
+                                          style: GoogleFonts.inter(fontSize: 12),
+                                        ),
+                                        TextSpan(
+                                          text: '/ ${r.$3}',
+                                          style: GoogleFonts.inter(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w400,
+                                            color: const Color(0xFF9FA0A1),
+                                            height: 16 / 12,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            );
+                          },
                         ),
-                      ),
-                    ),
-                    const Gap(10),
-                    Text(
-                      '${r.$3 > 0 ? ((r.$2 / r.$3) * 100).round() : 0}%',
-                      style: TextStyle(
-                        fontSize: 11.5,
-                        fontWeight: FontWeight.w700,
-                        color: r.$2 > 0 ? const Color(0xFF16A34A) : _muted,
-                      ),
-                    ),
-                    const Gap(8),
-                    SizedBox(
-                      width: 48,
-                      child: Text(
-                        '${r.$2} / ${r.$3}',
-                        textAlign: TextAlign.right,
-                        style: const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w700,
-                          color: _text,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+                      ],
+                    ],
+                  ),
+          ),
         ],
       ),
     );
@@ -2247,11 +2432,18 @@ class _OverdueFollowUps extends StatelessWidget {
     }).toList();
 
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: _border),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFF3F4F6), width: 1),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x0D000000),
+            blurRadius: 1,
+            offset: Offset(0, 1),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -2259,39 +2451,43 @@ class _OverdueFollowUps extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
+              Text(
                 'Overdue Follow ups',
-                style: TextStyle(
-                  fontSize: 16,
+                style: GoogleFonts.inter(
+                  fontSize: 18,
                   fontWeight: FontWeight.w700,
-                  color: _text,
+                  color: const Color(0xFF1A1A1A),
+                  letterSpacing: -0.2813,
+                  height: 28 / 18,
                 ),
               ),
               InkWell(
                 onTap: onReassign,
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(4),
                 child: Container(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
+                    horizontal: 8,
+                    vertical: 4,
                   ),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFEEF2FF),
-                    borderRadius: BorderRadius.circular(8),
+                    color: const Color(0x333F3FB4),
+                    borderRadius: BorderRadius.circular(4),
                   ),
-                  child: const Text(
+                  child: Text(
                     'Manage in Leads',
-                    style: TextStyle(
-                      color: _primary,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
+                    style: GoogleFonts.inter(
+                      color: const Color(0xFF5C59B6),
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: 0.041,
+                      height: 20 / 14,
                     ),
                   ),
                 ),
               ),
             ],
           ),
-          const Gap(16),
+          const Gap(20),
           if (overdue.isEmpty)
             Container(
               padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 14),
@@ -2300,19 +2496,19 @@ class _OverdueFollowUps extends StatelessWidget {
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(color: const Color(0xFFDCFCE7)),
               ),
-              child: const Row(
+              child: Row(
                 children: [
-                  Icon(
+                  const Icon(
                     Icons.check_circle_rounded,
                     color: Color(0xFF15803D),
                     size: 20,
                   ),
-                  Gap(10),
+                  const Gap(10),
                   Expanded(
                     child: Text(
                       'All follow-ups are up to date! No overdue calls.',
-                      style: TextStyle(
-                        color: Color(0xFF15803D),
+                      style: GoogleFonts.inter(
+                        color: const Color(0xFF15803D),
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
                       ),
@@ -2323,7 +2519,7 @@ class _OverdueFollowUps extends StatelessWidget {
             )
           else
             for (var i = 0; i < overdue.take(4).length; i++) ...[
-              if (i > 0) const Gap(14),
+              if (i > 0) const Gap(20),
               Builder(
                 builder: (_) {
                   final l = overdue[i];
@@ -2341,60 +2537,56 @@ class _OverdueFollowUps extends StatelessWidget {
                           children: [
                             Text(
                               name,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w700,
-                                fontSize: 14,
-                                color: _text,
+                              style: GoogleFonts.inter(
+                                fontWeight: FontWeight.w600,
+                                fontSize: 15,
+                                color: const Color(0xFF1A1A1A),
+                                letterSpacing: 0.2197,
+                                height: 22.5 / 15,
                               ),
                             ),
                             const Gap(2),
                             Text(
-                              'Assigned: $assigned · $college',
-                              maxLines: 1,
+                              course.isNotEmpty
+                                  ? 'Assigned: $assigned · $college\n$course'
+                                  : 'Assigned: $assigned · $college',
+                              maxLines: 2,
                               overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                color: _muted,
-                                fontSize: 12,
+                              style: GoogleFonts.inter(
+                                color: const Color(0xFF6B7280),
+                                fontSize: 13,
+                                fontWeight: FontWeight.w400,
+                                height: 19.5 / 13,
                               ),
                             ),
-                            if (course.isNotEmpty) ...[
-                              const Gap(2),
-                              Text(
-                                course,
-                                style: const TextStyle(
-                                  color: Color(0xFF94A3B8),
-                                  fontSize: 11.5,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ],
                           ],
                         ),
                       ),
-                      const Gap(10),
-                      SizedBox(
-                        width: 102,
-                        height: 34,
-                        child: OutlinedButton(
-                          onPressed: onReassign,
-                          style: OutlinedButton.styleFrom(
-                            alignment: Alignment.center,
-                            foregroundColor: const Color(0xFF4338CA),
-                            side: const BorderSide(
-                              color: Color(0xFF4338CA),
+                      const Gap(12),
+                      InkWell(
+                        onTap: onReassign,
+                        borderRadius: BorderRadius.circular(9999),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(9999),
+                            border: Border.all(
+                              color: const Color(0xFF5C59B6),
                               width: 1,
                             ),
-                            shape: const StadiumBorder(),
-                            padding: EdgeInsets.zero,
-                            visualDensity: VisualDensity.compact,
                           ),
-                          child: Center(
-                            child: Text(
-                              'Reassign',
-                              textAlign: TextAlign.center,
-                              style: AppTypography.figmaButton(
-                                color: const Color(0xFF4338CA),
-                              ),
+                          child: Text(
+                            'Re Assign',
+                            textAlign: TextAlign.center,
+                            style: GoogleFonts.inter(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                              color: const Color(0xFF5C59B6),
+                              letterSpacing: 0.1914,
+                              height: 20 / 14,
                             ),
                           ),
                         ),
@@ -2432,11 +2624,18 @@ class _CollegeVisits extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: _border),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFF3F4F6), width: 1),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x0D000000),
+            blurRadius: 1,
+            offset: Offset(0, 1),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -2444,31 +2643,38 @@ class _CollegeVisits extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
+              Text(
                 'College visits this week',
-                style: TextStyle(
-                  fontSize: 16,
+                style: GoogleFonts.inter(
+                  fontSize: 18,
                   fontWeight: FontWeight.w700,
-                  color: _text,
+                  color: const Color(0xFF1A1A1A),
+                  letterSpacing: -0.2813,
+                  height: 28 / 18,
                 ),
               ),
               InkWell(
                 onTap: onPlanVisit,
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(4),
                 child: Container(
-                  alignment: Alignment.center,
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
+                    horizontal: 8,
+                    vertical: 4,
                   ),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFEEF2FF),
-                    borderRadius: BorderRadius.circular(8),
+                    color: const Color(0x333F3FB4),
+                    borderRadius: BorderRadius.circular(4),
                   ),
                   child: Text(
                     'Plan Visit',
                     textAlign: TextAlign.center,
-                    style: AppTypography.figmaButton(color: _primary),
+                    style: GoogleFonts.inter(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      color: const Color(0xFF3F3FB4),
+                      letterSpacing: 0.0752,
+                      height: 16.5 / 11,
+                    ),
                   ),
                 ),
               ),
@@ -2493,7 +2699,12 @@ class _CollegeVisits extends StatelessWidget {
               return Column(
                 children: [
                   for (var i = 0; i < displayVisits.length; i++) ...[
-                    if (i > 0) const Gap(14),
+                    if (i > 0)
+                      const Divider(
+                        color: Color(0xFFF3F4F6),
+                        height: 24,
+                        thickness: 1,
+                      ),
                     Builder(
                       builder: (_) {
                         final v = displayVisits[i];
@@ -2508,8 +2719,8 @@ class _CollegeVisits extends StatelessWidget {
                         Color badgeBg;
                         Color badgeFg;
                         if (status == 'Completed') {
-                          badgeBg = const Color(0xFFDCFCE7);
-                          badgeFg = const Color(0xFF15803D);
+                          badgeBg = const Color(0xFFE8F5E9);
+                          badgeFg = const Color(0xFF2E7D32);
                         } else if (status == 'Cancelled') {
                           badgeBg = const Color(0xFFFEE2E2);
                           badgeFg = const Color(0xFFB91C1C);
@@ -2536,10 +2747,12 @@ class _CollegeVisits extends StatelessWidget {
                                         Flexible(
                                           child: Text(
                                             name,
-                                            style: const TextStyle(
-                                              fontWeight: FontWeight.w700,
-                                              fontSize: 14,
-                                              color: _text,
+                                            style: GoogleFonts.inter(
+                                              fontWeight: FontWeight.w600,
+                                              fontSize: 15,
+                                              color: const Color(0xFF1A1A1A),
+                                              letterSpacing: -0.1465,
+                                              height: 22.5 / 15,
                                             ),
                                           ),
                                         ),
@@ -2556,31 +2769,36 @@ class _CollegeVisits extends StatelessWidget {
                                       desc,
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
-                                      style: const TextStyle(
-                                        color: _muted,
-                                        fontSize: 12,
+                                      style: GoogleFonts.inter(
+                                        color: const Color(0xFF6B7280),
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w400,
+                                        letterSpacing: 0.0127,
+                                        height: 19.5 / 13,
                                       ),
                                     ),
                                   ],
                                 ),
                               ),
                             ),
-                            const Gap(8),
+                            const Gap(12),
                             Container(
                               padding: const EdgeInsets.symmetric(
-                                horizontal: 10,
+                                horizontal: 8,
                                 vertical: 4,
                               ),
                               decoration: BoxDecoration(
                                 color: badgeBg,
-                                borderRadius: BorderRadius.circular(8),
+                                borderRadius: BorderRadius.circular(4),
                               ),
                               child: Text(
                                 status,
-                                style: TextStyle(
+                                style: GoogleFonts.inter(
                                   color: badgeFg,
-                                  fontSize: 11.5,
+                                  fontSize: 11,
                                   fontWeight: FontWeight.w700,
+                                  letterSpacing: 0.0752,
+                                  height: 16.5 / 11,
                                 ),
                               ),
                             ),
