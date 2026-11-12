@@ -1937,6 +1937,11 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                     MediaQuery.of(context).size.width < 768 ||
                     barC.maxWidth < 640;
 
+                final safeExecutives = state.activeExecutives;
+                final safeSelectedExecUid = safeExecutives.any((e) => e.uid == state.selectedExecutive?.uid)
+                    ? state.selectedExecutive?.uid
+                    : (safeExecutives.isNotEmpty ? safeExecutives.first.uid : null);
+
                 final execDropdown = Container(
                   height: 38,
                   width: isMobileBar ? null : 189,
@@ -1948,7 +1953,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                     border: Border.all(color: const Color(0xFF374151), width: 1),
                   ),
                   child: DropdownButtonHideUnderline(
-                    child: state.activeExecutives.isEmpty
+                    child: safeExecutives.isEmpty
                         ? Center(
                             child: Text(
                               'No active HR users',
@@ -1962,7 +1967,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                         : DropdownButton<String>(
                             dropdownColor: const Color(0xFF1F2937),
                             borderRadius: BorderRadius.circular(8),
-                            value: state.selectedExecutive?.uid,
+                            value: safeSelectedExecUid,
                             isDense: true,
                             isExpanded: true,
                             icon: const Icon(
@@ -1975,7 +1980,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                               fontSize: 12,
                               fontWeight: FontWeight.w500,
                             ),
-                            items: state.activeExecutives.map((exec) {
+                            items: safeExecutives.map((exec) {
                               final count = state.assignmentCountForExecutive(
                                 exec.uid,
                               );
@@ -1995,6 +2000,10 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                           ),
                   ),
                 );
+
+                final safeDateOptions = state.dateOptions.any((d) => d.dateKey == state.selectedDateKey)
+                    ? state.dateOptions
+                    : [(dateKey: state.selectedDateKey, label: state.selectedDateLabel), ...state.dateOptions];
 
                 final dateDropdown = Container(
                   height: 38,
@@ -2026,7 +2035,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                               fontSize: 12,
                               fontWeight: FontWeight.w500,
                             ),
-                            items: state.dateOptions
+                            items: safeDateOptions
                                 .map(
                                   (d) => DropdownMenuItem<String>(
                                     value: d.dateKey,
@@ -2390,21 +2399,24 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
     return InkWell(
       onTap: () => onChanged(!value),
       borderRadius: BorderRadius.circular(4),
-      child: Container(
-        width: 16,
-        height: 16,
-        decoration: BoxDecoration(
-          color: value ? activeColor : Colors.white,
-          borderRadius: BorderRadius.circular(2.5),
-          border: Border.all(
-            color: value ? activeColor : const Color(0xFF767676),
-            width: 1.0,
+      child: Padding(
+        padding: const EdgeInsets.all(4.0),
+        child: Container(
+          width: 16,
+          height: 16,
+          decoration: BoxDecoration(
+            color: value ? activeColor : Colors.white,
+            borderRadius: BorderRadius.circular(2.5),
+            border: Border.all(
+              color: value ? activeColor : const Color(0xFF767676),
+              width: 1.0,
+            ),
           ),
+          alignment: Alignment.center,
+          child: value
+              ? const Icon(Icons.check_rounded, size: 12, color: Colors.white)
+              : null,
         ),
-        alignment: Alignment.center,
-        child: value
-            ? const Icon(Icons.check_rounded, size: 12, color: Colors.white)
-            : null,
       ),
     );
   }
