@@ -957,7 +957,7 @@ class _DashboardViewState extends State<_DashboardView> {
         .join();
 
     return Container(
-      width: inDrawer ? double.infinity : 220,
+      width: inDrawer ? double.infinity : 240,
       decoration: BoxDecoration(
         color: Colors.white,
         border: inDrawer
@@ -968,18 +968,24 @@ class _DashboardViewState extends State<_DashboardView> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(18, 20, 18, 16),
-            child: Image.asset(
-              AppImages.logo,
-              height: 56,
-              fit: BoxFit.contain,
-              alignment: Alignment.centerLeft,
-              errorBuilder: (_, _, _) => const Text(
-                'ACADENO',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.w800,
-                  color: _primary,
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+            child: SizedBox(
+              height: 72,
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Image.asset(
+                  AppImages.logo,
+                  height: 72,
+                  fit: BoxFit.contain,
+                  alignment: Alignment.centerLeft,
+                  errorBuilder: (_, _, _) => const Text(
+                    'ACADENO',
+                    style: TextStyle(
+                      fontSize: 26,
+                      fontWeight: FontWeight.w800,
+                      color: _primary,
+                    ),
+                  ),
                 ),
               ),
             ),
