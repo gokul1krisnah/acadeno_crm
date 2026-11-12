@@ -946,10 +946,8 @@ class _TeamManagementViewState extends State<TeamManagementView> {
           else
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
-              child: ConstrainedBox(
-                constraints: BoxConstraints(
-                  minWidth: maxWidth > 1050 ? maxWidth : 1050,
-                ),
+              child: SizedBox(
+                width: maxWidth > 1050 ? maxWidth : 1050.0,
                 child: Column(
                   children: [
                     // Table Header Row
