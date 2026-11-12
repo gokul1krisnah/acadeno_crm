@@ -1847,8 +1847,9 @@ class _UserManagementViewState extends State<UserManagementView> {
                             const Gap(12),
                             Text(
                               allUsers.isEmpty
-                                  ? 'No team users in database yet.'
+                                  ? 'No team users found yet.'
                                   : 'No users match your search/filter.',
+                              textAlign: TextAlign.center,
                               style: GoogleFonts.inter(
                                 color: const Color(0xFF64748B),
                                 fontSize: 14,

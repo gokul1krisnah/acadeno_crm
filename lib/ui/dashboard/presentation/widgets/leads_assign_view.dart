@@ -2452,7 +2452,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
               CircularProgressIndicator(color: _primary),
               Gap(12),
               Text(
-                'Loading leads from Firestore...',
+                'Loading leads...',
                 style: TextStyle(
                   color: _muted,
                   fontSize: 13.5,
@@ -2519,8 +2519,9 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
               const Gap(10),
               Text(
                 state.allLeads.isEmpty
-                    ? 'No leads in Firestore yet'
+                    ? 'No leads available yet'
                     : 'No leads match your current filters',
+                textAlign: TextAlign.center,
                 style: const TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w700,

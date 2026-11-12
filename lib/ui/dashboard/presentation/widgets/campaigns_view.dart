@@ -1349,15 +1349,42 @@ class _CampaignsViewState extends State<CampaignsView> {
                 ),
                 if (_rankedLeads.isEmpty)
                   Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 48),
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 48,
+                      horizontal: 24,
+                    ),
                     child: Center(
-                      child: Text(
-                        'No leads found in database. Import or add leads to see ranked campaign candidates.',
-                        style: GoogleFonts.inter(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                          color: const Color(0xFF64748B),
-                        ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          const Icon(
+                            Icons.groups_outlined,
+                            size: 36,
+                            color: Color(0xFF94A3B8),
+                          ),
+                          const Gap(10),
+                          Text(
+                            'No leads available yet',
+                            textAlign: TextAlign.center,
+                            style: GoogleFonts.inter(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                              color: const Color(0xFF334155),
+                            ),
+                          ),
+                          const Gap(4),
+                          Text(
+                            'Import or add leads to see ranked campaign candidates.',
+                            textAlign: TextAlign.center,
+                            style: GoogleFonts.inter(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w400,
+                              color: const Color(0xFF64748B),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   )
@@ -1541,15 +1568,39 @@ class _CampaignsViewState extends State<CampaignsView> {
   Widget _buildMobileRankedList() {
     if (_rankedLeads.isEmpty) {
       return Padding(
-        padding: const EdgeInsets.symmetric(vertical: 40),
+        padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 24),
         child: Center(
-          child: Text(
-            'No leads found in database. Import or add leads to see ranked campaign candidates.',
-            style: GoogleFonts.inter(
-              fontSize: 13.5,
-              fontWeight: FontWeight.w500,
-              color: const Color(0xFF64748B),
-            ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              const Icon(
+                Icons.groups_outlined,
+                size: 36,
+                color: Color(0xFF94A3B8),
+              ),
+              const Gap(10),
+              Text(
+                'No leads available yet',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.inter(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                  color: const Color(0xFF334155),
+                ),
+              ),
+              const Gap(4),
+              Text(
+                'Import or add leads to see ranked campaign candidates.',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.inter(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w400,
+                  color: const Color(0xFF64748B),
+                ),
+              ),
+            ],
           ),
         ),
       );
