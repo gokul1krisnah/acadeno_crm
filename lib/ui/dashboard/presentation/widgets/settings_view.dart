@@ -42,6 +42,9 @@ class _SettingsViewState extends State<SettingsView>
   bool _isSavingEmail = false;
   bool _isSavingPassword = false;
 
+  bool _isResettingData = false;
+  String _resetProgressStatus = '';
+
   // Organization settings
   String _defaultCallsTarget = '50';
   String _overdueEscalationHours = '24';
@@ -260,6 +263,172 @@ class _SettingsViewState extends State<SettingsView>
       }
     } finally {
       if (mounted) setState(() => _isSavingPassword = false);
+    }
+  }
+
+  Future<void> _confirmAndResetCrmData() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: Row(
+            children: const [
+              Icon(
+                Icons.warning_amber_rounded,
+                color: Color(0xFFDC2626),
+                size: 26,
+              ),
+              Gap(10),
+              Expanded(
+                child: Text(
+                  'Reset CRM Database?',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF111827),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: const [
+              Text(
+                'This will permanently delete all operational data:',
+                style: TextStyle(
+                  fontSize: 13.5,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF374151),
+                ),
+              ),
+              Gap(8),
+              Text(
+                '• All Leads & student records\n• All Campaigns & source events\n• All Follow-ups & assignments\n• All Call logs & duration records\n• All College visits\n• Phone index & in-app alerts',
+                style: TextStyle(
+                  fontSize: 13,
+                  height: 1.5,
+                  color: Color(0xFF4B5563),
+                ),
+              ),
+              Gap(14),
+              Text(
+                '🔒 All Admin & User accounts will remain 100% untouched.',
+                style: TextStyle(
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF059669),
+                ),
+              ),
+            ],
+          ),
+          actionsPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(false),
+              child: const Text(
+                'Cancel',
+                style: TextStyle(
+                  color: Color(0xFF6B7280),
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFDC2626),
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                elevation: 0,
+              ),
+              onPressed: () => Navigator.of(ctx).pop(true),
+              child: const Text(
+                'Yes, Reset CRM Data',
+                style: TextStyle(fontWeight: FontWeight.w600),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmed != true || !mounted) return;
+
+    setState(() {
+      _isResettingData = true;
+      _resetProgressStatus = 'Initializing reset...';
+    });
+
+    try {
+      final collectionsToClear = [
+        {'name': 'leads', 'label': 'Leads'},
+        {'name': 'campaigns', 'label': 'Campaigns'},
+        {'name': 'lead_assignments', 'label': 'Follow-ups & Assignments'},
+        {'name': 'assignments', 'label': 'Staff Assignments'},
+        {'name': 'college_visits', 'label': 'College Visits'},
+        {'name': 'call_logs', 'label': 'Call Logs'},
+        {'name': 'lead_phones', 'label': 'Phone Index'},
+        {'name': 'alerts', 'label': 'Alerts'},
+        {'name': 'notification_queue', 'label': 'Notification Queue'},
+        {'name': 'colleges', 'label': 'Colleges'},
+      ];
+
+      int totalDeleted = 0;
+
+      for (final col in collectionsToClear) {
+        final colName = col['name']!;
+        final colLabel = col['label']!;
+        if (!mounted) break;
+        setState(() => _resetProgressStatus = 'Clearing $colLabel...');
+
+        try {
+          final snapshot = await _firestore.collection(colName).get();
+          final docs = snapshot.docs;
+          if (docs.isEmpty) continue;
+
+          for (var i = 0; i < docs.length; i += 400) {
+            final batch = _firestore.batch();
+            final end = (i + 400 < docs.length) ? i + 400 : docs.length;
+            final chunk = docs.sublist(i, end);
+            for (final doc in chunk) {
+              batch.delete(doc.reference);
+            }
+            await batch.commit();
+            totalDeleted += chunk.length;
+          }
+        } catch (e) {
+          debugPrint('Notice clearing $colName: $e');
+        }
+      }
+
+      if (mounted) {
+        SnackBarAlert.showToast(
+          context: context,
+          message: 'CRM Database successfully reset ($totalDeleted records removed). Fresh CRM ready!',
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        SnackBarAlert.showToast(
+          context: context,
+          message: 'Error during CRM data reset: $e',
+          isWarning: true,
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isResettingData = false;
+          _resetProgressStatus = '';
+        });
+      }
     }
   }
 
@@ -1057,6 +1226,10 @@ class _SettingsViewState extends State<SettingsView>
               ],
             ),
           ),
+
+          const Gap(16),
+
+          _buildDangerZoneCard(),
         ],
       ),
     );
@@ -1137,6 +1310,99 @@ class _SettingsViewState extends State<SettingsView>
               ],
             ),
           ),
+
+          const Gap(16),
+
+          _buildDangerZoneCard(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDangerZoneCard() {
+    return _buildCard(
+      title: 'Danger Zone · Fresh CRM Reset',
+      subtitle:
+          'Permanently purge all operational records (leads, campaigns, follow-ups, visits, call logs). Users & Admins remain strictly preserved.',
+      borderColor: const Color(0xFFFCA5A5),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: const Color(0xFFFEF2F2),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: const Color(0xFFFECACA)),
+            ),
+            child: const Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(
+                  Icons.info_outline_rounded,
+                  color: Color(0xFFDC2626),
+                  size: 20,
+                ),
+                Gap(10),
+                Expanded(
+                  child: Text(
+                    'Executing this reset will wipe all leads, campaigns, assignments, visits, and phone records in Cloud Firestore. Use this to prepare a clean, fresh CRM. All user accounts and login access remain 100% untouched.',
+                    style: TextStyle(
+                      fontSize: 12.5,
+                      color: Color(0xFF991B1B),
+                      height: 1.4,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const Gap(16),
+          _isResettingData
+              ? Row(
+                  children: [
+                    const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.5,
+                        color: Color(0xFFDC2626),
+                      ),
+                    ),
+                    const Gap(12),
+                    Text(
+                      _resetProgressStatus,
+                      style: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFFDC2626),
+                      ),
+                    ),
+                  ],
+                )
+              : ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFDC2626),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 18,
+                      vertical: 12,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    elevation: 0,
+                  ),
+                  onPressed: _confirmAndResetCrmData,
+                  icon: const Icon(Icons.delete_sweep_rounded, size: 18),
+                  label: const Text(
+                    'Clear All CRM Data (Keep Users)',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
         ],
       ),
     );
@@ -1149,6 +1415,7 @@ class _SettingsViewState extends State<SettingsView>
     required String title,
     required String subtitle,
     required Widget child,
+    Color? borderColor,
   }) {
     final isMobile = MediaQuery.of(context).size.width < 640;
     return Material(
@@ -1159,7 +1426,7 @@ class _SettingsViewState extends State<SettingsView>
         padding: EdgeInsets.all(isMobile ? 14 : 20),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: _border),
+          border: Border.all(color: borderColor ?? _border),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
