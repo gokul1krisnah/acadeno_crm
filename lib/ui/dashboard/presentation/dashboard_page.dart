@@ -75,6 +75,178 @@ class _NavItem {
   });
 }
 
+class _SidebarNavItem extends StatefulWidget {
+  final _NavItem item;
+  final int index;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _SidebarNavItem({
+    required this.item,
+    required this.index,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  @override
+  State<_SidebarNavItem> createState() => _SidebarNavItemState();
+}
+
+class _SidebarNavItemState extends State<_SidebarNavItem> {
+  bool _isHovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final isSelected = widget.isSelected;
+    final item = widget.item;
+
+    final Color bgColor = isSelected
+        ? const Color(0xFFFFF4ED)
+        : (_isHovered ? const Color(0xFFF8FAFC) : Colors.transparent);
+
+    final Border border = Border.all(
+      color: isSelected
+          ? const Color(0xFFFFDEC9)
+          : (_isHovered ? const Color(0xFFE2E8F0) : Colors.transparent),
+      width: 1,
+    );
+
+    final Color iconColor = isSelected
+        ? _orangeAccent
+        : (_isHovered ? const Color(0xFF0F172A) : const Color(0xFF64748B));
+
+    final Color labelColor = isSelected
+        ? _orangeAccent
+        : (_isHovered ? const Color(0xFF0F172A) : const Color(0xFF334155));
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 1.5),
+      child: MouseRegion(
+        cursor: SystemMouseCursors.click,
+        onEnter: (_) => setState(() => _isHovered = true),
+        onExit: (_) => setState(() => _isHovered = false),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          curve: Curves.easeOutCubic,
+          transform: Matrix4.translationValues(
+            _isHovered && !isSelected ? 3 : 0,
+            0,
+            0,
+          ),
+          decoration: BoxDecoration(
+            color: bgColor,
+            borderRadius: BorderRadius.circular(10),
+            border: border,
+            boxShadow: isSelected
+                ? const [
+                    BoxShadow(
+                      color: Color(0x12EF8144),
+                      blurRadius: 8,
+                      offset: Offset(0, 2),
+                    ),
+                  ]
+                : (_isHovered
+                    ? const [
+                        BoxShadow(
+                          color: Color(0x0A0F172A),
+                          blurRadius: 6,
+                          offset: Offset(0, 2),
+                        ),
+                      ]
+                    : const []),
+          ),
+          child: Material(
+            color: Colors.transparent,
+            borderRadius: BorderRadius.circular(10),
+            child: InkWell(
+              borderRadius: BorderRadius.circular(10),
+              splashColor: _orangeAccent.withValues(alpha: 0.08),
+              highlightColor: _orangeAccent.withValues(alpha: 0.04),
+              onTap: widget.onTap,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                child: Row(
+                  children: [
+                    // Dynamic vertical active/hover indicator bar
+                    AnimatedContainer(
+                      duration: const Duration(milliseconds: 180),
+                      curve: Curves.easeOutCubic,
+                      width: 3.5,
+                      height: isSelected ? 18 : (_isHovered ? 12 : 0),
+                      decoration: BoxDecoration(
+                        color: isSelected
+                            ? _orangeAccent
+                            : (_isHovered ? const Color(0xFF94A3B8) : Colors.transparent),
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                    AnimatedContainer(
+                      duration: const Duration(milliseconds: 180),
+                      width: isSelected || _isHovered ? 8 : 4,
+                    ),
+                    // Icon with subtle animated scale
+                    AnimatedScale(
+                      scale: _isHovered ? 1.10 : (isSelected ? 1.05 : 1.0),
+                      duration: const Duration(milliseconds: 180),
+                      curve: Curves.easeOutBack,
+                      child: SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: Center(
+                          child: SvgPicture.asset(
+                            item.svgAsset,
+                            width: 18,
+                            height: 18,
+                            fit: BoxFit.contain,
+                            colorFilter: ColorFilter.mode(
+                              iconColor,
+                              BlendMode.srcIn,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const Gap(12),
+                    Expanded(
+                      child: AnimatedDefaultTextStyle(
+                        duration: const Duration(milliseconds: 180),
+                        curve: Curves.easeOutCubic,
+                        style: TextStyle(
+                          fontSize: 13.5,
+                          fontWeight: isSelected
+                              ? FontWeight.w700
+                              : (_isHovered ? FontWeight.w600 : FontWeight.w500),
+                          color: labelColor,
+                          letterSpacing: -0.2,
+                        ),
+                        child: Text(
+                          item.label,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ),
+                    // Subtle chevron that smoothly fades in on hover or stays visible when selected
+                    AnimatedOpacity(
+                      opacity: isSelected ? 1.0 : (_isHovered ? 0.6 : 0.0),
+                      duration: const Duration(milliseconds: 180),
+                      child: Icon(
+                        Icons.chevron_right_rounded,
+                        size: 16,
+                        color: isSelected ? _orangeAccent : const Color(0xFF94A3B8),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _DashboardView extends StatefulWidget {
   const _DashboardView();
 
@@ -904,63 +1076,16 @@ class _DashboardViewState extends State<_DashboardView> {
     required bool inDrawer,
   }) {
     final cubit = context.read<DashboardCubit>();
-    final isSelected = selectedIndex == index;
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12),
-      child: Material(
-        color: isSelected ? const Color(0xFFFFF4ED) : Colors.transparent,
-        borderRadius: BorderRadius.circular(10),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(10),
-          onTap: () {
-            cubit.selectNav(index);
-            if (inDrawer) {
-              Navigator.of(context).pop();
-            }
-          },
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
-            child: Row(
-              children: [
-                SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: Center(
-                    child: SvgPicture.asset(
-                      item.svgAsset,
-                      width: 18,
-                      height: 18,
-                      fit: BoxFit.contain,
-                      colorFilter: ColorFilter.mode(
-                        isSelected ? _orangeAccent : const Color(0xFF64748B),
-                        BlendMode.srcIn,
-                      ),
-                    ),
-                  ),
-                ),
-                const Gap(12),
-                Expanded(
-                  child: Text(
-                    item.label,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: 13.5,
-                      fontWeight: isSelected
-                          ? FontWeight.w700
-                          : FontWeight.w500,
-                      color: isSelected
-                          ? _orangeAccent
-                          : const Color(0xFF334155),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
+    return _SidebarNavItem(
+      item: item,
+      index: index,
+      isSelected: selectedIndex == index,
+      onTap: () {
+        cubit.selectNav(index);
+        if (inDrawer) {
+          Navigator.of(context).pop();
+        }
+      },
     );
   }
 
@@ -2079,7 +2204,7 @@ class _DashboardViewState extends State<_DashboardView> {
   }
 }
 
-class _StatCard extends StatelessWidget {
+class _StatCard extends StatefulWidget {
   final String label, value, sub;
   final Color color;
   final Color? valueColor;
@@ -2099,177 +2224,260 @@ class _StatCard extends StatelessWidget {
   });
 
   @override
+  State<_StatCard> createState() => _StatCardState();
+}
+
+class _StatCardState extends State<_StatCard> {
+  bool _isHovered = false;
+
+  @override
   Widget build(BuildContext context) {
     final isMobile = MediaQuery.of(context).size.width < 600;
     final cardPadding = isMobile
         ? const EdgeInsets.symmetric(horizontal: 16, vertical: 16)
         : const EdgeInsets.all(20);
 
-    if (isSolidHero) {
-      return Container(
-        constraints: const BoxConstraints(minHeight: 125),
-        clipBehavior: Clip.antiAlias,
-        decoration: BoxDecoration(
-          color: color,
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: Stack(
-          children: [
-            Positioned(
-              right: -48,
-              top: -48,
-              child: Container(
-                width: 96,
-                height: 96,
-                decoration: const BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Color(0x0DFFFFFF),
+    if (widget.isSolidHero) {
+      return MouseRegion(
+        onEnter: (_) => setState(() => _isHovered = true),
+        onExit: (_) => setState(() => _isHovered = false),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeOutCubic,
+          transform: Matrix4.translationValues(0, _isHovered ? -4 : 0, 0),
+          constraints: const BoxConstraints(minHeight: 125),
+          clipBehavior: Clip.antiAlias,
+          decoration: BoxDecoration(
+            color: widget.color,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: _isHovered
+                ? [
+                    BoxShadow(
+                      color: widget.color.withValues(alpha: 0.38),
+                      blurRadius: 20,
+                      offset: const Offset(0, 10),
+                    ),
+                  ]
+                : [
+                    BoxShadow(
+                      color: widget.color.withValues(alpha: 0.18),
+                      blurRadius: 8,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
+          ),
+          child: Stack(
+            children: [
+              Positioned(
+                right: -48,
+                top: -48,
+                child: AnimatedScale(
+                  duration: const Duration(milliseconds: 200),
+                  scale: _isHovered ? 1.15 : 1.0,
+                  child: Container(
+                    width: 96,
+                    height: 96,
+                    decoration: const BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Color(0x0DFFFFFF),
+                    ),
+                  ),
                 ),
               ),
-            ),
-            Padding(
-              padding: cardPadding,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        child: Text(
-                          label,
+              Padding(
+                padding: cardPadding,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            widget.label,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: GoogleFonts.inter(
+                              color: const Color(0xE6FFFFFF),
+                              fontSize: isMobile ? 12.5 : 14,
+                              fontWeight: FontWeight.w500,
+                              letterSpacing: -0.5195,
+                            ),
+                          ),
+                        ),
+                        AnimatedScale(
+                          duration: const Duration(milliseconds: 200),
+                          scale: _isHovered ? 1.12 : 1.0,
+                          curve: Curves.easeOutBack,
+                          child: widget.svgAsset != null
+                              ? SvgPicture.asset(
+                                  widget.svgAsset!,
+                                  width: isMobile ? 15 : 18,
+                                  height: isMobile ? 15 : 18,
+                                  colorFilter: const ColorFilter.mode(
+                                    Colors.white,
+                                    BlendMode.srcIn,
+                                  ),
+                                )
+                              : (widget.icon != null
+                                  ? Icon(widget.icon,
+                                      color: Colors.white,
+                                      size: isMobile ? 14 : 16)
+                                  : const SizedBox.shrink()),
+                        ),
+                      ],
+                    ),
+                    const Gap(8),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        FittedBox(
+                          fit: BoxFit.scaleDown,
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            widget.value,
+                            style: GoogleFonts.inter(
+                              fontSize: isMobile ? 28 : 34,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                        const Gap(4),
+                        Text(
+                          widget.sub,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: GoogleFonts.inter(
-                            color: const Color(0xE6FFFFFF),
-                            fontSize: isMobile ? 12.5 : 14,
-                            fontWeight: FontWeight.w500,
-                            letterSpacing: -0.5195,
+                            color: const Color(0xCCFFFFFF),
+                            fontSize: 10,
+                            fontWeight: FontWeight.w400,
+                            letterSpacing: -0.2344,
                           ),
                         ),
-                      ),
-                      if (svgAsset != null)
-                        SvgPicture.asset(
-                          svgAsset!,
-                          width: isMobile ? 15 : 18,
-                          height: isMobile ? 15 : 18,
-                          colorFilter: const ColorFilter.mode(
-                            Colors.white,
-                            BlendMode.srcIn,
-                          ),
-                        )
-                      else if (icon != null)
-                        Icon(icon, color: Colors.white, size: isMobile ? 14 : 16),
-                    ],
-                  ),
-                  const Gap(8),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      FittedBox(
-                        fit: BoxFit.scaleDown,
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          value,
-                          style: GoogleFonts.inter(
-                            fontSize: isMobile ? 28 : 34,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                      const Gap(4),
-                      Text(
-                        sub,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.inter(
-                          color: const Color(0xCCFFFFFF),
-                          fontSize: 10,
-                          fontWeight: FontWeight.w400,
-                          letterSpacing: -0.2344,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
+                      ],
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       );
     }
 
-    return Container(
-      constraints: const BoxConstraints(minHeight: 125),
-      padding: cardPadding,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE2E8E5), width: 1),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: Text(
-                  label,
+    return MouseRegion(
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeOutCubic,
+        transform: Matrix4.translationValues(0, _isHovered ? -4 : 0, 0),
+        constraints: const BoxConstraints(minHeight: 125),
+        padding: cardPadding,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: _isHovered
+                ? widget.color.withValues(alpha: 0.35)
+                : const Color(0xFFE2E8E5),
+            width: _isHovered ? 1.2 : 1,
+          ),
+          boxShadow: _isHovered
+              ? [
+                  BoxShadow(
+                    color: widget.color.withValues(alpha: 0.12),
+                    blurRadius: 18,
+                    offset: const Offset(0, 8),
+                  ),
+                  const BoxShadow(
+                    color: Color(0x060F172A),
+                    blurRadius: 6,
+                    offset: Offset(0, 2),
+                  ),
+                ]
+              : const [
+                  BoxShadow(
+                    color: Color(0x05000000),
+                    blurRadius: 4,
+                    offset: Offset(0, 1),
+                  ),
+                ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Text(
+                    widget.label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.inter(
+                      color: _isHovered
+                          ? const Color(0xFF1E293B)
+                          : const Color(0xFF718096),
+                      fontSize: isMobile ? 12.5 : 14,
+                      fontWeight: FontWeight.w500,
+                      letterSpacing: -0.5,
+                    ),
+                  ),
+                ),
+                AnimatedScale(
+                  duration: const Duration(milliseconds: 200),
+                  scale: _isHovered ? 1.12 : 1.0,
+                  curve: Curves.easeOutBack,
+                  child: widget.svgAsset != null
+                      ? SvgPicture.asset(
+                          widget.svgAsset!,
+                          width: isMobile ? 15 : 18,
+                          height: isMobile ? 15 : 18,
+                        )
+                      : (widget.icon != null
+                          ? Icon(widget.icon,
+                              color: widget.color,
+                              size: isMobile ? 14 : 16)
+                          : const SizedBox.shrink()),
+                ),
+              ],
+            ),
+            const Gap(8),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    widget.value,
+                    style: GoogleFonts.inter(
+                      fontSize: isMobile ? 28 : 34,
+                      fontWeight: FontWeight.w700,
+                      color: widget.valueColor ?? widget.color,
+                    ),
+                  ),
+                ),
+                const Gap(4),
+                Text(
+                  widget.sub,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: GoogleFonts.inter(
-                    color: const Color(0xFF718096),
-                    fontSize: isMobile ? 12.5 : 14,
-                    fontWeight: FontWeight.w500,
-                    letterSpacing: -0.5,
+                    color: const Color(0xFFA0AEC0),
+                    fontSize: 10,
+                    fontWeight: FontWeight.w400,
+                    letterSpacing: -0.3,
                   ),
                 ),
-              ),
-              if (svgAsset != null)
-                SvgPicture.asset(
-                  svgAsset!,
-                  width: isMobile ? 15 : 18,
-                  height: isMobile ? 15 : 18,
-                )
-              else if (icon != null)
-                Icon(icon, color: color, size: isMobile ? 14 : 16),
-            ],
-          ),
-          const Gap(8),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              FittedBox(
-                fit: BoxFit.scaleDown,
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  value,
-                  style: GoogleFonts.inter(
-                    fontSize: isMobile ? 28 : 34,
-                    fontWeight: FontWeight.w700,
-                    color: valueColor ?? color,
-                  ),
-                ),
-              ),
-              const Gap(4),
-              Text(
-                sub,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: GoogleFonts.inter(
-                  color: const Color(0xFFA0AEC0),
-                  fontSize: 10,
-                  fontWeight: FontWeight.w400,
-                  letterSpacing: -0.3,
-                ),
-              ),
-            ],
-          ),
-        ],
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
