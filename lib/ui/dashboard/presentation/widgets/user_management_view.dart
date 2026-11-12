@@ -1,6 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:gap/gap.dart';
-import 'package:acadeno_crm/shared/widgets/acadeno_dropdown.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -1459,92 +1459,119 @@ class _UserManagementViewState extends State<UserManagementView> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Top Header & Action Buttons
-            // Top Header & Action Buttons (Responsive Layout)
+            // Top Header & Action Buttons (Figma Node 1364:2874)
             LayoutBuilder(
               builder: (context, c) {
                 final isMobile =
                     MediaQuery.of(context).size.width < 768 || c.maxWidth < 680;
                 final titleCol = Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const [
+                  children: [
                     Text(
                       'User Management',
-                      style: TextStyle(
-                        fontSize: 28,
+                      style: GoogleFonts.inter(
+                        fontSize: 32,
                         fontWeight: FontWeight.w700,
-                        color: _textDark,
-                        letterSpacing: -0.5,
+                        color: const Color(0xFF0F172A),
+                        letterSpacing: -0.8,
+                        height: 48 / 32,
                       ),
                     ),
-                    Gap(4),
+                    const Gap(4),
                     Text(
                       'Add new team accounts, assign roles, and manage system access.',
-                      style: TextStyle(fontSize: 13, color: _textMuted),
+                      style: GoogleFonts.inter(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w400,
+                        color: const Color(0xFF64748B),
+                        height: 24 / 16,
+                      ),
                     ),
                   ],
                 );
 
-                final addByUidBtn = OutlinedButton.icon(
-                  onPressed: () => _openAddUserDialog(byUid: true),
-                  icon: const Icon(
-                    Icons.vpn_key_outlined,
-                    size: 16,
-                    color: Color(0xFF64748B),
+                final addByUidBtn = Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Color(0x0D000000),
+                        blurRadius: 1,
+                        offset: Offset(0, 1),
+                      ),
+                    ],
                   ),
-                  label: const FittedBox(
-                    fit: BoxFit.scaleDown,
-                    child: Text(
+                  child: OutlinedButton.icon(
+                    onPressed: () => _openAddUserDialog(byUid: true),
+                    icon: const Icon(
+                      Icons.vpn_key_outlined,
+                      size: 16,
+                      color: Color(0xFF334155),
+                    ),
+                    label: Text(
                       'Add by UID',
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF1E293B),
+                      style: GoogleFonts.inter(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w500,
+                        color: const Color(0xFF334155),
+                        letterSpacing: 0.0293,
+                        height: 22.5 / 15,
                       ),
                     ),
-                  ),
-                  style: OutlinedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    side: const BorderSide(color: Color(0xFFE2E8F0)),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(24),
-                    ),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 10,
+                    style: OutlinedButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      side: const BorderSide(color: Color(0xFFE2E8F0)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 10,
+                      ),
                     ),
                   ),
                 );
 
-                final addUserBtn = ElevatedButton.icon(
-                  onPressed: () => _openAddUserDialog(byUid: false),
-                  icon: const Icon(
-                    Icons.person_add_alt_1_rounded,
-                    size: 17,
-                    color: Colors.white,
+                final addUserBtn = Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Color(0x0D000000),
+                        blurRadius: 1,
+                        offset: Offset(0, 1),
+                      ),
+                    ],
                   ),
-                  label: const FittedBox(
-                    fit: BoxFit.scaleDown,
-                    child: Text(
+                  child: ElevatedButton.icon(
+                    onPressed: () => _openAddUserDialog(byUid: false),
+                    icon: const Icon(
+                      Icons.person_add_alt_1_rounded,
+                      size: 16,
+                      color: Colors.white,
+                    ),
+                    label: Text(
                       'Add User',
-                      style: TextStyle(
-                        fontSize: 13,
+                      style: GoogleFonts.inter(
+                        fontSize: 14,
                         fontWeight: FontWeight.w600,
                         color: Colors.white,
+                        letterSpacing: 0.1504,
+                        height: 22.5 / 14,
                       ),
                     ),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFEF8144),
-                    foregroundColor: Colors.white,
-                    elevation: 0,
-                    side: BorderSide.none,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 18,
-                      vertical: 10,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(24),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFEF8144),
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      side: BorderSide.none,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 11,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
                   ),
                 );
@@ -1553,7 +1580,7 @@ class _UserManagementViewState extends State<UserManagementView> {
                     ? Row(
                         children: [
                           Expanded(child: addByUidBtn),
-                          const Gap(10),
+                          const Gap(12),
                           Expanded(child: addUserBtn),
                         ],
                       )
@@ -1561,7 +1588,7 @@ class _UserManagementViewState extends State<UserManagementView> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           addByUidBtn,
-                          const Gap(10),
+                          const Gap(12),
                           addUserBtn,
                         ],
                       );
@@ -1571,7 +1598,7 @@ class _UserManagementViewState extends State<UserManagementView> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       titleCol,
-                      const Gap(12),
+                      const Gap(16),
                       actionBtns,
                     ],
                   );
@@ -1581,7 +1608,7 @@ class _UserManagementViewState extends State<UserManagementView> {
                   width: double.infinity,
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                       Expanded(child: titleCol),
                       const Gap(16),
@@ -1591,35 +1618,41 @@ class _UserManagementViewState extends State<UserManagementView> {
                 );
               },
             ),
-            const Gap(20),
+            const Gap(24),
 
-            // Search & Filter Toolbar
+            // Search & Filter Toolbar (Figma Node 1364:2891)
             LayoutBuilder(
               builder: (context, c) {
-                final isNarrow = c.maxWidth < 720;
+                final isNarrow = c.maxWidth < 768;
                 final searchField = Container(
+                  height: 46,
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(12),
                     border: Border.all(color: const Color(0xFFE2E8F0)),
                   ),
                   child: TextField(
                     onChanged: (v) => setState(() => _searchQuery = v),
-                    style: const TextStyle(fontSize: 13.5, color: _textDark),
+                    style: GoogleFonts.inter(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w400,
+                      color: const Color(0xFF0F172A),
+                    ),
                     decoration: InputDecoration(
                       hintText: 'Search by name, email, or UID...',
-                      hintStyle: const TextStyle(
-                        fontSize: 13,
-                        color: Color(0xFF94A3B8),
+                      hintStyle: GoogleFonts.inter(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w400,
+                        color: const Color(0xFF9CA3AF),
                       ),
                       prefixIcon: const Icon(
                         Icons.search,
-                        size: 20,
-                        color: Color(0xFF94A3B8),
+                        size: 16,
+                        color: Color(0xFF9CA3AF),
                       ),
                       suffixIcon: _searchQuery.isNotEmpty
                           ? IconButton(
-                              icon: const Icon(Icons.clear, size: 18),
+                              icon: const Icon(Icons.clear, size: 16),
                               onPressed: () =>
                                   setState(() => _searchQuery = ''),
                             )
@@ -1639,11 +1672,11 @@ class _UserManagementViewState extends State<UserManagementView> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       searchField,
-                      const Gap(10),
+                      const Gap(12),
                       Row(
                         children: [
                           Expanded(child: _buildRoleFilterDropdown()),
-                          const Gap(10),
+                          const Gap(12),
                           Expanded(child: _buildStatusFilterDropdown()),
                         ],
                       ),
@@ -1654,90 +1687,124 @@ class _UserManagementViewState extends State<UserManagementView> {
                 return Row(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Expanded(flex: 5, child: searchField),
-                    const Gap(12),
-                    Expanded(flex: 3, child: _buildRoleFilterDropdown()),
-                    const Gap(12),
-                    Expanded(flex: 2, child: _buildStatusFilterDropdown()),
+                    Expanded(child: searchField),
+                    const Gap(16),
+                    SizedBox(width: 200, child: _buildRoleFilterDropdown()),
+                    const Gap(16),
+                    SizedBox(width: 200, child: _buildStatusFilterDropdown()),
                   ],
                 );
               },
             ),
-            const Gap(14),
+            const Gap(16),
 
-            // Badges
+            // Summary Pill Counters (Figma Node 1364:2920)
             Wrap(
               spacing: 8,
-              runSpacing: 6,
+              runSpacing: 8,
               children: [
-                _badge(
-                  'Total: ${allUsers.length}',
-                  const Color(0xFFEEF0FF),
-                  const Color(0xFF4F46E5),
+                _pillBadge(
+                  label: 'Total:',
+                  value: '${allUsers.length}',
+                  bg: const Color(0xFFEEF2FF),
+                  labelColor: const Color(0xFF4338CA),
+                  valueColor: const Color(0xFF312E81),
                 ),
-                _badge(
-                  'Active: $activeCount',
-                  const Color(0xFFDCFCE7),
-                  const Color(0xFF16A34A),
+                _pillBadge(
+                  label: 'Active:',
+                  value: '$activeCount',
+                  bg: const Color(0xFFECFDF5),
+                  labelColor: const Color(0xFF047857),
+                  valueColor: const Color(0xFF064E3B),
                 ),
-                _badge(
-                  'Inactive: $inactiveCount',
-                  const Color(0xFFFEE2E2),
-                  const Color(0xFFEF4444),
+                _pillBadge(
+                  label: 'Inactive:',
+                  value: '$inactiveCount',
+                  bg: const Color(0xFFFFF1F2),
+                  labelColor: const Color(0xFFBE123C),
+                  valueColor: const Color(0xFF881337),
                 ),
                 if (_searchQuery.isNotEmpty ||
                     _roleFilter != 'all' ||
                     _statusFilter != 'all')
-                  _badge(
-                    'Showing: ${filteredUsers.length}',
-                    const Color(0xFFFEF3C7),
-                    const Color(0xFFB45309),
+                  _pillBadge(
+                    label: 'Showing:',
+                    value: '${filteredUsers.length}',
+                    bg: const Color(0xFFFEF3C7),
+                    labelColor: const Color(0xFFB45309),
+                    valueColor: const Color(0xFF78350F),
                   ),
               ],
             ),
-            const Gap(20),
+            const Gap(24),
 
-            // User List / Table Card
+            // Team Directory Card (Figma Node 1364:2933)
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+              clipBehavior: Clip.antiAlias,
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(color: const Color(0xFFF1F5F9)),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Color(0x0D000000),
+                    blurRadius: 2,
+                    offset: Offset(0, 1),
+                  ),
+                ],
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        'Team Directory',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                          color: _textDark,
+                  // Card Header (Figma Node 1364:2934)
+                  Container(
+                    height: 69,
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+                    decoration: const BoxDecoration(
+                      border: Border(
+                        bottom: BorderSide(color: Color(0xFFF1F5F9)),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Text(
+                          'Team Directory',
+                          style: GoogleFonts.inter(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                            color: const Color(0xFF0F172A),
+                            letterSpacing: 0.0176,
+                            height: 28 / 18,
+                          ),
                         ),
-                      ),
-                      Text(
-                        '${filteredUsers.length} user${filteredUsers.length == 1 ? '' : 's'}',
-                        style: const TextStyle(fontSize: 12, color: _textMuted),
-                      ),
-                    ],
+                        Text(
+                          '${filteredUsers.length} user${filteredUsers.length == 1 ? '' : 's'}',
+                          style: GoogleFonts.inter(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                            color: const Color(0xFF94A3B8),
+                            letterSpacing: 0.0547,
+                            height: 20 / 14,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                  const Gap(16),
+
                   if (snapshot.connectionState == ConnectionState.waiting &&
                       !snapshot.hasData)
                     const Center(
                       child: Padding(
-                        padding: EdgeInsets.all(32),
+                        padding: EdgeInsets.all(48),
                         child: CircularProgressIndicator(),
                       ),
                     )
                   else if (snapshot.hasError && !snapshot.hasData)
                     Padding(
-                      padding: const EdgeInsets.all(16),
+                      padding: const EdgeInsets.all(24),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -1745,7 +1812,7 @@ class _UserManagementViewState extends State<UserManagementView> {
                             'Error loading users: ${snapshot.error}',
                             style: const TextStyle(color: Colors.red),
                           ),
-                          const Gap(8),
+                          const Gap(12),
                           OutlinedButton.icon(
                             onPressed: () {
                               setState(() {
@@ -1761,7 +1828,7 @@ class _UserManagementViewState extends State<UserManagementView> {
                   else if (filteredUsers.isEmpty)
                     Center(
                       child: Padding(
-                        padding: const EdgeInsets.all(36),
+                        padding: const EdgeInsets.all(48),
                         child: Column(
                           children: [
                             const Icon(
@@ -1774,17 +1841,20 @@ class _UserManagementViewState extends State<UserManagementView> {
                               allUsers.isEmpty
                                   ? 'No team users in database yet.'
                                   : 'No users match your search/filter.',
-                              style: const TextStyle(
-                                color: _textMuted,
+                              style: GoogleFonts.inter(
+                                color: const Color(0xFF64748B),
                                 fontSize: 14,
                               ),
                             ),
-                            const Gap(12),
+                            const Gap(16),
                             if (allUsers.isEmpty)
                               ElevatedButton.icon(
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: _primaryColor,
                                   foregroundColor: Colors.white,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
                                 ),
                                 onPressed: () =>
                                     _openAddUserDialog(byUid: false),
@@ -1798,11 +1868,11 @@ class _UserManagementViewState extends State<UserManagementView> {
                   else
                     LayoutBuilder(
                       builder: (context, constraints) {
-                        final isDesktop = constraints.maxWidth >= 780;
+                        final isDesktop = constraints.maxWidth >= 820;
                         if (isDesktop) {
-                          final tableWidth = constraints.maxWidth > 1050
+                          final tableWidth = constraints.maxWidth > 1150
                               ? constraints.maxWidth
-                              : 1050.0;
+                              : 1150.0;
                           return SizedBox(
                             width: double.infinity,
                             child: SingleChildScrollView(
@@ -1838,67 +1908,244 @@ class _UserManagementViewState extends State<UserManagementView> {
   }
 
   Widget _buildRoleFilterDropdown() {
-    return AcadenoDropdown<String>(
-      value: _roleFilter,
-      borderRadius: 10,
-      borderColor: const Color(0xFFE2E8F0),
-      fillColor: Colors.white,
-      prefixIcon: const Icon(
-        Icons.work_outline_rounded,
-        size: 18,
-        color: Color(0xFF64748B),
+    return Container(
+      height: 46,
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
       ),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-      items: const [
-        AcadenoDropdownItem(value: 'all', label: 'All Roles'),
-        AcadenoDropdownItem(value: 'admin', label: 'Admin'),
-        AcadenoDropdownItem(value: 'hr', label: 'HR & Operations'),
-      ],
-      onChanged: (v) => setState(() => _roleFilter = v ?? 'all'),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<String>(
+          value: _roleFilter,
+          isExpanded: true,
+          dropdownColor: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          icon: const Icon(
+            Icons.keyboard_arrow_down_rounded,
+            size: 18,
+            color: Color(0xFF64748B),
+          ),
+          style: GoogleFonts.inter(
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+            color: const Color(0xFF334155),
+          ),
+          onChanged: (v) => setState(() => _roleFilter = v ?? 'all'),
+          items: [
+            DropdownMenuItem(
+              value: 'all',
+              child: Row(
+                children: [
+                  const Icon(
+                    Icons.work_outline_rounded,
+                    size: 14,
+                    color: Color(0xFF64748B),
+                  ),
+                  const Gap(8),
+                  Text(
+                    'All Roles',
+                    style: GoogleFonts.inter(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: const Color(0xFF334155),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            DropdownMenuItem(
+              value: 'admin',
+              child: Row(
+                children: [
+                  const Icon(
+                    Icons.work_outline_rounded,
+                    size: 14,
+                    color: Color(0xFF64748B),
+                  ),
+                  const Gap(8),
+                  Text(
+                    'Admin',
+                    style: GoogleFonts.inter(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: const Color(0xFF334155),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            DropdownMenuItem(
+              value: 'hr',
+              child: Row(
+                children: [
+                  const Icon(
+                    Icons.work_outline_rounded,
+                    size: 14,
+                    color: Color(0xFF64748B),
+                  ),
+                  const Gap(8),
+                  Text(
+                    'HR & Operations',
+                    style: GoogleFonts.inter(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: const Color(0xFF334155),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
   Widget _buildStatusFilterDropdown() {
-    return AcadenoDropdown<String>(
-      value: _statusFilter,
-      borderRadius: 10,
-      borderColor: const Color(0xFFE2E8F0),
-      fillColor: Colors.white,
-      prefixIcon: const Icon(
-        Icons.tune_rounded,
-        size: 18,
-        color: Color(0xFF64748B),
+    return Container(
+      height: 46,
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
       ),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-      items: const [
-        AcadenoDropdownItem(value: 'all', label: 'All Statuses'),
-        AcadenoDropdownItem(value: 'active', label: 'Active Only'),
-        AcadenoDropdownItem(value: 'inactive', label: 'Inactive Only'),
-      ],
-      onChanged: (v) => setState(() => _statusFilter = v ?? 'all'),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<String>(
+          value: _statusFilter,
+          isExpanded: true,
+          dropdownColor: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          icon: const Icon(
+            Icons.keyboard_arrow_down_rounded,
+            size: 18,
+            color: Color(0xFF64748B),
+          ),
+          style: GoogleFonts.inter(
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+            color: const Color(0xFF334155),
+          ),
+          onChanged: (v) => setState(() => _statusFilter = v ?? 'all'),
+          items: [
+            DropdownMenuItem(
+              value: 'all',
+              child: Row(
+                children: [
+                  const Icon(
+                    Icons.tune_rounded,
+                    size: 14,
+                    color: Color(0xFF64748B),
+                  ),
+                  const Gap(8),
+                  Text(
+                    'All Statuses',
+                    style: GoogleFonts.inter(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: const Color(0xFF334155),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            DropdownMenuItem(
+              value: 'active',
+              child: Row(
+                children: [
+                  const Icon(
+                    Icons.tune_rounded,
+                    size: 14,
+                    color: Color(0xFF64748B),
+                  ),
+                  const Gap(8),
+                  Text(
+                    'Active Only',
+                    style: GoogleFonts.inter(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: const Color(0xFF334155),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            DropdownMenuItem(
+              value: 'inactive',
+              child: Row(
+                children: [
+                  const Icon(
+                    Icons.tune_rounded,
+                    size: 14,
+                    color: Color(0xFF64748B),
+                  ),
+                  const Gap(8),
+                  Text(
+                    'Inactive Only',
+                    style: GoogleFonts.inter(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: const Color(0xFF334155),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
-  Widget _badge(String text, Color bg, Color fg) {
+  Widget _pillBadge({
+    required String label,
+    required String value,
+    required Color bg,
+    required Color labelColor,
+    required Color valueColor,
+  }) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
       decoration: BoxDecoration(
         color: bg,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(9999),
       ),
-      child: Text(
-        text,
-        style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: fg),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            label,
+            style: GoogleFonts.inter(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: labelColor,
+              letterSpacing: 0.12,
+              height: 16 / 12,
+            ),
+          ),
+          const Gap(4),
+          Text(
+            value,
+            style: GoogleFonts.inter(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: valueColor,
+              height: 16 / 12,
+            ),
+          ),
+        ],
       ),
     );
   }
 
-  static const _tblHdr = TextStyle(
-    fontSize: 11,
-    fontWeight: FontWeight.w700,
-    color: Color(0xFF94A3B8),
-    letterSpacing: 0.5,
-  );
+  static TextStyle get _tblHdr => GoogleFonts.inter(
+        fontSize: 11,
+        fontWeight: FontWeight.w700,
+        color: const Color(0xFF94A3B8),
+        letterSpacing: 0.55,
+      );
 
   Widget _buildDesktopTable(
     DashboardCubit cubit,
@@ -1909,76 +2156,105 @@ class _UserManagementViewState extends State<UserManagementView> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        // Table Header Row (Figma Node 1364:2940)
         Container(
           width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          height: 49,
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
           decoration: const BoxDecoration(
+            color: Color(0x80F8FAFC),
             border: Border(bottom: BorderSide(color: Color(0xFFF1F5F9))),
           ),
-          child: const Row(
+          child: Row(
             children: [
               Expanded(
                 flex: 3,
                 child: Padding(
-                  padding: EdgeInsets.only(right: 14),
+                  padding: const EdgeInsets.only(right: 14),
                   child: Text('USER', style: _tblHdr),
                 ),
               ),
               Expanded(
                 flex: 3,
                 child: Padding(
-                  padding: EdgeInsets.only(right: 14),
+                  padding: const EdgeInsets.only(right: 14),
                   child: Text('EMAIL & UID', style: _tblHdr),
                 ),
               ),
               Expanded(
                 flex: 2,
                 child: Padding(
-                  padding: EdgeInsets.only(right: 14),
+                  padding: const EdgeInsets.only(right: 14),
                   child: Text('ROLE', style: _tblHdr),
                 ),
               ),
               Expanded(
                 flex: 3,
                 child: Padding(
-                  padding: EdgeInsets.only(right: 14),
-                  child: Text('DEVICE SECURITY', style: _tblHdr),
+                  padding: const EdgeInsets.only(right: 14),
+                  child: Text('DEVICE SECURITY (PR-5.1)', style: _tblHdr),
                 ),
               ),
               SizedBox(
-                width: 70,
-                child: Padding(
-                  padding: EdgeInsets.only(right: 8),
-                  child: Text('ACTIVE', style: _tblHdr),
+                width: 95,
+                child: Center(child: Text('ACTIVE', style: _tblHdr)),
+              ),
+              SizedBox(
+                width: 125,
+                child: Align(
+                  alignment: Alignment.centerRight,
+                  child: Text('ACTIONS', style: _tblHdr),
                 ),
               ),
               SizedBox(
-                width: 80,
-                child: Center(child: Text('ACTIONS', style: _tblHdr)),
-              ),
-              SizedBox(
-                width: 110,
-                child: Center(child: Text('RESET PASSWORD', style: _tblHdr)),
+                width: 125,
+                child: Align(
+                  alignment: Alignment.centerRight,
+                  child: Text('RESET PASSWORD', style: _tblHdr),
+                ),
               ),
             ],
           ),
         ),
+
+        // Table Body Rows (Figma Node 1364:2953)
         for (final user in users)
           Builder(
             builder: (_) {
               final isMe = user.uid == myUid;
+              final isUserAdmin =
+                  user.role.toLowerCase().contains('admin') ||
+                  user.name.toLowerCase().contains('admin');
+              final isTestUser = user.name.toLowerCase().contains('test');
+
+              Color avatarBg = const Color(0xFFE0E7FF);
+              Color avatarText = const Color(0xFF4338CA);
+              if (isUserAdmin) {
+                avatarBg = const Color(0xFFFEF3C7);
+                avatarText = const Color(0xFFB45309);
+              } else if (isTestUser) {
+                avatarBg = const Color(0xFFEDE9FE);
+                avatarText = const Color(0xFF6D28D9);
+              }
+
+              final initial = user.name.isNotEmpty && user.name != '—'
+                  ? user.name[0].toUpperCase()
+                  : (user.email.isNotEmpty && user.email != '—'
+                        ? user.email[0].toUpperCase()
+                        : 'U');
+
               return Container(
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 14,
-                  vertical: 14,
+                  horizontal: 24,
+                  vertical: 18,
                 ),
                 decoration: const BoxDecoration(
-                  border: Border(bottom: BorderSide(color: Color(0xFFF8FAFC))),
+                  border: Border(bottom: BorderSide(color: Color(0xFFF1F5F9))),
                 ),
                 child: Row(
                   children: [
-                    // USER (Avatar + Name)
+                    // USER Column
                     Expanded(
                       flex: 3,
                       child: Padding(
@@ -1986,90 +2262,67 @@ class _UserManagementViewState extends State<UserManagementView> {
                         child: Row(
                           children: [
                             Container(
-                              width: 36,
-                              height: 36,
+                              width: 40,
+                              height: 40,
                               decoration: BoxDecoration(
-                                color: user.name.toLowerCase().contains('admin')
-                                    ? const Color(0xFFFEF3C7)
-                                    : (user.name.toLowerCase().contains('test')
-                                          ? const Color(0xFFF3E8FF)
-                                          : const Color(0xFFEEF2FF)),
-                                borderRadius: BorderRadius.circular(8),
+                                color: avatarBg,
+                                borderRadius: BorderRadius.circular(12),
                               ),
                               alignment: Alignment.center,
                               child: Text(
-                                user.name.isNotEmpty && user.name != '—'
-                                    ? user.name[0].toUpperCase()
-                                    : (user.email.isNotEmpty &&
-                                              user.email != '—'
-                                          ? user.email[0].toUpperCase()
-                                          : 'U'),
-                                style: TextStyle(
+                                initial,
+                                style: GoogleFonts.inter(
                                   fontSize: 14,
-                                  fontWeight: FontWeight.w800,
-                                  color:
-                                      user.name.toLowerCase().contains('admin')
-                                      ? const Color(0xFFD97706)
-                                      : (user.name.toLowerCase().contains(
-                                              'test',
-                                            )
-                                            ? const Color(0xFF9333EA)
-                                            : const Color(0xFF4F46E5)),
+                                  fontWeight: FontWeight.w700,
+                                  color: avatarText,
                                 ),
                               ),
                             ),
-                            const Gap(10),
+                            const Gap(12),
                             Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Row(
-                                    children: [
-                                      Flexible(
-                                        child: Text(
-                                          user.name.isNotEmpty
-                                              ? user.name
-                                              : (user.email.isNotEmpty &&
-                                                        user.email != '—'
-                                                    ? user.email
-                                                          .split('@')
-                                                          .first
-                                                    : user.uid),
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: const TextStyle(
-                                            fontWeight: FontWeight.w700,
-                                            fontSize: 13.5,
-                                            color: _textDark,
-                                          ),
+                                  Flexible(
+                                    child: Text(
+                                      user.name.isNotEmpty
+                                          ? user.name
+                                          : (user.email.isNotEmpty &&
+                                                    user.email != '—'
+                                                ? user.email.split('@').first
+                                                : user.uid),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: GoogleFonts.inter(
+                                        fontWeight: FontWeight.w700,
+                                        fontSize: 16,
+                                        color: const Color(0xFF0F172A),
+                                        height: 24 / 16,
+                                      ),
+                                    ),
+                                  ),
+                                  if (isMe) ...[
+                                    const Gap(8),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 6,
+                                        vertical: 2,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFEEF2FF),
+                                        borderRadius: BorderRadius.circular(4),
+                                      ),
+                                      child: Text(
+                                        'YOU',
+                                        style: GoogleFonts.inter(
+                                          fontSize: 9,
+                                          fontWeight: FontWeight.w700,
+                                          letterSpacing: 0.45,
+                                          color: const Color(0xFF4F46E5),
                                         ),
                                       ),
-                                      if (isMe) ...[
-                                        const Gap(6),
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 5,
-                                            vertical: 1.5,
-                                          ),
-                                          decoration: BoxDecoration(
-                                            color: const Color(0xFFEEF0FF),
-                                            borderRadius: BorderRadius.circular(
-                                              4,
-                                            ),
-                                          ),
-                                          child: const Text(
-                                            'YOU',
-                                            style: TextStyle(
-                                              fontSize: 9.5,
-                                              fontWeight: FontWeight.w700,
-                                              letterSpacing: 0.4,
-                                              color: Color(0xFF4F46E5),
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ],
-                                  ),
+                                    ),
+                                  ],
                                 ],
                               ),
                             ),
@@ -2078,23 +2331,25 @@ class _UserManagementViewState extends State<UserManagementView> {
                       ),
                     ),
 
-                    // EMAIL & UID
+                    // EMAIL & UID Column
                     Expanded(
                       flex: 3,
                       child: Padding(
                         padding: const EdgeInsets.only(right: 14),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
                           children: [
                             SelectableText(
                               user.email.isNotEmpty && user.email != '—'
                                   ? user.email
                                   : (user.name.contains('@') ? user.name : '—'),
                               maxLines: 1,
-                              style: const TextStyle(
-                                fontSize: 13,
+                              style: GoogleFonts.inter(
+                                fontSize: 14,
                                 fontWeight: FontWeight.w500,
-                                color: _textDark,
+                                color: const Color(0xFF334155),
+                                height: 20 / 14,
                               ),
                             ),
                             const Gap(2),
@@ -2108,14 +2363,15 @@ class _UserManagementViewState extends State<UserManagementView> {
                                       user.uid,
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
-                                      style: const TextStyle(
-                                        fontFamily: 'monospace',
+                                      style: GoogleFonts.inter(
                                         fontSize: 11,
-                                        color: Color(0xFF94A3B8),
+                                        fontWeight: FontWeight.w400,
+                                        color: const Color(0xFF94A3B8),
+                                        height: 16.5 / 11,
                                       ),
                                     ),
                                   ),
-                                  const Gap(4),
+                                  const Gap(6),
                                   const Icon(
                                     Icons.copy_rounded,
                                     size: 12,
@@ -2129,22 +2385,25 @@ class _UserManagementViewState extends State<UserManagementView> {
                       ),
                     ),
 
-                    // ROLE
+                    // ROLE Column
                     Expanded(
                       flex: 2,
                       child: Padding(
                         padding: const EdgeInsets.only(right: 14),
                         child: Container(
                           height: 34,
-                          padding: const EdgeInsets.symmetric(horizontal: 10),
+                          constraints: const BoxConstraints(minWidth: 140),
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFF1F5F9),
-                            borderRadius: BorderRadius.circular(12),
+                            color: isMe
+                                ? const Color(0xFFF8FAFC)
+                                : const Color(0xFFF1F5F9),
+                            borderRadius: BorderRadius.circular(8),
                           ),
                           child: DropdownButtonHideUnderline(
                             child: DropdownButton<String>(
                               dropdownColor: Colors.white,
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(8),
                               value: DashboardUserModel.normalizeRole(
                                 user.role,
                               ),
@@ -2152,13 +2411,14 @@ class _UserManagementViewState extends State<UserManagementView> {
                               isExpanded: true,
                               icon: const Icon(
                                 Icons.keyboard_arrow_down_rounded,
-                                size: 18,
-                                color: Color(0xFF94A3B8),
+                                size: 16,
+                                color: Color(0xFF64748B),
                               ),
-                              style: const TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w600,
-                                color: Color(0xFF334155),
+                              style: GoogleFonts.inter(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                                color: const Color(0xFF334155),
+                                height: 20 / 14,
                               ),
                               items: const [
                                 DropdownMenuItem(
@@ -2196,21 +2456,32 @@ class _UserManagementViewState extends State<UserManagementView> {
                       ),
                     ),
 
-                    // DEVICE SECURITY
+                    // DEVICE SECURITY Column
                     Expanded(
                       flex: 3,
                       child: Padding(
                         padding: const EdgeInsets.only(right: 14),
                         child: Row(
                           children: [
-                            Icon(
-                              user.deviceBound
-                                  ? Icons.smartphone_rounded
-                                  : Icons.sync_rounded,
-                              size: 18,
-                              color: user.deviceBound
-                                  ? const Color(0xFF10B981)
-                                  : const Color(0xFFF59E0B),
+                            Container(
+                              width: 36,
+                              height: 36,
+                              decoration: BoxDecoration(
+                                color: user.deviceBound
+                                    ? const Color(0xFFECFDF5)
+                                    : const Color(0xFFFFFBEB),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              alignment: Alignment.center,
+                              child: Icon(
+                                user.deviceBound
+                                    ? Icons.phone_android_rounded
+                                    : Icons.sync_rounded,
+                                size: 16,
+                                color: user.deviceBound
+                                    ? const Color(0xFF059669)
+                                    : const Color(0xFFD97706),
+                              ),
                             ),
                             const Gap(8),
                             Expanded(
@@ -2223,29 +2494,30 @@ class _UserManagementViewState extends State<UserManagementView> {
                                         ? (user.deviceName.isNotEmpty
                                               ? user.deviceName
                                               : 'Registered Phone')
-                                        : 'Pending new phone',
+                                        : 'Pending new phone...',
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(
-                                      fontSize: 12.5,
-                                      color: user.deviceBound
-                                          ? _textDark
-                                          : const Color(0xFFD97706),
+                                    style: GoogleFonts.inter(
+                                      fontSize: 12,
                                       fontWeight: FontWeight.w700,
+                                      color: user.deviceBound
+                                          ? const Color(0xFF1E293B)
+                                          : const Color(0xFFB45309),
+                                      height: 16 / 12,
                                     ),
                                   ),
-                                  const Gap(1),
                                   Text(
                                     user.deviceBound
                                         ? 'REGISTERED PHONE'
                                         : 'PENDING BINDING',
-                                    style: TextStyle(
-                                      fontSize: 9.5,
-                                      fontWeight: FontWeight.w800,
-                                      letterSpacing: 0.3,
+                                    style: GoogleFonts.inter(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w700,
+                                      letterSpacing: -0.5,
                                       color: user.deviceBound
-                                          ? const Color(0xFF10B981)
+                                          ? const Color(0xFF059669)
                                           : const Color(0xFFD97706),
+                                      height: 15 / 10,
                                     ),
                                   ),
                                 ],
@@ -2254,13 +2526,13 @@ class _UserManagementViewState extends State<UserManagementView> {
                             IconButton(
                               padding: EdgeInsets.zero,
                               constraints: const BoxConstraints(
-                                minWidth: 26,
-                                minHeight: 26,
+                                minWidth: 28,
+                                minHeight: 28,
                               ),
                               icon: const Icon(
                                 Icons.cancel_rounded,
                                 size: 16,
-                                color: Color(0xFFCBD5E1),
+                                color: Color(0xFF94A3B8),
                               ),
                               tooltip: 'Reset Phone Binding',
                               onPressed: () =>
@@ -2271,120 +2543,129 @@ class _UserManagementViewState extends State<UserManagementView> {
                       ),
                     ),
 
-                    // ACTIVE
+                    // ACTIVE Switch Column
                     SizedBox(
-                      width: 70,
-                      child: Padding(
-                        padding: const EdgeInsets.only(right: 8),
-                        child: Align(
-                          alignment: Alignment.centerLeft,
-                          child: Transform.scale(
-                            scale: 0.8,
-                            child: Switch(
-                              value: user.isActive,
-                              activeTrackColor: const Color(0xFF4F46E5),
-                              inactiveTrackColor: const Color(0xFFE2E8F0),
-                              thumbColor: WidgetStateProperty.all(Colors.white),
-                              trackOutlineColor: WidgetStateProperty.all(
-                                Colors.transparent,
-                              ),
-                              onChanged: isMe
-                                  ? null
-                                  : (val) {
-                                      if (!val) {
-                                        _showDeactivateAndReassignDialog(
-                                          user,
-                                          allUsers,
-                                        );
-                                      } else {
-                                        cubit.updateUserActive(
-                                          user.uid,
-                                          true,
-                                          userName: user.name,
-                                        );
-                                      }
-                                    },
+                      width: 95,
+                      child: Center(
+                        child: Transform.scale(
+                          scale: 0.8,
+                          child: Switch(
+                            value: user.isActive,
+                            activeTrackColor: const Color(0xFF4F46E5),
+                            inactiveTrackColor: const Color(0xFFE2E8F0),
+                            thumbColor: WidgetStateProperty.all(Colors.white),
+                            trackOutlineColor: WidgetStateProperty.all(
+                              Colors.transparent,
                             ),
+                            onChanged: isMe
+                                ? null
+                                : (val) {
+                                    if (!val) {
+                                      _showDeactivateAndReassignDialog(
+                                        user,
+                                        allUsers,
+                                      );
+                                    } else {
+                                      cubit.updateUserActive(
+                                        user.uid,
+                                        true,
+                                        userName: user.name,
+                                      );
+                                    }
+                                  },
                           ),
                         ),
                       ),
                     ),
 
-                    // ACTIONS
+                    // ACTIONS Column
                     SizedBox(
-                      width: 80,
+                      width: 125,
                       child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisAlignment: MainAxisAlignment.end,
                         children: [
-                          IconButton(
-                            padding: EdgeInsets.zero,
-                            constraints: const BoxConstraints(
-                              minWidth: 30,
-                              minHeight: 30,
+                          Container(
+                            width: 32,
+                            height: 32,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(8),
                             ),
-                            icon: const Icon(
-                              Icons.logout_rounded,
-                              size: 17,
-                              color: Color(0xFF94A3B8),
-                            ),
-                            tooltip: 'Remote sign out session',
-                            onPressed: () =>
-                                _confirmForceSignOut(context, cubit, user),
-                          ),
-                          const Gap(4),
-                          if (isMe)
-                            IconButton(
+                            child: IconButton(
                               padding: EdgeInsets.zero,
-                              constraints: const BoxConstraints(
-                                minWidth: 30,
-                                minHeight: 30,
-                              ),
                               icon: const Icon(
-                                Icons.groups_outlined,
-                                size: 19,
-                                color: Color(0xFF6366F1),
+                                Icons.logout_rounded,
+                                size: 16,
+                                color: Color(0xFF94A3B8),
                               ),
-                              tooltip: 'Admin Settings',
-                              onPressed: _navigateToSettings,
+                              tooltip: 'Remote sign out session',
+                              onPressed: () =>
+                                  _confirmForceSignOut(context, cubit, user),
+                            ),
+                          ),
+                          const Gap(8),
+                          if (isMe)
+                            Container(
+                              width: 32,
+                              height: 32,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: IconButton(
+                                padding: EdgeInsets.zero,
+                                icon: const Icon(
+                                  Icons.tune_rounded,
+                                  size: 16,
+                                  color: Color(0xFF6366F1),
+                                ),
+                                tooltip: 'Admin Settings',
+                                onPressed: _navigateToSettings,
+                              ),
                             )
                           else
-                            IconButton(
-                              padding: EdgeInsets.zero,
-                              constraints: const BoxConstraints(
-                                minWidth: 30,
-                                minHeight: 30,
+                            Container(
+                              width: 32,
+                              height: 32,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(8),
                               ),
-                              icon: const Icon(
-                                Icons.delete_outline_rounded,
-                                size: 18,
-                                color: Color(0xFFF87171),
+                              child: IconButton(
+                                padding: EdgeInsets.zero,
+                                icon: const Icon(
+                                  Icons.delete_outline_rounded,
+                                  size: 16,
+                                  color: Color(0xFFEF4444),
+                                ),
+                                tooltip: 'Remove user',
+                                onPressed: () =>
+                                    _confirmDelete(context, user.uid, user.name),
                               ),
-                              tooltip: 'Remove user',
-                              onPressed: () =>
-                                  _confirmDelete(context, user.uid, user.name),
                             ),
                         ],
                       ),
                     ),
 
-                    // RESET PASSWORD
+                    // RESET PASSWORD Column (Figma Node 1525:335)
                     SizedBox(
-                      width: 110,
-                      child: Center(
-                        child: IconButton(
-                          padding: EdgeInsets.zero,
-                          constraints: const BoxConstraints(
-                            minWidth: 32,
-                            minHeight: 32,
+                      width: 125,
+                      child: Align(
+                        alignment: Alignment.centerRight,
+                        child: Container(
+                          width: 32,
+                          height: 32,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(8),
                           ),
-                          icon: const Icon(
-                            Icons.lock_reset_rounded,
-                            size: 20,
-                            color: Color(0xFF94A3B8),
+                          child: IconButton(
+                            padding: EdgeInsets.zero,
+                            icon: const Icon(
+                              Icons.lock_reset_rounded,
+                              size: 20,
+                              color: Color(0xFF334155),
+                            ),
+                            tooltip: 'Reset Password',
+                            onPressed: () =>
+                                _confirmResetPassword(context, cubit, user),
                           ),
-                          tooltip: 'Reset Password',
-                          onPressed: () =>
-                              _confirmResetPassword(context, cubit, user),
                         ),
                       ),
                     ),
@@ -2406,172 +2687,254 @@ class _UserManagementViewState extends State<UserManagementView> {
     return Column(
       children: [
         for (var i = 0; i < users.length; i++) ...[
-          if (i > 0) const Gap(12),
+          if (i > 0) const Gap(16),
           Builder(
             builder: (_) {
               final user = users[i];
               final isMe = user.uid == myUid;
+              final isUserAdmin =
+                  user.role.toLowerCase().contains('admin') ||
+                  user.name.toLowerCase().contains('admin');
+              final isTestUser = user.name.toLowerCase().contains('test');
+
+              Color avatarBg = const Color(0xFFE0E7FF);
+              Color avatarText = const Color(0xFF4338CA);
+              if (isUserAdmin) {
+                avatarBg = const Color(0xFFFEF3C7);
+                avatarText = const Color(0xFFB45309);
+              } else if (isTestUser) {
+                avatarBg = const Color(0xFFEDE9FE);
+                avatarText = const Color(0xFF6D28D9);
+              }
+
+              final initial = user.name.isNotEmpty && user.name != '—'
+                  ? user.name[0].toUpperCase()
+                  : (user.email.isNotEmpty && user.email != '—'
+                        ? user.email[0].toUpperCase()
+                        : 'U');
+
               return Container(
-                padding: const EdgeInsets.all(14),
+                padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: _bgLight,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: _borderColor),
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: const Color(0xFFF1F5F9)),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Color(0x0D000000),
+                      blurRadius: 1,
+                      offset: Offset(0, 1),
+                    ),
+                  ],
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
                       children: [
-                        CircleAvatar(
-                          radius: 16,
-                          backgroundColor: const Color(0xFFEEF0FF),
+                        Container(
+                          width: 40,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            color: avatarBg,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          alignment: Alignment.center,
                           child: Text(
-                            user.name.isNotEmpty && user.name != "—"
-                                ? user.name[0].toUpperCase()
-                                : (user.email.isNotEmpty && user.email != "—"
-                                      ? user.email[0].toUpperCase()
-                                      : "U"),
-                            style: const TextStyle(
-                              fontSize: 12,
+                            initial,
+                            style: GoogleFonts.inter(
+                              fontSize: 14,
                               fontWeight: FontWeight.w700,
-                              color: _primaryColor,
+                              color: avatarText,
                             ),
                           ),
                         ),
-                        const Gap(10),
+                        const Gap(12),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
-                                isMe
-                                    ? '${user.name.isNotEmpty && user.name != "—" ? user.name : (user.email.isNotEmpty && user.email != "—" ? user.email.split("@").first : user.uid)} (YOU)'
-                                    : (user.name.isNotEmpty && user.name != "—"
+                              Row(
+                                children: [
+                                  Flexible(
+                                    child: Text(
+                                      user.name.isNotEmpty && user.name != '—'
                                           ? user.name
                                           : (user.email.isNotEmpty &&
-                                                    user.email != "—"
-                                                ? user.email.split("@").first
-                                                : user.uid)),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.w700,
-                                  fontSize: 14,
-                                ),
+                                                    user.email != '—'
+                                                ? user.email.split('@').first
+                                                : user.uid),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: GoogleFonts.inter(
+                                        fontWeight: FontWeight.w700,
+                                        fontSize: 15,
+                                        color: const Color(0xFF0F172A),
+                                      ),
+                                    ),
+                                  ),
+                                  if (isMe) ...[
+                                    const Gap(6),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 5,
+                                        vertical: 1.5,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFEEF2FF),
+                                        borderRadius: BorderRadius.circular(4),
+                                      ),
+                                      child: Text(
+                                        'YOU',
+                                        style: GoogleFonts.inter(
+                                          fontSize: 9,
+                                          fontWeight: FontWeight.w700,
+                                          color: const Color(0xFF4F46E5),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ],
                               ),
+                              const Gap(2),
                               Text(
-                                user.email.isNotEmpty && user.email != "—"
+                                user.email.isNotEmpty && user.email != '—'
                                     ? user.email
-                                    : (user.name.contains("@")
+                                    : (user.name.contains('@')
                                           ? user.name
-                                          : "—"),
+                                          : '—'),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                  fontSize: 12,
-                                  color: _textMuted,
+                                style: GoogleFonts.inter(
+                                  fontSize: 13,
+                                  color: const Color(0xFF64748B),
                                 ),
                               ),
                             ],
                           ),
                         ),
-                        Switch(
-                          value: user.isActive,
-                          activeThumbColor: const Color(0xFF4F46E5),
-                          onChanged: isMe
-                              ? null
-                              : (val) {
-                                  if (!val) {
-                                    _showDeactivateAndReassignDialog(
-                                      user,
-                                      allUsers,
-                                    );
-                                  } else {
-                                    cubit.updateUserActive(
-                                      user.uid,
-                                      true,
-                                      userName: user.name,
-                                    );
-                                  }
-                                },
+                        Transform.scale(
+                          scale: 0.8,
+                          child: Switch(
+                            value: user.isActive,
+                            activeTrackColor: const Color(0xFF4F46E5),
+                            inactiveTrackColor: const Color(0xFFE2E8F0),
+                            thumbColor: WidgetStateProperty.all(Colors.white),
+                            trackOutlineColor: WidgetStateProperty.all(
+                              Colors.transparent,
+                            ),
+                            onChanged: isMe
+                                ? null
+                                : (val) {
+                                    if (!val) {
+                                      _showDeactivateAndReassignDialog(
+                                        user,
+                                        allUsers,
+                                      );
+                                    } else {
+                                      cubit.updateUserActive(
+                                        user.uid,
+                                        true,
+                                        userName: user.name,
+                                      );
+                                    }
+                                  },
+                          ),
                         ),
                       ],
                     ),
-                    const Gap(8),
+                    const Gap(12),
                     InkWell(
                       onTap: () => _copyToClipboard(user.uid, 'UID'),
-                      child: Row(
-                        children: [
-                          const Text(
-                            'UID: ',
-                            style: TextStyle(fontSize: 11, color: _textMuted),
-                          ),
-                          Flexible(
-                            child: Text(
-                              user.uid,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                fontFamily: 'monospace',
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF8FAFC),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: const Color(0xFFE2E8F0)),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              'UID: ',
+                              style: GoogleFonts.inter(
                                 fontSize: 11,
-                                color: _textMuted,
+                                color: const Color(0xFF94A3B8),
+                                fontWeight: FontWeight.w600,
                               ),
                             ),
-                          ),
-                          const Gap(4),
-                          const Icon(
-                            Icons.copy_rounded,
-                            size: 12,
-                            color: _textMuted,
-                          ),
-                        ],
+                            Flexible(
+                              child: Text(
+                                user.uid,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: GoogleFonts.inter(
+                                  fontSize: 11,
+                                  color: const Color(0xFF64748B),
+                                ),
+                              ),
+                            ),
+                            const Gap(6),
+                            const Icon(
+                              Icons.copy_rounded,
+                              size: 12,
+                              color: Color(0xFF94A3B8),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                    const Gap(10),
+                    const Gap(12),
                     Row(
                       children: [
-                        const Text(
+                        Text(
                           'Role:',
-                          style: TextStyle(
-                            fontSize: 12,
+                          style: GoogleFonts.inter(
+                            fontSize: 13,
                             fontWeight: FontWeight.w600,
-                            color: _textMuted,
+                            color: const Color(0xFF64748B),
                           ),
                         ),
-                        const Gap(8),
+                        const Gap(10),
                         Expanded(
                           child: Container(
-                            height: 32,
-                            padding: const EdgeInsets.symmetric(horizontal: 8),
+                            height: 34,
+                            padding: const EdgeInsets.symmetric(horizontal: 10),
                             decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: _borderColor),
+                              color: const Color(0xFFF1F5F9),
+                              borderRadius: BorderRadius.circular(8),
                             ),
                             child: DropdownButtonHideUnderline(
                               child: DropdownButton<String>(
                                 dropdownColor: Colors.white,
-                                borderRadius: BorderRadius.circular(12),
+                                borderRadius: BorderRadius.circular(8),
                                 value: DashboardUserModel.normalizeRole(
                                   user.role,
                                 ),
                                 isDense: true,
                                 isExpanded: true,
+                                icon: const Icon(
+                                  Icons.keyboard_arrow_down_rounded,
+                                  size: 16,
+                                  color: Color(0xFF64748B),
+                                ),
+                                style: GoogleFonts.inter(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w500,
+                                  color: const Color(0xFF334155),
+                                ),
                                 items: const [
                                   DropdownMenuItem(
                                     value: 'admin',
-                                    child: Text(
-                                      'Admin',
-                                      style: TextStyle(fontSize: 12),
-                                    ),
+                                    child: Text('Admin'),
                                   ),
                                   DropdownMenuItem(
                                     value: 'hr',
-                                    child: Text(
-                                      'HR & Operation Manager',
-                                      style: TextStyle(fontSize: 12),
-                                    ),
+                                    child: Text('HR & Operations'),
                                   ),
                                 ],
                                 onChanged: isMe
@@ -2592,39 +2955,64 @@ class _UserManagementViewState extends State<UserManagementView> {
                         ),
                       ],
                     ),
-                    const Gap(8),
+                    const Gap(10),
                     Container(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 6,
+                        horizontal: 12,
+                        vertical: 8,
                       ),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFF8FAFC),
+                        color: user.deviceBound
+                            ? const Color(0xFFECFDF5)
+                            : const Color(0xFFFFFBEB),
                         borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: const Color(0xFFE2E8F0)),
                       ),
                       child: Row(
                         children: [
                           Icon(
                             user.deviceBound
                                 ? Icons.phone_android_rounded
-                                : Icons.phonelink_setup_rounded,
-                            size: 14,
+                                : Icons.sync_rounded,
+                            size: 16,
                             color: user.deviceBound
-                                ? const Color(0xFF16A34A)
+                                ? const Color(0xFF059669)
                                 : const Color(0xFFD97706),
                           ),
-                          const Gap(6),
+                          const Gap(8),
                           Expanded(
-                            child: Text(
-                              'Device: ${user.deviceName} (${user.deviceBound ? "Registered" : "Pending"})',
-                              style: const TextStyle(
-                                fontSize: 11.5,
-                                color: _textDark,
-                                fontWeight: FontWeight.w500,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  user.deviceBound
+                                      ? (user.deviceName.isNotEmpty
+                                            ? user.deviceName
+                                            : 'Registered Phone')
+                                      : 'Pending new phone...',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 12,
+                                    color: user.deviceBound
+                                        ? const Color(0xFF1E293B)
+                                        : const Color(0xFFB45309),
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                Text(
+                                  user.deviceBound
+                                      ? 'REGISTERED PHONE'
+                                      : 'PENDING BINDING',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w700,
+                                    letterSpacing: -0.5,
+                                    color: user.deviceBound
+                                        ? const Color(0xFF059669)
+                                        : const Color(0xFFD97706),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                           TextButton.icon(
@@ -2637,68 +3025,70 @@ class _UserManagementViewState extends State<UserManagementView> {
                             onPressed: () =>
                                 _confirmResetDevice(context, cubit, user),
                             icon: const Icon(
-                              Icons.phonelink_erase_rounded,
+                              Icons.cancel_rounded,
                               size: 14,
+                              color: Color(0xFF94A3B8),
                             ),
-                            label: const Text(
+                            label: Text(
                               'Reset',
-                              style: TextStyle(fontSize: 11),
+                              style: GoogleFonts.inter(
+                                fontSize: 11,
+                                color: const Color(0xFF94A3B8),
+                              ),
                             ),
                           ),
                         ],
                       ),
                     ),
-                    const Gap(8),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 4,
-                      alignment: WrapAlignment.spaceBetween,
-                      crossAxisAlignment: WrapCrossAlignment.center,
+                    const Gap(12),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
                       children: [
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            IconButton(
-                              icon: const Icon(Icons.logout_rounded, size: 18),
-                              tooltip: 'Remote sign out session',
-                              onPressed: () =>
-                                  _confirmForceSignOut(context, cubit, user),
-                            ),
-                            IconButton(
-                              icon: const Icon(
-                                Icons.lock_reset_rounded,
-                                size: 19,
-                                color: Color(0xFF64748B),
-                              ),
-                              tooltip: 'Reset Password',
-                              onPressed: () =>
-                                  _confirmResetPassword(context, cubit, user),
-                            ),
-                            if (isMe)
-                              IconButton(
-                                icon: const Icon(
-                                  Icons.manage_accounts_outlined,
-                                  size: 20,
-                                  color: _primaryColor,
-                                ),
-                                tooltip: 'Admin Settings',
-                                onPressed: _navigateToSettings,
-                              )
-                            else
-                              IconButton(
-                                icon: const Icon(
-                                  Icons.delete_outline,
-                                  size: 18,
-                                  color: Color(0xFFDC2626),
-                                ),
-                                onPressed: () => _confirmDelete(
-                                  context,
-                                  user.uid,
-                                  user.name,
-                                ),
-                              ),
-                          ],
+                        IconButton(
+                          icon: const Icon(
+                            Icons.logout_rounded,
+                            size: 18,
+                            color: Color(0xFF94A3B8),
+                          ),
+                          tooltip: 'Remote sign out session',
+                          onPressed: () =>
+                              _confirmForceSignOut(context, cubit, user),
                         ),
+                        const Gap(4),
+                        IconButton(
+                          icon: const Icon(
+                            Icons.lock_reset_rounded,
+                            size: 20,
+                            color: Color(0xFF334155),
+                          ),
+                          tooltip: 'Reset Password',
+                          onPressed: () =>
+                              _confirmResetPassword(context, cubit, user),
+                        ),
+                        const Gap(4),
+                        if (isMe)
+                          IconButton(
+                            icon: const Icon(
+                              Icons.tune_rounded,
+                              size: 18,
+                              color: Color(0xFF6366F1),
+                            ),
+                            tooltip: 'Admin Settings',
+                            onPressed: _navigateToSettings,
+                          )
+                        else
+                          IconButton(
+                            icon: const Icon(
+                              Icons.delete_outline_rounded,
+                              size: 18,
+                              color: Color(0xFFEF4444),
+                            ),
+                            onPressed: () => _confirmDelete(
+                              context,
+                              user.uid,
+                              user.name,
+                            ),
+                          ),
                       ],
                     ),
                   ],
