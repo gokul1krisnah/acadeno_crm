@@ -362,6 +362,7 @@ class _FollowUpsViewState extends State<FollowUpsView> {
     final isCompact = maxWidth < 880;
 
     final reassignButton = Container(
+      alignment: Alignment.center,
       decoration: BoxDecoration(
         color: const Color(0xFFEF8144),
         borderRadius: BorderRadius.circular(12),
@@ -387,14 +388,16 @@ class _FollowUpsViewState extends State<FollowUpsView> {
           borderRadius: BorderRadius.circular(12),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
-            child: Text(
-              'Re Assign in Fire Store',
-              textAlign: TextAlign.center,
-              style: GoogleFonts.inter(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: Colors.white,
-                height: 24 / 14,
+            child: Center(
+              child: Text(
+                'Re Assign in Fire Store',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.inter(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                  height: 24 / 14,
+                ),
               ),
             ),
           ),
@@ -891,6 +894,7 @@ class _FollowUpsViewState extends State<FollowUpsView> {
     );
 
     final reassignBtn = Container(
+      alignment: Alignment.center,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(8),
@@ -903,13 +907,16 @@ class _FollowUpsViewState extends State<FollowUpsView> {
           borderRadius: BorderRadius.circular(8),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-            child: Text(
-              'Reassign',
-              style: GoogleFonts.plusJakartaSans(
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
-                color: const Color(0xFF3B3FB1),
-                height: 20 / 14,
+            child: Center(
+              child: Text(
+                'Reassign',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFF3B3FB1),
+                  height: 20 / 14,
+                ),
               ),
             ),
           ),
@@ -918,6 +925,7 @@ class _FollowUpsViewState extends State<FollowUpsView> {
     );
 
     final markDoneBtn = Container(
+      alignment: Alignment.center,
       decoration: BoxDecoration(
         color: const Color(0xFF10B981),
         borderRadius: BorderRadius.circular(8),
@@ -929,13 +937,16 @@ class _FollowUpsViewState extends State<FollowUpsView> {
           borderRadius: BorderRadius.circular(8),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-            child: Text(
-              'Mark Done',
-              style: GoogleFonts.plusJakartaSans(
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
-                color: Colors.white,
-                height: 20 / 14,
+            child: Center(
+              child: Text(
+                'Mark Done',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white,
+                  height: 20 / 14,
+                ),
               ),
             ),
           ),

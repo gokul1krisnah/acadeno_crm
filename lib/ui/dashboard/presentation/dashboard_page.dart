@@ -883,6 +883,7 @@ class _DashboardViewState extends State<_DashboardView> {
             height: 48,
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(
+                alignment: Alignment.center,
                 backgroundColor: const Color(0xFFEF8144),
                 foregroundColor: Colors.white,
                 elevation: 0,
@@ -895,6 +896,7 @@ class _DashboardViewState extends State<_DashboardView> {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   const Icon(Icons.add, size: 16, color: Colors.white),
                   const Gap(8),
@@ -963,6 +965,7 @@ class _DashboardViewState extends State<_DashboardView> {
                 height: 48,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
+                    alignment: Alignment.center,
                     backgroundColor: const Color(0xFFEF8144),
                     foregroundColor: Colors.white,
                     elevation: 0,
@@ -974,11 +977,14 @@ class _DashboardViewState extends State<_DashboardView> {
                   onPressed: () => context.read<DashboardCubit>().selectNav(1),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       const Icon(Icons.add, size: 16, color: Colors.white),
                       const Gap(8),
                       Text(
                         "Assign Today's Leads",
+                        textAlign: TextAlign.center,
                         style: GoogleFonts.inter(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
@@ -1049,6 +1055,7 @@ class _DashboardViewState extends State<_DashboardView> {
           height: 52,
           child: ElevatedButton(
             style: ElevatedButton.styleFrom(
+              alignment: Alignment.center,
               backgroundColor: const Color(0xFFEF8144),
               foregroundColor: Colors.white,
               elevation: 0,
@@ -1061,6 +1068,7 @@ class _DashboardViewState extends State<_DashboardView> {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 const Icon(Icons.add, size: 16, color: Colors.white),
                 const Gap(8),
@@ -2573,8 +2581,9 @@ class _OverdueFollowUps extends StatelessWidget {
                 onTap: onReassign,
                 borderRadius: BorderRadius.circular(4),
                 child: Container(
+                  alignment: Alignment.center,
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
+                    horizontal: 10,
                     vertical: 4,
                   ),
                   decoration: BoxDecoration(
@@ -2583,6 +2592,7 @@ class _OverdueFollowUps extends StatelessWidget {
                   ),
                   child: Text(
                     'Manage in Leads',
+                    textAlign: TextAlign.center,
                     style: GoogleFonts.inter(
                       color: const Color(0xFF5C59B6),
                       fontSize: 14,
@@ -2675,6 +2685,7 @@ class _OverdueFollowUps extends StatelessWidget {
                         onTap: onReassign,
                         borderRadius: BorderRadius.circular(9999),
                         child: Container(
+                          alignment: Alignment.center,
                           padding: const EdgeInsets.symmetric(
                             horizontal: 16,
                             vertical: 6,
@@ -2769,8 +2780,9 @@ class _CollegeVisits extends StatelessWidget {
                 onTap: onPlanVisit,
                 borderRadius: BorderRadius.circular(4),
                 child: Container(
+                  alignment: Alignment.center,
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
+                    horizontal: 10,
                     vertical: 4,
                   ),
                   decoration: BoxDecoration(
