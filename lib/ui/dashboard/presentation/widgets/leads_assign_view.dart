@@ -2646,6 +2646,83 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
   }
 }
 
+class _FigmaRightBorderPainter extends CustomPainter {
+  final Color color;
+  final double radius;
+  final double strokeWidth;
+
+  const _FigmaRightBorderPainter({
+    required this.color,
+    this.radius = 12.0,
+    this.strokeWidth = 4.0,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (color == Colors.transparent || color.a == 0.0 || strokeWidth <= 0) {
+      return;
+    }
+
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.fill
+      ..isAntiAlias = true;
+
+    final w = size.width;
+    final h = size.height;
+    final r = radius;
+    final t = strokeWidth;
+
+    final path = Path();
+    // Start at top tangent of outer arc
+    path.moveTo(w - r, 0);
+
+    // Outer top-right arc (circular radius r)
+    path.arcToPoint(
+      Offset(w, r),
+      radius: Radius.circular(r),
+      clockwise: true,
+    );
+
+    // Outer straight right vertical line
+    path.lineTo(w, h - r);
+
+    // Outer bottom-right arc (circular radius r)
+    path.arcToPoint(
+      Offset(w - r, h),
+      radius: Radius.circular(r),
+      clockwise: true,
+    );
+
+    // Inner bottom-right elliptical arc (Rx = r - t, Ry = r)
+    path.arcToPoint(
+      Offset(w - t, h - r),
+      radius: Radius.elliptical(r - t, r),
+      clockwise: false,
+    );
+
+    // Inner straight right vertical line
+    path.lineTo(w - t, r);
+
+    // Inner top-right elliptical arc (Rx = r - t, Ry = r)
+    path.arcToPoint(
+      Offset(w - r, 0),
+      radius: Radius.elliptical(r - t, r),
+      clockwise: false,
+    );
+
+    path.close();
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant _FigmaRightBorderPainter oldDelegate) {
+    return oldDelegate.color != color ||
+        oldDelegate.radius != radius ||
+        oldDelegate.strokeWidth != strokeWidth;
+  }
+}
+
 class _DesktopLeadTableRow extends StatefulWidget {
   final LeadRecord lead;
   final bool isSelected;
@@ -2679,193 +2756,190 @@ class _DesktopLeadTableRowState extends State<_DesktopLeadTableRow> {
   Widget build(BuildContext context) {
     final r = widget.lead;
     final isSelected = widget.isSelected;
+    final isActiveOrHovered = isSelected || _isHovered;
 
-    // Harmonized with modern Figma dashboard:
-    // Selected + Hovered: #FFEFE5 warm peach glow with 4px orange accent
-    // Selected: #FFF6F0 warm peach tint with 3.5px orange accent
-    // Hovered: #F8FAFC subtle cool slate tint with soft slate accent
+    // Exact same colors & curve as the navbar selection/hover:
+    // Selected: #FFEDE2 warm brand peach
+    // Hovered: #FFF6F0 lighter luminous peach
     // Idle: Colors.white
     final Color bgColor = isSelected
-        ? (_isHovered ? const Color(0xFFFFEFE5) : const Color(0xFFFFF6F0))
-        : (_isHovered ? const Color(0xFFF8FAFC) : Colors.white);
+        ? const Color(0xFFFFEDE2)
+        : (_isHovered ? const Color(0xFFFFF6F0) : Colors.white);
 
-    final Color indicatorColor = isSelected
-        ? _primary
-        : (_isHovered ? const Color(0xFFCBD5E1) : Colors.transparent);
-
-    final double indicatorWidth = isSelected
-        ? (_isHovered ? 4.0 : 3.5)
-        : (_isHovered ? 3.0 : 0.0);
-
-    return MouseRegion(
-      cursor: SystemMouseCursors.click,
-      onEnter: (_) => setState(() => _isHovered = true),
-      onExit: (_) => setState(() => _isHovered = false),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 160),
-        curve: Curves.easeOutCubic,
-        decoration: BoxDecoration(
-          color: bgColor,
-          border: Border(
-            left: BorderSide(
-              color: indicatorColor,
-              width: indicatorWidth,
-            ),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 2.0),
+      child: MouseRegion(
+        cursor: SystemMouseCursors.click,
+        onEnter: (_) => setState(() => _isHovered = true),
+        onExit: (_) => setState(() => _isHovered = false),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          curve: Curves.easeOutCubic,
+          decoration: BoxDecoration(
+            color: bgColor,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: _isHovered
+                ? const [
+                    BoxShadow(
+                      color: Color(0x0A0F172A),
+                      blurRadius: 6,
+                      offset: Offset(0, 2),
+                    ),
+                  ]
+                : const [],
           ),
-          boxShadow: _isHovered
-              ? const [
-                  BoxShadow(
-                    color: Color(0x080F172A),
-                    blurRadius: 6,
-                    offset: Offset(0, 2),
+          child: Material(
+            color: Colors.transparent,
+            borderRadius: BorderRadius.circular(12),
+            child: InkWell(
+              borderRadius: BorderRadius.circular(12),
+              onTap: widget.onTap,
+              hoverColor: Colors.transparent,
+              splashColor: _primary.withValues(alpha: 0.08),
+              highlightColor: _primary.withValues(alpha: 0.04),
+              child: CustomPaint(
+                foregroundPainter: _FigmaRightBorderPainter(
+                  color: isActiveOrHovered ? _primary : Colors.transparent,
+                  radius: 12.0,
+                  strokeWidth: 4.0,
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 14,
                   ),
-                ]
-              : const [],
-        ),
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            onTap: widget.onTap,
-            hoverColor: Colors.transparent,
-            splashColor: _primary.withValues(alpha: 0.08),
-            highlightColor: _primary.withValues(alpha: 0.04),
-            child: Padding(
-              padding: EdgeInsets.symmetric(
-                horizontal: isSelected || _isHovered
-                    ? (20.0 - indicatorWidth).clamp(16.0, 20.0)
-                    : 20.0,
-                vertical: 14,
-              ),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Expanded(
-                    flex: 10,
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        widget.checkboxBuilder(
-                          value: isSelected,
-                          isRowHovered: _isHovered,
-                          onChanged: widget.onSelectChanged,
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Expanded(
+                        flex: 10,
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            widget.checkboxBuilder(
+                              value: isSelected,
+                              isRowHovered: _isHovered,
+                              onChanged: widget.onSelectChanged,
+                            ),
+                            const Gap(20),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    r.name,
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                      height: 24 / 16,
+                                      letterSpacing: 0,
+                                      color: isActiveOrHovered
+                                          ? const Color(0xFF0F172A)
+                                          : const Color(0xFF111827),
+                                    ),
+                                  ),
+                                  const Gap(2),
+                                  Text(
+                                    r.phone,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w500,
+                                      height: 16 / 12,
+                                      letterSpacing: 0,
+                                      color: const Color(0xFF9CA3AF),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
                         ),
-                        const Gap(20),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                r.name,
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                                style: GoogleFonts.poppins(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                  height: 24 / 16,
-                                  letterSpacing: 0,
-                                  color: _isHovered || isSelected
-                                      ? const Color(0xFF0F172A)
-                                      : const Color(0xFF111827),
-                                ),
-                              ),
-                              const Gap(2),
-                              Text(
-                                r.phone,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: GoogleFonts.poppins(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w500,
-                                  height: 16 / 12,
-                                  letterSpacing: 0,
-                                  color: const Color(0xFF9CA3AF),
-                                ),
-                              ),
-                            ],
+                      ),
+                      Expanded(
+                        flex: 7,
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            r.collegeBranch,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: GoogleFonts.poppins(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                              height: 20 / 14,
+                              letterSpacing: -0.0957,
+                              color: const Color(0xFF4B5563),
+                            ),
                           ),
                         ),
-                      ],
-                    ),
-                  ),
-                  Expanded(
-                    flex: 7,
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        r.collegeBranch,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.poppins(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                          height: 20 / 14,
-                          letterSpacing: -0.0957,
-                          color: const Color(0xFF4B5563),
+                      ),
+                      Expanded(
+                        flex: 6,
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            r.source,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: GoogleFonts.poppins(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                              height: 20 / 14,
+                              letterSpacing: -0.0957,
+                              color: const Color(0xFF4B5563),
+                            ),
+                          ),
                         ),
                       ),
-                    ),
-                  ),
-                  Expanded(
-                    flex: 6,
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        r.source,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.poppins(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                          height: 20 / 14,
-                          letterSpacing: -0.0957,
-                          color: const Color(0xFF4B5563),
+                      Expanded(
+                        flex: 5,
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: widget.statusBadge,
                         ),
                       ),
-                    ),
-                  ),
-                  Expanded(
-                    flex: 5,
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: widget.statusBadge,
-                    ),
-                  ),
-                  Expanded(
-                    flex: 5,
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        r.lastContact,
-                        style: GoogleFonts.poppins(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                          height: 20 / 14,
-                          color: const Color(0xFF6B7280),
+                      Expanded(
+                        flex: 5,
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            r.lastContact,
+                            style: GoogleFonts.poppins(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                              height: 20 / 14,
+                              color: const Color(0xFF6B7280),
+                            ),
+                          ),
                         ),
                       ),
-                    ),
-                  ),
-                  Expanded(
-                    flex: 6,
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        r.assignedToName.isEmpty ? '—' : r.assignedToName,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.poppins(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                          height: 20 / 14,
-                          letterSpacing: 0.0684,
-                          color: const Color(0xFF4B5563),
+                      Expanded(
+                        flex: 6,
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            r.assignedToName.isEmpty ? '—' : r.assignedToName,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: GoogleFonts.poppins(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                              height: 20 / 14,
+                              letterSpacing: 0.0684,
+                              color: const Color(0xFF4B5563),
+                            ),
+                          ),
                         ),
                       ),
-                    ),
+                    ],
                   ),
-                ],
+                ),
               ),
             ),
           ),
@@ -2908,109 +2982,119 @@ class _MobileLeadCardRowState extends State<_MobileLeadCardRow> {
   Widget build(BuildContext context) {
     final r = widget.lead;
     final isSelected = widget.isSelected;
+    final isActiveOrHovered = isSelected || _isHovered;
 
     final Color bgColor = isSelected
-        ? (_isHovered ? const Color(0xFFFFEFE5) : const Color(0xFFFFF6F0))
-        : (_isHovered ? const Color(0xFFF8FAFC) : Colors.white);
+        ? const Color(0xFFFFEDE2)
+        : (_isHovered ? const Color(0xFFFFF6F0) : Colors.white);
 
-    final Color indicatorColor = isSelected
-        ? _primary
-        : (_isHovered ? const Color(0xFFCBD5E1) : Colors.transparent);
-
-    final double indicatorWidth = isSelected
-        ? (_isHovered ? 4.0 : 3.5)
-        : (_isHovered ? 3.0 : 0.0);
-
-    return MouseRegion(
-      cursor: SystemMouseCursors.click,
-      onEnter: (_) => setState(() => _isHovered = true),
-      onExit: (_) => setState(() => _isHovered = false),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 160),
-        curve: Curves.easeOutCubic,
-        decoration: BoxDecoration(
-          color: bgColor,
-          border: Border(
-            left: BorderSide(
-              color: indicatorColor,
-              width: indicatorWidth,
-            ),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 2.0),
+      child: MouseRegion(
+        cursor: SystemMouseCursors.click,
+        onEnter: (_) => setState(() => _isHovered = true),
+        onExit: (_) => setState(() => _isHovered = false),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          curve: Curves.easeOutCubic,
+          decoration: BoxDecoration(
+            color: bgColor,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: _isHovered
+                ? const [
+                    BoxShadow(
+                      color: Color(0x0A0F172A),
+                      blurRadius: 6,
+                      offset: Offset(0, 2),
+                    ),
+                  ]
+                : const [],
           ),
-        ),
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            onTap: widget.onTap,
-            child: Padding(
-              padding: EdgeInsets.symmetric(
-                horizontal: isSelected || _isHovered
-                    ? (16.0 - indicatorWidth).clamp(12.0, 16.0)
-                    : 16.0,
-                vertical: 14,
-              ),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  widget.checkboxBuilder(
-                    value: isSelected,
-                    isRowHovered: _isHovered,
-                    onChanged: widget.onSelectChanged,
+          child: Material(
+            color: Colors.transparent,
+            borderRadius: BorderRadius.circular(12),
+            child: InkWell(
+              borderRadius: BorderRadius.circular(12),
+              onTap: widget.onTap,
+              hoverColor: Colors.transparent,
+              splashColor: _primary.withValues(alpha: 0.08),
+              highlightColor: _primary.withValues(alpha: 0.04),
+              child: CustomPaint(
+                foregroundPainter: _FigmaRightBorderPainter(
+                  color: isActiveOrHovered ? _primary : Colors.transparent,
+                  radius: 12.0,
+                  strokeWidth: 4.0,
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 14,
                   ),
-                  const Gap(16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      widget.checkboxBuilder(
+                        value: isSelected,
+                        isRowHovered: _isHovered,
+                        onChanged: widget.onSelectChanged,
+                      ),
+                      const Gap(16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Expanded(
-                              child: Text(
-                                r.name,
-                                style: GoogleFonts.poppins(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                  height: 24 / 16,
-                                  letterSpacing: 0,
-                                  color: _isHovered || isSelected
-                                      ? const Color(0xFF0F172A)
-                                      : _text,
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    r.name,
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                      height: 24 / 16,
+                                      letterSpacing: 0,
+                                      color: isActiveOrHovered
+                                          ? const Color(0xFF0F172A)
+                                          : _text,
+                                    ),
+                                  ),
                                 ),
+                                widget.statusBadge,
+                              ],
+                            ),
+                            Text(
+                              r.phone,
+                              style: GoogleFonts.poppins(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                                height: 16 / 12,
+                                letterSpacing: 0,
+                                color: const Color(0xFF8A94A6),
                               ),
                             ),
-                            widget.statusBadge,
+                            const Gap(6),
+                            Text(
+                              '${r.collegeBranch} · ${r.source}',
+                              style: const TextStyle(
+                                color: _muted,
+                                fontSize: 12,
+                              ),
+                            ),
+                            const Gap(2),
+                            Text(
+                              'Source: ${r.source} · Last: ${r.lastContact} · Assigned: ${r.assignedToName}',
+                              style: const TextStyle(
+                                color: _muted,
+                                fontSize: 12,
+                              ),
+                            ),
                           ],
                         ),
-                        Text(
-                          r.phone,
-                          style: GoogleFonts.poppins(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500,
-                            height: 16 / 12,
-                            letterSpacing: 0,
-                            color: const Color(0xFF8A94A6),
-                          ),
-                        ),
-                        const Gap(6),
-                        Text(
-                          '${r.collegeBranch} · ${r.source}',
-                          style: const TextStyle(
-                            color: _muted,
-                            fontSize: 12,
-                          ),
-                        ),
-                        const Gap(2),
-                        Text(
-                          'Source: ${r.source} · Last: ${r.lastContact} · Assigned: ${r.assignedToName}',
-                          style: const TextStyle(
-                            color: _muted,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
             ),
           ),
