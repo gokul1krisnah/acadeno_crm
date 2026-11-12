@@ -1673,13 +1673,21 @@ class _UserManagementViewState extends State<UserManagementView> {
                     children: [
                       searchField,
                       const Gap(12),
-                      Row(
-                        children: [
-                          Expanded(child: _buildRoleFilterDropdown()),
-                          const Gap(12),
-                          Expanded(child: _buildStatusFilterDropdown()),
-                        ],
-                      ),
+                      c.maxWidth < 320
+                          ? Column(
+                              children: [
+                                _buildRoleFilterDropdown(),
+                                const Gap(10),
+                                _buildStatusFilterDropdown(),
+                              ],
+                            )
+                          : Row(
+                              children: [
+                                Expanded(child: _buildRoleFilterDropdown()),
+                                const Gap(10),
+                                Expanded(child: _buildStatusFilterDropdown()),
+                              ],
+                            ),
                     ],
                   );
                 }
@@ -1908,9 +1916,15 @@ class _UserManagementViewState extends State<UserManagementView> {
   }
 
   Widget _buildRoleFilterDropdown() {
+    final roleOptions = [
+      {'value': 'all', 'label': 'All Roles'},
+      {'value': 'admin', 'label': 'Admin'},
+      {'value': 'hr', 'label': 'HR & Operations'},
+    ];
+
     return Container(
       height: 46,
-      padding: const EdgeInsets.symmetric(horizontal: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 10),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
@@ -1928,14 +1942,40 @@ class _UserManagementViewState extends State<UserManagementView> {
             color: Color(0xFF64748B),
           ),
           style: GoogleFonts.inter(
-            fontSize: 14,
+            fontSize: 13.5,
             fontWeight: FontWeight.w500,
             color: const Color(0xFF334155),
           ),
           onChanged: (v) => setState(() => _roleFilter = v ?? 'all'),
-          items: [
-            DropdownMenuItem(
-              value: 'all',
+          selectedItemBuilder: (BuildContext context) {
+            return roleOptions.map((opt) {
+              return Row(
+                children: [
+                  const Icon(
+                    Icons.work_outline_rounded,
+                    size: 14,
+                    color: Color(0xFF64748B),
+                  ),
+                  const Gap(6),
+                  Expanded(
+                    child: Text(
+                      opt['label']!,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.inter(
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.w500,
+                        color: const Color(0xFF334155),
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            }).toList();
+          },
+          items: roleOptions.map((opt) {
+            return DropdownMenuItem<String>(
+              value: opt['value']!,
               child: Row(
                 children: [
                   const Icon(
@@ -1944,69 +1984,37 @@ class _UserManagementViewState extends State<UserManagementView> {
                     color: Color(0xFF64748B),
                   ),
                   const Gap(8),
-                  Text(
-                    'All Roles',
-                    style: GoogleFonts.inter(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                      color: const Color(0xFF334155),
+                  Expanded(
+                    child: Text(
+                      opt['label']!,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.inter(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: const Color(0xFF334155),
+                      ),
                     ),
                   ),
                 ],
               ),
-            ),
-            DropdownMenuItem(
-              value: 'admin',
-              child: Row(
-                children: [
-                  const Icon(
-                    Icons.work_outline_rounded,
-                    size: 14,
-                    color: Color(0xFF64748B),
-                  ),
-                  const Gap(8),
-                  Text(
-                    'Admin',
-                    style: GoogleFonts.inter(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                      color: const Color(0xFF334155),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            DropdownMenuItem(
-              value: 'hr',
-              child: Row(
-                children: [
-                  const Icon(
-                    Icons.work_outline_rounded,
-                    size: 14,
-                    color: Color(0xFF64748B),
-                  ),
-                  const Gap(8),
-                  Text(
-                    'HR & Operations',
-                    style: GoogleFonts.inter(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                      color: const Color(0xFF334155),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
+            );
+          }).toList(),
         ),
       ),
     );
   }
 
   Widget _buildStatusFilterDropdown() {
+    final statusOptions = [
+      {'value': 'all', 'label': 'All Statuses'},
+      {'value': 'active', 'label': 'Active Only'},
+      {'value': 'inactive', 'label': 'Inactive Only'},
+    ];
+
     return Container(
       height: 46,
-      padding: const EdgeInsets.symmetric(horizontal: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 10),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
@@ -2024,14 +2032,40 @@ class _UserManagementViewState extends State<UserManagementView> {
             color: Color(0xFF64748B),
           ),
           style: GoogleFonts.inter(
-            fontSize: 14,
+            fontSize: 13.5,
             fontWeight: FontWeight.w500,
             color: const Color(0xFF334155),
           ),
           onChanged: (v) => setState(() => _statusFilter = v ?? 'all'),
-          items: [
-            DropdownMenuItem(
-              value: 'all',
+          selectedItemBuilder: (BuildContext context) {
+            return statusOptions.map((opt) {
+              return Row(
+                children: [
+                  const Icon(
+                    Icons.tune_rounded,
+                    size: 14,
+                    color: Color(0xFF64748B),
+                  ),
+                  const Gap(6),
+                  Expanded(
+                    child: Text(
+                      opt['label']!,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.inter(
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.w500,
+                        color: const Color(0xFF334155),
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            }).toList();
+          },
+          items: statusOptions.map((opt) {
+            return DropdownMenuItem<String>(
+              value: opt['value']!,
               child: Row(
                 children: [
                   const Icon(
@@ -2040,60 +2074,22 @@ class _UserManagementViewState extends State<UserManagementView> {
                     color: Color(0xFF64748B),
                   ),
                   const Gap(8),
-                  Text(
-                    'All Statuses',
-                    style: GoogleFonts.inter(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                      color: const Color(0xFF334155),
+                  Expanded(
+                    child: Text(
+                      opt['label']!,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.inter(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: const Color(0xFF334155),
+                      ),
                     ),
                   ),
                 ],
               ),
-            ),
-            DropdownMenuItem(
-              value: 'active',
-              child: Row(
-                children: [
-                  const Icon(
-                    Icons.tune_rounded,
-                    size: 14,
-                    color: Color(0xFF64748B),
-                  ),
-                  const Gap(8),
-                  Text(
-                    'Active Only',
-                    style: GoogleFonts.inter(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                      color: const Color(0xFF334155),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            DropdownMenuItem(
-              value: 'inactive',
-              child: Row(
-                children: [
-                  const Icon(
-                    Icons.tune_rounded,
-                    size: 14,
-                    color: Color(0xFF64748B),
-                  ),
-                  const Gap(8),
-                  Text(
-                    'Inactive Only',
-                    style: GoogleFonts.inter(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                      color: const Color(0xFF334155),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
+            );
+          }).toList(),
         ),
       ),
     );
@@ -2930,11 +2926,19 @@ class _UserManagementViewState extends State<UserManagementView> {
                                 items: const [
                                   DropdownMenuItem(
                                     value: 'admin',
-                                    child: Text('Admin'),
+                                    child: Text(
+                                      'Admin',
+                                      overflow: TextOverflow.ellipsis,
+                                      maxLines: 1,
+                                    ),
                                   ),
                                   DropdownMenuItem(
                                     value: 'hr',
-                                    child: Text('HR & Operations'),
+                                    child: Text(
+                                      'HR & Operations',
+                                      overflow: TextOverflow.ellipsis,
+                                      maxLines: 1,
+                                    ),
                                   ),
                                 ],
                                 onChanged: isMe
