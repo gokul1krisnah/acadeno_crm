@@ -1969,14 +1969,20 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                           ? const Color(0xFF1F2937)
                           : const Color(0xFFEF8144),
                       foregroundColor: state.selectedLeadIds.isEmpty
-                          ? const Color(0xFF64748B)
+                          ? const Color(0xFF9CA3AF)
                           : Colors.white,
                       disabledBackgroundColor: const Color(0xFF1F2937),
-                      disabledForegroundColor: const Color(0xFF64748B),
+                      disabledForegroundColor: const Color(0xFF9CA3AF),
                       elevation: 0,
                       padding: EdgeInsets.zero,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
+                        side: BorderSide(
+                          color: state.selectedLeadIds.isEmpty
+                              ? const Color(0xFF374151)
+                              : Colors.transparent,
+                          width: 1,
+                        ),
                       ),
                     ),
                     onPressed:
@@ -2002,7 +2008,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                               textAlign: TextAlign.center,
                               style: AppTypography.figmaButton(
                                 color: state.selectedLeadIds.isEmpty
-                                    ? const Color(0xFF64748B)
+                                    ? const Color(0xFF9CA3AF)
                                     : Colors.white,
                               ),
                             ),
@@ -2058,7 +2064,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
 
                 return Container(
                   width: double.infinity,
-                  constraints: const BoxConstraints(minHeight: 70),
+                  height: 70,
                   padding: const EdgeInsets.symmetric(
                     horizontal: 24,
                     vertical: 16,
@@ -2088,10 +2094,9 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                           letterSpacing: 0.35,
                         ),
                       ),
-                      Wrap(
-                        crossAxisAlignment: WrapCrossAlignment.center,
-                        spacing: 16,
-                        runSpacing: 8,
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           Text(
                             'Assign to',
@@ -2103,7 +2108,9 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                               letterSpacing: 12 * 0.0049,
                             ),
                           ),
+                          const Gap(16),
                           execDropdown,
+                          const Gap(16),
                           Text(
                             'for',
                             style: GoogleFonts.poppins(
@@ -2114,7 +2121,9 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                               letterSpacing: 12 * 0.0313,
                             ),
                           ),
+                          const Gap(16),
                           dateDropdown,
+                          const Gap(16),
                           assignBtn,
                         ],
                       ),
