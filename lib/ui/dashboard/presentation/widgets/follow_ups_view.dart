@@ -1,11 +1,12 @@
-import 'package:flutter/cupertino.dart';
-import 'package:gap/gap.dart';
-import 'package:acadeno_crm/ui/follow_ups/data/model/follow_up_time_helper.dart';
-import 'package:acadeno_crm/shared/widgets/acadeno_dropdown.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:gap/gap.dart';
+import 'package:google_fonts/google_fonts.dart';
 
+import '../../../../core/utils/url_dialer_helper.dart';
 import '../../../../shared/snackbar_alerts/snack_alert.dart';
+import '../../../follow_ups/data/model/follow_up_time_helper.dart';
 
 class _FollowUpRow {
   final String id;
@@ -67,45 +68,61 @@ class _FollowUpsViewState extends State<FollowUpsView> {
   void _reassignSingle(_FollowUpRow row, List<String> executives) {
     showDialog(
       context: context,
-      builder: (ctx) => SimpleDialog(
-        title: Text('Reassign ${row.studentName}'),
-        children: executives.map((exec) {
-          return SimpleDialogOption(
-            onPressed: () async {
-              setState(() => _localReassignedMap[row.id] = exec);
-              Navigator.pop(ctx);
-              try {
-                await FirebaseFirestore.instance
-                    .collection('leads')
-                    .doc(row.id)
-                    .update({
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text(
+          'Reassign ${row.studentName}',
+          style: GoogleFonts.plusJakartaSans(
+            fontSize: 18,
+            fontWeight: FontWeight.w700,
+            color: const Color(0xFF111827),
+          ),
+        ),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: ListView.separated(
+            shrinkWrap: true,
+            itemCount: executives.length,
+            separatorBuilder: (_, _) => const Divider(height: 1, color: Color(0xFFF3F4F6)),
+            itemBuilder: (ctx, i) {
+              final exec = executives[i];
+              final isSelected = row.assignedExec == exec;
+              return ListTile(
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                leading: Icon(
+                  isSelected ? Icons.radio_button_checked : Icons.radio_button_off,
+                  size: 20,
+                  color: isSelected ? const Color(0xFF3B3FB1) : const Color(0xFF9CA3AF),
+                ),
+                title: Text(
+                  exec,
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 15,
+                    fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                    color: const Color(0xFF111827),
+                  ),
+                ),
+                onTap: () async {
+                  setState(() => _localReassignedMap[row.id] = exec);
+                  Navigator.pop(ctx);
+                  try {
+                    await FirebaseFirestore.instance.collection('leads').doc(row.id).update({
                       'assignedTo': exec,
                       'assignedToName': exec,
                       'updatedAt': FieldValue.serverTimestamp(),
                     });
-              } catch (_) {}
-              if (mounted) {
-                SnackBarAlert.showToast(
-                  context: context,
-                  message: 'Reassigned ${row.studentName} to $exec',
-                );
-              }
+                  } catch (_) {}
+                  if (mounted) {
+                    SnackBarAlert.showToast(
+                      context: context,
+                      message: 'Reassigned ${row.studentName} to $exec',
+                    );
+                  }
+                },
+              );
             },
-            child: Row(
-              children: [
-                Icon(
-                  row.assignedExec == exec
-                      ? Icons.radio_button_checked
-                      : Icons.radio_button_off,
-                  size: 18,
-                  color: const Color(0xFF4338CA),
-                ),
-                const Gap(10),
-                Text(exec, style: const TextStyle(fontWeight: FontWeight.w600)),
-              ],
-            ),
-          );
-        }).toList(),
+          ),
+        ),
       ),
     );
   }
@@ -119,9 +136,7 @@ class _FollowUpsViewState extends State<FollowUpsView> {
       if (!item.completed && item.assignedExec == _fromExec) {
         _localReassignedMap[item.id] = _toExec;
         moved++;
-        final docRef = FirebaseFirestore.instance
-            .collection('leads')
-            .doc(item.id);
+        final docRef = FirebaseFirestore.instance.collection('leads').doc(item.id);
         batch.update(docRef, {
           'assignedTo': _toExec,
           'assignedToName': _toExec,
@@ -156,9 +171,7 @@ class _FollowUpsViewState extends State<FollowUpsView> {
             // Extract active executives
             final execs = (usersSnap.data?.docs ?? [])
                 .where((d) => d.data()['isActive'] != false)
-                .map(
-                  (d) => (d.data()['name'] ?? 'Team Member').toString().trim(),
-                )
+                .map((d) => (d.data()['name'] ?? 'Team Member').toString().trim())
                 .where((n) => n.isNotEmpty)
                 .toSet()
                 .toList();
@@ -171,9 +184,7 @@ class _FollowUpsViewState extends State<FollowUpsView> {
               _fromExec = executives.first;
             }
             if (_toExec.isEmpty || !executives.contains(_toExec)) {
-              _toExec = executives.length > 1
-                  ? executives[1]
-                  : executives.first;
+              _toExec = executives.length > 1 ? executives[1] : executives.first;
             }
 
             // Extract follow-ups from Firestore leads
@@ -185,10 +196,8 @@ class _FollowUpsViewState extends State<FollowUpsView> {
               final isDone = (d['isDone'] as bool?) ?? false;
               final status = (d['status'] ?? '').toString().toLowerCase();
 
-              // Follow-up candidates: leads with followUpTime, or follow-up status, callback, overdue, claimed, interested, or with notes/timelines
               final hasFollowUpTime =
-                  (d['followUpTime'] != null &&
-                  d['followUpTime'].toString().trim().isNotEmpty);
+                  (d['followUpTime'] != null && d['followUpTime'].toString().trim().isNotEmpty);
               final isCandidate =
                   hasFollowUpTime ||
                   d['isOverdue'] == true ||
@@ -203,12 +212,9 @@ class _FollowUpsViewState extends State<FollowUpsView> {
               if (isCandidate) {
                 final currentExec =
                     _localReassignedMap[doc.id] ??
-                    (d['assignedToName'] ?? d['assignedTo'] ?? 'Unassigned')
-                        .toString();
+                    (d['assignedToName'] ?? d['assignedTo'] ?? 'Unassigned').toString();
                 final isCompleted =
-                    isDone ||
-                    _localCompletedIds.contains(doc.id) ||
-                    status == 'converted';
+                    isDone || _localCompletedIds.contains(doc.id) || status == 'converted';
                 final eval = FollowUpTimeHelper.evaluate(
                   rawFollowUpTime: d['followUpTime'],
                   assignedDateKey: d['assignedDateKey'],
@@ -226,14 +232,8 @@ class _FollowUpsViewState extends State<FollowUpsView> {
                     studentName: (d['name'] ?? 'Student Inquiry').toString(),
                     phone: (d['phone'] ?? '').toString(),
                     collegeBranch:
-                        (d['collegeBranch'] ??
-                                d['college'] ??
-                                'College inquiry')
-                            .toString(),
-                    note:
-                        (d['notes'] ??
-                                'Follow up on admission & workshop details')
-                            .toString(),
+                        (d['collegeBranch'] ?? d['college'] ?? 'College Inquiry').toString(),
+                    note: (d['notes'] ?? 'Follow up on admission & workshop details').toString(),
                     dueLabel: eval.displayLabel,
                     isOverdue: isOverdue,
                     assignedExec: currentExec,
@@ -255,14 +255,10 @@ class _FollowUpsViewState extends State<FollowUpsView> {
 
             final openCount = execFollowUps.length;
             final overdueCount = execFollowUps.where((f) => f.isOverdue).length;
-            final dueTodayCount = execFollowUps
-                .where((f) => !f.isOverdue)
-                .length;
+            final dueTodayCount = execFollowUps.where((f) => !f.isOverdue).length;
 
             final totalOpenAll = followUps.where((f) => !f.completed).length;
-            final totalOverdueAll = followUps
-                .where((f) => !f.completed && f.isOverdue)
-                .length;
+            final totalOverdueAll = followUps.where((f) => !f.completed && f.isOverdue).length;
 
             // Filter items based on active pill
             final filteredItems = execFollowUps.where((item) {
@@ -277,309 +273,63 @@ class _FollowUpsViewState extends State<FollowUpsView> {
 
             return LayoutBuilder(
               builder: (context, constraints) {
-                final isMobile =
-                    MediaQuery.of(context).size.width < 768 ||
-                    constraints.maxWidth < 720;
-
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Wrap(
-                      spacing: 16,
-                      runSpacing: 12,
-                      alignment: WrapAlignment.spaceBetween,
-                      crossAxisAlignment: WrapCrossAlignment.center,
-                      children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'Follow-ups & Escalations',
-                              style: TextStyle(
-                                fontSize: 26,
-                                fontWeight: FontWeight.w700,
-                                color: Color(0xFF0F172A),
-                                letterSpacing: -0.5,
-                              ),
-                            ),
-                            const Gap(4),
-                            Text(
-                              '$totalOpenAll open follow-ups across ${executives.length} team members · $totalOverdueAll overdue (live from database)',
-                              style: const TextStyle(
-                                fontSize: 13,
-                                color: Color(0xFF667085),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
+                    // Header: Heading 1 + Live Subtitle
+                    Text(
+                      'Follow-ups & Escalations',
+                      style: GoogleFonts.inter(
+                        fontSize: 30,
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFF111827),
+                        height: 36 / 30,
+                        letterSpacing: -0.5,
+                      ),
                     ),
-                    const Gap(18),
+                    const Gap(4),
+                    Text(
+                      '$totalOpenAll open follow-ups across ${executives.length} team members · $totalOverdueAll overdue (live from database)',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w400,
+                        color: const Color(0xFF71717A),
+                        height: 20 / 14,
+                      ),
+                    ),
+                    const Gap(32),
 
-                    // Bulk Reassign Bar
-                    // Bulk Reassign Bar (Responsive)
-                    LayoutBuilder(
-                      builder: (context, c) {
-                        final isMobile = c.maxWidth < 640;
-                        if (isMobile) {
-                          return Container(
-                            width: double.infinity,
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(14),
-                              border: Border.all(
-                                color: const Color(0xFF4338CA),
-                                width: 1.4,
-                              ),
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.stretch,
-                              children: [
-                                const Row(
-                                  children: [
-                                    Icon(
-                                      CupertinoIcons.shuffle,
-                                      color: Color(0xFF4338CA),
-                                      size: 18,
-                                    ),
-                                    Gap(8),
-                                    Text(
-                                      'Move all open follow-ups',
-                                      style: TextStyle(
-                                        fontSize: 13.5,
-                                        fontWeight: FontWeight.w700,
-                                        color: Color(0xFF0F172A),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const Gap(12),
-                                Row(
-                                  children: [
-                                    Expanded(
-                                      child: _buildExecDropdown(
-                                        _fromExec,
-                                        executives,
-                                        (v) => setState(() => _fromExec = v),
-                                      ),
-                                    ),
-                                    const Padding(
-                                      padding: EdgeInsets.symmetric(
-                                        horizontal: 8,
-                                      ),
-                                      child: Text(
-                                        'to',
-                                        style: TextStyle(
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.w700,
-                                          color: Color(0xFF64748B),
-                                        ),
-                                      ),
-                                    ),
-                                    Expanded(
-                                      child: _buildExecDropdown(
-                                        _toExec,
-                                        executives,
-                                        (v) => setState(() => _toExec = v),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const Gap(12),
-                                SizedBox(
-                                  height: 40,
-                                  child: ElevatedButton(
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: const Color(0xFFEF8144),
-                                      foregroundColor: Colors.white,
-                                      elevation: 0,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(10),
-                                      ),
-                                    ),
-                                    onPressed: () =>
-                                        _bulkMoveExecutiveFollowUps(followUps),
-                                    child: const FittedBox(
-                                      fit: BoxFit.scaleDown,
-                                      child: Text(
-                                        'Re Assign in Fire Store',
-                                        style: TextStyle(
-                                          fontSize: 13.5,
-                                          fontWeight: FontWeight.w700,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          );
-                        }
+                    // Bulk Move Action Bar (Figma Node 1363:1601)
+                    _buildBulkReassignBar(constraints.maxWidth, followUps, executives),
+                    const Gap(32),
 
-                        return Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 20,
-                            vertical: 14,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(14),
-                            border: Border.all(
-                              color: const Color(0xFF4338CA),
-                              width: 1.4,
-                            ),
-                          ),
-                          child: Wrap(
-                            spacing: 12,
-                            runSpacing: 12,
-                            crossAxisAlignment: WrapCrossAlignment.center,
-                            alignment: WrapAlignment.spaceBetween,
-                            children: [
-                              Wrap(
-                                spacing: 10,
-                                runSpacing: 10,
-                                crossAxisAlignment: WrapCrossAlignment.center,
-                                children: [
-                                  const Icon(
-                                    CupertinoIcons.shuffle,
-                                    color: Color(0xFF4338CA),
-                                    size: 20,
-                                  ),
-                                  const Text(
-                                    'Move all open follow-ups from',
-                                    style: TextStyle(
-                                      fontSize: 13.5,
-                                      fontWeight: FontWeight.w700,
-                                      color: Color(0xFF0F172A),
-                                    ),
-                                  ),
-                                  _buildExecDropdown(
-                                    _fromExec,
-                                    executives,
-                                    (v) => setState(() => _fromExec = v),
-                                  ),
-                                  const Text(
-                                    'to',
-                                    style: TextStyle(
-                                      fontSize: 13.5,
-                                      fontWeight: FontWeight.w700,
-                                      color: Color(0xFF0F172A),
-                                    ),
-                                  ),
-                                  _buildExecDropdown(
-                                    _toExec,
-                                    executives,
-                                    (v) => setState(() => _toExec = v),
-                                  ),
-                                ],
-                              ),
-                              ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFFEF8144),
-                                  foregroundColor: Colors.white,
-                                  elevation: 0,
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 20,
-                                    vertical: 12,
-                                  ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                ),
-                                onPressed: () =>
-                                    _bulkMoveExecutiveFollowUps(followUps),
-                                child: const Text(
-                                  'Re Assign in Fire Store',
-                                  style: TextStyle(
-                                    fontSize: 13.5,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      },
+                    // Filter Row (Figma Node 1363:1631)
+                    _buildFilterRow(
+                      constraints.maxWidth,
+                      openCount,
+                      overdueCount,
+                      dueTodayCount,
+                      executives,
                     ),
                     const Gap(16),
 
-                    // Filter row
-                    Wrap(
-                      spacing: 10,
-                      runSpacing: 8,
-                      crossAxisAlignment: WrapCrossAlignment.center,
-                      children: [
-                        _buildFilterPill('All open ($openCount)'),
-                        _buildFilterPill('Overdue only ($overdueCount)'),
-                        _buildFilterPill('Due today ($dueTodayCount)'),
-                        const Gap(4),
-                        Container(
-                          height: 38,
-                          padding: const EdgeInsets.symmetric(horizontal: 14),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: const Color(0xFFE2E8F0)),
-                          ),
-                          child: DropdownButtonHideUnderline(
-                            child: DropdownButton<String>(
-                              value: _selectedExecFilter,
-                              dropdownColor: Colors.white,
-                              borderRadius: BorderRadius.circular(12),
-                              icon: const Icon(
-                                CupertinoIcons.chevron_down,
-                                size: 14,
-                                color: Color(0xFF64748B),
-                              ),
-                              isDense: true,
-                              style: const TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
-                                color: Color(0xFF475467),
-                              ),
-                              items: ['All executives', ...executives].map((s) {
-                                return DropdownMenuItem<String>(
-                                  value: s,
-                                  child: Text(
-                                    s,
-                                    style: const TextStyle(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w600,
-                                      color: Color(0xFF475467),
-                                    ),
-                                  ),
-                                );
-                              }).toList(),
-                              onChanged: (v) {
-                                if (v != null) {
-                                  setState(() => _selectedExecFilter = v);
-                                }
-                              },
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const Gap(16),
-
-                    // Cards/Table
+                    // Follow-Up Cards List (Figma Node 1363:1646)
                     if (filteredItems.isEmpty)
                       Container(
                         width: double.infinity,
-                        padding: const EdgeInsets.all(40),
+                        padding: const EdgeInsets.all(48),
                         decoration: BoxDecoration(
                           color: Colors.white,
-                          borderRadius: BorderRadius.circular(14),
-                          border: Border.all(color: const Color(0xFFE4E7EC)),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: const Color(0xFFF3F4F6)),
                         ),
-                        child: const Center(
+                        child: Center(
                           child: Text(
                             'No follow-ups match the selected filters.',
-                            style: TextStyle(
+                            style: GoogleFonts.plusJakartaSans(
                               fontSize: 14,
-                              color: Color(0xFF667085),
+                              fontWeight: FontWeight.w500,
+                              color: const Color(0xFF71717A),
                             ),
                           ),
                         ),
@@ -587,8 +337,8 @@ class _FollowUpsViewState extends State<FollowUpsView> {
                     else
                       ...filteredItems.map(
                         (item) => Padding(
-                          padding: const EdgeInsets.only(bottom: 12),
-                          child: _buildFollowUpCard(item, isMobile, executives),
+                          padding: const EdgeInsets.only(bottom: 16),
+                          child: _buildFollowUpCard(item, constraints.maxWidth, executives),
                         ),
                       ),
                   ],
@@ -601,227 +351,119 @@ class _FollowUpsViewState extends State<FollowUpsView> {
     );
   }
 
-  Widget _buildFilterPill(String label) {
-    final mode = label.split(' (').first;
-    final isSelected = _filterMode == mode;
-    return InkWell(
-      onTap: () => setState(() => _filterMode = mode),
-      borderRadius: BorderRadius.circular(8),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF3F37C9) : Colors.white,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(
-            color: isSelected
-                ? const Color(0xFF3F37C9)
-                : const Color(0xFFE2E8F0),
-          ),
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
-            color: isSelected ? Colors.white : const Color(0xFF475467),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildExecDropdown(
-    String value,
-    List<String> executives,
-    ValueChanged<String> onChanged,
-  ) {
-    return SizedBox(
-      width: 150,
-      child: AcadenoDropdown.strings(
-        value: value,
-        items: executives,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-        onChanged: (v) {
-          if (v != null) onChanged(v);
-        },
-      ),
-    );
-  }
-
-  Widget _buildFollowUpCard(
-    _FollowUpRow item,
-    bool isMobile,
+  // ===========================================================================
+  // BULK REASSIGN BAR (Figma: White bg, 2px solid #3B3FB1, 16px radius)
+  // ===========================================================================
+  Widget _buildBulkReassignBar(
+    double maxWidth,
+    List<_FollowUpRow> followUps,
     List<String> executives,
   ) {
-    final isOverdue = item.isOverdue;
+    final isCompact = maxWidth < 880;
 
-    final assignedBadge = Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+    final reassignButton = Container(
       decoration: BoxDecoration(
-        color: const Color(0xFFF8FAFC),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
-      ),
-      child: Text(
-        'Assigned: ${item.assignedExec}',
-        style: const TextStyle(
-          fontSize: 12.5,
-          fontWeight: FontWeight.w600,
-          color: Color(0xFF475467),
-        ),
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-      ),
-    );
-
-    final reassignBtn = OutlinedButton(
-      style: OutlinedButton.styleFrom(
-        foregroundColor: const Color(0xFF4338CA),
-        side: const BorderSide(color: Color(0xFF4338CA), width: 1),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-        shape: const StadiumBorder(),
-      ),
-      onPressed: () => _reassignSingle(item, executives),
-      child: const FittedBox(
-        fit: BoxFit.scaleDown,
-        child: Text(
-          'Reassign',
-          style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700),
-        ),
-      ),
-    );
-
-    final markDoneBtn = ElevatedButton(
-      style: ElevatedButton.styleFrom(
-        backgroundColor: const Color(0xFF059669),
-        foregroundColor: Colors.white,
-        elevation: 0,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-        shape: const StadiumBorder(),
-      ),
-      onPressed: () => _markCompleted(item.id, item.studentName),
-      child: const FittedBox(
-        fit: BoxFit.scaleDown,
-        child: Text(
-          'Mark Done',
-          style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700),
-        ),
-      ),
-    );
-
-    final iconWidget = Container(
-      width: 40,
-      height: 40,
-      decoration: BoxDecoration(
-        color: isOverdue ? const Color(0xFFFFF7ED) : const Color(0xFFEFF6FF),
-        borderRadius: BorderRadius.circular(10),
-      ),
-      alignment: Alignment.center,
-      child: Icon(
-        isOverdue ? Icons.warning_rounded : CupertinoIcons.clock,
-        color: isOverdue ? const Color(0xFFEA580C) : const Color(0xFF2563EB),
-        size: 21,
-      ),
-    );
-
-    final studentInfoWidget = Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Wrap(
-          spacing: 8,
-          runSpacing: 4,
-          crossAxisAlignment: WrapCrossAlignment.center,
-          children: [
-            Text(
-              item.studentName,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
-                color: Color(0xFF0F172A),
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-              decoration: BoxDecoration(
-                color: isOverdue
-                    ? const Color(0xFFFFEDD5)
-                    : const Color(0xFFEFF6FF),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Text(
-                item.dueLabel.toUpperCase(),
-                style: TextStyle(
-                  fontSize: 10.5,
-                  fontWeight: FontWeight.w800,
-                  color: isOverdue
-                      ? const Color(0xFFC2410C)
-                      : const Color(0xFF2563EB),
-                  letterSpacing: 0.2,
-                ),
-              ),
-            ),
-          ],
-        ),
-        const Gap(4),
-        Text(
-          '${item.phone} · ${item.collegeBranch}',
-          style: const TextStyle(fontSize: 13, color: Color(0xFF475467)),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
-        if (item.note.isNotEmpty) ...[
-          const Gap(5),
-          Text(
-            'Note: ${item.note}',
-            style: const TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w500,
-              color: Color(0xFF334155),
-            ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
+        color: const Color(0xFFEF8144),
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0xFFE0E7FF),
+            blurRadius: 15,
+            offset: Offset(0, 10),
+            spreadRadius: -3,
+          ),
+          BoxShadow(
+            color: Color(0xFFE0E7FF),
+            blurRadius: 6,
+            offset: Offset(0, 4),
+            spreadRadius: -4,
           ),
         ],
-      ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => _bulkMoveExecutiveFollowUps(followUps),
+          borderRadius: BorderRadius.circular(12),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+            child: Text(
+              'Re Assign in Fire Store',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.inter(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
+                height: 24 / 14,
+              ),
+            ),
+          ),
+        ),
+      ),
     );
 
-    if (isMobile) {
+    if (isCompact) {
       return Container(
         width: double.infinity,
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(
-            color: isOverdue
-                ? const Color(0xFFFED7AA)
-                : const Color(0xFFE2E8F0),
-            width: isOverdue ? 1.2 : 1.0,
-          ),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xFF3B3FB1), width: 2),
         ),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                iconWidget,
-                const Gap(12),
-                Expanded(child: studentInfoWidget),
+                const Icon(
+                  CupertinoIcons.shuffle,
+                  color: Color(0xFF3B3FB1),
+                  size: 18,
+                ),
+                const Gap(8),
+                Expanded(
+                  child: Text(
+                    'Move all open follow-ups from',
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                      color: const Color(0xFF111827),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const Gap(12),
+            Wrap(
+              spacing: 8,
+              runSpacing: 10,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              children: [
+                _buildExecDropdown(
+                  value: _fromExec,
+                  items: executives,
+                  textColor: const Color(0xFF6B7280),
+                  onChanged: (v) => setState(() => _fromExec = v),
+                ),
+                Text(
+                  'to',
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: const Color(0xFF111827),
+                  ),
+                ),
+                _buildExecDropdown(
+                  value: _toExec,
+                  items: executives,
+                  textColor: const Color(0xFF111827),
+                  onChanged: (v) => setState(() => _toExec = v),
+                ),
               ],
             ),
             const Gap(14),
-            Row(children: [Flexible(child: assignedBadge)]),
-            const Gap(10),
-            Row(
-              children: [
-                Expanded(child: SizedBox(height: 34, child: reassignBtn)),
-                const Gap(10),
-                Expanded(child: SizedBox(height: 34, child: markDoneBtn)),
-              ],
-            ),
+            reassignButton,
           ],
         ),
       );
@@ -829,34 +471,533 @@ class _FollowUpsViewState extends State<FollowUpsView> {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: isOverdue ? const Color(0xFFFED7AA) : const Color(0xFFE2E8F0),
-          width: isOverdue ? 1.2 : 1.0,
-        ),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFF3B3FB1), width: 2),
       ),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          iconWidget,
-          const Gap(14),
-          Expanded(child: studentInfoWidget),
-          const Gap(16),
           Row(
-            mainAxisSize: MainAxisSize.min,
             children: [
-              assignedBadge,
+              const Icon(
+                CupertinoIcons.shuffle,
+                color: Color(0xFF3B3FB1),
+                size: 18,
+              ),
               const Gap(8),
-              SizedBox(width: 102, height: 34, child: reassignBtn),
-              const Gap(8),
-              SizedBox(height: 34, child: markDoneBtn),
+              Text(
+                'Move all open follow-ups from',
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFF111827),
+                ),
+              ),
+              const Gap(12),
+              _buildExecDropdown(
+                value: _fromExec,
+                items: executives,
+                textColor: const Color(0xFF6B7280),
+                onChanged: (v) => setState(() => _fromExec = v),
+              ),
+              const Gap(12),
+              Text(
+                'to',
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFF111827),
+                ),
+              ),
+              const Gap(12),
+              _buildExecDropdown(
+                value: _toExec,
+                items: executives,
+                textColor: const Color(0xFF111827),
+                onChanged: (v) => setState(() => _toExec = v),
+              ),
             ],
+          ),
+          reassignButton,
+        ],
+      ),
+    );
+  }
+
+  // ===========================================================================
+  // FILTER ROW (Figma: All open, Overdue only, Due today + All executives)
+  // ===========================================================================
+  Widget _buildFilterRow(
+    double maxWidth,
+    int openCount,
+    int overdueCount,
+    int dueTodayCount,
+    List<String> executives,
+  ) {
+    final filterTabs = Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: [
+        _buildFilterPill(
+          label: 'All open ($openCount)',
+          mode: 'All open',
+          isSelected: _filterMode == 'All open',
+          onTap: () => setState(() => _filterMode = 'All open'),
+        ),
+        _buildFilterPill(
+          label: 'Overdue only ($overdueCount)',
+          mode: 'Overdue only',
+          isSelected: _filterMode == 'Overdue only',
+          onTap: () => setState(() => _filterMode = 'Overdue only'),
+        ),
+        _buildFilterPill(
+          label: 'Due today',
+          mode: 'Due today',
+          isSelected: _filterMode == 'Due today',
+          onTap: () => setState(() => _filterMode = 'Due today'),
+        ),
+      ],
+    );
+
+    final execDropdown = _buildExecFilterDropdown(
+      value: _selectedExecFilter,
+      items: executives,
+      onChanged: (v) => setState(() => _selectedExecFilter = v),
+    );
+
+    if (maxWidth < 680) {
+      return Wrap(
+        spacing: 12,
+        runSpacing: 12,
+        alignment: WrapAlignment.spaceBetween,
+        crossAxisAlignment: WrapCrossAlignment.center,
+        children: [
+          filterTabs,
+          execDropdown,
+        ],
+      );
+    }
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        filterTabs,
+        execDropdown,
+      ],
+    );
+  }
+
+  Widget _buildFilterPill({
+    required String label,
+    required String mode,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        padding: EdgeInsets.symmetric(
+          horizontal: 20,
+          vertical: isSelected ? 9 : 8,
+        ),
+        decoration: BoxDecoration(
+          color: isSelected ? const Color(0xFF3B3FB1) : Colors.white,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: isSelected ? const Color(0xFF3B3FB1) : const Color(0xFFE5E7EB),
+            width: 1,
+          ),
+        ),
+        child: Text(
+          label,
+          style: GoogleFonts.plusJakartaSans(
+            fontSize: 14,
+            fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+            color: isSelected ? Colors.white : const Color(0xFF4B5563),
+            height: 20 / 14,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildExecFilterDropdown({
+    required String value,
+    required List<String> items,
+    required ValueChanged<String> onChanged,
+  }) {
+    final allItems = ['All executives', ...items];
+    return Container(
+      height: 40,
+      constraints: const BoxConstraints(minWidth: 180),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: const Color(0xFFE5E7EB)),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<String>(
+          value: allItems.contains(value) ? value : allItems.first,
+          dropdownColor: Colors.white,
+          borderRadius: BorderRadius.circular(8),
+          icon: const Icon(
+            CupertinoIcons.chevron_down,
+            size: 12,
+            color: Color(0xFF6B7280),
+          ),
+          isDense: true,
+          style: GoogleFonts.plusJakartaSans(
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+            color: const Color(0xFF4B5563),
+          ),
+          items: allItems.map((name) {
+            return DropdownMenuItem<String>(
+              value: name,
+              child: Text(
+                name,
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: const Color(0xFF4B5563),
+                ),
+              ),
+            );
+          }).toList(),
+          onChanged: (val) {
+            if (val != null) onChanged(val);
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildExecDropdown({
+    required String value,
+    required List<String> items,
+    required ValueChanged<String> onChanged,
+    Color textColor = const Color(0xFF111827),
+  }) {
+    return Container(
+      height: 40,
+      constraints: const BoxConstraints(minWidth: 180),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      decoration: BoxDecoration(
+        color: const Color(0x80F9FAFB),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: const Color(0xFFE5E7EB)),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<String>(
+          value: items.contains(value) ? value : (items.isNotEmpty ? items.first : null),
+          dropdownColor: Colors.white,
+          borderRadius: BorderRadius.circular(8),
+          icon: const Icon(
+            CupertinoIcons.chevron_down,
+            size: 12,
+            color: Color(0xFF6B7280),
+          ),
+          isDense: true,
+          style: GoogleFonts.plusJakartaSans(
+            fontSize: 15,
+            fontWeight: FontWeight.w400,
+            color: textColor,
+          ),
+          items: items.map((name) {
+            return DropdownMenuItem<String>(
+              value: name,
+              child: Text(
+                name,
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w400,
+                  color: const Color(0xFF111827),
+                ),
+              ),
+            );
+          }).toList(),
+          onChanged: (val) {
+            if (val != null) onChanged(val);
+          },
+        ),
+      ),
+    );
+  }
+
+  // ===========================================================================
+  // FOLLOW-UP CARD (Figma Node 1363:1675, 1363:1704)
+  // ===========================================================================
+  Widget _buildFollowUpCard(
+    _FollowUpRow item,
+    double maxWidth,
+    List<String> executives,
+  ) {
+    final isOverdue = item.isOverdue;
+    final isCompact = maxWidth < 820;
+
+    // Left Icon Container (48x48, rounded 12)
+    final iconWidget = Container(
+      width: 48,
+      height: 48,
+      decoration: BoxDecoration(
+        color: isOverdue ? const Color(0xFFFFF5F2) : const Color(0xFFEEF2FF),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      alignment: Alignment.center,
+      child: Icon(
+        isOverdue ? CupertinoIcons.exclamationmark_triangle_fill : CupertinoIcons.clock,
+        color: isOverdue ? const Color(0xFFE9522C) : const Color(0xFF3B3FB1),
+        size: 18,
+      ),
+    );
+
+    // Status Badge text: TODAY · 6:00 PM or OVERDUE · MISSED (...)
+    final badgeText = isOverdue
+        ? (item.dueLabel.toLowerCase().contains('overdue')
+            ? item.dueLabel.toUpperCase()
+            : 'OVERDUE · ${item.dueLabel.toUpperCase()}')
+        : (item.dueLabel.toLowerCase().contains('today')
+            ? item.dueLabel.toUpperCase()
+            : 'TODAY · ${item.dueLabel.toUpperCase()}');
+
+    // Details Column (Name, Badge, Phone, College/Branch, Note)
+    final detailsWidget = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Wrap(
+          spacing: 12,
+          runSpacing: 4,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: [
+            Text(
+              item.studentName,
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 18,
+                fontWeight: FontWeight.w800,
+                color: const Color(0xFF111827),
+                height: 28 / 18,
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              decoration: BoxDecoration(
+                color: isOverdue ? const Color(0xFFFFEBE5) : const Color(0xFFEEF2FF),
+                borderRadius: BorderRadius.circular(9999),
+              ),
+              child: Text(
+                badgeText,
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w700,
+                  color: isOverdue ? const Color(0xFFE9522C) : const Color(0xFF3B3FB1),
+                  letterSpacing: 0.3,
+                  height: 15 / 10,
+                ),
+              ),
+            ),
+          ],
+        ),
+        const Gap(4),
+        Wrap(
+          spacing: 6,
+          runSpacing: 2,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: [
+            InkWell(
+              onTap: () {
+                if (item.phone.isNotEmpty) {
+                  UrlDialerHelper.openDialer(item.phone);
+                }
+              },
+              child: Text(
+                item.phone,
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: const Color(0xFF71717A),
+                  height: 20 / 14,
+                ),
+              ),
+            ),
+            Text(
+              '·',
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                color: const Color(0xFFD1D5DB),
+              ),
+            ),
+            Text(
+              item.collegeBranch,
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                color: const Color(0xFF71717A),
+                height: 20 / 14,
+              ),
+            ),
+          ],
+        ),
+        const Gap(8),
+        Text.rich(
+          TextSpan(
+            text: 'Note:',
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+              color: const Color(0xFF2D3142),
+              height: 22.75 / 14,
+            ),
+            children: [
+              if (item.note.isNotEmpty)
+                TextSpan(
+                  text: ' ${item.note}',
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w400,
+                    color: const Color(0xFF2D3142),
+                    height: 22.75 / 14,
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ],
+    );
+
+    // Actions: Assigned pill, Reassign button, Mark Done button
+    final assignedPill = Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF9FAFB),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: const Color(0xFFF3F4F6)),
+      ),
+      child: Text(
+        'Assigned: ${item.assignedExec}',
+        style: GoogleFonts.plusJakartaSans(
+          fontSize: 14,
+          fontWeight: FontWeight.w700,
+          color: const Color(0xFF4B5563),
+          height: 20 / 14,
+        ),
+      ),
+    );
+
+    final reassignBtn = Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: const Color(0xFF3B3FB1)),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => _reassignSingle(item, executives),
+          borderRadius: BorderRadius.circular(8),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+            child: Text(
+              'Reassign',
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+                color: const Color(0xFF3B3FB1),
+                height: 20 / 14,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    final markDoneBtn = Container(
+      decoration: BoxDecoration(
+        color: const Color(0xFF10B981),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => _markCompleted(item.id, item.studentName),
+          borderRadius: BorderRadius.circular(8),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+            child: Text(
+              'Mark Done',
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+                color: Colors.white,
+                height: 20 / 14,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    final actionsRow = Wrap(
+      spacing: 12,
+      runSpacing: 10,
+      crossAxisAlignment: WrapCrossAlignment.center,
+      children: [
+        assignedPill,
+        reassignBtn,
+        markDoneBtn,
+      ],
+    );
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isOverdue ? const Color(0xFFFFD0C1) : const Color(0xFFF3F4F6),
+          width: 1,
+        ),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x0D000000),
+            blurRadius: 1,
+            offset: Offset(0, 1),
           ),
         ],
       ),
+      child: isCompact
+          ? Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    iconWidget,
+                    const Gap(16),
+                    Expanded(child: detailsWidget),
+                  ],
+                ),
+                const Gap(16),
+                actionsRow,
+              ],
+            )
+          : Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                iconWidget,
+                const Gap(16),
+                Expanded(child: detailsWidget),
+                const Gap(16),
+                actionsRow,
+              ],
+            ),
     );
   }
 }
