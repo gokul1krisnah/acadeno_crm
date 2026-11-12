@@ -1137,20 +1137,8 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
                   final planBtn = SizedBox(
                     height: 44,
                     width: isMobile ? double.infinity : null,
-                    child: ElevatedButton.icon(
+                    child: ElevatedButton(
                       onPressed: _showPlanVisitDialog,
-                      icon: const Icon(Icons.add, size: 16, color: Colors.white),
-                      label: Text(
-                        'Plan college visit',
-                        textAlign: TextAlign.center,
-                        style: GoogleFonts.inter(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                          letterSpacing: 0.0137,
-                          height: 24 / 14,
-                        ),
-                      ),
                       style: ElevatedButton.styleFrom(
                         alignment: Alignment.center,
                         backgroundColor: const Color(0xFFEF8144),
@@ -1158,10 +1146,32 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
                         elevation: 0,
                         padding: const EdgeInsets.symmetric(
                           horizontal: 24,
-                          vertical: 12,
+                          vertical: 10,
                         ),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: Center(
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            const Icon(Icons.add, size: 16, color: Colors.white),
+                            const Gap(8),
+                            Text(
+                              'Plan college visit',
+                              textAlign: TextAlign.center,
+                              style: GoogleFonts.inter(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white,
+                                letterSpacing: 0.0137,
+                                height: 1.0,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ),
