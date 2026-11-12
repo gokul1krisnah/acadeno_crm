@@ -350,158 +350,6 @@ class _DashboardViewState extends State<_DashboardView> {
     return DateFormat('EEEE, d MMMM').format(n);
   }
 
-  bool _isResettingData = false;
-
-  Future<void> _confirmAndResetCrmData() async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      barrierDismissible: false,
-      builder: (ctx) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          title: const Row(
-            children: [
-              Icon(
-                Icons.warning_amber_rounded,
-                color: Color(0xFFDC2626),
-                size: 26,
-              ),
-              Gap(10),
-              Expanded(
-                child: Text(
-                  'Reset CRM Database?',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700,
-                    color: Color(0xFF111827),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          content: const Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'This will permanently delete all operational data:',
-                style: TextStyle(
-                  fontSize: 13.5,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFF374151),
-                ),
-              ),
-              Gap(8),
-              Text(
-                '• All Leads & student records\n• All Campaigns & source events\n• All Follow-ups & assignments\n• All Call logs & duration records\n• All College visits\n• Phone index & in-app alerts',
-                style: TextStyle(
-                  fontSize: 13,
-                  height: 1.5,
-                  color: Color(0xFF4B5563),
-                ),
-              ),
-              Gap(14),
-              Text(
-                '🔒 All Admin & User accounts will remain 100% untouched.',
-                style: TextStyle(
-                  fontSize: 12.5,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFF059669),
-                ),
-              ),
-            ],
-          ),
-          actionsPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(ctx).pop(false),
-              child: const Text(
-                'Cancel',
-                style: TextStyle(
-                  color: Color(0xFF6B7280),
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFDC2626),
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                elevation: 0,
-              ),
-              onPressed: () => Navigator.of(ctx).pop(true),
-              child: const Text(
-                'Yes, Reset CRM Data',
-                style: TextStyle(fontWeight: FontWeight.w600),
-              ),
-            ),
-          ],
-        );
-      },
-    );
-
-    if (confirmed != true || !mounted) return;
-
-    setState(() => _isResettingData = true);
-    _toast('Starting CRM data reset...');
-
-    try {
-      final collectionsToClear = [
-        'leads',
-        'campaigns',
-        'lead_assignments',
-        'assignments',
-        'college_visits',
-        'call_logs',
-        'lead_phones',
-        'alerts',
-        'notification_queue',
-        'colleges',
-      ];
-
-      int totalDeleted = 0;
-      final firestore = FirebaseFirestore.instance;
-
-      for (final col in collectionsToClear) {
-        try {
-          final snapshot = await firestore.collection(col).get();
-          final docs = snapshot.docs;
-          if (docs.isEmpty) continue;
-
-          for (var i = 0; i < docs.length; i += 400) {
-            final batch = firestore.batch();
-            final end = (i + 400 < docs.length) ? i + 400 : docs.length;
-            final chunk = docs.sublist(i, end);
-            for (final doc in chunk) {
-              batch.delete(doc.reference);
-            }
-            await batch.commit();
-            totalDeleted += chunk.length;
-          }
-        } catch (e) {
-          debugPrint('Notice clearing $col: $e');
-        }
-      }
-
-      if (mounted) {
-        _toast('CRM Data cleared ($totalDeleted records removed). Fresh CRM initialized!');
-      }
-    } catch (e) {
-      if (mounted) {
-        _toast('Error clearing CRM data: $e', error: true);
-      }
-    } finally {
-      if (mounted) {
-        setState(() => _isResettingData = false);
-      }
-    }
-  }
-
   Future<void> _pickDashboardDate() async {
     final now = DateTime.now();
     final picked = await showDatePicker(
@@ -1171,7 +1019,7 @@ class _DashboardViewState extends State<_DashboardView> {
                       onTap: _pickDashboardDate,
                       borderRadius: BorderRadius.circular(6),
                       child: Text(
-                        '$_today ·',
+                        _today,
                         style: GoogleFonts.inter(
                           color: const Color(0xFF718096),
                           fontSize: 13,
@@ -1257,55 +1105,17 @@ class _DashboardViewState extends State<_DashboardView> {
                       ),
                     ),
                     const Gap(2),
-                    Row(
-                      children: [
-                        InkWell(
-                          onTap: _pickDashboardDate,
-                          borderRadius: BorderRadius.circular(6),
-                          child: Text(
-                            '$_today ·',
-                            style: GoogleFonts.inter(
-                              color: const Color(0xFF718096),
-                              fontSize: 13,
-                              fontWeight: FontWeight.w400,
-                            ),
-                          ),
+                    InkWell(
+                      onTap: _pickDashboardDate,
+                      borderRadius: BorderRadius.circular(6),
+                      child: Text(
+                        _today,
+                        style: GoogleFonts.inter(
+                          color: const Color(0xFF718096),
+                          fontSize: 13,
+                          fontWeight: FontWeight.w400,
                         ),
-                        const Gap(6),
-                        InkWell(
-                          onTap: _isResettingData ? null : _confirmAndResetCrmData,
-                          borderRadius: BorderRadius.circular(6),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFFEF2F2),
-                              borderRadius: BorderRadius.circular(6),
-                              border: Border.all(color: const Color(0xFFFECACA)),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                _isResettingData
-                                    ? const SizedBox(
-                                        width: 10,
-                                        height: 10,
-                                        child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFFDC2626)),
-                                      )
-                                    : const Icon(Icons.delete_sweep_rounded, size: 12, color: Color(0xFFDC2626)),
-                                const Gap(3),
-                                Text(
-                                  _isResettingData ? 'Resetting...' : 'Clear Data',
-                                  style: GoogleFonts.inter(
-                                    color: const Color(0xFFDC2626),
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
+                      ),
                     ),
                   ],
                 ),
@@ -1381,69 +1191,19 @@ class _DashboardViewState extends State<_DashboardView> {
                 ),
               ),
               const Gap(4),
-              Row(
-                children: [
-                  InkWell(
-                    onTap: _pickDashboardDate,
-                    borderRadius: BorderRadius.circular(6),
-                    child: Text(
-                      '$_today ·',
-                      style: GoogleFonts.inter(
-                        color: const Color(0xFF718096),
-                        fontSize: 14,
-                        fontWeight: FontWeight.w400,
-                        letterSpacing: -0.3418,
-                        height: 20 / 14,
-                      ),
-                    ),
+              InkWell(
+                onTap: _pickDashboardDate,
+                borderRadius: BorderRadius.circular(6),
+                child: Text(
+                  _today,
+                  style: GoogleFonts.inter(
+                    color: const Color(0xFF718096),
+                    fontSize: 14,
+                    fontWeight: FontWeight.w400,
+                    letterSpacing: -0.3418,
+                    height: 20 / 14,
                   ),
-                  const Gap(8),
-                  InkWell(
-                    onTap: _isResettingData ? null : _confirmAndResetCrmData,
-                    borderRadius: BorderRadius.circular(6),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 3,
-                      ),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFFEF2F2),
-                        borderRadius: BorderRadius.circular(6),
-                        border: Border.all(color: const Color(0xFFFECACA)),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          _isResettingData
-                              ? const SizedBox(
-                                  width: 12,
-                                  height: 12,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    color: Color(0xFFDC2626),
-                                  ),
-                                )
-                              : const Icon(
-                                  Icons.delete_sweep_rounded,
-                                  size: 14,
-                                  color: Color(0xFFDC2626),
-                                ),
-                          const Gap(4),
-                          Text(
-                            _isResettingData
-                                ? 'Resetting...'
-                                : 'Clear CRM Data (Keep Users)',
-                            style: GoogleFonts.inter(
-                              color: const Color(0xFFDC2626),
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
+                ),
               ),
             ],
           ),
