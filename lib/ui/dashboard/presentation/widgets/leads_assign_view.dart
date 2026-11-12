@@ -1814,38 +1814,41 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
 
                 final execDropdown = Container(
                   height: 38,
-                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  width: isMobileBar ? null : 189,
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  alignment: Alignment.center,
                   decoration: BoxDecoration(
-                    color: const Color(0xFF1E293B),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: const Color(0xFF334155)),
+                    color: const Color(0xFF1F2937),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: const Color(0xFF374151), width: 1),
                   ),
                   child: DropdownButtonHideUnderline(
                     child: state.activeExecutives.isEmpty
-                        ? const Center(
+                        ? Center(
                             child: Text(
                               'No active HR users',
-                              style: TextStyle(
-                                color: Color(0xFF94A3B8),
-                                fontSize: 12.5,
+                              style: GoogleFonts.poppins(
+                                color: const Color(0xFF9CA3AF),
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
                               ),
                             ),
                           )
                         : DropdownButton<String>(
-                            dropdownColor: const Color(0xFF1E293B),
-                            borderRadius: BorderRadius.circular(12),
+                            dropdownColor: const Color(0xFF1F2937),
+                            borderRadius: BorderRadius.circular(8),
                             value: state.selectedExecutive?.uid,
                             isDense: true,
-                            isExpanded: isMobileBar,
+                            isExpanded: true,
                             icon: const Icon(
                               Icons.keyboard_arrow_down_rounded,
                               size: 18,
-                              color: Color(0xFF94A3B8),
+                              color: Color(0xFF9CA3AF),
                             ),
-                            style: const TextStyle(
+                            style: GoogleFonts.poppins(
                               color: Colors.white,
-                              fontSize: 12.5,
-                              fontWeight: FontWeight.w600,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
                             ),
                             items: state.activeExecutives.map((exec) {
                               final count = state.assignmentCountForExecutive(
@@ -1870,35 +1873,33 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
 
                 final dateDropdown = Container(
                   height: 38,
-                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  width: isMobileBar ? null : 147.75,
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  alignment: Alignment.center,
                   decoration: BoxDecoration(
-                    color: const Color(0xFF1E293B),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: const Color(0xFF334155)),
+                    color: const Color(0xFF1F2937),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: const Color(0xFF374151), width: 1),
                   ),
                   child: Row(
                     mainAxisSize: isMobileBar
                         ? MainAxisSize.max
                         : MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Expanded(
-                        flex: isMobileBar ? 1 : 0,
                         child: DropdownButtonHideUnderline(
                           child: DropdownButton<String>(
-                            dropdownColor: const Color(0xFF1E293B),
-                            borderRadius: BorderRadius.circular(12),
+                            dropdownColor: const Color(0xFF1F2937),
+                            borderRadius: BorderRadius.circular(8),
                             value: state.selectedDateKey,
                             isDense: true,
-                            isExpanded: isMobileBar,
-                            icon: const Icon(
-                              Icons.keyboard_arrow_down_rounded,
-                              size: 18,
-                              color: Color(0xFF94A3B8),
-                            ),
-                            style: const TextStyle(
+                            isExpanded: true,
+                            icon: const SizedBox.shrink(),
+                            style: GoogleFonts.poppins(
                               color: Colors.white,
-                              fontSize: 12.5,
-                              fontWeight: FontWeight.w600,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
                             ),
                             items: state.dateOptions
                                 .map(
@@ -1919,7 +1920,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                           ),
                         ),
                       ),
-                      const Gap(6),
+                      const Gap(8),
                       InkWell(
                         onTap: () async {
                           final now = DateTime.now();
@@ -1959,20 +1960,23 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                 );
 
                 final assignBtn = SizedBox(
-                  height: 40,
-                  width: isMobileBar ? double.infinity : null,
+                  height: 36,
+                  width: isMobileBar ? double.infinity : 97,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       backgroundColor: state.selectedLeadIds.isEmpty
-                          ? const Color(0xFF1E293B)
+                          ? const Color(0xFF1F2937)
                           : const Color(0xFFEF8144),
                       foregroundColor: state.selectedLeadIds.isEmpty
                           ? const Color(0xFF64748B)
                           : Colors.white,
-                      disabledBackgroundColor: const Color(0xFF1E293B),
+                      disabledBackgroundColor: const Color(0xFF1F2937),
                       disabledForegroundColor: const Color(0xFF64748B),
                       elevation: 0,
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 8,
+                      ),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
@@ -2003,9 +2007,12 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                 if (isMobileBar) {
                   return Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 14,
+                    ),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF0F172A),
+                      color: const Color(0xFF111827),
                       borderRadius: BorderRadius.circular(12),
                       boxShadow: [
                         BoxShadow(
@@ -2020,10 +2027,12 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                       children: [
                         Text(
                           '${state.selectedLeadIds.length} leads selected',
-                          style: const TextStyle(
+                          style: GoogleFonts.poppins(
                             color: Colors.white,
-                            fontSize: 14.5,
-                            fontWeight: FontWeight.w700,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            height: 20 / 14,
+                            letterSpacing: 0.35,
                           ),
                         ),
                         const Gap(12),
@@ -2043,12 +2052,13 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
 
                 return Container(
                   width: double.infinity,
+                  constraints: const BoxConstraints(minHeight: 70),
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 14,
+                    horizontal: 24,
+                    vertical: 16,
                   ),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF0F172A),
+                    color: const Color(0xFF111827),
                     borderRadius: BorderRadius.circular(12),
                     boxShadow: [
                       BoxShadow(
@@ -2058,40 +2068,44 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                       ),
                     ],
                   ),
-                  child: Wrap(
-                    alignment: WrapAlignment.spaceBetween,
-                    crossAxisAlignment: WrapCrossAlignment.center,
-                    spacing: 16,
-                    runSpacing: 12,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Text(
                         '${state.selectedLeadIds.length} leads selected',
-                        style: const TextStyle(
+                        style: GoogleFonts.poppins(
                           color: Colors.white,
-                          fontSize: 14.5,
-                          fontWeight: FontWeight.w700,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          height: 20 / 14,
+                          letterSpacing: 0.35,
                         ),
                       ),
                       Wrap(
                         crossAxisAlignment: WrapCrossAlignment.center,
-                        spacing: 12,
+                        spacing: 16,
                         runSpacing: 8,
                         children: [
-                          const Text(
+                          Text(
                             'Assign to',
-                            style: TextStyle(
-                              color: Color(0xFF94A3B8),
-                              fontSize: 13,
+                            style: GoogleFonts.poppins(
+                              color: const Color(0xFF9CA3AF),
+                              fontSize: 12,
                               fontWeight: FontWeight.w500,
+                              height: 16 / 12,
+                              letterSpacing: 12 * 0.0049,
                             ),
                           ),
                           execDropdown,
-                          const Text(
+                          Text(
                             'for',
-                            style: TextStyle(
-                              color: Color(0xFF94A3B8),
-                              fontSize: 13,
+                            style: GoogleFonts.poppins(
+                              color: const Color(0xFF9CA3AF),
+                              fontSize: 12,
                               fontWeight: FontWeight.w500,
+                              height: 16 / 12,
+                              letterSpacing: 12 * 0.0313,
                             ),
                           ),
                           dateDropdown,

@@ -678,32 +678,56 @@ class _TeamManagementViewState extends State<TeamManagementView> {
                           child: const Row(
                             children: [
                               Expanded(
-                                flex: 22,
+                                flex: 20,
                                 child: Text('TEAM MEMBER', style: _tblHdr),
                               ),
                               Expanded(
-                                flex: 12,
-                                child: Text('ASSIGNED', style: _tblHdr),
+                                flex: 13,
+                                child: Text(
+                                  'ASSIGNED',
+                                  textAlign: TextAlign.center,
+                                  style: _tblHdr,
+                                ),
                               ),
                               Expanded(
                                 flex: 16,
-                                child: Text('CONTACTED', style: _tblHdr),
-                              ),
-                              Expanded(
-                                flex: 14,
-                                child: Text('INTERESTED', style: _tblHdr),
-                              ),
-                              Expanded(
-                                flex: 15,
-                                child: Text('ACTIONS DONE', style: _tblHdr),
+                                child: Text(
+                                  'CONTACTED',
+                                  textAlign: TextAlign.center,
+                                  style: _tblHdr,
+                                ),
                               ),
                               Expanded(
                                 flex: 13,
-                                child: Text('CONVERTED', style: _tblHdr),
+                                child: Text(
+                                  'INTERESTED',
+                                  textAlign: TextAlign.center,
+                                  style: _tblHdr,
+                                ),
                               ),
                               Expanded(
-                                flex: 11,
-                                child: Text('PENDING', style: _tblHdr),
+                                flex: 15,
+                                child: Text(
+                                  'ACTIONS DONE',
+                                  textAlign: TextAlign.center,
+                                  style: _tblHdr,
+                                ),
+                              ),
+                              Expanded(
+                                flex: 13,
+                                child: Text(
+                                  'CONVERTED',
+                                  textAlign: TextAlign.center,
+                                  style: _tblHdr,
+                                ),
+                              ),
+                              Expanded(
+                                flex: 14,
+                                child: Text(
+                                  'PENDING',
+                                  textAlign: TextAlign.center,
+                                  style: _tblHdr,
+                                ),
                               ),
                             ],
                           ),
@@ -784,7 +808,7 @@ class _TeamManagementViewState extends State<TeamManagementView> {
                             child: Row(
                               children: [
                                 Expanded(
-                                  flex: 22,
+                                  flex: 20,
                                   child: Column(
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
@@ -816,9 +840,10 @@ class _TeamManagementViewState extends State<TeamManagementView> {
                                   ),
                                 ),
                                 Expanded(
-                                  flex: 12,
+                                  flex: 13,
                                   child: Text(
                                     '$assignedCount',
+                                    textAlign: TextAlign.center,
                                     style: _tblCell,
                                   ),
                                 ),
@@ -828,24 +853,31 @@ class _TeamManagementViewState extends State<TeamManagementView> {
                                     assignedCount > 0
                                         ? '$contactedCount ($contactedPct%)'
                                         : '—',
+                                    textAlign: TextAlign.center,
                                     style: _tblCell,
                                   ),
                                 ),
                                 Expanded(
-                                  flex: 14,
+                                  flex: 13,
                                   child: Text(
                                     '$interestedCount',
+                                    textAlign: TextAlign.center,
                                     style: _tblCell,
                                   ),
                                 ),
                                 Expanded(
                                   flex: 15,
-                                  child: Text('$actionsDone', style: _tblCell),
+                                  child: Text(
+                                    '$actionsDone',
+                                    textAlign: TextAlign.center,
+                                    style: _tblCell,
+                                  ),
                                 ),
                                 Expanded(
                                   flex: 13,
                                   child: Text(
                                     '$convertedCount',
+                                    textAlign: TextAlign.center,
                                     style: const TextStyle(
                                       fontSize: 13,
                                       fontWeight: FontWeight.w700,
@@ -854,9 +886,10 @@ class _TeamManagementViewState extends State<TeamManagementView> {
                                   ),
                                 ),
                                 Expanded(
-                                  flex: 11,
+                                  flex: 14,
                                   child: Text(
                                     '$pendingCount',
+                                    textAlign: TextAlign.center,
                                     style: TextStyle(
                                       fontSize: 13,
                                       fontWeight: FontWeight.w700,
