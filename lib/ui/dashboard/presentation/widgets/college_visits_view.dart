@@ -1062,7 +1062,6 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
   Widget build(BuildContext context) {
     return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
       stream: _visitsCollection.snapshots(),
-
       builder: (context, snapshot) {
         final List<_CollegeVisit> visits;
 
@@ -1072,26 +1071,18 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
 
             return _CollegeVisit(
               id: doc.id,
-
               collegeName: (d['collegeName'] ?? 'College').toString(),
-
               dateLabel:
                   (d['dateLabel'] ??
                           DateFormat('d MMM yyyy').format(DateTime.now()))
                       .toString(),
-
               purpose: (d['purpose'] ?? '').toString(),
-
               assignedStaff: (d['assignedStaff'] ?? d['staffNames'] ?? 'Team')
                   .toString(),
-
               status: (d['status'] ?? d['statusLabel'] ?? 'Planned').toString(),
-
               outcomeNotes: (d['outcomeNotes'] ?? d['metSummary'] ?? '')
                   .toString(),
-
               leadsCollected: (d['leadsCollected'] as num?)?.toInt() ?? 0,
-
               conversions: (d['conversions'] as num?)?.toInt() ?? 0,
             );
           }).toList();
@@ -1109,465 +1100,533 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
           (acc, v) => acc + v.conversions,
         );
 
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-
-          children: [
-            LayoutBuilder(
-              builder: (context, c) {
-                final isMobile =
-                    MediaQuery.of(context).size.width < 768 || c.maxWidth < 640;
-                final titleCol = Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'College visits',
-                      style: TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.w700,
-                        color: Color(0xFF0F172A),
-                        letterSpacing: -0.5,
-                      ),
-                    ),
-                    const Gap(4),
-                    Text(
-                      'Plan campus outreach, log HOD/faculty meetings, and track $totalLeads leads ($totalConversions conversions) generated',
-                      style: const TextStyle(
-                        fontSize: 13,
-                        color: Color(0xFF667085),
-                      ),
-                    ),
-                  ],
-                );
-
-                final planBtn = SizedBox(
-                  height: 40,
-                  width: isMobile ? double.infinity : null,
-                  child: ElevatedButton.icon(
-                    onPressed: _showPlanVisitDialog,
-                    icon: const Icon(Icons.add, size: 16),
-                    label: const Text(
-                      'Plan college visit',
-                      textAlign: TextAlign.center,
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      alignment: Alignment.center,
-                      backgroundColor: const Color(0xFFEF8144),
-                      foregroundColor: Colors.white,
-                      elevation: 0,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 18,
-                        vertical: 12,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                  ),
-                );
-
-                if (isMobile) {
-                  return Column(
+        return ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 1000),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              LayoutBuilder(
+                builder: (context, c) {
+                  final isMobile =
+                      MediaQuery.of(context).size.width < 768 || c.maxWidth < 680;
+                  final titleCol = Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [titleCol, const Gap(12), planBtn],
-                  );
-                }
-
-                return SizedBox(
-                  width: double.infinity,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      Expanded(child: titleCol),
-                      const Gap(16),
-                      planBtn,
+                      Text(
+                        'College visits',
+                        style: GoogleFonts.inter(
+                          fontSize: 30,
+                          fontWeight: FontWeight.w700,
+                          color: const Color(0xFF0F172A),
+                          letterSpacing: -0.3809,
+                          height: 36 / 30,
+                        ),
+                      ),
+                      const Gap(8),
+                      Text(
+                        'Plan campus outreach, log HOD/faculty meetings, and track $totalLeads leads ($totalConversions conversions) generated',
+                        style: GoogleFonts.poppins(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          color: const Color(0xFF64748B),
+                          letterSpacing: -0.1094,
+                          height: 24 / 16,
+                        ),
+                      ),
+                    ],
+                  );
+
+                  final planBtn = SizedBox(
+                    height: 44,
+                    width: isMobile ? double.infinity : null,
+                    child: ElevatedButton.icon(
+                      onPressed: _showPlanVisitDialog,
+                      icon: const Icon(Icons.add, size: 16, color: Colors.white),
+                      label: Text(
+                        'Plan college visit',
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.inter(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                          letterSpacing: 0.0137,
+                          height: 24 / 14,
+                        ),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        alignment: Alignment.center,
+                        backgroundColor: const Color(0xFFEF8144),
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 12,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
+                  );
+
+                  if (isMobile) {
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [titleCol, const Gap(16), planBtn],
+                    );
+                  }
+
+                  return SizedBox(
+                    width: double.infinity,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Expanded(child: titleCol),
+                        const Gap(24),
+                        planBtn,
+                      ],
+                    ),
+                  );
+                },
+              ),
+              const Gap(32),
+
+              if (visits.isEmpty)
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 40,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: const Color(0xFFF1F5F9),
+                      width: 1.0,
+                    ),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Color.fromRGBO(0, 0, 0, 0.05),
+                        blurRadius: 1,
+                        offset: Offset(0, 1),
+                      ),
                     ],
                   ),
-                );
-              },
-            ),
-            const Gap(18),
-
-            if (visits.isEmpty)
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 36,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: const Color(0xFFE2E8F0),
-                    width: 1.2,
-                  ),
-                  boxShadow: const [
-                    BoxShadow(
-                      color: Color(0x04000000),
-                      blurRadius: 6,
-                      offset: Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      width: 52,
-                      height: 52,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF8FAFC),
-                        shape: BoxShape.circle,
-                        border: Border.all(color: const Color(0xFFE2E8F0)),
-                      ),
-                      alignment: Alignment.center,
-                      child: const Icon(
-                        CupertinoIcons.calendar_today,
-                        color: Color(0xFF94A3B8),
-                        size: 24,
-                      ),
-                    ),
-                    const Gap(16),
-                    const Text(
-                      'No planned visits yet',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 16.5,
-                        fontWeight: FontWeight.w700,
-                        color: Color(0xFF0F172A),
-                        letterSpacing: -0.2,
-                      ),
-                    ),
-                    const Gap(6),
-                    const Text(
-                      'Click "Plan college visit" above to schedule campus outreach.',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w400,
-                        color: Color(0xFF64748B),
-                        height: 1.4,
-                      ),
-                    ),
-                  ],
-                ),
-              )
-            else
-              ...visits.map((visit) {
-              final isCompleted = visit.status == 'Completed';
-              final isCancelled = visit.status == 'Cancelled';
-
-              return Container(
-                width: double.infinity,
-                margin: const EdgeInsets.only(bottom: 16),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 16,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: const Color(0xFFF1F5F9),
-                    width: 1.2,
-                  ),
-                  boxShadow: const [
-                    BoxShadow(
-                      color: Color(0x04000000),
-                      blurRadius: 6,
-                      offset: Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    SizedBox(
-                      width: double.infinity,
-                      child: LayoutBuilder(
-                        builder: (context, constraints) {
-                          final isCompact = constraints.maxWidth < 620;
-
-                          final statusBadge = Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 4,
-                            ),
-                            decoration: BoxDecoration(
-                              color: isCompleted
-                                  ? const Color(0xFFECFDF5)
-                                  : (isCancelled
-                                        ? const Color(0xFFFEF2F2)
-                                        : const Color(0xFFFFF7ED)),
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: Text(
-                              '• ${visit.status} • ${visit.dateLabel}',
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w700,
-                                color: isCompleted
-                                    ? const Color(0xFF059669)
-                                    : (isCancelled
-                                          ? const Color(0xFFDC2626)
-                                          : const Color(0xFFEA580C)),
-                              ),
-                            ),
-                          );
-
-                          final actionButtons = Wrap(
-                            spacing: 8,
-                            runSpacing: 8,
-                            crossAxisAlignment: WrapCrossAlignment.center,
-                            children: [
-                              if (isCancelled)
-                                Material(
-                                  color: Colors.transparent,
-                                  child: InkWell(
-                                    onTap: () =>
-                                        _confirmDeleteVisit(context, visit),
-                                    borderRadius: BorderRadius.circular(8),
-                                    child: Container(
-                                      padding: const EdgeInsets.all(5.5),
-                                      decoration: BoxDecoration(
-                                        color: const Color(0xFFFEF2F2),
-                                        borderRadius: BorderRadius.circular(8),
-                                        border: Border.all(
-                                          color: const Color(0xFFFECACA),
-                                        ),
-                                      ),
-                                      child: const Icon(
-                                        CupertinoIcons.trash,
-                                        size: 13,
-                                        color: Color(0xFFDC2626),
-                                      ),
-                                    ),
-                                  ),
-                                )
-                              else ...[
-                                if (!isCompleted)
-                                  OutlinedButton.icon(
-                                    onPressed: () =>
-                                        LinkLauncher.launchCollegeMapsDirections(
-                                          visit.collegeName,
-                                        ),
-                                    icon: const Icon(
-                                      Icons.near_me_rounded,
-                                      size: 14,
-                                      color: Color(0xFF4F46E5),
-                                    ),
-                                    label: const Text(
-                                      'Directions',
-                                      style: TextStyle(
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.w600,
-                                        color: Color(0xFF4F46E5),
-                                      ),
-                                    ),
-                                    style: OutlinedButton.styleFrom(
-                                      visualDensity: VisualDensity.compact,
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 16,
-                                        vertical: 10,
-                                      ),
-                                      side: const BorderSide(
-                                        color: Color(0xFFE2E8F0),
-                                      ),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(20),
-                                      ),
-                                      backgroundColor: Colors.white,
-                                    ),
-                                  ),
-                                OutlinedButton(
-                                  onPressed: () => _showLogOutcomeDialog(visit),
-                                  style: OutlinedButton.styleFrom(
-                                    visualDensity: VisualDensity.compact,
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 16,
-                                      vertical: 10,
-                                    ),
-                                    side: const BorderSide(
-                                      color: Color(0xFFE2E8F0),
-                                    ),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(20),
-                                    ),
-                                    backgroundColor: Colors.white,
-                                  ),
-                                  child: Text(
-                                    isCompleted ? 'Outcome' : 'Log outcome',
-                                    style: const TextStyle(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w600,
-                                      color: Color(0xFF475467),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ],
-                          );
-
-                          if (isCompact) {
-                            return Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Wrap(
-                                  spacing: 8,
-                                  runSpacing: 6,
-                                  crossAxisAlignment: WrapCrossAlignment.center,
-                                  children: [
-                                    Text(
-                                      visit.collegeName,
-                                      style: const TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.w800,
-                                        color: Color(0xFF0F172A),
-                                      ),
-                                    ),
-                                    statusBadge,
-                                  ],
-                                ),
-                                const Gap(12),
-                                actionButtons,
-                              ],
-                            );
-                          }
-
-                          return Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Expanded(
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Flexible(
-                                      child: Text(
-                                        visit.collegeName,
-                                        style: const TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.w800,
-                                          color: Color(0xFF0F172A),
-                                        ),
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ),
-                                    const Gap(12),
-                                    statusBadge,
-                                  ],
-                                ),
-                              ),
-                              const Gap(16),
-                              actionButtons,
-                            ],
-                          );
-                        },
-                      ),
-                    ),
-                    const Gap(14),
-                    RichText(
-                      text: TextSpan(
-                        style: const TextStyle(
-                          fontSize: 13.5,
-                          color: Color(0xFF475467),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: 52,
+                        height: 52,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF8FAFC),
+                          shape: BoxShape.circle,
+                          border: Border.all(color: const Color(0xFFE2E8F0)),
                         ),
-                        children: [
-                          const TextSpan(
-                            text: 'Purpose: ',
-                            style: TextStyle(
-                              fontWeight: FontWeight.w700,
-                              color: Color(0xFF334155),
+                        alignment: Alignment.center,
+                        child: const Icon(
+                          CupertinoIcons.calendar_today,
+                          color: Color(0xFF94A3B8),
+                          size: 24,
+                        ),
+                      ),
+                      const Gap(16),
+                      Text(
+                        'No planned visits yet',
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.poppins(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                          color: const Color(0xFF0F172A),
+                        ),
+                      ),
+                      const Gap(6),
+                      Text(
+                        'Click "Plan college visit" above to schedule campus outreach.',
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.poppins(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w400,
+                          color: const Color(0xFF64748B),
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+              else
+                ...visits.map((visit) {
+                  final isCompleted = visit.status == 'Completed';
+                  final isCancelled = visit.status == 'Cancelled';
+
+                  return LayoutBuilder(
+                    builder: (context, cardConstraints) {
+                      final isMobile =
+                          MediaQuery.of(context).size.width < 768 ||
+                          cardConstraints.maxWidth < 680;
+
+                      Color badgeBg;
+                      Color badgeBorder;
+                      Color badgeDot;
+                      Color badgeFg;
+                      if (isCompleted) {
+                        badgeBg = const Color(0xFFF0FDF4);
+                        badgeBorder = const Color(0xFFDCFCE7);
+                        badgeDot = const Color(0xFF22C55E);
+                        badgeFg = const Color(0xFF22C55E);
+                      } else if (isCancelled) {
+                        badgeBg = const Color(0xFFFEF2F2);
+                        badgeBorder = const Color(0xFFFECACA);
+                        badgeDot = const Color(0xFFDC2626);
+                        badgeFg = const Color(0xFFDC2626);
+                      } else {
+                        badgeBg = const Color(0xFFFFF7ED);
+                        badgeBorder = const Color(0xFFFFEDD5);
+                        badgeDot = const Color(0xFFEA580C);
+                        badgeFg = const Color(0xFFEA580C);
+                      }
+
+                      final statusBadge = Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: badgeBg,
+                          borderRadius: BorderRadius.circular(9999),
+                          border: Border.all(color: badgeBorder),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              width: 6,
+                              height: 6,
+                              decoration: BoxDecoration(
+                                color: badgeDot,
+                                shape: BoxShape.circle,
+                              ),
                             ),
-                          ),
-                          TextSpan(
-                            text: visit.purpose.isEmpty
-                                ? 'Campus outreach'
-                                : visit.purpose,
-                          ),
-                          const TextSpan(
-                            text: '  •  ',
-                            style: TextStyle(
-                              color: Color(0xFF94A3B8),
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                          const TextSpan(
-                            text: 'Staff: ',
-                            style: TextStyle(
-                              fontWeight: FontWeight.w700,
-                              color: Color(0xFF334155),
-                            ),
-                          ),
-                          TextSpan(
-                            text: visit.assignedStaff.isEmpty
-                                ? 'Team'
-                                : visit.assignedStaff,
-                          ),
-                          if (visit.outcomeNotes.isNotEmpty) ...[
-                            const TextSpan(text: ' '),
-                            TextSpan(
-                              text: visit.outcomeNotes,
-                              style: const TextStyle(color: Color(0xFF64748B)),
+                            const Gap(6),
+                            Text(
+                              '${visit.status} • ${visit.dateLabel}',
+                              style: GoogleFonts.poppins(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: badgeFg,
+                                letterSpacing: 0.0137,
+                                height: 20 / 14,
+                              ),
                             ),
                           ],
-                        ],
-                      ),
-                    ),
-                    if (visit.leadsCollected > 0 || visit.conversions > 0) ...[
-                      const Gap(12),
-                      Wrap(
-                        spacing: 8,
+                        ),
+                      );
+
+                      final actionButtons = Wrap(
+                        spacing: 12,
                         runSpacing: 8,
+                        crossAxisAlignment: WrapCrossAlignment.center,
                         children: [
-                          if (visit.leadsCollected > 0)
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 10,
-                                vertical: 4,
-                              ),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFEFF6FF),
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                              child: Text(
-                                '${visit.leadsCollected} leads collected',
-                                style: const TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w700,
-                                  color: Color(0xFF1D4ED8),
+                          if (isCancelled)
+                            InkWell(
+                              onTap: () =>
+                                  _confirmDeleteVisit(context, visit),
+                              borderRadius: BorderRadius.circular(8),
+                              child: Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFFEF2F2),
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(
+                                    color: const Color(0xFFFECACA),
+                                  ),
+                                ),
+                                child: const Icon(
+                                  CupertinoIcons.trash,
+                                  size: 14,
+                                  color: Color(0xFFDC2626),
                                 ),
                               ),
                             ),
-                          if (visit.conversions > 0)
-                            Container(
+                          InkWell(
+                            onTap: () =>
+                                LinkLauncher.launchCollegeMapsDirections(
+                                  visit.collegeName,
+                                ),
+                            borderRadius: BorderRadius.circular(9999),
+                            child: Container(
                               padding: const EdgeInsets.symmetric(
-                                horizontal: 10,
-                                vertical: 4,
+                                horizontal: 16,
+                                vertical: 8,
                               ),
                               decoration: BoxDecoration(
-                                color: const Color(0xFFECFDF5),
-                                borderRadius: BorderRadius.circular(6),
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(9999),
+                                border: Border.all(
+                                  color: const Color(0xFFE2E8F0),
+                                ),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(
+                                    Icons.near_me_rounded,
+                                    size: 14,
+                                    color: Color(0xFF4F46E5),
+                                  ),
+                                  const Gap(8),
+                                  Text(
+                                    'Directions',
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w500,
+                                      color: const Color(0xFF4F46E5),
+                                      letterSpacing: 0.0547,
+                                      height: 20 / 14,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          InkWell(
+                            onTap: () => _showLogOutcomeDialog(visit),
+                            borderRadius: BorderRadius.circular(9999),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 8,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(9999),
+                                border: Border.all(
+                                  color: const Color(0xFFE2E8F0),
+                                ),
                               ),
                               child: Text(
-                                '${visit.conversions} conversions',
-                                style: const TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w700,
-                                  color: Color(0xFF047857),
+                                'Update outcome',
+                                style: GoogleFonts.poppins(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                  color: const Color(0xFF64748B),
+                                  letterSpacing: 0.041,
+                                  height: 20 / 14,
                                 ),
                               ),
                             ),
+                          ),
                         ],
-                      ),
-                    ],
-                  ],
-                ),
-              );
-            }),
-          ],
+                      );
+
+                      return Container(
+                        width: double.infinity,
+                        margin: const EdgeInsets.only(bottom: 24),
+                        padding: isMobile
+                            ? const EdgeInsets.all(18)
+                            : const EdgeInsets.fromLTRB(24, 24, 24, 32),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: const Color(0xFFF1F5F9),
+                            width: 1.0,
+                          ),
+                          boxShadow: const [
+                            BoxShadow(
+                              color: Color.fromRGBO(0, 0, 0, 0.05),
+                              blurRadius: 1,
+                              offset: Offset(0, 1),
+                            ),
+                          ],
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            if (isMobile)
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Wrap(
+                                    spacing: 12,
+                                    runSpacing: 8,
+                                    crossAxisAlignment:
+                                        WrapCrossAlignment.center,
+                                    children: [
+                                      Text(
+                                        visit.collegeName,
+                                        style: GoogleFonts.poppins(
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.w600,
+                                          color: const Color(0xFF0F172A),
+                                          letterSpacing: -0.4492,
+                                          height: 28 / 20,
+                                        ),
+                                      ),
+                                      statusBadge,
+                                    ],
+                                  ),
+                                  const Gap(14),
+                                  actionButtons,
+                                ],
+                              )
+                            else
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Expanded(
+                                    child: Wrap(
+                                      spacing: 16,
+                                      runSpacing: 8,
+                                      crossAxisAlignment:
+                                          WrapCrossAlignment.center,
+                                      children: [
+                                        Text(
+                                          visit.collegeName,
+                                          style: GoogleFonts.poppins(
+                                            fontSize: 20,
+                                            fontWeight: FontWeight.w600,
+                                            color: const Color(0xFF0F172A),
+                                            letterSpacing: -0.4492,
+                                            height: 28 / 20,
+                                          ),
+                                        ),
+                                        statusBadge,
+                                      ],
+                                    ),
+                                  ),
+                                  const Gap(16),
+                                  actionButtons,
+                                ],
+                              ),
+                            const Gap(16),
+                            RichText(
+                              text: TextSpan(
+                                style: GoogleFonts.poppins(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                  height: 20 / 14,
+                                ),
+                                children: [
+                                  TextSpan(
+                                    text: 'Purpose: ',
+                                    style: GoogleFonts.poppins(
+                                      fontWeight: FontWeight.w500,
+                                      color: const Color(0xFF334155),
+                                    ),
+                                  ),
+                                  TextSpan(
+                                    text: visit.purpose.isEmpty
+                                        ? 'Campus outreach'
+                                        : visit.purpose,
+                                    style: GoogleFonts.poppins(
+                                      fontWeight: FontWeight.w500,
+                                      color: const Color(0xFF64748B),
+                                    ),
+                                  ),
+                                  TextSpan(
+                                    text: '  •  ',
+                                    style: GoogleFonts.poppins(
+                                      color: const Color(0xFFCBD5E1),
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                  TextSpan(
+                                    text: 'Staff: ',
+                                    style: GoogleFonts.poppins(
+                                      fontWeight: FontWeight.w500,
+                                      color: const Color(0xFF334155),
+                                    ),
+                                  ),
+                                  TextSpan(
+                                    text: visit.assignedStaff.isEmpty
+                                        ? 'Team'
+                                        : visit.assignedStaff,
+                                    style: GoogleFonts.poppins(
+                                      fontWeight: FontWeight.w500,
+                                      color: const Color(0xFF64748B),
+                                    ),
+                                  ),
+                                  if (visit.outcomeNotes.isNotEmpty) ...[
+                                    TextSpan(
+                                      text: '  •  ',
+                                      style: GoogleFonts.poppins(
+                                        color: const Color(0xFFCBD5E1),
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                    TextSpan(
+                                      text: visit.outcomeNotes,
+                                      style: GoogleFonts.poppins(
+                                        fontWeight: FontWeight.w500,
+                                        color: const Color(0xFF64748B),
+                                      ),
+                                    ),
+                                  ],
+                                ],
+                              ),
+                            ),
+                            if (visit.leadsCollected > 0 ||
+                                visit.conversions > 0) ...[
+                              const Gap(14),
+                              Wrap(
+                                spacing: 8,
+                                runSpacing: 8,
+                                children: [
+                                  if (visit.leadsCollected > 0)
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 10,
+                                        vertical: 4,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFEFF6FF),
+                                        borderRadius:
+                                            BorderRadius.circular(6),
+                                      ),
+                                      child: Text(
+                                        '${visit.leadsCollected} leads collected',
+                                        style: GoogleFonts.inter(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w700,
+                                          color: const Color(0xFF1D4ED8),
+                                        ),
+                                      ),
+                                    ),
+                                  if (visit.conversions > 0)
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 10,
+                                        vertical: 4,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFECFDF5),
+                                        borderRadius:
+                                            BorderRadius.circular(6),
+                                      ),
+                                      child: Text(
+                                        '${visit.conversions} conversions',
+                                        style: GoogleFonts.inter(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w700,
+                                          color: const Color(0xFF047857),
+                                        ),
+                                      ),
+                                    ),
+                                ],
+                              ),
+                            ],
+                          ],
+                        ),
+                      );
+                    },
+                  );
+                }),
+            ],
+          ),
         );
       },
     );
