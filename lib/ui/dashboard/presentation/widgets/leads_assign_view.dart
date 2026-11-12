@@ -2408,6 +2408,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
     required bool value,
     required ValueChanged<bool?> onChanged,
     Color activeColor = _primary,
+    bool isRowHovered = false,
   }) {
     return InkWell(
       onTap: () => onChanged(!value),
@@ -2421,7 +2422,9 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
             color: value ? activeColor : Colors.white,
             borderRadius: BorderRadius.circular(2.5),
             border: Border.all(
-              color: value ? activeColor : const Color(0xFF767676),
+              color: value
+                  ? activeColor
+                  : (isRowHovered ? const Color(0xFF334155) : const Color(0xFF767676)),
               width: 1.0,
             ),
           ),
@@ -2560,87 +2563,15 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
             children: [
               for (var i = 0; i < rows.length; i++) ...[
                 if (i > 0) const Divider(height: 1),
-                Builder(
-                  builder: (_) {
-                    final r = rows[i];
-                    final isSelected = state.selectedLeadIds.contains(r.id);
-                    return InkWell(
-                      onTap: () =>
-                          _openLeadDetailAndEditDialog(context, r, state),
-                      child: Container(
-                        color: isSelected
-                            ? const Color(0xFFF5F6FF)
-                            : Colors.white,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 14,
-                        ),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            _buildFigmaCheckbox(
-                              value: isSelected,
-                              onChanged: (v) =>
-                                  cubit.toggleLeadSelection(r.id, v ?? false),
-                            ),
-                            const Gap(16),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Expanded(
-                                        child: Text(
-                                          r.name,
-                                          style: GoogleFonts.poppins(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.w600,
-                                            height: 24 / 16,
-                                            letterSpacing: 0,
-                                            color: _text,
-                                          ),
-                                        ),
-                                      ),
-                                      _statusBadge(r.status),
-                                    ],
-                                  ),
-                                  Text(
-                                    r.phone,
-                                    style: GoogleFonts.poppins(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w500,
-                                      height: 16 / 12,
-                                      letterSpacing: 0,
-                                      color: const Color(0xFF8A94A6),
-                                    ),
-                                  ),
-                                  const Gap(6),
-                                  Text(
-                                    '${r.collegeBranch} · ${r.source}',
-                                    style: const TextStyle(
-                                      color: _muted,
-                                      fontSize: 12,
-                                    ),
-                                  ),
-                                  const Gap(2),
-                                  Text(
-                                    'Source: ${r.source} · Last: ${r.lastContact} · Assigned: ${r.assignedToName}',
-                                    style: const TextStyle(
-                                      color: _muted,
-                                      fontSize: 12,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  },
+                _MobileLeadCardRow(
+                  lead: rows[i],
+                  isSelected: state.selectedLeadIds.contains(rows[i].id),
+                  onTap: () =>
+                      _openLeadDetailAndEditDialog(context, rows[i], state),
+                  onSelectChanged: (v) =>
+                      cubit.toggleLeadSelection(rows[i].id, v ?? false),
+                  statusBadge: _statusBadge(rows[i].status),
+                  checkboxBuilder: _buildFigmaCheckbox,
                 ),
               ],
             ],
@@ -2697,163 +2628,394 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
             const Divider(height: 1, color: Color(0xFFF3F4F6)),
             for (var i = 0; i < rows.length; i++) ...[
               if (i > 0) const Divider(height: 1, color: Color(0xFFF9FAFB)),
-              Builder(
-                builder: (_) {
-                  final r = rows[i];
-                  final isSelected = state.selectedLeadIds.contains(r.id);
-                  return InkWell(
-                    onTap: () =>
-                        _openLeadDetailAndEditDialog(context, r, state),
-                    child: Container(
-                      color: isSelected
-                          ? const Color(0xFFF5F6FF)
-                          : Colors.white,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 20,
-                        vertical: 14,
-                      ),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Expanded(
-                            flex: 10,
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                _buildFigmaCheckbox(
-                                  value: isSelected,
-                                  onChanged: (v) => cubit.toggleLeadSelection(
-                                    r.id,
-                                    v ?? false,
-                                  ),
-                                ),
-                                const Gap(20),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Text(
-                                        r.name,
-                                        maxLines: 2,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: GoogleFonts.poppins(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w600,
-                                          height: 24 / 16,
-                                          letterSpacing: 0,
-                                          color: const Color(0xFF111827),
-                                        ),
-                                      ),
-                                      const Gap(2),
-                                      Text(
-                                        r.phone,
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: GoogleFonts.poppins(
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w500,
-                                          height: 16 / 12,
-                                          letterSpacing: 0,
-                                          color: const Color(0xFF9CA3AF),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          Expanded(
-                            flex: 7,
-                            child: Align(
-                              alignment: Alignment.centerLeft,
-                              child: Text(
-                                r.collegeBranch,
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                                style: GoogleFonts.poppins(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w500,
-                                  height: 20 / 14,
-                                  letterSpacing: -0.0957,
-                                  color: const Color(0xFF4B5563),
-                                ),
-                              ),
-                            ),
-                          ),
-                          Expanded(
-                            flex: 6,
-                            child: Align(
-                              alignment: Alignment.centerLeft,
-                              child: Text(
-                                r.source,
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                                style: GoogleFonts.poppins(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w500,
-                                  height: 20 / 14,
-                                  letterSpacing: -0.0957,
-                                  color: const Color(0xFF4B5563),
-                                ),
-                              ),
-                            ),
-                          ),
-                          Expanded(
-                            flex: 5,
-                            child: Align(
-                              alignment: Alignment.centerLeft,
-                              child: _statusBadge(r.status),
-                            ),
-                          ),
-                          Expanded(
-                            flex: 5,
-                            child: Align(
-                              alignment: Alignment.centerLeft,
-                              child: Text(
-                                r.lastContact,
-                                style: GoogleFonts.poppins(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w500,
-                                  height: 20 / 14,
-                                  color: const Color(0xFF6B7280),
-                                ),
-                              ),
-                            ),
-                          ),
-                          Expanded(
-                            flex: 6,
-                            child: Align(
-                              alignment: Alignment.centerLeft,
-                              child: Text(
-                                r.assignedToName.isEmpty
-                                    ? '—'
-                                    : r.assignedToName,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: GoogleFonts.poppins(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w500,
-                                  height: 20 / 14,
-                                  letterSpacing: 0.0684,
-                                  color: const Color(0xFF4B5563),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                },
+              _DesktopLeadTableRow(
+                lead: rows[i],
+                isSelected: state.selectedLeadIds.contains(rows[i].id),
+                onTap: () =>
+                    _openLeadDetailAndEditDialog(context, rows[i], state),
+                onSelectChanged: (v) =>
+                    cubit.toggleLeadSelection(rows[i].id, v ?? false),
+                statusBadge: _statusBadge(rows[i].status),
+                checkboxBuilder: _buildFigmaCheckbox,
               ),
             ],
           ],
         );
       },
+    );
+  }
+}
+
+class _DesktopLeadTableRow extends StatefulWidget {
+  final LeadRecord lead;
+  final bool isSelected;
+  final VoidCallback onTap;
+  final ValueChanged<bool?> onSelectChanged;
+  final Widget statusBadge;
+  final Widget Function({
+    required bool value,
+    required ValueChanged<bool?> onChanged,
+    Color activeColor,
+    bool isRowHovered,
+  }) checkboxBuilder;
+
+  const _DesktopLeadTableRow({
+    required this.lead,
+    required this.isSelected,
+    required this.onTap,
+    required this.onSelectChanged,
+    required this.statusBadge,
+    required this.checkboxBuilder,
+  });
+
+  @override
+  State<_DesktopLeadTableRow> createState() => _DesktopLeadTableRowState();
+}
+
+class _DesktopLeadTableRowState extends State<_DesktopLeadTableRow> {
+  bool _isHovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final r = widget.lead;
+    final isSelected = widget.isSelected;
+
+    // Harmonized with modern Figma dashboard:
+    // Selected + Hovered: #FFEFE5 warm peach glow with 4px orange accent
+    // Selected: #FFF6F0 warm peach tint with 3.5px orange accent
+    // Hovered: #F8FAFC subtle cool slate tint with soft slate accent
+    // Idle: Colors.white
+    final Color bgColor = isSelected
+        ? (_isHovered ? const Color(0xFFFFEFE5) : const Color(0xFFFFF6F0))
+        : (_isHovered ? const Color(0xFFF8FAFC) : Colors.white);
+
+    final Color indicatorColor = isSelected
+        ? _primary
+        : (_isHovered ? const Color(0xFFCBD5E1) : Colors.transparent);
+
+    final double indicatorWidth = isSelected
+        ? (_isHovered ? 4.0 : 3.5)
+        : (_isHovered ? 3.0 : 0.0);
+
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 160),
+        curve: Curves.easeOutCubic,
+        decoration: BoxDecoration(
+          color: bgColor,
+          border: Border(
+            left: BorderSide(
+              color: indicatorColor,
+              width: indicatorWidth,
+            ),
+          ),
+          boxShadow: _isHovered
+              ? const [
+                  BoxShadow(
+                    color: Color(0x080F172A),
+                    blurRadius: 6,
+                    offset: Offset(0, 2),
+                  ),
+                ]
+              : const [],
+        ),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: widget.onTap,
+            hoverColor: Colors.transparent,
+            splashColor: _primary.withValues(alpha: 0.08),
+            highlightColor: _primary.withValues(alpha: 0.04),
+            child: Padding(
+              padding: EdgeInsets.symmetric(
+                horizontal: isSelected || _isHovered
+                    ? (20.0 - indicatorWidth).clamp(16.0, 20.0)
+                    : 20.0,
+                vertical: 14,
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Expanded(
+                    flex: 10,
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        widget.checkboxBuilder(
+                          value: isSelected,
+                          isRowHovered: _isHovered,
+                          onChanged: widget.onSelectChanged,
+                        ),
+                        const Gap(20),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                r.name,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: GoogleFonts.poppins(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  height: 24 / 16,
+                                  letterSpacing: 0,
+                                  color: _isHovered || isSelected
+                                      ? const Color(0xFF0F172A)
+                                      : const Color(0xFF111827),
+                                ),
+                              ),
+                              const Gap(2),
+                              Text(
+                                r.phone,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: GoogleFonts.poppins(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                  height: 16 / 12,
+                                  letterSpacing: 0,
+                                  color: const Color(0xFF9CA3AF),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    flex: 7,
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        r.collegeBranch,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.poppins(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          height: 20 / 14,
+                          letterSpacing: -0.0957,
+                          color: const Color(0xFF4B5563),
+                        ),
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    flex: 6,
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        r.source,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.poppins(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          height: 20 / 14,
+                          letterSpacing: -0.0957,
+                          color: const Color(0xFF4B5563),
+                        ),
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    flex: 5,
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: widget.statusBadge,
+                    ),
+                  ),
+                  Expanded(
+                    flex: 5,
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        r.lastContact,
+                        style: GoogleFonts.poppins(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          height: 20 / 14,
+                          color: const Color(0xFF6B7280),
+                        ),
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    flex: 6,
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        r.assignedToName.isEmpty ? '—' : r.assignedToName,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.poppins(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          height: 20 / 14,
+                          letterSpacing: 0.0684,
+                          color: const Color(0xFF4B5563),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _MobileLeadCardRow extends StatefulWidget {
+  final LeadRecord lead;
+  final bool isSelected;
+  final VoidCallback onTap;
+  final ValueChanged<bool?> onSelectChanged;
+  final Widget statusBadge;
+  final Widget Function({
+    required bool value,
+    required ValueChanged<bool?> onChanged,
+    Color activeColor,
+    bool isRowHovered,
+  }) checkboxBuilder;
+
+  const _MobileLeadCardRow({
+    required this.lead,
+    required this.isSelected,
+    required this.onTap,
+    required this.onSelectChanged,
+    required this.statusBadge,
+    required this.checkboxBuilder,
+  });
+
+  @override
+  State<_MobileLeadCardRow> createState() => _MobileLeadCardRowState();
+}
+
+class _MobileLeadCardRowState extends State<_MobileLeadCardRow> {
+  bool _isHovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final r = widget.lead;
+    final isSelected = widget.isSelected;
+
+    final Color bgColor = isSelected
+        ? (_isHovered ? const Color(0xFFFFEFE5) : const Color(0xFFFFF6F0))
+        : (_isHovered ? const Color(0xFFF8FAFC) : Colors.white);
+
+    final Color indicatorColor = isSelected
+        ? _primary
+        : (_isHovered ? const Color(0xFFCBD5E1) : Colors.transparent);
+
+    final double indicatorWidth = isSelected
+        ? (_isHovered ? 4.0 : 3.5)
+        : (_isHovered ? 3.0 : 0.0);
+
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 160),
+        curve: Curves.easeOutCubic,
+        decoration: BoxDecoration(
+          color: bgColor,
+          border: Border(
+            left: BorderSide(
+              color: indicatorColor,
+              width: indicatorWidth,
+            ),
+          ),
+        ),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: widget.onTap,
+            child: Padding(
+              padding: EdgeInsets.symmetric(
+                horizontal: isSelected || _isHovered
+                    ? (16.0 - indicatorWidth).clamp(12.0, 16.0)
+                    : 16.0,
+                vertical: 14,
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  widget.checkboxBuilder(
+                    value: isSelected,
+                    isRowHovered: _isHovered,
+                    onChanged: widget.onSelectChanged,
+                  ),
+                  const Gap(16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: Text(
+                                r.name,
+                                style: GoogleFonts.poppins(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  height: 24 / 16,
+                                  letterSpacing: 0,
+                                  color: _isHovered || isSelected
+                                      ? const Color(0xFF0F172A)
+                                      : _text,
+                                ),
+                              ),
+                            ),
+                            widget.statusBadge,
+                          ],
+                        ),
+                        Text(
+                          r.phone,
+                          style: GoogleFonts.poppins(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                            height: 16 / 12,
+                            letterSpacing: 0,
+                            color: const Color(0xFF8A94A6),
+                          ),
+                        ),
+                        const Gap(6),
+                        Text(
+                          '${r.collegeBranch} · ${r.source}',
+                          style: const TextStyle(
+                            color: _muted,
+                            fontSize: 12,
+                          ),
+                        ),
+                        const Gap(2),
+                        Text(
+                          'Source: ${r.source} · Last: ${r.lastContact} · Assigned: ${r.assignedToName}',
+                          style: const TextStyle(
+                            color: _muted,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
