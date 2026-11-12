@@ -337,9 +337,6 @@ class _DashboardViewState extends State<_DashboardView> {
             return LayoutBuilder(
               builder: (context, c) {
                 final showSidebar = c.maxWidth >= 960;
-                final wide = c.maxWidth >= 960;
-                final isMobile =
-                    MediaQuery.of(context).size.width < 960 || c.maxWidth < 880;
                 final pad = context.devicePadding;
 
                 return Scaffold(
@@ -423,16 +420,24 @@ class _DashboardViewState extends State<_DashboardView> {
                                                   .toList() ??
                                               <Map<String, dynamic>>[];
 
-                                          return Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              _header(
-                                                me: me,
-                                                isMobile: isMobile,
-                                                showMenuButton: !showSidebar,
-                                              ),
-                                              const Gap(32),
+                                          return LayoutBuilder(
+                                            builder: (context, contentBox) {
+                                              final contentWidth =
+                                                  contentBox.maxWidth;
+                                              final isWideContent =
+                                                  contentWidth >= 1080;
+
+                                              return Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  _header(
+                                                    me: me,
+                                                    contentWidth: contentWidth,
+                                                    showMenuButton:
+                                                        !showSidebar,
+                                                  ),
+                                                  const Gap(24),
                                               if (_searchQuery
                                                   .trim()
                                                   .isNotEmpty) ...[
@@ -453,8 +458,8 @@ class _DashboardViewState extends State<_DashboardView> {
                                                 const Gap(24),
                                               ],
                                               _stats(rawLeads, activeUsers),
-                                              const Gap(32),
-                                              if (wide)
+                                              const Gap(24),
+                                              if (isWideContent)
                                                 Row(
                                                   crossAxisAlignment:
                                                       CrossAxisAlignment.start,
@@ -528,8 +533,10 @@ class _DashboardViewState extends State<_DashboardView> {
                                         },
                                       );
                                     },
-                                  ),
-                                ] else if (state.selectedNavIndex == 1)
+                                  );
+                                },
+                              ),
+                            ] else if (state.selectedNavIndex == 1)
                                   const LeadsAssignView()
                                 else if (state.selectedNavIndex == 2)
                                   const CampaignsView()
@@ -807,10 +814,10 @@ class _DashboardViewState extends State<_DashboardView> {
 
   Widget _header({
     required Map<String, dynamic> me,
-    required bool isMobile,
+    required double contentWidth,
     required bool showMenuButton,
   }) {
-    if (isMobile) {
+    if (contentWidth < 680) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -848,7 +855,6 @@ class _DashboardViewState extends State<_DashboardView> {
                         fontWeight: FontWeight.w700,
                         color: const Color(0xFF2D312E),
                         letterSpacing: -0.4102,
-                        height: 36 / 30,
                       ),
                     ),
                     const Gap(2),
@@ -862,7 +868,6 @@ class _DashboardViewState extends State<_DashboardView> {
                           fontSize: 13,
                           fontWeight: FontWeight.w400,
                           letterSpacing: -0.3418,
-                          height: 20 / 14,
                         ),
                       ),
                     ),
@@ -872,16 +877,16 @@ class _DashboardViewState extends State<_DashboardView> {
             ],
           ),
           const Gap(14),
-          _buildFigmaSearchBar(width: double.infinity),
+          _buildFigmaSearchBar(),
           const Gap(12),
           SizedBox(
-            height: 56,
+            height: 48,
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFEF8144),
                 foregroundColor: Colors.white,
                 elevation: 0,
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 11),
+                padding: const EdgeInsets.symmetric(horizontal: 20),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -891,7 +896,7 @@ class _DashboardViewState extends State<_DashboardView> {
                 mainAxisSize: MainAxisSize.min,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.add, size: 14, color: Colors.white),
+                  const Icon(Icons.add, size: 16, color: Colors.white),
                   const Gap(8),
                   Text(
                     "Assign Today's Leads",
@@ -899,7 +904,6 @@ class _DashboardViewState extends State<_DashboardView> {
                     style: GoogleFonts.inter(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
-                      height: 20 / 14,
                       color: Colors.white,
                     ),
                   ),
@@ -907,6 +911,88 @@ class _DashboardViewState extends State<_DashboardView> {
               ),
             ),
           ),
+        ],
+      );
+    }
+
+    if (contentWidth < 1080) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              if (showMenuButton) ...[
+                IconButton(
+                  onPressed: () => _scaffoldKey.currentState?.openDrawer(),
+                  icon: const Icon(Icons.menu_rounded, color: _text),
+                ),
+                const Gap(8),
+              ],
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Dashboard',
+                      style: GoogleFonts.inter(
+                        fontSize: 28,
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFF2D312E),
+                        letterSpacing: -0.4102,
+                      ),
+                    ),
+                    const Gap(2),
+                    InkWell(
+                      onTap: _pickDashboardDate,
+                      borderRadius: BorderRadius.circular(6),
+                      child: Text(
+                        '$_today ·',
+                        style: GoogleFonts.inter(
+                          color: const Color(0xFF718096),
+                          fontSize: 13,
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Gap(16),
+              SizedBox(
+                height: 48,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFEF8144),
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    padding: const EdgeInsets.symmetric(horizontal: 18),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  onPressed: () => context.read<DashboardCubit>().selectNav(1),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.add, size: 16, color: Colors.white),
+                      const Gap(8),
+                      Text(
+                        "Assign Today's Leads",
+                        style: GoogleFonts.inter(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const Gap(14),
+          _buildFigmaSearchBar(),
         ],
       );
     }
@@ -955,18 +1041,18 @@ class _DashboardViewState extends State<_DashboardView> {
         ),
         const Gap(16),
         ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 400),
-          child: _buildFigmaSearchBar(width: 400),
+          constraints: const BoxConstraints(maxWidth: 360, minWidth: 220),
+          child: _buildFigmaSearchBar(),
         ),
         const Gap(16),
         SizedBox(
-          height: 56,
+          height: 52,
           child: ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFEF8144),
               foregroundColor: Colors.white,
               elevation: 0,
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 11),
+              padding: const EdgeInsets.symmetric(horizontal: 20),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
@@ -976,7 +1062,7 @@ class _DashboardViewState extends State<_DashboardView> {
               mainAxisSize: MainAxisSize.min,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(Icons.add, size: 14, color: Colors.white),
+                const Icon(Icons.add, size: 16, color: Colors.white),
                 const Gap(8),
                 Text(
                   "Assign Today's Leads",
@@ -984,7 +1070,6 @@ class _DashboardViewState extends State<_DashboardView> {
                   style: GoogleFonts.inter(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
-                    height: 20 / 14,
                     color: Colors.white,
                   ),
                 ),
@@ -999,7 +1084,7 @@ class _DashboardViewState extends State<_DashboardView> {
   Widget _buildFigmaSearchBar({double? width}) {
     return Container(
       width: width,
-      height: 55,
+      height: 48,
       decoration: BoxDecoration(
         color: const Color(0xFFFFFFFF),
         borderRadius: BorderRadius.circular(12),
@@ -1682,20 +1767,20 @@ class _DashboardViewState extends State<_DashboardView> {
     return LayoutBuilder(
       builder: (context, constraints) {
         final w = constraints.maxWidth;
-        if (w >= 1000) {
+        if (w >= 1140) {
           return Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               for (var i = 0; i < cards.length; i++) ...[
-                if (i > 0) const Gap(24),
+                if (i > 0) const Gap(16),
                 Expanded(child: cards[i]),
               ],
             ],
           );
         }
 
-        if (w >= 640) {
-          final cardW = (w - 24) / 3;
+        if (w >= 740) {
+          final cardW = ((w - 2 * 16) / 3).floorToDouble() - 1;
           return Wrap(
             spacing: 16,
             runSpacing: 16,
@@ -1705,14 +1790,29 @@ class _DashboardViewState extends State<_DashboardView> {
           );
         }
 
-        final halfW = (w - 12) / 2;
+        if (w >= 480) {
+          final cardW = ((w - 12) / 2).floorToDouble() - 1;
+          return Wrap(
+            spacing: 12,
+            runSpacing: 12,
+            children: [
+              for (var i = 0; i < cards.length; i++)
+                SizedBox(
+                  width: i == cards.length - 1 ? w : cardW,
+                  child: cards[i],
+                ),
+            ],
+          );
+        }
+
+        final cardW = ((w - 10) / 2).floorToDouble() - 1;
         return Wrap(
-          spacing: 12,
-          runSpacing: 12,
+          spacing: 10,
+          runSpacing: 10,
           children: [
             for (var i = 0; i < cards.length; i++)
               SizedBox(
-                width: i == cards.length - 1 ? w : halfW,
+                width: i == cards.length - 1 ? w : (w < 320 ? w : cardW),
                 child: cards[i],
               ),
           ],
@@ -1741,9 +1841,14 @@ class _StatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isMobile = MediaQuery.of(context).size.width < 600;
+    final cardPadding = isMobile
+        ? const EdgeInsets.symmetric(horizontal: 16, vertical: 16)
+        : const EdgeInsets.all(20);
+
     if (isSolidHero) {
       return Container(
-        height: 140,
+        constraints: const BoxConstraints(minHeight: 125),
         clipBehavior: Clip.antiAlias,
         decoration: BoxDecoration(
           color: color,
@@ -1764,7 +1869,7 @@ class _StatCard extends StatelessWidget {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.all(24),
+              padding: cardPadding,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -1779,17 +1884,17 @@ class _StatCard extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                           style: GoogleFonts.inter(
                             color: const Color(0xE6FFFFFF),
-                            fontSize: 14,
+                            fontSize: isMobile ? 12.5 : 14,
                             fontWeight: FontWeight.w500,
                             letterSpacing: -0.5195,
-                            height: 20 / 14,
                           ),
                         ),
                       ),
                       if (icon != null)
-                        Icon(icon, color: Colors.white, size: 16),
+                        Icon(icon, color: Colors.white, size: isMobile ? 14 : 16),
                     ],
                   ),
+                  const Gap(8),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -1799,10 +1904,9 @@ class _StatCard extends StatelessWidget {
                         child: Text(
                           value,
                           style: GoogleFonts.inter(
-                            fontSize: 36,
+                            fontSize: isMobile ? 28 : 34,
                             fontWeight: FontWeight.w700,
                             color: Colors.white,
-                            height: 40 / 36,
                           ),
                         ),
                       ),
@@ -1816,7 +1920,6 @@ class _StatCard extends StatelessWidget {
                           fontSize: 10,
                           fontWeight: FontWeight.w400,
                           letterSpacing: -0.2344,
-                          height: 15 / 10,
                         ),
                       ),
                     ],
@@ -1830,8 +1933,8 @@ class _StatCard extends StatelessWidget {
     }
 
     return Container(
-      height: 140,
-      padding: const EdgeInsets.all(24),
+      constraints: const BoxConstraints(minHeight: 125),
+      padding: cardPadding,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
@@ -1851,17 +1954,17 @@ class _StatCard extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: GoogleFonts.inter(
                     color: const Color(0xFF718096),
-                    fontSize: 14,
+                    fontSize: isMobile ? 12.5 : 14,
                     fontWeight: FontWeight.w500,
                     letterSpacing: -0.5,
-                    height: 20 / 14,
                   ),
                 ),
               ),
               if (icon != null)
-                Icon(icon, color: const Color(0xFF718096), size: 16),
+                Icon(icon, color: const Color(0xFF718096), size: isMobile ? 14 : 16),
             ],
           ),
+          const Gap(8),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -1871,10 +1974,9 @@ class _StatCard extends StatelessWidget {
                 child: Text(
                   value,
                   style: GoogleFonts.inter(
-                    fontSize: 36,
+                    fontSize: isMobile ? 28 : 34,
                     fontWeight: FontWeight.w700,
                     color: valueColor ?? color,
-                    height: 40 / 36,
                   ),
                 ),
               ),
@@ -1888,7 +1990,6 @@ class _StatCard extends StatelessWidget {
                   fontSize: 10,
                   fontWeight: FontWeight.w400,
                   letterSpacing: -0.3,
-                  height: 15 / 10,
                 ),
               ),
             ],
@@ -2059,16 +2160,20 @@ class _TeamToday extends StatelessWidget {
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
                                   children: [
-                                    Text(
-                                      r.name,
-                                      style: GoogleFonts.inter(
-                                        fontWeight: FontWeight.w700,
-                                        fontSize: 16,
-                                        color: const Color(0xFF111827),
-                                        letterSpacing: 0.0156,
-                                        height: 24 / 16,
+                                    Expanded(
+                                      child: Text(
+                                        r.name,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: GoogleFonts.inter(
+                                          fontWeight: FontWeight.w700,
+                                          fontSize: 16,
+                                          color: const Color(0xFF111827),
+                                          letterSpacing: 0.0156,
+                                        ),
                                       ),
                                     ),
+                                    const Gap(8),
                                     Text(
                                       '${r.called} / ${r.assigned} leads',
                                       style: GoogleFonts.inter(
@@ -2076,7 +2181,6 @@ class _TeamToday extends StatelessWidget {
                                         fontWeight: FontWeight.w700,
                                         color: const Color(0xFF3F3FB4),
                                         letterSpacing: -0.0957,
-                                        height: 20 / 14,
                                       ),
                                     ),
                                   ],
@@ -2331,8 +2435,8 @@ class _Conversions extends StatelessWidget {
                             final r = displaySources[i];
                             return Row(
                               children: [
-                                SizedBox(
-                                  width: 128,
+                                ConstrainedBox(
+                                  constraints: const BoxConstraints(maxWidth: 120, minWidth: 64),
                                   child: Text(
                                     r.$1,
                                     maxLines: 1,
@@ -2345,7 +2449,7 @@ class _Conversions extends StatelessWidget {
                                     ),
                                   ),
                                 ),
-                                const Gap(16),
+                                const Gap(10),
                                 Expanded(
                                   child: ClipRRect(
                                     borderRadius: BorderRadius.circular(9999),
@@ -2353,7 +2457,7 @@ class _Conversions extends StatelessWidget {
                                       value: r.$3 > 0
                                           ? (r.$2 / r.$3).clamp(0.0, 1.0)
                                           : 0.0,
-                                      minHeight: 12,
+                                      minHeight: 10,
                                       color: r.$2 > 0
                                           ? const Color(0xFFFB923C)
                                           : const Color(0xFF3F3FB4),
@@ -2361,7 +2465,7 @@ class _Conversions extends StatelessWidget {
                                     ),
                                   ),
                                 ),
-                                const Gap(16),
+                                const Gap(10),
                                 SizedBox(
                                   width: 52,
                                   child: RichText(
@@ -2451,16 +2555,20 @@ class _OverdueFollowUps extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                'Overdue Follow ups',
-                style: GoogleFonts.inter(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
-                  color: const Color(0xFF1A1A1A),
-                  letterSpacing: -0.2813,
-                  height: 28 / 18,
+              Expanded(
+                child: Text(
+                  'Overdue Follow ups',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.inter(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: const Color(0xFF1A1A1A),
+                    letterSpacing: -0.2813,
+                  ),
                 ),
               ),
+              const Gap(8),
               InkWell(
                 onTap: onReassign,
                 borderRadius: BorderRadius.circular(4),
@@ -2643,16 +2751,20 @@ class _CollegeVisits extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                'College visits this week',
-                style: GoogleFonts.inter(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
-                  color: const Color(0xFF1A1A1A),
-                  letterSpacing: -0.2813,
-                  height: 28 / 18,
+              Expanded(
+                child: Text(
+                  'College visits this week',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.inter(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: const Color(0xFF1A1A1A),
+                    letterSpacing: -0.2813,
+                  ),
                 ),
               ),
+              const Gap(8),
               InkWell(
                 onTap: onPlanVisit,
                 borderRadius: BorderRadius.circular(4),
