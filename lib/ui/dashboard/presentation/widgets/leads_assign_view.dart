@@ -1342,26 +1342,63 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
 
   Widget _statusBadge(String status) {
     final s = status.trim().toLowerCase();
-    final (Color bg, Color fg) = switch (s) {
-      'contacted' ||
-      'interested' => (const Color(0xFFDCFCE7), const Color(0xFF15803D)),
-      'assigned' => (const Color(0xFFEEF2FF), const Color(0xFF4338CA)),
-      'follow-up' ||
-      'followup' => (const Color(0xFFFFF1E6), const Color(0xFFB45309)),
-      'not interested' => (const Color(0xFFFEE2E2), const Color(0xFFB91C1C)),
-      'converted' => (const Color(0xFFEDE9FE), const Color(0xFF4338CA)),
-      'overdue' || 'new' => (const Color(0xFFF1F5F9), const Color(0xFF475467)),
-      _ => (const Color(0xFFF1F5F9), const Color(0xFF334155)),
+    final (Color bg, Color fg, Border? border) = switch (s) {
+      'contacted' || 'interested' => (
+        const Color(0xFFF0FDF4),
+        const Color(0xFF166534),
+        Border.all(color: const Color(0xFFDCFCE7), width: 1),
+      ),
+      'assigned' => (
+        const Color(0xFFEEF2FF),
+        const Color(0xFF4F46E5),
+        null,
+      ),
+      'follow-up' || 'followup' => (
+        const Color(0xFFFFF7ED),
+        const Color(0xFFEA580C),
+        Border.all(color: const Color(0xFFFFEDD5), width: 1),
+      ),
+      'overdue' => (
+        const Color(0xFFFFF7ED),
+        const Color(0xFFEA580C),
+        Border.all(color: const Color(0xFFFFEDD5), width: 1),
+      ),
+      'not interested' => (
+        const Color(0xFFFEE2E2),
+        const Color(0xFFB91C1C),
+        Border.all(color: const Color(0xFFFECACA), width: 1),
+      ),
+      'converted' => (
+        const Color(0xFFF0FDF4),
+        const Color(0xFF166534),
+        Border.all(color: const Color(0xFFDCFCE7), width: 1),
+      ),
+      'new' => (
+        const Color(0xFFF3F4F6),
+        const Color(0xFF4B5563),
+        null,
+      ),
+      _ => (
+        const Color(0xFFF3F4F6),
+        const Color(0xFF4B5563),
+        null,
+      ),
     };
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4.5),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 3.5),
       decoration: BoxDecoration(
         color: bg,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(9999),
+        border: border,
       ),
       child: Text(
         status.isEmpty ? '—' : status,
-        style: TextStyle(color: fg, fontSize: 12, fontWeight: FontWeight.w600),
+        style: GoogleFonts.poppins(
+          color: fg,
+          fontSize: 11,
+          fontWeight: FontWeight.w700,
+          height: 16.5 / 11,
+        ),
       ),
     );
   }
@@ -1377,35 +1414,43 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          label,
-          style: const TextStyle(
+          label.toUpperCase(),
+          style: GoogleFonts.poppins(
             fontSize: 12,
             fontWeight: FontWeight.w600,
-            color: _text,
+            color: const Color(0xFF374151),
+            letterSpacing: 0.3,
+            height: 16 / 12,
           ),
         ),
-        const Gap(6),
+        const Gap(8),
         Container(
-          height: 40,
-          padding: const EdgeInsets.symmetric(horizontal: 12),
+          height: 42,
+          padding: const EdgeInsets.symmetric(horizontal: 16),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: _border),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: const Color(0xFFE5E7EB), width: 1),
           ),
+          alignment: Alignment.center,
           child: DropdownButtonHideUnderline(
             child: DropdownButton<String>(
               value: value,
               isExpanded: true,
               isDense: true,
               dropdownColor: Colors.white,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(8),
               icon: const Icon(
                 Icons.keyboard_arrow_down_rounded,
-                size: 18,
-                color: _muted,
+                size: 20,
+                color: Color(0xFF9CA3AF),
               ),
-              style: const TextStyle(fontSize: 13, color: _text),
+              style: GoogleFonts.poppins(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                color: const Color(0xFF1A1A1A),
+                height: 20 / 14,
+              ),
               items: safeItems
                   .map(
                     (e) => DropdownMenuItem(
@@ -1414,6 +1459,11 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                         e,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.poppins(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          color: const Color(0xFF1A1A1A),
+                        ),
                       ),
                     ),
                   )
@@ -1459,19 +1509,26 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                 final titleCol = Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       'Leads',
-                      style: TextStyle(
-                        fontSize: 28,
+                      style: GoogleFonts.inter(
+                        fontSize: 30,
                         fontWeight: FontWeight.w700,
-                        color: _text,
-                        letterSpacing: -0.5,
+                        color: const Color(0xFF0F172A),
+                        letterSpacing: -0.2051,
+                        height: 36 / 30,
                       ),
                     ),
                     const Gap(4),
                     Text(
                       '${state.allLeads.length} leads · filter, select and assign to HR for a day',
-                      style: const TextStyle(color: _muted, fontSize: 13),
+                      style: GoogleFonts.poppins(
+                        color: const Color(0xFF6B7280),
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        letterSpacing: -0.0684,
+                        height: 20 / 14,
+                      ),
                     ),
                   ],
                 );
@@ -1480,72 +1537,99 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     SizedBox(
-                      height: 40,
+                      height: 42,
                       child: OutlinedButton.icon(
                         style: OutlinedButton.styleFrom(
                           backgroundColor: Colors.white,
-                          foregroundColor: const Color(0xFF334155),
-                          side: const BorderSide(color: Color(0xFFE2E8F0)),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
+                          foregroundColor: const Color(0xFF1A1A1A),
+                          side: const BorderSide(
+                            color: Color(0xFFE5E7EB),
+                            width: 1,
                           ),
-                          padding: const EdgeInsets.symmetric(horizontal: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 10,
+                          ),
+                          elevation: 0,
                         ),
                         onPressed: cubit.refresh,
                         icon: const Icon(
                           CupertinoIcons.refresh,
-                          size: 16,
-                          color: Color(0xFF475467),
+                          size: 14,
+                          color: Color(0xFF1A1A1A),
                         ),
-                        label: const Text(
+                        label: Text(
                           'Refresh',
-                          style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
+                          style: GoogleFonts.poppins(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                            color: const Color(0xFF1A1A1A),
+                            letterSpacing: 0.041,
+                            height: 20 / 14,
                           ),
                         ),
                       ),
                     ),
-                    const Gap(10),
+                    const Gap(12),
                     SizedBox(
-                      height: 40,
+                      height: 42,
                       child: OutlinedButton.icon(
                         style: OutlinedButton.styleFrom(
                           backgroundColor: Colors.white,
-                          foregroundColor: const Color(0xFF334155),
-                          side: const BorderSide(color: Color(0xFFE2E8F0)),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
+                          foregroundColor: const Color(0xFF1A1A1A),
+                          side: const BorderSide(
+                            color: Color(0xFFE5E7EB),
+                            width: 1,
                           ),
-                          padding: const EdgeInsets.symmetric(horizontal: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 10,
+                          ),
+                          elevation: 0,
                         ),
                         onPressed: () => _tryDashboardCubit()?.selectNav(5),
                         icon: const Icon(
                           Icons.upload_file_rounded,
-                          size: 16,
-                          color: Color(0xFF475467),
+                          size: 14,
+                          color: Color(0xFF1A1A1A),
                         ),
-                        label: const Text(
+                        label: Text(
                           'Import Leads',
-                          style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
+                          style: GoogleFonts.poppins(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                            color: const Color(0xFF1A1A1A),
+                            letterSpacing: 0.0684,
+                            height: 20 / 14,
                           ),
                         ),
                       ),
                     ),
-                    const Gap(10),
+                    const Gap(12),
                     SizedBox(
-                      height: 40,
+                      height: 42,
                       child: OutlinedButton.icon(
                         style: OutlinedButton.styleFrom(
                           backgroundColor: Colors.white,
-                          foregroundColor: const Color(0xFF334155),
-                          side: const BorderSide(color: Color(0xFFE2E8F0)),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
+                          foregroundColor: const Color(0xFF1A1A1A),
+                          side: const BorderSide(
+                            color: Color(0xFFE5E7EB),
+                            width: 1,
                           ),
-                          padding: const EdgeInsets.symmetric(horizontal: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 10,
+                          ),
+                          elevation: 0,
                         ),
                         onPressed: () async {
                           final leadsToExport = state.filteredLeads;
@@ -1572,37 +1656,49 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                         },
                         icon: const Icon(
                           Icons.download_rounded,
-                          size: 16,
-                          color: Color(0xFF475467),
+                          size: 14,
+                          color: Color(0xFF1A1A1A),
                         ),
                         label: Text(
                           'Export (${state.filteredLeads.isNotEmpty ? state.filteredLeads.length : ""})',
-                          style: const TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
+                          style: GoogleFonts.poppins(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                            color: const Color(0xFF1A1A1A),
+                            letterSpacing: 0.0273,
+                            height: 20 / 14,
                           ),
                         ),
                       ),
                     ),
-                    const Gap(10),
+                    const Gap(12),
                     SizedBox(
-                      height: 40,
+                      height: 42,
                       child: ElevatedButton.icon(
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFFEF8144),
                           foregroundColor: Colors.white,
                           elevation: 0,
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
+                            borderRadius: BorderRadius.circular(8),
                           ),
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 24,
+                            vertical: 10,
+                          ),
                         ),
                         onPressed: () => _openAddLeadDialog(context, state),
-                        icon: const Icon(Icons.add, size: 16),
+                        icon: const Icon(Icons.add, size: 14, color: Colors.white),
                         label: Text(
                           'Add lead',
                           textAlign: TextAlign.center,
-                          style: AppTypography.figmaButton(color: Colors.white),
+                          style: GoogleFonts.inter(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                            letterSpacing: 0.1641,
+                            height: 20 / 14,
+                          ),
                         ),
                       ),
                     ),
@@ -1637,51 +1733,80 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                 );
               },
             ),
-            const Gap(18),
+            const Gap(24),
 
             // Filter Bar Card
             Container(
-              padding: EdgeInsets.all(context.devicePadding.clamp(14.0, 18.0)),
+              padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: _border),
+                border: Border.all(color: const Color(0xFFF3F4F6), width: 1),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Color(0x0D000000),
+                    blurRadius: 1,
+                    offset: Offset(0, 1),
+                  ),
+                ],
               ),
               child: LayoutBuilder(
                 builder: (context, c) {
                   final searchField = Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'Search',
-                        style: TextStyle(
+                      Text(
+                        'SEARCH',
+                        style: GoogleFonts.poppins(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
-                          color: _text,
+                          color: const Color(0xFF374151),
+                          letterSpacing: 0.3,
+                          height: 16 / 12,
                         ),
                       ),
-                      const Gap(6),
+                      const Gap(8),
                       SizedBox(
-                        height: 40,
+                        height: 42,
                         child: TextField(
                           controller: _searchC,
                           onChanged: cubit.setSearchQuery,
+                          style: GoogleFonts.poppins(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                            color: const Color(0xFF111827),
+                          ),
                           decoration: InputDecoration(
                             hintText: 'Name, phone or college',
-                            hintStyle: const TextStyle(
-                              fontSize: 13,
-                              color: _muted,
+                            hintStyle: GoogleFonts.poppins(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                              color: const Color(0xFF9CA3AF),
                             ),
                             contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 12,
+                              horizontal: 16,
+                              vertical: 10,
                             ),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
-                              borderSide: const BorderSide(color: _border),
+                              borderSide: const BorderSide(
+                                color: Color(0xFFE5E7EB),
+                                width: 1,
+                              ),
                             ),
                             enabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
-                              borderSide: const BorderSide(color: _border),
+                              borderSide: const BorderSide(
+                                color: Color(0xFFE5E7EB),
+                                width: 1,
+                              ),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide: const BorderSide(
+                                color: Color(0xFFEF8144),
+                                width: 1,
+                              ),
                             ),
                           ),
                         ),
@@ -2139,7 +2264,14 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: _border),
+                border: Border.all(color: const Color(0xFFF3F4F6), width: 1),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Color(0x0D000000),
+                    blurRadius: 2,
+                    offset: Offset(0, 1),
+                  ),
+                ],
               ),
               clipBehavior: Clip.antiAlias,
               child: _buildTableContent(
@@ -2152,53 +2284,97 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
             const Gap(14),
 
             // Pagination Footer
-            Wrap(
-              alignment: WrapAlignment.spaceBetween,
-              crossAxisAlignment: WrapCrossAlignment.center,
-              spacing: 12,
-              runSpacing: 8,
-              children: [
-                Text(
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final isNarrow = constraints.maxWidth < 480;
+                final textWidget = Text(
                   state.filteredLeads.isEmpty
                       ? 'Showing 0 of 0 matching leads'
                       : 'Showing ${state.showingStartIndex}–${state.showingEndIndex} of ${state.filteredLeads.length} matching leads',
-                  style: const TextStyle(color: _muted, fontSize: 13),
-                ),
-                Row(
+                  style: GoogleFonts.poppins(
+                    color: const Color(0xFF6B7280),
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                );
+                final buttons = Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     OutlinedButton(
                       style: OutlinedButton.styleFrom(
                         backgroundColor: Colors.white,
-                        foregroundColor: _text,
-                        side: const BorderSide(color: _border),
+                        foregroundColor: const Color(0xFF1A1A1A),
+                        side: const BorderSide(color: Color(0xFFE5E7EB)),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 10,
                         ),
                       ),
                       onPressed: state.safeCurrentPage > 1
                           ? cubit.previousPage
                           : null,
-                      child: const Text('Previous'),
+                      child: Text(
+                        'Previous',
+                        style: GoogleFonts.poppins(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
                     ),
                     const Gap(8),
                     OutlinedButton(
                       style: OutlinedButton.styleFrom(
                         backgroundColor: Colors.white,
-                        foregroundColor: _text,
-                        side: const BorderSide(color: _border),
+                        foregroundColor: const Color(0xFF1A1A1A),
+                        side: const BorderSide(color: Color(0xFFE5E7EB)),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 10,
                         ),
                       ),
                       onPressed: state.safeCurrentPage < state.totalPages
                           ? cubit.nextPage
                           : null,
-                      child: const Text('Next'),
+                      child: Text(
+                        'Next',
+                        style: GoogleFonts.poppins(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
                     ),
                   ],
-                ),
-              ],
+                );
+
+                if (isNarrow) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      textWidget,
+                      const Gap(12),
+                      buttons,
+                    ],
+                  );
+                }
+
+                return SizedBox(
+                  width: double.infinity,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      textWidget,
+                      buttons,
+                    ],
+                  ),
+                );
+              },
             ),
           ],
         );
@@ -2218,10 +2394,10 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
         width: 16,
         height: 16,
         decoration: BoxDecoration(
-          color: value ? activeColor : Colors.transparent,
+          color: value ? activeColor : Colors.white,
           borderRadius: BorderRadius.circular(2.5),
           border: Border.all(
-            color: value ? activeColor : const Color(0xFF64748B),
+            color: value ? activeColor : const Color(0xFF767676),
             width: 1.0,
           ),
         ),
@@ -2445,16 +2621,17 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
           );
         }
 
-        const h = TextStyle(
+        final h = GoogleFonts.poppins(
           fontSize: 11,
           fontWeight: FontWeight.w700,
-          color: Color(0xFF475467),
-          letterSpacing: 0.5,
+          color: const Color(0xFF6B7280),
+          letterSpacing: 1.1,
+          height: 16.5 / 11,
         );
         return Column(
           children: [
             Container(
-              color: const Color(0xFFF8FAFC),
+              color: const Color(0xFFF9FAFB),
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
@@ -2470,16 +2647,16 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                               cubit.toggleSelectAllOnPage(v ?? false),
                         ),
                         const Gap(20),
-                        const Text('NAME', style: h),
+                        Text('NAME', style: h),
                       ],
                     ),
                   ),
-                  const Expanded(
-                    flex: 13,
+                  Expanded(
+                    flex: 10,
                     child: Text('COLLEGE - BRANCH', style: h),
                   ),
-                  const Expanded(flex: 11, child: Text('SOURCE', style: h)),
-                  const Expanded(flex: 6, child: Text('STATUS', style: h)),
+                  Expanded(flex: 8, child: Text('SOURCE', style: h)),
+                  Expanded(flex: 6, child: Text('STATUS', style: h)),
                   Expanded(
                     flex: 6,
                     child: Text(
@@ -2487,13 +2664,13 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                       style: h.copyWith(height: 1.2),
                     ),
                   ),
-                  const Expanded(flex: 6, child: Text('ASSIGNED TO', style: h)),
+                  Expanded(flex: 6, child: Text('ASSIGNED TO', style: h)),
                 ],
               ),
             ),
-            const Divider(height: 1, color: Color(0xFFF1F5F9)),
+            const Divider(height: 1, color: Color(0xFFF3F4F6)),
             for (var i = 0; i < rows.length; i++) ...[
-              if (i > 0) const Divider(height: 1, color: Color(0xFFF1F5F9)),
+              if (i > 0) const Divider(height: 1, color: Color(0xFFF9FAFB)),
               Builder(
                 builder: (_) {
                   final r = rows[i];
@@ -2541,7 +2718,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                                           fontWeight: FontWeight.w600,
                                           height: 24 / 16,
                                           letterSpacing: 0,
-                                          color: _text,
+                                          color: const Color(0xFF111827),
                                         ),
                                       ),
                                       const Gap(2),
@@ -2554,7 +2731,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                                           fontWeight: FontWeight.w500,
                                           height: 16 / 12,
                                           letterSpacing: 0,
-                                          color: const Color(0xFF8A94A6),
+                                          color: const Color(0xFF9CA3AF),
                                         ),
                                       ),
                                     ],
@@ -2564,33 +2741,37 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                             ),
                           ),
                           Expanded(
-                            flex: 13,
+                            flex: 10,
                             child: Align(
                               alignment: Alignment.centerLeft,
                               child: Text(
                                 r.collegeBranch,
                                 maxLines: 2,
                                 overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                  fontSize: 13,
-                                  color: Color(0xFF334155),
+                                style: GoogleFonts.poppins(
+                                  fontSize: 14,
                                   fontWeight: FontWeight.w500,
+                                  height: 20 / 14,
+                                  letterSpacing: -0.0957,
+                                  color: const Color(0xFF4B5563),
                                 ),
                               ),
                             ),
                           ),
                           Expanded(
-                            flex: 11,
+                            flex: 8,
                             child: Align(
                               alignment: Alignment.centerLeft,
                               child: Text(
                                 r.source,
                                 maxLines: 2,
                                 overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                  fontSize: 13,
-                                  color: Color(0xFF334155),
+                                style: GoogleFonts.poppins(
+                                  fontSize: 14,
                                   fontWeight: FontWeight.w500,
+                                  height: 20 / 14,
+                                  letterSpacing: -0.0957,
+                                  color: const Color(0xFF4B5563),
                                 ),
                               ),
                             ),
@@ -2608,10 +2789,11 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                               alignment: Alignment.centerLeft,
                               child: Text(
                                 r.lastContact,
-                                style: const TextStyle(
-                                  fontSize: 13,
-                                  color: Color(0xFF334155),
+                                style: GoogleFonts.poppins(
+                                  fontSize: 14,
                                   fontWeight: FontWeight.w500,
+                                  height: 20 / 14,
+                                  color: const Color(0xFF6B7280),
                                 ),
                               ),
                             ),
@@ -2626,10 +2808,12 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                                     : r.assignedToName,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                  fontSize: 13,
-                                  color: Color(0xFF334155),
+                                style: GoogleFonts.poppins(
+                                  fontSize: 14,
                                   fontWeight: FontWeight.w500,
+                                  height: 20 / 14,
+                                  letterSpacing: 0.0684,
+                                  color: const Color(0xFF4B5563),
                                 ),
                               ),
                             ),
