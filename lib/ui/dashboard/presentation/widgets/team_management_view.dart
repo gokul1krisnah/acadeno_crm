@@ -334,49 +334,60 @@ class _TeamManagementViewState extends State<TeamManagementView> {
       ],
     );
 
-    final exportBtn = Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(9999),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x0D000000),
-            blurRadius: 1,
-            offset: Offset(0, 1),
-          ),
-        ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () => _showWatermarkedExportModal(activeUsers, filteredLeads),
+    final exportBtn = ConstrainedBox(
+      constraints: BoxConstraints(maxWidth: maxWidth),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
           borderRadius: BorderRadius.circular(9999),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                const Icon(
-                  Icons.download_rounded,
-                  size: 14,
-                  color: Color(0xFF475569),
-                ),
-                const Gap(8),
-                Text(
-                  'Watermarked Export (Super Admin)',
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.inter(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: const Color(0xFF475569),
-                    letterSpacing: -0.0137,
-                    height: 20 / 14,
+          border: Border.all(color: const Color(0xFFE2E8F0)),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x0D000000),
+              blurRadius: 1,
+              offset: Offset(0, 1),
+            ),
+          ],
+        ),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: () => _showWatermarkedExportModal(activeUsers, filteredLeads),
+            borderRadius: BorderRadius.circular(9999),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  const Icon(
+                    Icons.download_rounded,
+                    size: 14,
+                    color: Color(0xFF475569),
                   ),
-                ),
-              ],
+                  const Gap(8),
+                  Flexible(
+                    child: Text(
+                      maxWidth < 360
+                          ? 'Export Report'
+                          : (maxWidth < 420
+                              ? 'Watermarked Export'
+                              : 'Watermarked Export (Super Admin)'),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.inter(
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFF475569),
+                        letterSpacing: -0.0137,
+                        height: 20 / 14,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
