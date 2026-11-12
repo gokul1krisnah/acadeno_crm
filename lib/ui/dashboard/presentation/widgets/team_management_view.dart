@@ -1,8 +1,9 @@
-import 'package:flutter/cupertino.dart';
-import 'package:gap/gap.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:gap/gap.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
 import '../../application/dashboard_cubit.dart';
@@ -37,15 +38,6 @@ class _TeamManagementViewState extends State<TeamManagementView> {
     return false;
   }
 
-  static const _tblHdr = TextStyle(
-    fontSize: 10.5,
-    fontWeight: FontWeight.w700,
-    color: Color(0xFF667085),
-    letterSpacing: 0.4,
-  );
-
-  static const _tblCell = TextStyle(fontSize: 13, color: Color(0xFF344054));
-
   void _showWatermarkedExportModal(
     List<DashboardUserModel> users,
     List<Map<String, dynamic>> leads,
@@ -67,9 +59,9 @@ class _TeamManagementViewState extends State<TeamManagementView> {
             horizontal: 16,
             vertical: (screenHeight * 0.04).clamp(12.0, 24.0).toDouble(),
           ),
-          title: const Text(
+          title: Text(
             'Super Admin Watermarked Export',
-            style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
+            style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.w700),
           ),
           content: SizedBox(
             width: dialogWidth,
@@ -77,11 +69,11 @@ class _TeamManagementViewState extends State<TeamManagementView> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'Only Super Admin may export lead data. The exported report is watermarked with your identity and timestamp, and your typed reason is recorded in the append-only audit log.',
-                  style: TextStyle(
+                  style: GoogleFonts.inter(
                     fontSize: 13,
-                    color: Color(0xFF475467),
+                    color: const Color(0xFF475467),
                     height: 1.4,
                   ),
                 ),
@@ -89,6 +81,7 @@ class _TeamManagementViewState extends State<TeamManagementView> {
                 TextField(
                   controller: reasonCtrl,
                   maxLines: 2,
+                  style: GoogleFonts.inter(fontSize: 14),
                   decoration: const InputDecoration(
                     labelText: 'Reason for export (required) *',
                     hintText:
@@ -102,12 +95,18 @@ class _TeamManagementViewState extends State<TeamManagementView> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx),
-              child: const Text('Cancel'),
+              child: Text(
+                'Cancel',
+                style: GoogleFonts.inter(fontWeight: FontWeight.w600),
+              ),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFEF8144),
                 foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
               ),
               onPressed: () {
                 final reason = reasonCtrl.text.trim();
@@ -122,7 +121,10 @@ class _TeamManagementViewState extends State<TeamManagementView> {
                 );
                 Navigator.pop(ctx);
               },
-              child: const Text('Generate Watermarked CSV'),
+              child: Text(
+                'Generate Watermarked CSV',
+                style: GoogleFonts.inter(fontWeight: FontWeight.w600),
+              ),
             ),
           ],
         );
@@ -265,120 +267,26 @@ class _TeamManagementViewState extends State<TeamManagementView> {
                     <Map<String, dynamic>>[];
                 final filteredLeads = _filterLeadsByDate(rawLeads);
 
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Header Section (Responsive Layout)
-                    LayoutBuilder(
-                      builder: (context, c) {
-                        final isMobile =
-                            MediaQuery.of(context).size.width < 768 ||
-                            c.maxWidth < 680;
-                        final titleCol = Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: const [
-                            Text(
-                              'Team Management',
-                              style: TextStyle(
-                                fontSize: 28,
-                                fontWeight: FontWeight.w700,
-                                color: Color(0xFF0F172A),
-                                letterSpacing: -0.5,
-                              ),
-                            ),
-                            Gap(4),
-                            Text(
-                              'Real-time team analytics, live conversion tracking, and member performance',
-                              style: TextStyle(
-                                fontSize: 13,
-                                color: Color(0xFF667085),
-                              ),
-                            ),
-                          ],
-                        );
+                return LayoutBuilder(
+                  builder: (context, constraints) {
+                    final maxWidth = constraints.maxWidth;
 
-                        final exportBtn = SizedBox(
-                          height: 40,
-                          width: isMobile ? double.infinity : null,
-                          child: OutlinedButton.icon(
-                            onPressed: () => _showWatermarkedExportModal(
-                              activeUsers,
-                              filteredLeads,
-                            ),
-                            icon: const Icon(
-                              Icons.download_rounded,
-                              size: 16,
-                              color: Color(0xFF334155),
-                            ),
-                            label: FittedBox(
-                              fit: BoxFit.scaleDown,
-                              child: Text(
-                                isMobile
-                                    ? 'Watermarked Export'
-                                    : 'Watermarked Export (Super Admin)',
-                                style: const TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w600,
-                                  color: Color(0xFF334155),
-                                ),
-                              ),
-                            ),
-                            style: OutlinedButton.styleFrom(
-                              backgroundColor: Colors.white,
-                              side: const BorderSide(color: Color(0xFFE2E8F0)),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 10,
-                              ),
-                            ),
-                          ),
-                        );
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Header Section (Figma Node 1363:2004)
+                        _buildHeader(maxWidth, activeUsers, filteredLeads),
+                        const Gap(32),
 
-                        if (isMobile) {
-                          return Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              titleCol,
-                              const Gap(12),
-                              exportBtn,
-                            ],
-                          );
-                        }
+                        // 4 KPI Summary Cards (Figma Node 1363:2236)
+                        _buildStatCards(maxWidth, filteredLeads),
+                        const Gap(32),
 
-                        return SizedBox(
-                          width: double.infinity,
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Expanded(child: titleCol),
-                              const Gap(16),
-                              exportBtn,
-                            ],
-                          ),
-                        );
-                      },
-                    ),
-                    const Gap(20),
-
-                    // Quick Stats Row (Computed from actual live Firestore leads)
-                    _buildTeamSummaryStats(filteredLeads),
-                    const Gap(20),
-
-                    // Team Performance Comparison Table (Live data per user)
-                    _buildTeamPerformanceCard(activeUsers, filteredLeads),
-                    const Gap(20),
-
-                    // Active Executives Snapshot
-                    _buildActiveExecutivesSnapshot(activeUsers),
-                    const Gap(20),
-
-                    // Append-Only Security & Admin Audit Log
-                    _buildAuditLogCard(cubit),
-                  ],
+                        // Executive Performance Comparison Table (Figma Node 1363:2068)
+                        _buildTeamPerformanceCard(activeUsers, filteredLeads),
+                      ],
+                    );
+                  },
                 );
               },
             );
@@ -388,7 +296,115 @@ class _TeamManagementViewState extends State<TeamManagementView> {
     );
   }
 
-  Widget _buildTeamSummaryStats(List<Map<String, dynamic>> leads) {
+  // ===========================================================================
+  // HEADER (Figma Node 1363:2004)
+  // ===========================================================================
+  Widget _buildHeader(
+    double maxWidth,
+    List<DashboardUserModel> activeUsers,
+    List<Map<String, dynamic>> filteredLeads,
+  ) {
+    final titleCol = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Team Management',
+          style: GoogleFonts.inter(
+            fontSize: 30,
+            fontWeight: FontWeight.w700,
+            color: const Color(0xFF0F172A),
+            letterSpacing: -0.75,
+            height: 36 / 30,
+          ),
+        ),
+        const Gap(4),
+        Text(
+          'Real-time team analytics, live conversion tracking, and member performance (FR-6.3)',
+          style: GoogleFonts.inter(
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+            color: const Color(0xFF64748B),
+            height: 20 / 14,
+          ),
+        ),
+      ],
+    );
+
+    final exportBtn = Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(9999),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x0D000000),
+            blurRadius: 1,
+            offset: Offset(0, 1),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => _showWatermarkedExportModal(activeUsers, filteredLeads),
+          borderRadius: BorderRadius.circular(9999),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                const Icon(
+                  Icons.download_rounded,
+                  size: 14,
+                  color: Color(0xFF475569),
+                ),
+                const Gap(8),
+                Text(
+                  'Watermarked Export (Super Admin)',
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.inter(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFF475569),
+                    letterSpacing: -0.0137,
+                    height: 20 / 14,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+
+    if (maxWidth < 780) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          titleCol,
+          const Gap(14),
+          exportBtn,
+        ],
+      );
+    }
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Expanded(child: titleCol),
+        const Gap(16),
+        exportBtn,
+      ],
+    );
+  }
+
+  // ===========================================================================
+  // 4 KPI SUMMARY CARDS (Figma Node 1363:2236)
+  // ===========================================================================
+  Widget _buildStatCards(double maxWidth, List<Map<String, dynamic>> leads) {
     final totalAssigned = leads.where((l) {
       final uid = l['assignedToUid'];
       final name = l['assignedToName'] ?? l['assignedTo'];
@@ -414,10 +430,10 @@ class _TeamManagementViewState extends State<TeamManagementView> {
     }).length;
 
     final conversionPct = totalAssigned > 0
-        ? (convertedCount / totalAssigned * 100).toStringAsFixed(1)
+        ? (convertedCount / totalAssigned * 100).round()
         : (leads.isNotEmpty
-              ? (convertedCount / leads.length * 100).toStringAsFixed(1)
-              : '0.0');
+              ? (convertedCount / leads.length * 100).round()
+              : 0);
 
     final pendingCount = leads.where((l) {
       final status = (l['status'] ?? '').toString().toLowerCase();
@@ -429,125 +445,142 @@ class _TeamManagementViewState extends State<TeamManagementView> {
               status.contains('pending'));
     }).length;
 
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final isMobile =
-            MediaQuery.of(context).size.width < 768 ||
-            constraints.maxWidth < 600;
-        final stats = [
-          (
-            'Total Assigned',
-            totalAssigned > 0
-                ? '$totalAssigned leads'
-                : '${leads.length} total',
-            Icons.assignment_ind_outlined,
-            const Color(0xFF4338CA),
-            '${leads.length} total in pool',
-          ),
-          (
-            'Contacted',
-            '$contactedCount ($contactedPct%)',
-            Icons.phone_in_talk_outlined,
-            const Color(0xFF0284C7),
-            'Goal: >80%',
-          ),
-          (
-            'Conversions',
-            '$convertedCount ($conversionPct%)',
-            Icons.verified_outlined,
-            const Color(0xFF16A34A),
-            'Live conversions',
-          ),
-          (
-            'Pending Follow-ups',
-            '$pendingCount',
-            Icons.warning_amber_rounded,
-            const Color(0xFFDC2626),
-            pendingCount > 0 ? 'Requires attention' : 'All clear',
-          ),
-        ];
+    final card1 = _buildTotalAssignedCard(
+      assignedCount: totalAssigned > 0 ? totalAssigned : leads.length,
+      totalPool: leads.length,
+    );
 
-        if (isMobile) {
-          return Column(
-            children: stats
-                .map(
-                  (s) => Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
-                    child: _statCard(s.$1, s.$2, s.$3, s.$4, s.$5),
-                  ),
-                )
-                .toList(),
-          );
-        }
+    final card2 = _buildContactedCard(
+      contactedCount: contactedCount,
+      contactedPct: contactedPct,
+    );
 
-        return Row(
-          children: stats.map((s) {
-            return Expanded(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 6),
-                child: _statCard(s.$1, s.$2, s.$3, s.$4, s.$5),
-              ),
-            );
-          }).toList(),
-        );
-      },
+    final card3 = _buildPendingCard(pendingCount: pendingCount);
+
+    final card4 = _buildConvertedCard(
+      convertedCount: convertedCount,
+      conversionPct: conversionPct,
+    );
+
+    if (maxWidth >= 1080) {
+      return Row(
+        children: [
+          Expanded(child: card1),
+          const Gap(24),
+          Expanded(child: card2),
+          const Gap(24),
+          Expanded(child: card3),
+          const Gap(24),
+          Expanded(child: card4),
+        ],
+      );
+    }
+
+    if (maxWidth >= 640) {
+      final cardWidth = ((maxWidth - 24) / 2).floorToDouble();
+      return Wrap(
+        spacing: 24,
+        runSpacing: 24,
+        children: [
+          SizedBox(width: cardWidth, child: card1),
+          SizedBox(width: cardWidth, child: card2),
+          SizedBox(width: cardWidth, child: card3),
+          SizedBox(width: cardWidth, child: card4),
+        ],
+      );
+    }
+
+    return Column(
+      children: [
+        card1,
+        const Gap(16),
+        card2,
+        const Gap(16),
+        card3,
+        const Gap(16),
+        card4,
+      ],
     );
   }
 
-  Widget _statCard(
-    String label,
-    String value,
-    IconData icon,
-    Color color,
-    String subtext,
-  ) {
+  // Card 1: Total Assigned (Hero Indigo, Node 1363:2237)
+  Widget _buildTotalAssignedCard({
+    required int assignedCount,
+    required int totalPool,
+  }) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      height: 140,
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFE8EAF0)),
+        color: const Color(0xFF4338CA),
+        borderRadius: BorderRadius.circular(16),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      clipBehavior: Clip.antiAlias,
+      child: Stack(
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                label,
-                style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFF64748B),
-                ),
+          Positioned(
+            right: -48,
+            top: -48,
+            child: Container(
+              width: 96,
+              height: 96,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withValues(alpha: 0.05),
               ),
-              Container(
-                padding: const EdgeInsets.all(6),
-                decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(icon, size: 16, color: color),
-              ),
-            ],
-          ),
-          const Gap(8),
-          Text(
-            value,
-            style: const TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.w800,
-              color: Color(0xFF0F172A),
             ),
           ),
-          const Gap(4),
-          Text(
-            subtext,
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w500,
-              color: color,
+          Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Total Assigned',
+                      style: GoogleFonts.inter(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.white.withValues(alpha: 0.9),
+                        letterSpacing: -0.5195,
+                        height: 20 / 14,
+                      ),
+                    ),
+                    const Icon(
+                      Icons.groups_rounded,
+                      size: 18,
+                      color: Colors.white,
+                    ),
+                  ],
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '$assignedCount Leads',
+                      style: GoogleFonts.inter(
+                        fontSize: 36,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
+                        height: 40 / 36,
+                      ),
+                    ),
+                    const Gap(4),
+                    Text(
+                      '$totalPool total in pool',
+                      style: GoogleFonts.inter(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w400,
+                        color: Colors.white.withValues(alpha: 0.8),
+                        letterSpacing: -0.2344,
+                        height: 15 / 10,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
           ),
         ],
@@ -555,599 +588,606 @@ class _TeamManagementViewState extends State<TeamManagementView> {
     );
   }
 
+  // Card 2: Contacted (Node 1363:2249)
+  Widget _buildContactedCard({
+    required int contactedCount,
+    required int contactedPct,
+  }) {
+    return Container(
+      height: 140,
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE2E8E5)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Contacted',
+                style: GoogleFonts.inter(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: const Color(0xFF718096),
+                  letterSpacing: -0.5469,
+                  height: 20 / 14,
+                ),
+              ),
+              const Icon(
+                CupertinoIcons.phone_fill,
+                size: 16,
+                color: Color(0xFF3F3FB4),
+              ),
+            ],
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              RichText(
+                text: TextSpan(
+                  children: [
+                    TextSpan(
+                      text: '$contactedCount ',
+                      style: GoogleFonts.inter(
+                        fontSize: 36,
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFF3F3FB4),
+                        height: 40 / 36,
+                      ),
+                    ),
+                    TextSpan(
+                      text: '($contactedPct%)',
+                      style: GoogleFonts.inter(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFF3F3FB4),
+                        height: 40 / 24,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Gap(4),
+              Text(
+                'Goal: >80%',
+                style: GoogleFonts.inter(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w400,
+                  color: const Color(0xFFA0AEC0),
+                  letterSpacing: -0.3125,
+                  height: 15 / 10,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Card 3: Pending follow-ups (Node 1363:2271)
+  Widget _buildPendingCard({required int pendingCount}) {
+    return Container(
+      height: 140,
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE2E8E5)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Pending follow-ups',
+                style: GoogleFonts.inter(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: const Color(0xFF718096),
+                  letterSpacing: -0.4648,
+                  height: 20 / 14,
+                ),
+              ),
+              const Icon(
+                CupertinoIcons.hourglass,
+                size: 16,
+                color: Color(0xFF4C0CBF),
+              ),
+            ],
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '$pendingCount',
+                style: GoogleFonts.inter(
+                  fontSize: 36,
+                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFF4C0CBF),
+                  height: 40 / 36,
+                ),
+              ),
+              const Gap(4),
+              Text(
+                pendingCount > 0 ? 'Requires attention' : 'All clear',
+                style: GoogleFonts.inter(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w400,
+                  color: const Color(0xFFA0AEC0),
+                  letterSpacing: -0.2637,
+                  height: 15 / 10,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Card 4: Converted Leads (Node 1363:2282)
+  Widget _buildConvertedCard({
+    required int convertedCount,
+    required int conversionPct,
+  }) {
+    return Container(
+      height: 140,
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE2E8E5)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Converted Leads',
+                style: GoogleFonts.inter(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: const Color(0xFF718096),
+                  letterSpacing: -0.5605,
+                  height: 20 / 14,
+                ),
+              ),
+              const Icon(
+                CupertinoIcons.star_fill,
+                size: 16,
+                color: Color(0xFF22C55E),
+              ),
+            ],
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '$convertedCount',
+                style: GoogleFonts.inter(
+                  fontSize: 36,
+                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFF22C55E),
+                  height: 40 / 36,
+                ),
+              ),
+              const Gap(4),
+              Text(
+                '$conversionPct% conversion rate',
+                style: GoogleFonts.inter(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w400,
+                  color: const Color(0xFFA0AEC0),
+                  height: 15 / 10,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ===========================================================================
+  // EXECUTIVE PERFORMANCE COMPARISON TABLE (Figma Node 1363:2068)
+  // ===========================================================================
   Widget _buildTeamPerformanceCard(
     List<DashboardUserModel> activeUsers,
     List<Map<String, dynamic>> leads,
   ) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 14),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFE8EAF0)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Wrap(
-            spacing: 12,
-            runSpacing: 8,
-            alignment: WrapAlignment.spaceBetween,
-            crossAxisAlignment: WrapCrossAlignment.center,
-            children: [
-              const Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Executive Performance Comparison',
-                    style: TextStyle(
-                      fontSize: 15.5,
-                      fontWeight: FontWeight.w700,
-                      color: Color(0xFF0F172A),
-                    ),
-                  ),
-                  Gap(2),
-                  Text(
-                    'Assigned vs Contacted, Interested, Completed, Converted, and Pending',
-                    style: TextStyle(fontSize: 12, color: Color(0xFF667085)),
-                  ),
-                ],
-              ),
-              Container(
-                height: 36,
-                padding: const EdgeInsets.symmetric(horizontal: 14),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: const Color(0xFFE2E8F0)),
-                ),
-                child: DropdownButtonHideUnderline(
-                  child: DropdownButton<String>(
-                    value: _selectedDateRange,
-                    dropdownColor: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                    icon: const Icon(
-                      Icons.keyboard_arrow_down_rounded,
-                      size: 18,
-                      color: Color(0xFF64748B),
-                    ),
-                    style: const TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFF334155),
-                    ),
-                    items: const [
-                      DropdownMenuItem(
-                        value: 'All Time',
-                        child: Text('All Time'),
-                      ),
-                      DropdownMenuItem(value: 'Today', child: Text('Today')),
-                      DropdownMenuItem(
-                        value: 'This week',
-                        child: Text('This week'),
-                      ),
-                      DropdownMenuItem(
-                        value: 'This month',
-                        child: Text('This month'),
-                      ),
-                    ],
-                    onChanged: (v) {
-                      if (v != null) setState(() => _selectedDateRange = v);
-                    },
-                  ),
-                ),
-              ),
-            ],
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: const Color(0xFFF1F5F9)),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x0D000000),
+            blurRadius: 2,
+            offset: Offset(0, 1),
           ),
-          const Gap(14),
-
-          if (activeUsers.isEmpty)
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 24),
-              child: Center(
-                child: Text(
-                  'No active team members registered yet. Add team accounts in User Management.',
-                  style: TextStyle(fontSize: 13, color: Color(0xFF667085)),
-                ),
-              ),
-            )
-          else
-            LayoutBuilder(
-              builder: (context, constraints) {
-                final tableWidth = constraints.maxWidth > 750
-                    ? constraints.maxWidth
-                    : 750.0;
-                return SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: SizedBox(
-                    width: tableWidth,
-                    child: Column(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 14,
-                            vertical: 10,
-                          ),
-                          decoration: const BoxDecoration(
-                            color: Color(0xFFF9FAFB),
-                            border: Border(
-                              bottom: BorderSide(color: Color(0xFFEAECF0)),
-                            ),
-                          ),
-                          child: const Row(
-                            children: [
-                              Expanded(
-                                flex: 28,
-                                child: Text('TEAM MEMBER', style: _tblHdr),
-                              ),
-                              Expanded(
-                                flex: 12,
-                                child: Center(
-                                  child: Text(
-                                    'ASSIGNED',
-                                    textAlign: TextAlign.center,
-                                    style: _tblHdr,
-                                  ),
-                                ),
-                              ),
-                              Expanded(
-                                flex: 15,
-                                child: Center(
-                                  child: Text(
-                                    'CONTACTED',
-                                    textAlign: TextAlign.center,
-                                    style: _tblHdr,
-                                  ),
-                                ),
-                              ),
-                              Expanded(
-                                flex: 12,
-                                child: Center(
-                                  child: Text(
-                                    'INTERESTED',
-                                    textAlign: TextAlign.center,
-                                    style: _tblHdr,
-                                  ),
-                                ),
-                              ),
-                              Expanded(
-                                flex: 13,
-                                child: Center(
-                                  child: Text(
-                                    'ACTIONS DONE',
-                                    textAlign: TextAlign.center,
-                                    style: _tblHdr,
-                                  ),
-                                ),
-                              ),
-                              Expanded(
-                                flex: 12,
-                                child: Center(
-                                  child: Text(
-                                    'CONVERTED',
-                                    textAlign: TextAlign.center,
-                                    style: _tblHdr,
-                                  ),
-                                ),
-                              ),
-                              Expanded(
-                                flex: 12,
-                                child: Center(
-                                  child: Text(
-                                    'PENDING',
-                                    textAlign: TextAlign.center,
-                                    style: _tblHdr,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        ...activeUsers.map((user) {
-                          final isLast = user == activeUsers.last;
-                          // Live computation for this specific user
-                          final userLeads = leads.where((l) {
-                            final assignedUid = l['assignedToUid'];
-                            final assignedName =
-                                l['assignedToName'] ?? l['assignedTo'];
-                            final ownerUid = l['ownerUid'];
-                            return assignedUid == user.uid ||
-                                ownerUid == user.uid ||
-                                (assignedName != null &&
-                                    assignedName
-                                            .toString()
-                                            .trim()
-                                            .toLowerCase() ==
-                                        user.name.trim().toLowerCase());
-                          }).toList();
-
-                          final assignedCount = userLeads.length;
-                          final contactedCount = userLeads.where((l) {
-                            final status = (l['status'] ?? '')
-                                .toString()
-                                .toLowerCase();
-                            final isDone = _leadIsDone(l['isDone']);
-                            return status != 'new' && status != 'unassigned' ||
-                                isDone;
-                          }).length;
-                          final contactedPct = assignedCount > 0
-                              ? (contactedCount / assignedCount * 100).round()
-                              : 0;
-                          final interestedCount = userLeads.where((l) {
-                            final status = (l['status'] ?? '')
-                                .toString()
-                                .toLowerCase();
-                            return status == 'interested';
-                          }).length;
-                          final actionsDone = userLeads.where((l) {
-                            final isDone = _leadIsDone(l['isDone']);
-                            final hasTl = _leadHasTimeline(l['timeline']);
-                            return isDone || hasTl;
-                          }).length;
-                          final convertedCount = userLeads.where((l) {
-                            final status = (l['status'] ?? '')
-                                .toString()
-                                .toLowerCase();
-                            return status.contains('convert');
-                          }).length;
-                          final pendingCount = userLeads.where((l) {
-                            final isDone = _leadIsDone(l['isDone']);
-                            final status = (l['status'] ?? '')
-                                .toString()
-                                .toLowerCase();
-                            return !isDone &&
-                                (status == 'new' ||
-                                    status == 'claimed' ||
-                                    status == 'follow-up' ||
-                                    status.contains('pending'));
-                          }).length;
-
-                          return Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 14,
-                              vertical: 12,
-                            ),
-                            decoration: BoxDecoration(
-                              border: isLast
-                                  ? null
-                                  : const Border(
-                                      bottom: BorderSide(
-                                        color: Color(0xFFF2F4F7),
-                                      ),
-                                    ),
-                            ),
-                            child: Row(
-                              children: [
-                                Expanded(
-                                  flex: 28,
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        user.name,
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: const TextStyle(
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.w700,
-                                          color: Color(0xFF0F172A),
-                                        ),
-                                      ),
-                                      Text(
-                                        user.isAdminRole
-                                            ? 'ADMIN'
-                                            : 'HR & OPERATION MANAGER',
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: const TextStyle(
-                                          fontSize: 10,
-                                          fontWeight: FontWeight.w700,
-                                          color: Color(0xFF2563EB),
-                                          letterSpacing: 0.3,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                Expanded(
-                                  flex: 12,
-                                  child: Center(
-                                    child: Text(
-                                      '$assignedCount',
-                                      textAlign: TextAlign.center,
-                                      style: _tblCell,
-                                    ),
-                                  ),
-                                ),
-                                Expanded(
-                                  flex: 15,
-                                  child: Center(
-                                    child: Text(
-                                      assignedCount > 0
-                                          ? '$contactedCount ($contactedPct%)'
-                                          : '—',
-                                      textAlign: TextAlign.center,
-                                      style: _tblCell,
-                                    ),
-                                  ),
-                                ),
-                                Expanded(
-                                  flex: 12,
-                                  child: Center(
-                                    child: Text(
-                                      '$interestedCount',
-                                      textAlign: TextAlign.center,
-                                      style: _tblCell,
-                                    ),
-                                  ),
-                                ),
-                                Expanded(
-                                  flex: 13,
-                                  child: Center(
-                                    child: Text(
-                                      '$actionsDone',
-                                      textAlign: TextAlign.center,
-                                      style: _tblCell,
-                                    ),
-                                  ),
-                                ),
-                                Expanded(
-                                  flex: 12,
-                                  child: Center(
-                                    child: Text(
-                                      '$convertedCount',
-                                      textAlign: TextAlign.center,
-                                      style: const TextStyle(
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.w700,
-                                        color: Color(0xFF15803D),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                Expanded(
-                                  flex: 12,
-                                  child: Center(
-                                    child: Text(
-                                      '$pendingCount',
-                                      textAlign: TextAlign.center,
-                                      style: TextStyle(
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.w700,
-                                        color: pendingCount == 0
-                                            ? const Color(0xFF667085)
-                                            : const Color(0xFFB42318),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          );
-                        }),
-                      ],
-                    ),
-                  ),
-                );
-              },
-            ),
         ],
       ),
-    );
-  }
-
-  Widget _buildActiveExecutivesSnapshot(List<DashboardUserModel> activeUsers) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFE8EAF0)),
-      ),
+      clipBehavior: Clip.antiAlias,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Active Team Members & Role Distribution',
-            style: TextStyle(
-              fontSize: 15.5,
-              fontWeight: FontWeight.w700,
-              color: Color(0xFF0F172A),
-            ),
-          ),
-          const Gap(2),
-          const Text(
-            'Real-time status of Admins and HR & Operation Managers currently active',
-            style: TextStyle(fontSize: 12, color: Color(0xFF667085)),
-          ),
-          const Gap(14),
-          if (activeUsers.isEmpty)
-            const Padding(
-              padding: EdgeInsets.all(12),
-              child: Text(
-                'No active team members found.',
-                style: TextStyle(color: Color(0xFF667085), fontSize: 13),
-              ),
-            )
-          else
-            LayoutBuilder(
-              builder: (context, c) {
-                final isNarrow = c.maxWidth < 640;
-                return Wrap(
-                  spacing: 12,
-                  runSpacing: 12,
-                  children: activeUsers.map((user) {
-                    return Container(
-                      width: isNarrow
-                          ? double.infinity
-                          : ((c.maxWidth - 24) / 3).clamp(180.0, 500.0),
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF8FAFC),
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: const Color(0xFFEAECF0)),
-                      ),
-                      child: Row(
-                        children: [
-                          CircleAvatar(
-                            radius: 18,
-                            backgroundColor: const Color(0xFFEEF0FF),
-                            child: Text(
-                              user.name.isNotEmpty
-                                  ? user.name[0].toUpperCase()
-                                  : 'U',
-                              style: const TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w700,
-                                color: Color(0xFF4338CA),
-                              ),
-                            ),
-                          ),
-                          const Gap(10),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  user.name,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w700,
-                                    color: Color(0xFF0F172A),
-                                  ),
-                                ),
-                                const Gap(2),
-                                Text(
-                                  user.roleLabel.toUpperCase(),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(
-                                    fontSize: 10.5,
-                                    fontWeight: FontWeight.w600,
-                                    color: user.isAdminRole
-                                        ? const Color(0xFF4338CA)
-                                        : const Color(0xFF0284C7),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          Container(
-                            width: 8,
-                            height: 8,
-                            decoration: const BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: Color(0xFF16A34A),
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  }).toList(),
-                );
-              },
-            ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildAuditLogCard(DashboardCubit cubit) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFE8EAF0)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Append-Only Security & Admin Audit Log',
-            style: TextStyle(
-              fontSize: 15.5,
-              fontWeight: FontWeight.w700,
-              color: Color(0xFF0F172A),
-            ),
-          ),
-          const Gap(2),
-          const Text(
-            'Every sign-in, import, bulk assignment, role change, device reset, and watermarked export is permanently recorded.',
-            style: TextStyle(fontSize: 12, color: Color(0xFF667085)),
-          ),
-          const Gap(12),
-          if (cubit.auditEntries.isEmpty)
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 12),
-              child: Text(
-                'No audit entries logged yet.',
-                style: TextStyle(fontSize: 12, color: Color(0xFF667085)),
-              ),
-            )
-          else
-            ...cubit.auditEntries.take(8).map((entry) {
-              return Container(
-                padding: const EdgeInsets.symmetric(vertical: 10),
-                decoration: const BoxDecoration(
-                  border: Border(bottom: BorderSide(color: Color(0xFFF2F4F7))),
-                ),
-                child: Wrap(
-                  spacing: 10,
-                  runSpacing: 4,
-                  alignment: WrapAlignment.spaceBetween,
+          // Card Header with Title & Date Range Dropdown
+          Padding(
+            padding: const EdgeInsets.fromLTRB(32, 32, 32, 16),
+            child: Wrap(
+              spacing: 16,
+              runSpacing: 12,
+              alignment: WrapAlignment.spaceBetween,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 3,
-                          ),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFEEF0FF),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Text(
-                            entry.category.toUpperCase(),
-                            style: const TextStyle(
-                              fontSize: 10.5,
-                              fontWeight: FontWeight.w700,
-                              color: Color(0xFF4338CA),
-                            ),
-                          ),
-                        ),
-                        const Gap(8),
-                        Flexible(
-                          child: Text(
-                            '${entry.action} — ${entry.target}',
-                            style: const TextStyle(
-                              fontSize: 12.5,
-                              color: Color(0xFF344054),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
                     Text(
-                      '${entry.actor} · ${entry.timestamp}',
-                      style: const TextStyle(
-                        fontSize: 11.5,
-                        color: Color(0xFF667085),
+                      'Executive Performance Comparison (FR-6.3)',
+                      style: GoogleFonts.inter(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFF0F172A),
+                        letterSpacing: -0.0195,
+                        height: 28 / 20,
+                      ),
+                    ),
+                    const Gap(4),
+                    Text(
+                      'Assigned vs Contacted, Interested, Completed, Converted, and Pending',
+                      style: GoogleFonts.inter(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w400,
+                        color: const Color(0xFF64748B),
+                        letterSpacing: -0.0137,
+                        height: 20 / 14,
                       ),
                     ),
                   ],
                 ),
-              );
-            }),
+                Container(
+                  height: 38,
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: const Color(0xFFE2E8F0)),
+                  ),
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<String>(
+                      value: _selectedDateRange,
+                      dropdownColor: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      icon: const Icon(
+                        CupertinoIcons.chevron_down,
+                        size: 12,
+                        color: Color(0xFF64748B),
+                      ),
+                      isDense: true,
+                      style: GoogleFonts.inter(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: const Color(0xFF475569),
+                        height: 20 / 14,
+                      ),
+                      items: const [
+                        DropdownMenuItem(
+                          value: 'All Time',
+                          child: Text('All Time'),
+                        ),
+                        DropdownMenuItem(value: 'Today', child: Text('Today')),
+                        DropdownMenuItem(
+                          value: 'This week',
+                          child: Text('This week'),
+                        ),
+                        DropdownMenuItem(
+                          value: 'This month',
+                          child: Text('This month'),
+                        ),
+                      ],
+                      onChanged: (v) {
+                        if (v != null) setState(() => _selectedDateRange = v);
+                      },
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          if (activeUsers.isEmpty)
+            Padding(
+              padding: const EdgeInsets.all(48),
+              child: Center(
+                child: Text(
+                  'No active team members registered yet. Add team accounts in User Management.',
+                  style: GoogleFonts.inter(
+                    fontSize: 14,
+                    color: const Color(0xFF64748B),
+                  ),
+                ),
+              ),
+            )
+          else
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(minWidth: 1000),
+                child: Column(
+                  children: [
+                    // Table Header Row
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 32,
+                        vertical: 16,
+                      ),
+                      decoration: const BoxDecoration(
+                        color: Color(0xFFF8FAFC),
+                        border: Border(
+                          top: BorderSide(color: Color(0xFFF1F5F9)),
+                          bottom: BorderSide(color: Color(0xFFF1F5F9)),
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          _buildTableHeaderCell('TEAM MEMBER', flex: 26, isCenter: false),
+                          _buildTableHeaderCell('ASSIGNED', flex: 14, isCenter: false),
+                          _buildTableHeaderCell('CONTACTED', flex: 16, isCenter: false),
+                          _buildTableHeaderCell('INTERESTED', flex: 14, isCenter: true),
+                          _buildTableHeaderCell('ACTIONS DONE', flex: 16, isCenter: true),
+                          _buildTableHeaderCell('CONVERTED', flex: 14, isCenter: true),
+                          _buildTableHeaderCell('PENDING', flex: 14, isCenter: true),
+                        ],
+                      ),
+                    ),
+
+                    // Table Body Rows
+                    ...activeUsers.map((user) {
+                      final isLast = user == activeUsers.last;
+
+                      final userLeads = leads.where((l) {
+                        final assignedUid = l['assignedToUid'];
+                        final assignedName =
+                            l['assignedToName'] ?? l['assignedTo'];
+                        final ownerUid = l['ownerUid'];
+                        return assignedUid == user.uid ||
+                            ownerUid == user.uid ||
+                            (assignedName != null &&
+                                assignedName
+                                        .toString()
+                                        .trim()
+                                        .toLowerCase() ==
+                                    user.name.trim().toLowerCase());
+                      }).toList();
+
+                      final assignedCount = userLeads.length;
+                      final contactedCount = userLeads.where((l) {
+                        final status = (l['status'] ?? '')
+                            .toString()
+                            .toLowerCase();
+                        final isDone = _leadIsDone(l['isDone']);
+                        return status != 'new' && status != 'unassigned' ||
+                            isDone;
+                      }).length;
+                      final contactedPct = assignedCount > 0
+                          ? (contactedCount / assignedCount * 100).round()
+                          : 0;
+                      final interestedCount = userLeads.where((l) {
+                        final status = (l['status'] ?? '')
+                            .toString()
+                            .toLowerCase();
+                        return status == 'interested';
+                      }).length;
+                      final actionsDone = userLeads.where((l) {
+                        final isDone = _leadIsDone(l['isDone']);
+                        final hasTl = _leadHasTimeline(l['timeline']);
+                        return isDone || hasTl;
+                      }).length;
+                      final convertedCount = userLeads.where((l) {
+                        final status = (l['status'] ?? '')
+                            .toString()
+                            .toLowerCase();
+                        return status.contains('convert');
+                      }).length;
+                      final pendingCount = userLeads.where((l) {
+                        final isDone = _leadIsDone(l['isDone']);
+                        final status = (l['status'] ?? '')
+                            .toString()
+                            .toLowerCase();
+                        return !isDone &&
+                            (status == 'new' ||
+                                status == 'claimed' ||
+                                status == 'follow-up' ||
+                                status.contains('pending'));
+                      }).length;
+
+                      return Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 32,
+                          vertical: 24,
+                        ),
+                        decoration: BoxDecoration(
+                          border: isLast
+                              ? null
+                              : const Border(
+                                  bottom: BorderSide(
+                                    color: Color(0xFFF1F5F9),
+                                  ),
+                                ),
+                        ),
+                        child: Row(
+                          children: [
+                            // Team Member Name + Role
+                            Expanded(
+                              flex: 26,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    user.name,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: GoogleFonts.inter(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w700,
+                                      color: const Color(0xFF0F172A),
+                                      height: 24 / 16,
+                                    ),
+                                  ),
+                                  const Gap(2),
+                                  Text(
+                                    user.isAdminRole
+                                        ? 'ADMIN'
+                                        : 'HR & OPERATION MANAGER',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: GoogleFonts.inter(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                      color: user.isAdminRole
+                                          ? const Color(0xFF6366F1)
+                                          : const Color(0xFF3B82F6),
+                                      height: 16 / 12,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+
+                            // Assigned
+                            Expanded(
+                              flex: 14,
+                              child: Text(
+                                '$assignedCount',
+                                style: GoogleFonts.inter(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                  color: const Color(0xFF1E293B),
+                                  height: 20 / 14,
+                                ),
+                              ),
+                            ),
+
+                            // Contacted
+                            Expanded(
+                              flex: 16,
+                              child: Text(
+                                assignedCount > 0
+                                    ? '$contactedCount ($contactedPct%)'
+                                    : '—',
+                                style: GoogleFonts.inter(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                  color: const Color(0xFF1E293B),
+                                  height: 20 / 14,
+                                ),
+                              ),
+                            ),
+
+                            // Interested
+                            Expanded(
+                              flex: 14,
+                              child: Text(
+                                '$interestedCount',
+                                textAlign: TextAlign.center,
+                                style: GoogleFonts.inter(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                  color: const Color(0xFF1E293B),
+                                  height: 20 / 14,
+                                ),
+                              ),
+                            ),
+
+                            // Actions Done
+                            Expanded(
+                              flex: 16,
+                              child: Text(
+                                '$actionsDone',
+                                textAlign: TextAlign.center,
+                                style: GoogleFonts.inter(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                  color: const Color(0xFF1E293B),
+                                  height: 20 / 14,
+                                ),
+                              ),
+                            ),
+
+                            // Converted
+                            Expanded(
+                              flex: 14,
+                              child: Text(
+                                '$convertedCount',
+                                textAlign: TextAlign.center,
+                                style: GoogleFonts.inter(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w700,
+                                  color: const Color(0xFF16A34A),
+                                  height: 20 / 14,
+                                ),
+                              ),
+                            ),
+
+                            // Pending
+                            Expanded(
+                              flex: 14,
+                              child: Text(
+                                '$pendingCount',
+                                textAlign: TextAlign.center,
+                                style: GoogleFonts.inter(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                  color: const Color(0xFF1E293B),
+                                  height: 20 / 14,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }),
+                  ],
+                ),
+              ),
+            ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildTableHeaderCell(
+    String label, {
+    required int flex,
+    required bool isCenter,
+  }) {
+    return Expanded(
+      flex: flex,
+      child: Text(
+        label,
+        textAlign: isCenter ? TextAlign.center : TextAlign.left,
+        style: GoogleFonts.inter(
+          fontSize: 12,
+          fontWeight: FontWeight.w700,
+          color: const Color(0xFF64748B),
+          letterSpacing: 0.6,
+          height: 16 / 12,
+        ),
       ),
     );
   }
