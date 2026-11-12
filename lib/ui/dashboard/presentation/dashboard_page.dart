@@ -623,38 +623,58 @@ class _DashboardViewState extends State<_DashboardView> {
             ),
           ),
           Expanded(
-            child: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  for (var i = 0; i < _primaryNav.length; i++)
-                    _buildNavItem(
-                      item: _primaryNav[i],
-                      index: i,
-                      selectedIndex: selectedIndex,
-                      inDrawer: inDrawer,
-                    ),
-                  const Padding(
-                    padding: EdgeInsets.fromLTRB(20, 18, 16, 6),
-                    child: Text(
-                      'GENERAL',
-                      style: TextStyle(
-                        fontSize: 10.5,
-                        fontWeight: FontWeight.w700,
-                        color: Color(0xFF94A3B8),
-                        letterSpacing: 0.8,
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final h = constraints.maxHeight;
+                // Dynamically scale vertical gaps between items based on viewport height:
+                // Taller screens get generous 10-12px gaps so items breathe and don't leave a huge void below.
+                final itemGap = h > 900
+                    ? 12.0
+                    : (h > 760 ? 8.0 : (h > 640 ? 5.0 : 2.0));
+                final sectionGap = h > 900
+                    ? 32.0
+                    : (h > 760 ? 24.0 : 16.0);
+
+                return SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(vertical: 6),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      for (var i = 0; i < _primaryNav.length; i++) ...[
+                        if (i > 0) Gap(itemGap),
+                        _buildNavItem(
+                          item: _primaryNav[i],
+                          index: i,
+                          selectedIndex: selectedIndex,
+                          inDrawer: inDrawer,
+                        ),
+                      ],
+                      Gap(sectionGap),
+                      const Padding(
+                        padding: EdgeInsets.fromLTRB(20, 0, 16, 10),
+                        child: Text(
+                          'GENERAL',
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFF94A3B8),
+                            letterSpacing: 0.8,
+                          ),
+                        ),
                       ),
-                    ),
+                      for (var i = 0; i < _generalNav.length; i++) ...[
+                        if (i > 0) Gap(itemGap),
+                        _buildNavItem(
+                          item: _generalNav[i],
+                          index: i + 5,
+                          selectedIndex: selectedIndex,
+                          inDrawer: inDrawer,
+                        ),
+                      ],
+                    ],
                   ),
-                  for (var i = 0; i < _generalNav.length; i++)
-                    _buildNavItem(
-                      item: _generalNav[i],
-                      index: i + 5,
-                      selectedIndex: selectedIndex,
-                      inDrawer: inDrawer,
-                    ),
-                ],
-              ),
+                );
+              },
             ),
           ),
           Padding(
@@ -720,12 +740,12 @@ class _DashboardViewState extends State<_DashboardView> {
     final isSelected = selectedIndex == index;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+      padding: const EdgeInsets.symmetric(horizontal: 12),
       child: Material(
         color: isSelected ? const Color(0xFFFFF4ED) : Colors.transparent,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(10),
         child: InkWell(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(10),
           onTap: () {
             cubit.selectNav(index);
             if (inDrawer) {
@@ -733,7 +753,7 @@ class _DashboardViewState extends State<_DashboardView> {
             }
           },
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
             child: Row(
               children: [
                 SizedBox(
@@ -759,7 +779,7 @@ class _DashboardViewState extends State<_DashboardView> {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                      fontSize: 13,
+                      fontSize: 13.5,
                       fontWeight: isSelected
                           ? FontWeight.w700
                           : FontWeight.w500,
