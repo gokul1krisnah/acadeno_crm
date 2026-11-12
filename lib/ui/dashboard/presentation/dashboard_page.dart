@@ -75,6 +75,83 @@ class _NavItem {
   });
 }
 
+class _FigmaRightBorderPainter extends CustomPainter {
+  final Color color;
+  final double radius;
+  final double strokeWidth;
+
+  const _FigmaRightBorderPainter({
+    required this.color,
+    this.radius = 12.0,
+    this.strokeWidth = 4.0,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (color == Colors.transparent || color.a == 0.0 || strokeWidth <= 0) {
+      return;
+    }
+
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.fill
+      ..isAntiAlias = true;
+
+    final w = size.width;
+    final h = size.height;
+    final r = radius;
+    final t = strokeWidth;
+
+    final path = Path();
+    // Start at top tangent of outer arc
+    path.moveTo(w - r, 0);
+
+    // Outer top-right arc (circular radius r)
+    path.arcToPoint(
+      Offset(w, r),
+      radius: Radius.circular(r),
+      clockwise: true,
+    );
+
+    // Outer straight right vertical line
+    path.lineTo(w, h - r);
+
+    // Outer bottom-right arc (circular radius r)
+    path.arcToPoint(
+      Offset(w - r, h),
+      radius: Radius.circular(r),
+      clockwise: true,
+    );
+
+    // Inner bottom-right elliptical arc (Rx = r - t, Ry = r)
+    path.arcToPoint(
+      Offset(w - t, h - r),
+      radius: Radius.elliptical(r - t, r),
+      clockwise: false,
+    );
+
+    // Inner straight right vertical line
+    path.lineTo(w - t, r);
+
+    // Inner top-right elliptical arc (Rx = r - t, Ry = r)
+    path.arcToPoint(
+      Offset(w - r, 0),
+      radius: Radius.elliptical(r - t, r),
+      clockwise: false,
+    );
+
+    path.close();
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant _FigmaRightBorderPainter oldDelegate) {
+    return oldDelegate.color != color ||
+        oldDelegate.radius != radius ||
+        oldDelegate.strokeWidth != strokeWidth;
+  }
+}
+
 class _SidebarNavItem extends StatefulWidget {
   final _NavItem item;
   final int index;
@@ -114,8 +191,14 @@ class _SidebarNavItemState extends State<_SidebarNavItem> {
         ? _orangeAccent
         : const Color(0xFF64748B);
 
+    // Exact Figma Specs:
+    // width: 223 (in 240px sidebar: 8.5px horizontal margin on each side)
+    // height: 44
+    // border-radius: 12px
+    // border-right-width: 4px
+    // padding: 12px vertical, 16px horizontal
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2.5),
+      padding: const EdgeInsets.symmetric(horizontal: 8.5, vertical: 2.0),
       child: MouseRegion(
         cursor: SystemMouseCursors.click,
         onEnter: (_) => setState(() => _isHovered = true),
@@ -123,81 +206,64 @@ class _SidebarNavItemState extends State<_SidebarNavItem> {
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 180),
           curve: Curves.easeOutCubic,
-          clipBehavior: Clip.antiAlias,
+          height: 44,
           decoration: BoxDecoration(
             color: bgColor,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(12),
           ),
           child: Material(
             color: Colors.transparent,
+            borderRadius: BorderRadius.circular(12),
             child: InkWell(
-              borderRadius: BorderRadius.circular(16),
-              splashColor: _orangeAccent.withValues(alpha: 0.10),
-              highlightColor: _orangeAccent.withValues(alpha: 0.05),
+              borderRadius: BorderRadius.circular(12),
+              splashColor: _orangeAccent.withValues(alpha: 0.08),
+              highlightColor: _orangeAccent.withValues(alpha: 0.04),
               onTap: widget.onTap,
-              child: Stack(
-                alignment: Alignment.centerLeft,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 12,
-                    ),
-                    child: Row(
-                      children: [
-                        SizedBox(
-                          width: 22,
-                          height: 22,
-                          child: Center(
-                            child: SvgPicture.asset(
-                              item.svgAsset,
-                              width: 19,
-                              height: 19,
-                              fit: BoxFit.contain,
-                              colorFilter: ColorFilter.mode(
-                                iconColor,
-                                BlendMode.srcIn,
-                              ),
+              child: CustomPaint(
+                foregroundPainter: _FigmaRightBorderPainter(
+                  color: isActiveOrHovered ? _orangeAccent : Colors.transparent,
+                  radius: 12.0,
+                  strokeWidth: 4.0,
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+                  child: Row(
+                    children: [
+                      SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: Center(
+                          child: SvgPicture.asset(
+                            item.svgAsset,
+                            width: 18,
+                            height: 18,
+                            fit: BoxFit.contain,
+                            colorFilter: ColorFilter.mode(
+                              iconColor,
+                              BlendMode.srcIn,
                             ),
                           ),
                         ),
-                        const Gap(14),
-                        Expanded(
-                          child: Text(
-                            item.label,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: GoogleFonts.inter(
-                              fontSize: 14.5,
-                              fontWeight: isSelected
-                                  ? FontWeight.w700
-                                  : (_isHovered ? FontWeight.w600 : FontWeight.w500),
-                              color: contentColor,
-                              letterSpacing: -0.2,
-                            ),
-                          ),
-                        ),
-                        // Margin on the right so text doesn't collide with the right accent
-                        const Gap(8),
-                      ],
-                    ),
-                  ),
-
-                  // Right Curved Accent Bar (exact match to user screenshot)
-                  Positioned(
-                    top: 0,
-                    bottom: 0,
-                    right: 0,
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 180),
-                      curve: Curves.easeOutCubic,
-                      width: isActiveOrHovered ? 7.5 : 0,
-                      decoration: const BoxDecoration(
-                        color: _orangeAccent,
                       ),
-                    ),
+                      const Gap(12),
+                      Expanded(
+                        child: Text(
+                          item.label,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.inter(
+                            fontSize: 14,
+                            fontWeight: isSelected
+                                ? FontWeight.w700
+                                : (_isHovered ? FontWeight.w600 : FontWeight.w500),
+                            color: contentColor,
+                            letterSpacing: -0.2,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
             ),
           ),
