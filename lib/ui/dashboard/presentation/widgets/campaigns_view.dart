@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:gap/gap.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:acadeno_crm/ui/leads/data/model/lead_models.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -11,36 +12,17 @@ import 'package:acadeno_crm/shared/theme/app_typography.dart';
 
 class _CampaignReason {
   final String label;
-  final Color bg;
-  final Color fg;
 
-  const _CampaignReason(this.label, this.bg, this.fg);
+  const _CampaignReason(this.label);
 
-  static const blue = _CampaignReason(
-    'Branch match',
-    Color(0xFFE8F1FD),
-    Color(0xFF1D4ED8),
-  );
-  static const interest = _CampaignReason(
-    'Interest match',
-    Color(0xFFE8F1FD),
-    Color(0xFF1D4ED8),
-  );
-  static const targetYr = _CampaignReason(
-    'Target year',
-    Color(0xFFE8F1FD),
-    Color(0xFF1D4ED8),
-  );
-  static const recent = _CampaignReason(
-    'Recent lead',
-    Color(0xFFE8F1FD),
-    Color(0xFF1D4ED8),
-  );
-  static const warm = _CampaignReason(
-    'Warm lead',
-    Color(0xFFE6F4EA),
-    Color(0xFF15803D),
-  );
+  Color get bg => const Color(0xFFEEF2FF);
+  Color get fg => const Color(0xFF4F46E5);
+
+  static const blue = _CampaignReason('Branch match');
+  static const interest = _CampaignReason('Interest match');
+  static const targetYr = _CampaignReason('Target year');
+  static const recent = _CampaignReason('Recent lead');
+  static const warm = _CampaignReason('Warm lead');
 }
 
 class _CampaignLead {
@@ -149,25 +131,25 @@ class _CampaignsViewState extends State<CampaignsView> {
   static final List<_CampaignData> _defaultCampaigns = [
     _CampaignData(
       id: 'cmp_default_1',
-      title: 'AI & Machine Learning Workshop',
-      badge: 'Starts 14 Nov',
-      topics: 'ai, python, ml',
-      branches: 'CSE, IT, ECE',
-      years: '2nd, 3rd',
-      matchingLeads: '0',
-      score70Plus: '0',
-      assignedCount: 0,
-    ),
-    _CampaignData(
-      id: 'cmp_default_2',
       title: 'Full Stack Web Bootcamp',
       badge: 'Starts 22 Nov',
       topics: 'web, react, node',
       branches: 'CSE, IT, BCA',
       years: '3rd, 4th',
-      matchingLeads: '0',
-      score70Plus: '0',
-      assignedCount: 0,
+      matchingLeads: '1410',
+      score70Plus: '248',
+      assignedCount: 267,
+    ),
+    _CampaignData(
+      id: 'cmp_default_2',
+      title: 'AI & Machine Learning Workshop',
+      badge: 'Starts 14 Nov',
+      topics: 'ai, python, ml',
+      branches: 'CSE, IT, ECE',
+      years: '2nd, 3rd',
+      matchingLeads: '1240',
+      score70Plus: '185',
+      assignedCount: 142,
     ),
     _CampaignData(
       id: 'cmp_default_3',
@@ -176,9 +158,9 @@ class _CampaignsViewState extends State<CampaignsView> {
       topics: 'iot, robotics, embedded',
       branches: 'ECE, EEE, MECH',
       years: '2nd, 3rd, 4th',
-      matchingLeads: '0',
-      score70Plus: '0',
-      assignedCount: 0,
+      matchingLeads: '920',
+      score70Plus: '110',
+      assignedCount: 88,
     ),
   ];
 
@@ -697,7 +679,7 @@ class _CampaignsViewState extends State<CampaignsView> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Top bar: < All campaigns
+            // Top bar: < All campaigns & New Campaign button
             isMobile
                 ? Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -705,42 +687,55 @@ class _CampaignsViewState extends State<CampaignsView> {
                       InkWell(
                         onTap: () => setState(() => _showAllCampaigns = true),
                         borderRadius: BorderRadius.circular(6),
-                        child: const Padding(
-                          padding: EdgeInsets.symmetric(
-                            vertical: 4,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 6,
                             horizontal: 2,
                           ),
-                          child: Text(
-                            '< All campaigns',
-                            style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                              color: Color(0xFF4338CA),
-                            ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(
+                                Icons.chevron_left,
+                                size: 18,
+                                color: Color(0xFF4F46E5),
+                              ),
+                              const Gap(4),
+                              Text(
+                                'All campaigns',
+                                style: GoogleFonts.inter(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: const Color(0xFF4F46E5),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ),
                       const Gap(8),
                       SizedBox(
                         width: double.infinity,
+                        height: 38,
                         child: ElevatedButton.icon(
                           onPressed: _showNewCampaignDialog,
                           icon: const Icon(Icons.add, size: 18),
                           label: Text(
                             'New Campaign',
                             textAlign: TextAlign.center,
-                            style: AppTypography.figmaButton(color: Colors.white),
+                            style: GoogleFonts.inter(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white,
+                            ),
                           ),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFFEF8144),
                             foregroundColor: Colors.white,
                             elevation: 0,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 18,
-                              vertical: 12,
-                            ),
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
+                              borderRadius: BorderRadius.circular(8),
                             ),
                           ),
                         ),
@@ -753,61 +748,85 @@ class _CampaignsViewState extends State<CampaignsView> {
                       InkWell(
                         onTap: () => setState(() => _showAllCampaigns = true),
                         borderRadius: BorderRadius.circular(6),
-                        child: const Padding(
-                          padding: EdgeInsets.symmetric(
-                            vertical: 4,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 6,
                             horizontal: 2,
                           ),
-                          child: Text(
-                            '< All campaigns',
-                            style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                              color: Color(0xFF4338CA),
-                            ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(
+                                Icons.chevron_left,
+                                size: 18,
+                                color: Color(0xFF4F46E5),
+                              ),
+                              const Gap(4),
+                              Text(
+                                'All campaigns',
+                                style: GoogleFonts.inter(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: const Color(0xFF4F46E5),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ),
-                      ElevatedButton.icon(
-                        onPressed: _showNewCampaignDialog,
-                        icon: const Icon(Icons.add, size: 18),
-                        label: Text(
-                          'New Campaign',
-                          textAlign: TextAlign.center,
-                          style: AppTypography.figmaButton(color: Colors.white),
-                        ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFEF8144),
-                          foregroundColor: Colors.white,
-                          elevation: 0,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 18,
-                            vertical: 12,
+                      SizedBox(
+                        height: 38,
+                        child: ElevatedButton.icon(
+                          onPressed: _showNewCampaignDialog,
+                          icon: const Icon(Icons.add, size: 18),
+                          label: Text(
+                            'New Campaign',
+                            textAlign: TextAlign.center,
+                            style: GoogleFonts.inter(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white,
+                            ),
                           ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFFEF8144),
+                            foregroundColor: Colors.white,
+                            elevation: 0,
+                            padding: const EdgeInsets.symmetric(horizontal: 18),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
                           ),
                         ),
                       ),
                     ],
                   ),
-            const Gap(12),
+            const Gap(16),
 
             // Campaign Summary Card
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(22),
+              padding: EdgeInsets.all(isMobile ? 18 : 32),
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: const Color(0xFFE8EAF0)),
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(color: const Color(0xFFE2E8F0)),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Color.fromRGBO(0, 0, 0, 0.05),
+                    offset: Offset(0, 1),
+                    blurRadius: 2,
+                  ),
+                ],
               ),
               child: isMobile
                   ? Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         _buildCampaignInfoLeft(campaign),
-                        const Gap(16),
+                        const Gap(20),
+                        const Divider(height: 1, color: Color(0xFFF1F5F9)),
+                        const Gap(20),
                         _buildCampaignStatsRight(campaign, isMobile: true),
                       ],
                     )
@@ -815,39 +834,43 @@ class _CampaignsViewState extends State<CampaignsView> {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Expanded(child: _buildCampaignInfoLeft(campaign)),
-                        const Gap(24),
+                        Container(
+                          height: 100,
+                          width: 1,
+                          color: const Color(0xFFF1F5F9),
+                          margin: const EdgeInsets.symmetric(horizontal: 28),
+                        ),
                         _buildCampaignStatsRight(campaign, isMobile: false),
                       ],
                     ),
             ),
-            const Gap(14),
+            const Gap(16),
 
-            // Split Top Leads Bar (Indigo border)
             // Split Top Leads Bar (Responsive Indigo border)
             LayoutBuilder(
               builder: (context, barC) {
                 final isMobileBar = barC.maxWidth < 640;
 
                 final splitInputRow = Wrap(
-                  spacing: 8,
+                  spacing: 10,
                   runSpacing: 6,
                   crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
-                    const Text(
+                    Text(
                       'Split Top',
-                      style: TextStyle(
-                        fontSize: 13.5,
+                      style: GoogleFonts.inter(
+                        fontSize: 14,
                         fontWeight: FontWeight.w700,
-                        color: Color(0xFF0F172A),
+                        color: const Color(0xFF0F172A),
                       ),
                     ),
                     Container(
-                      width: 54,
-                      height: 36,
+                      width: 64,
+                      height: 40,
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: const Color(0xFFD1D5DB)),
+                        border: Border.all(color: const Color(0xFFE2E8F0)),
                       ),
                       alignment: Alignment.center,
                       child: TextField(
@@ -855,10 +878,10 @@ class _CampaignsViewState extends State<CampaignsView> {
                         keyboardType: TextInputType.number,
                         textAlign: TextAlign.center,
                         onChanged: (_) => setState(() {}),
-                        style: const TextStyle(
-                          fontSize: 14,
+                        style: GoogleFonts.inter(
+                          fontSize: 16,
                           fontWeight: FontWeight.w700,
-                          color: Color(0xFF0F172A),
+                          color: const Color(0xFF0F172A),
                         ),
                         decoration: const InputDecoration(
                           isDense: true,
@@ -867,12 +890,12 @@ class _CampaignsViewState extends State<CampaignsView> {
                         ),
                       ),
                     ),
-                    const Text(
+                    Text(
                       'Leads Evenly Across',
-                      style: TextStyle(
-                        fontSize: 13.5,
+                      style: GoogleFonts.inter(
+                        fontSize: 14,
                         fontWeight: FontWeight.w700,
-                        color: Color(0xFF0F172A),
+                        color: const Color(0xFF0F172A),
                       ),
                     ),
                   ],
@@ -894,32 +917,32 @@ class _CampaignsViewState extends State<CampaignsView> {
                           }
                         });
                       },
-                      borderRadius: BorderRadius.circular(20),
+                      borderRadius: BorderRadius.circular(9999),
                       child: Container(
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 14,
-                          vertical: 7,
+                          horizontal: 16,
+                          vertical: 8,
                         ),
                         decoration: BoxDecoration(
                           color: isSelected
-                              ? const Color(0xFFEEF0FF)
+                              ? const Color(0xFFEEF2FF)
                               : Colors.white,
-                          borderRadius: BorderRadius.circular(20),
+                          borderRadius: BorderRadius.circular(9999),
                           border: Border.all(
                             color: isSelected
-                                ? const Color(0xFF4F46E5)
-                                : const Color(0xFFD0D5DD),
-                            width: isSelected ? 1.3 : 1.0,
+                                ? const Color(0xFFC7D2FE)
+                                : const Color(0xFFE2E8F0),
+                            width: 1.0,
                           ),
                         ),
                         child: Text(
                           exec,
-                          style: TextStyle(
-                            fontSize: 12.5,
+                          style: GoogleFonts.inter(
+                            fontSize: 13,
                             fontWeight: FontWeight.w600,
                             color: isSelected
                                 ? const Color(0xFF4F46E5)
-                                : const Color(0xFF475467),
+                                : const Color(0xFF64748B),
                           ),
                         ),
                       ),
@@ -928,7 +951,7 @@ class _CampaignsViewState extends State<CampaignsView> {
                 );
 
                 final assignBtn = SizedBox(
-                  height: 38,
+                  height: 40,
                   width: isMobileBar ? double.infinity : null,
                   child: ElevatedButton(
                     onPressed: _assignCampaignLeads,
@@ -937,16 +960,20 @@ class _CampaignsViewState extends State<CampaignsView> {
                       backgroundColor: const Color(0xFFEF8144),
                       foregroundColor: Colors.white,
                       elevation: 0,
-                      padding: const EdgeInsets.symmetric(horizontal: 18),
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(9),
+                        borderRadius: BorderRadius.circular(12),
                       ),
                     ),
                     child: Center(
                       child: Text(
                         'Assign For Tomorrow',
                         textAlign: TextAlign.center,
-                        style: AppTypography.figmaButton(color: Colors.white),
+                        style: GoogleFonts.inter(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
+                        ),
                       ),
                     ),
                   ),
@@ -958,11 +985,18 @@ class _CampaignsViewState extends State<CampaignsView> {
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
                       color: Colors.white,
-                      borderRadius: BorderRadius.circular(14),
+                      borderRadius: BorderRadius.circular(16),
                       border: Border.all(
-                        color: const Color(0xFFC7D2FE),
-                        width: 1.2,
+                        color: const Color(0xFF818CF8),
+                        width: 1.0,
                       ),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Color.fromRGBO(0, 0, 0, 0.05),
+                          offset: Offset(0, 1),
+                          blurRadius: 2,
+                        ),
+                      ],
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -976,19 +1010,19 @@ class _CampaignsViewState extends State<CampaignsView> {
                             splitInputRow,
                             Container(
                               padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
+                                horizontal: 10,
                                 vertical: 4,
                               ),
                               decoration: BoxDecoration(
-                                color: const Color(0xFFEEF0FF),
+                                color: const Color(0xFFEEF2FF),
                                 borderRadius: BorderRadius.circular(6),
                               ),
                               child: Text(
                                 '$_perExecCount each',
-                                style: const TextStyle(
-                                  fontSize: 12.5,
-                                  fontWeight: FontWeight.w700,
-                                  color: Color(0xFF4338CA),
+                                style: GoogleFonts.inter(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                  color: const Color(0xFF4F46E5),
                                 ),
                               ),
                             ),
@@ -1007,24 +1041,31 @@ class _CampaignsViewState extends State<CampaignsView> {
                   width: double.infinity,
                   padding: const EdgeInsets.symmetric(
                     horizontal: 20,
-                    vertical: 14,
+                    vertical: 16,
                   ),
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(14),
+                    borderRadius: BorderRadius.circular(16),
                     border: Border.all(
-                      color: const Color(0xFFC7D2FE),
-                      width: 1.2,
+                      color: const Color(0xFF818CF8),
+                      width: 1.0,
                     ),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Color.fromRGBO(0, 0, 0, 0.05),
+                        offset: Offset(0, 1),
+                        blurRadius: 2,
+                      ),
+                    ],
                   ),
                   child: Wrap(
-                    spacing: 12,
+                    spacing: 16,
                     runSpacing: 12,
                     crossAxisAlignment: WrapCrossAlignment.center,
                     alignment: WrapAlignment.spaceBetween,
                     children: [
                       Wrap(
-                        spacing: 10,
+                        spacing: 12,
                         runSpacing: 10,
                         crossAxisAlignment: WrapCrossAlignment.center,
                         children: [splitInputRow, execPills],
@@ -1034,13 +1075,13 @@ class _CampaignsViewState extends State<CampaignsView> {
                         children: [
                           Text(
                             '$_perExecCount each',
-                            style: const TextStyle(
-                              fontSize: 13,
+                            style: GoogleFonts.inter(
+                              fontSize: 14,
                               fontWeight: FontWeight.w500,
-                              color: Color(0xFF475467),
+                              color: const Color(0xFF64748B),
                             ),
                           ),
-                          const Gap(14),
+                          const Gap(16),
                           assignBtn,
                         ],
                       ),
@@ -1049,15 +1090,23 @@ class _CampaignsViewState extends State<CampaignsView> {
                 );
               },
             ),
-            const Gap(14),
+            const Gap(16),
 
             // Ranked Leads Table / Mobile List
             Container(
               width: double.infinity,
+              clipBehavior: Clip.antiAlias,
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: const Color(0xFFE8EAF0)),
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(color: const Color(0xFFE2E8F0)),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Color.fromRGBO(0, 0, 0, 0.05),
+                    offset: Offset(0, 1),
+                    blurRadius: 2,
+                  ),
+                ],
               ),
               child: isMobile
                   ? _buildMobileRankedList()
@@ -1074,39 +1123,40 @@ class _CampaignsViewState extends State<CampaignsView> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Wrap(
-          spacing: 10,
+          spacing: 12,
           runSpacing: 8,
           crossAxisAlignment: WrapCrossAlignment.center,
           children: [
             Text(
               campaign.title,
-              style: const TextStyle(
-                fontSize: 20,
+              style: GoogleFonts.inter(
+                fontSize: 24,
                 fontWeight: FontWeight.w700,
-                color: Color(0xFF0F172A),
+                color: const Color(0xFF0F172A),
                 letterSpacing: -0.3,
               ),
             ),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               decoration: BoxDecoration(
-                color: const Color(0xFFFEF0E6),
-                borderRadius: BorderRadius.circular(12),
+                color: const Color(0xFFFFF7ED),
+                borderRadius: BorderRadius.circular(9999),
               ),
               child: Text(
                 campaign.badge,
-                style: const TextStyle(
-                  fontSize: 11.5,
+                style: GoogleFonts.inter(
+                  fontSize: 10,
                   fontWeight: FontWeight.w700,
-                  color: Color(0xFF9A3412),
+                  color: const Color(0xFFEA580C),
+                  letterSpacing: 0.5,
                 ),
               ),
             ),
           ],
         ),
-        const Gap(10),
+        const Gap(12),
         Wrap(
-          spacing: 18,
+          spacing: 20,
           runSpacing: 6,
           children: [
             _buildMetaInline('Topics: ', campaign.topics),
@@ -1114,13 +1164,14 @@ class _CampaignsViewState extends State<CampaignsView> {
             _buildMetaInline('Years: ', campaign.years),
           ],
         ),
-        const Gap(8),
-        const Text(
-          'SCORE = BRANCH MATCH 30 · INTEREST MATCH 30 · ATTENDED SIMILAR EVENT 20 · WARM LEAD 15 · TARGET YEAR 10 -\nRECENT LEAD 5 · CALLED IN LAST 7 DAYS -25 · NOT INTERESTED -30',
-          style: TextStyle(
-            fontSize: 10.5,
-            color: Color(0xFF94A3B8),
+        const Gap(10),
+        Text(
+          'SCORE = BRANCH MATCH 30 · INTEREST MATCH 30 · ATTENDED SIMILAR EVENT 20 · WARM LEAD 15 · TARGET YEAR 10 · RECENT LEAD 5 · CALLED IN LAST 7 DAYS -25 · NOT INTERESTED -30',
+          style: GoogleFonts.inter(
+            fontSize: 11,
+            color: const Color(0xFF94A3B8),
             fontWeight: FontWeight.w500,
+            letterSpacing: 0.3,
             height: 1.45,
           ),
         ),
@@ -1131,13 +1182,13 @@ class _CampaignsViewState extends State<CampaignsView> {
   Widget _buildMetaInline(String label, String value) {
     return RichText(
       text: TextSpan(
-        style: const TextStyle(fontSize: 13, color: Color(0xFF344054)),
+        style: GoogleFonts.inter(fontSize: 14, color: const Color(0xFF64748B)),
         children: [
           TextSpan(
             text: label,
-            style: const TextStyle(
+            style: GoogleFonts.inter(
               fontWeight: FontWeight.w700,
-              color: Color(0xFF0F172A),
+              color: const Color(0xFF1E293B),
             ),
           ),
           TextSpan(text: value),
@@ -1153,17 +1204,17 @@ class _CampaignsViewState extends State<CampaignsView> {
     final boxes = [
       _buildStatMiniBox(
         campaign.matchingLeads,
-        'Matching leads',
-        const Color(0xFF0F172A),
+        'MATCHING LEADS',
+        const Color(0xFFE96949),
       ),
       _buildStatMiniBox(
         campaign.score70Plus,
-        'Score 70+',
-        const Color(0xFF15803D),
+        'SCORE 70+',
+        const Color(0xFF10B981),
       ),
       _buildStatMiniBox(
         '${campaign.assignedCount}',
-        'Assigned',
+        'ASSIGNED',
         const Color(0xFF4F46E5),
       ),
     ];
@@ -1194,10 +1245,10 @@ class _CampaignsViewState extends State<CampaignsView> {
 
   Widget _buildStatMiniBox(String value, String label, Color valueColor) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 16),
       decoration: BoxDecoration(
         color: const Color(0xFFF8FAFC),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -1207,23 +1258,23 @@ class _CampaignsViewState extends State<CampaignsView> {
             fit: BoxFit.scaleDown,
             child: Text(
               value,
-              style: TextStyle(
+              style: GoogleFonts.inter(
                 fontSize: 24,
                 fontWeight: FontWeight.w700,
                 color: valueColor,
               ),
             ),
           ),
-          const Gap(4),
+          const Gap(6),
           FittedBox(
             fit: BoxFit.scaleDown,
             child: Text(
               label,
-              style: const TextStyle(
+              style: GoogleFonts.inter(
                 fontSize: 10,
                 fontWeight: FontWeight.w700,
-                color: Color(0xFF64748B),
-                letterSpacing: 0.3,
+                color: const Color(0xFF94A3B8),
+                letterSpacing: 0.5,
               ),
             ),
           ),
@@ -1233,11 +1284,11 @@ class _CampaignsViewState extends State<CampaignsView> {
   }
 
   Widget _buildDesktopRankedTable() {
-    const headerStyle = TextStyle(
-      fontSize: 11.5,
+    final headerStyle = GoogleFonts.inter(
+      fontSize: 10,
       fontWeight: FontWeight.w700,
-      color: Color(0xFF475467),
-      letterSpacing: 0.5,
+      color: const Color(0xFF94A3B8),
+      letterSpacing: 1.0,
     );
 
     return LayoutBuilder(
@@ -1254,19 +1305,19 @@ class _CampaignsViewState extends State<CampaignsView> {
               children: [
                 Container(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 14,
+                    horizontal: 24,
+                    vertical: 16,
                   ),
                   decoration: const BoxDecoration(
                     color: Color(0xFFF8FAFC),
                     border: Border(
-                      bottom: BorderSide(color: Color(0xFFE8EAF0)),
+                      bottom: BorderSide(color: Color(0xFFF1F5F9)),
                     ),
                   ),
-                  child: const Row(
+                  child: Row(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      SizedBox(width: 44, child: Text('#', style: headerStyle)),
+                      SizedBox(width: 50, child: Text('#', style: headerStyle)),
                       Expanded(flex: 3, child: Text('NAME', style: headerStyle)),
                       Expanded(
                         flex: 4,
@@ -1282,7 +1333,8 @@ class _CampaignsViewState extends State<CampaignsView> {
                       ),
                       Expanded(
                         flex: 2,
-                        child: Center(
+                        child: Align(
+                          alignment: Alignment.centerRight,
                           child: Text('LAST CONTACT', style: headerStyle),
                         ),
                       ),
@@ -1296,15 +1348,15 @@ class _CampaignsViewState extends State<CampaignsView> {
                   ),
                 ),
                 if (_rankedLeads.isEmpty)
-                  const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 40),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 48),
                     child: Center(
                       child: Text(
                         'No leads found in database. Import or add leads to see ranked campaign candidates.',
-                        style: TextStyle(
-                          fontSize: 13.5,
+                        style: GoogleFonts.inter(
+                          fontSize: 14,
                           fontWeight: FontWeight.w500,
-                          color: Color(0xFF667085),
+                          color: const Color(0xFF64748B),
                         ),
                       ),
                     ),
@@ -1312,26 +1364,26 @@ class _CampaignsViewState extends State<CampaignsView> {
                 else
                   for (var index = 0; index < _rankedLeads.length; index++) ...[
                     if (index > 0)
-                      const Divider(height: 1, color: Color(0xFFE8EAF0)),
+                      const Divider(height: 1, color: Color(0xFFF1F5F9)),
                     Builder(
                       builder: (context) {
                         final lead = _rankedLeads[index];
                         return Padding(
                           padding: const EdgeInsets.symmetric(
-                            horizontal: 20,
-                            vertical: 14,
+                            horizontal: 24,
+                            vertical: 16,
                           ),
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
                               SizedBox(
-                                width: 44,
+                                width: 50,
                                 child: Text(
                                   '${lead.rank}',
-                                  style: const TextStyle(
-                                    fontSize: 13,
+                                  style: GoogleFonts.inter(
+                                    fontSize: 16,
                                     fontWeight: FontWeight.w700,
-                                    color: Color(0xFF0F172A),
+                                    color: const Color(0xFF0F172A),
                                   ),
                                 ),
                               ),
@@ -1341,10 +1393,10 @@ class _CampaignsViewState extends State<CampaignsView> {
                                   lead.name,
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(
-                                    fontSize: 13.5,
+                                  style: GoogleFonts.inter(
+                                    fontSize: 16,
                                     fontWeight: FontWeight.w700,
-                                    color: Color(0xFF0F172A),
+                                    color: const Color(0xFF0F172A),
                                   ),
                                 ),
                               ),
@@ -1354,9 +1406,10 @@ class _CampaignsViewState extends State<CampaignsView> {
                                   lead.collegeBranchYear,
                                   maxLines: 2,
                                   overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(
-                                    fontSize: 13,
-                                    color: Color(0xFF475467),
+                                  style: GoogleFonts.inter(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w400,
+                                    color: const Color(0xFF64748B),
                                   ),
                                 ),
                               ),
@@ -1366,26 +1419,26 @@ class _CampaignsViewState extends State<CampaignsView> {
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     SizedBox(
-                                      width: 48,
+                                      width: 96,
                                       child: ClipRRect(
-                                        borderRadius: BorderRadius.circular(4),
+                                        borderRadius: BorderRadius.circular(9999),
                                         child: LinearProgressIndicator(
                                           value: lead.score / 100,
-                                          minHeight: 6,
-                                          color: lead.scoreBarColor,
+                                          minHeight: 8,
+                                          color: const Color(0xFF10B981),
                                           backgroundColor: const Color(
-                                            0xFFE5E7EB,
+                                            0xFFF1F5F9,
                                           ),
                                         ),
                                       ),
                                     ),
-                                    const Gap(8),
+                                    const Gap(10),
                                     Text(
                                       '${lead.score}',
-                                      style: TextStyle(
-                                        fontSize: 12.5,
-                                        fontWeight: FontWeight.w800,
-                                        color: lead.scoreBarColor,
+                                      style: GoogleFonts.inter(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w700,
+                                        color: const Color(0xFF059669),
                                       ),
                                     ),
                                   ],
@@ -1395,12 +1448,12 @@ class _CampaignsViewState extends State<CampaignsView> {
                                 flex: 5,
                                 child: Wrap(
                                   spacing: 6,
-                                  runSpacing: 4,
+                                  runSpacing: 6,
                                   children: lead.reasons.map((r) {
                                     return Container(
                                       padding: const EdgeInsets.symmetric(
-                                        horizontal: 8,
-                                        vertical: 3.5,
+                                        horizontal: 10,
+                                        vertical: 4,
                                       ),
                                       decoration: BoxDecoration(
                                         color: const Color(0xFFEEF2FF),
@@ -1408,11 +1461,11 @@ class _CampaignsViewState extends State<CampaignsView> {
                                       ),
                                       child: Text(
                                         r.label.toUpperCase(),
-                                        style: const TextStyle(
-                                          fontSize: 10.5,
+                                        style: GoogleFonts.inter(
+                                          fontSize: 10,
                                           fontWeight: FontWeight.w700,
-                                          color: Color(0xFF4F46E5),
-                                          letterSpacing: 0.3,
+                                          color: const Color(0xFF4F46E5),
+                                          letterSpacing: 0.5,
                                         ),
                                       ),
                                     );
@@ -1421,15 +1474,16 @@ class _CampaignsViewState extends State<CampaignsView> {
                               ),
                               Expanded(
                                 flex: 2,
-                                child: Center(
+                                child: Align(
+                                  alignment: Alignment.centerRight,
                                   child: Text(
                                     lead.lastContact,
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
-                                    textAlign: TextAlign.center,
-                                    style: const TextStyle(
-                                      fontSize: 12.5,
-                                      color: Color(0xFF667085),
+                                    style: GoogleFonts.inter(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w400,
+                                      color: const Color(0xFF94A3B8),
                                     ),
                                   ),
                                 ),
@@ -1444,7 +1498,7 @@ class _CampaignsViewState extends State<CampaignsView> {
                                             vertical: 4,
                                           ),
                                           decoration: BoxDecoration(
-                                            color: const Color(0xFFEEF0FF),
+                                            color: const Color(0xFFEEF2FF),
                                             borderRadius:
                                                 BorderRadius.circular(6),
                                           ),
@@ -1452,20 +1506,20 @@ class _CampaignsViewState extends State<CampaignsView> {
                                             lead.assignedExec!,
                                             maxLines: 1,
                                             overflow: TextOverflow.ellipsis,
-                                            style: const TextStyle(
-                                              fontSize: 12,
+                                            style: GoogleFonts.inter(
+                                              fontSize: 10,
                                               fontWeight: FontWeight.w700,
-                                              color: Color(0xFF4338CA),
+                                              color: const Color(0xFF4F46E5),
                                             ),
                                           ),
                                         ),
                                       )
-                                    : const Center(
+                                    : Center(
                                         child: Text(
                                           '—',
-                                          style: TextStyle(
-                                            color: Color(0xFF94A3B8),
-                                            fontSize: 13,
+                                          style: GoogleFonts.inter(
+                                            color: const Color(0xFF94A3B8),
+                                            fontSize: 14,
                                           ),
                                         ),
                                       ),
@@ -1486,15 +1540,15 @@ class _CampaignsViewState extends State<CampaignsView> {
 
   Widget _buildMobileRankedList() {
     if (_rankedLeads.isEmpty) {
-      return const Padding(
-        padding: EdgeInsets.symmetric(vertical: 40),
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 40),
         child: Center(
           child: Text(
             'No leads found in database. Import or add leads to see ranked campaign candidates.',
-            style: TextStyle(
+            style: GoogleFonts.inter(
               fontSize: 13.5,
               fontWeight: FontWeight.w500,
-              color: Color(0xFF667085),
+              color: const Color(0xFF64748B),
             ),
           ),
         ),
@@ -1510,11 +1564,11 @@ class _CampaignsViewState extends State<CampaignsView> {
       itemBuilder: (context, index) {
         final lead = _rankedLeads[index];
         return Container(
-          padding: const EdgeInsets.all(14),
+          padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             color: const Color(0xFFF8FAFC),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: const Color(0xFFE8EAF0)),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: const Color(0xFFE2E8F0)),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -1525,19 +1579,19 @@ class _CampaignsViewState extends State<CampaignsView> {
                     child: Row(
                       children: [
                         Container(
-                          width: 26,
-                          height: 26,
+                          width: 28,
+                          height: 28,
                           decoration: BoxDecoration(
-                            color: const Color(0xFFEEF0FF),
+                            color: const Color(0xFFEEF2FF),
                             borderRadius: BorderRadius.circular(6),
                           ),
                           alignment: Alignment.center,
                           child: Text(
                             '#${lead.rank}',
-                            style: const TextStyle(
-                              fontSize: 11.5,
-                              fontWeight: FontWeight.w800,
-                              color: Color(0xFF4338CA),
+                            style: GoogleFonts.inter(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                              color: const Color(0xFF4F46E5),
                             ),
                           ),
                         ),
@@ -1545,10 +1599,10 @@ class _CampaignsViewState extends State<CampaignsView> {
                         Expanded(
                           child: Text(
                             lead.name,
-                            style: const TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w800,
-                              color: Color(0xFF0F172A),
+                            style: GoogleFonts.inter(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              color: const Color(0xFF0F172A),
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -1565,50 +1619,51 @@ class _CampaignsViewState extends State<CampaignsView> {
                         vertical: 3,
                       ),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFEEF0FF),
+                        color: const Color(0xFFEEF2FF),
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(
                         lead.assignedExec!,
-                        style: const TextStyle(
-                          fontSize: 11,
+                        style: GoogleFonts.inter(
+                          fontSize: 10,
                           fontWeight: FontWeight.w700,
-                          color: Color(0xFF4338CA),
+                          color: const Color(0xFF4F46E5),
                         ),
                       ),
                     ),
                   ],
                 ],
               ),
-              const Gap(6),
+              const Gap(8),
               Text(
                 lead.collegeBranchYear,
-                style: const TextStyle(
-                  fontSize: 12.5,
-                  color: Color(0xFF475467),
+                style: GoogleFonts.inter(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w400,
+                  color: const Color(0xFF64748B),
                 ),
               ),
-              const Gap(8),
+              const Gap(10),
               Row(
                 children: [
                   Expanded(
                     child: ClipRRect(
-                      borderRadius: BorderRadius.circular(4),
+                      borderRadius: BorderRadius.circular(9999),
                       child: LinearProgressIndicator(
                         value: lead.score / 100,
-                        minHeight: 6,
-                        color: lead.scoreBarColor,
-                        backgroundColor: const Color(0xFFE5E7EB),
+                        minHeight: 8,
+                        color: const Color(0xFF10B981),
+                        backgroundColor: const Color(0xFFE2E8F0),
                       ),
                     ),
                   ),
                   const Gap(10),
                   Text(
                     'Score ${lead.score}',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w800,
-                      color: lead.scoreBarColor,
+                    style: GoogleFonts.inter(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: const Color(0xFF059669),
                     ),
                   ),
                 ],
@@ -1621,18 +1676,19 @@ class _CampaignsViewState extends State<CampaignsView> {
                   return Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 8,
-                      vertical: 3,
+                      vertical: 3.5,
                     ),
                     decoration: BoxDecoration(
-                      color: r.bg,
-                      borderRadius: BorderRadius.circular(10),
+                      color: const Color(0xFFEEF2FF),
+                      borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
-                      r.label,
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                        color: r.fg,
+                      r.label.toUpperCase(),
+                      style: GoogleFonts.inter(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFF4F46E5),
+                        letterSpacing: 0.5,
                       ),
                     ),
                   );
