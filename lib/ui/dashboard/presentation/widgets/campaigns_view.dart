@@ -128,43 +128,7 @@ class _CampaignsViewState extends State<CampaignsView> {
   final List<String> _allExecutives = [];
   final Set<String> _selectedExecutives = {};
 
-  static final List<_CampaignData> _defaultCampaigns = [
-    _CampaignData(
-      id: 'cmp_default_1',
-      title: 'Full Stack Web Bootcamp',
-      badge: 'Starts 22 Nov',
-      topics: 'web, react, node',
-      branches: 'CSE, IT, BCA',
-      years: '3rd, 4th',
-      matchingLeads: '1410',
-      score70Plus: '248',
-      assignedCount: 267,
-    ),
-    _CampaignData(
-      id: 'cmp_default_2',
-      title: 'AI & Machine Learning Workshop',
-      badge: 'Starts 14 Nov',
-      topics: 'ai, python, ml',
-      branches: 'CSE, IT, ECE',
-      years: '2nd, 3rd',
-      matchingLeads: '1240',
-      score70Plus: '185',
-      assignedCount: 142,
-    ),
-    _CampaignData(
-      id: 'cmp_default_3',
-      title: 'Embedded Systems & Robotics Lab',
-      badge: 'Starts 02 Dec',
-      topics: 'iot, robotics, embedded',
-      branches: 'ECE, EEE, MECH',
-      years: '2nd, 3rd, 4th',
-      matchingLeads: '920',
-      score70Plus: '110',
-      assignedCount: 88,
-    ),
-  ];
-
-  late List<_CampaignData> _campaigns = List.from(_defaultCampaigns);
+  List<_CampaignData> _campaigns = [];
   List<_CampaignLead> _rankedLeads = [];
   List<QueryDocumentSnapshot<Map<String, dynamic>>> _liveLeadDocs = [];
   StreamSubscription? _leadsSubscription;
@@ -193,7 +157,13 @@ class _CampaignsViewState extends State<CampaignsView> {
         .snapshots()
         .listen((snap) {
           if (snap.docs.isEmpty) {
-            _seedDefaultCampaigns();
+            if (mounted) {
+              setState(() {
+                _campaigns = [];
+                _activeCampaignIndex = 0;
+                _rankedLeads = [];
+              });
+            }
           } else {
             final live = snap.docs.map((doc) {
               final d = doc.data();
@@ -224,25 +194,6 @@ class _CampaignsViewState extends State<CampaignsView> {
         });
   }
 
-  void _seedDefaultCampaigns() async {
-    final batch = FirebaseFirestore.instance.batch();
-    for (final c in _defaultCampaigns) {
-      final docRef = FirebaseFirestore.instance.collection('campaigns').doc();
-      batch.set(docRef, {
-        'title': c.title,
-        'badge': c.badge,
-        'topics': c.topics,
-        'branches': c.branches,
-        'years': c.years,
-        'matchingLeads': '0',
-        'score70Plus': '0',
-        'assignedCount': 0,
-        'createdAt': FieldValue.serverTimestamp(),
-        'updatedAt': FieldValue.serverTimestamp(),
-      });
-    }
-    await batch.commit();
-  }
 
   void _listenLiveLeadsAndRank() {
     _leadsSubscription?.cancel();
@@ -662,9 +613,62 @@ class _CampaignsViewState extends State<CampaignsView> {
 
   @override
   Widget build(BuildContext context) {
-    final campaign = _campaigns.isNotEmpty
-        ? _campaigns[_activeCampaignIndex]
-        : _defaultCampaigns.first;
+    if (_campaigns.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 60, horizontal: 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(
+                Icons.view_agenda_outlined,
+                size: 48,
+                color: Color(0xFFCBD5E1),
+              ),
+              const Gap(16),
+              Text(
+                'No campaigns created yet',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.inter(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFF1E293B),
+                ),
+              ),
+              const Gap(6),
+              Text(
+                'Create your first marketing or college campaign to start ranking and assigning leads.',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.inter(
+                  fontSize: 14,
+                  color: const Color(0xFF64748B),
+                ),
+              ),
+              const Gap(20),
+              ElevatedButton.icon(
+                onPressed: _showNewCampaignDialog,
+                icon: const Icon(Icons.add, size: 18),
+                label: const Text('New Campaign'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFEF8144),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 12,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  elevation: 0,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    final campaign = _campaigns[_activeCampaignIndex];
 
     return LayoutBuilder(
       builder: (context, constraints) {

@@ -1454,11 +1454,7 @@ class _DashboardViewState extends State<_DashboardView> {
     }).toList();
 
     // 3. Matched College Visits
-    final matchedVisits = _CollegeVisits._figmaVisits.where((v) {
-      final name = (v['collegeName'] ?? '').toString().toLowerCase();
-      final purpose = (v['purpose'] ?? '').toString().toLowerCase();
-      return name.contains(q) || purpose.contains(q);
-    }).toList();
+    final matchedVisits = <Map<String, dynamic>>[];
 
     final totalMatches =
         matchedLeads.length + matchedUsers.length + matchedVisits.length;
@@ -3012,20 +3008,6 @@ class _CollegeVisits extends StatelessWidget {
 
   const _CollegeVisits({required this.onPlanVisit});
 
-  static const _figmaVisits = [
-    {'collegeName': 'Devagiri', 'purpose': 'AI ML', 'status': 'Completed'},
-    {
-      'collegeName': 'Don Bosco',
-      'purpose': 'Promote Python & Data Science workshop · meet HOD',
-      'status': 'Completed',
-    },
-    {
-      'collegeName': 'GEC Kozhikode',
-      'purpose': 'Industrial Visit registration drive',
-      'status': 'Completed',
-    },
-  ];
-
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -3096,14 +3078,48 @@ class _CollegeVisits extends StatelessWidget {
                 .collection('college_visits')
                 .snapshots(),
             builder: (context, snapshot) {
-              final List<Map<String, dynamic>> displayVisits;
-              if (snapshot.hasData && snapshot.data!.docs.isNotEmpty) {
-                displayVisits = snapshot.data!.docs
-                    .take(4)
-                    .map((d) => d.data())
-                    .toList();
-              } else {
-                displayVisits = _figmaVisits;
+              final List<Map<String, dynamic>> displayVisits =
+                  snapshot.hasData && snapshot.data!.docs.isNotEmpty
+                      ? snapshot.data!.docs
+                          .take(4)
+                          .map((d) => d.data())
+                          .toList()
+                      : <Map<String, dynamic>>[];
+
+              if (displayVisits.isEmpty) {
+                return Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 24),
+                  child: Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.location_city_outlined,
+                          size: 32,
+                          color: Color(0xFFCBD5E1),
+                        ),
+                        const Gap(8),
+                        Text(
+                          'No college visits scheduled',
+                          style: GoogleFonts.inter(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: const Color(0xFF64748B),
+                          ),
+                        ),
+                        const Gap(4),
+                        Text(
+                          'Tap "Plan Visit" above to schedule a college drive.',
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.inter(
+                            fontSize: 12,
+                            color: const Color(0xFF94A3B8),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
               }
 
               return Column(
