@@ -330,44 +330,53 @@ class _ImportLeadsBodyState extends State<_ImportLeadsBody> {
             ),
           ),
           const Gap(14),
-          Wrap(
-            spacing: 16,
-            runSpacing: 14,
-            children: [
-              SizedBox(
-                width: isMobile ? double.infinity : 340,
-                child: AcadenoDropdown.strings(
-                  label: 'Source Event / Campaign',
-                  value: state.sourceEvent,
-                  items: const [
-                    'AI & Machine Learning Workshop (Nov)',
-                    'Python Bootcamp Registration',
-                    'NIT Calicut Industrial Visit',
-                    'CET College Seminar Leads',
-                    'Direct Walk-in / Referral Sheet',
-                  ],
-                  onChanged: (v) {
-                    if (v != null) cubit.setSourceEvent(v);
-                  },
-                ),
-              ),
-              SizedBox(
-                width: isMobile ? double.infinity : 280,
-                child: AcadenoDropdown.strings(
-                  label: 'DPDP Consent Basis',
-                  value: state.consentBasis,
-                  items: const [
-                    'Event registration form',
-                    'College attendance sheet',
-                    'Website inquiry form',
-                    'Direct verbal consent / Walk-in',
-                  ],
-                  onChanged: (v) {
-                    if (v != null) cubit.setConsentBasis(v);
-                  },
-                ),
-              ),
-            ],
+          LayoutBuilder(
+            builder: (context, c) {
+              final maxW = c.maxWidth;
+              final isNarrow = isMobile || maxW < 640;
+              final fieldW1 = isNarrow ? double.infinity : 340.0.clamp(160.0, maxW);
+              final fieldW2 = isNarrow ? double.infinity : 280.0.clamp(160.0, maxW);
+
+              return Wrap(
+                spacing: 16,
+                runSpacing: 14,
+                children: [
+                  SizedBox(
+                    width: fieldW1,
+                    child: AcadenoDropdown.strings(
+                      label: 'Source Event / Campaign',
+                      value: state.sourceEvent,
+                      items: const [
+                        'AI & Machine Learning Workshop (Nov)',
+                        'Python Bootcamp Registration',
+                        'NIT Calicut Industrial Visit',
+                        'CET College Seminar Leads',
+                        'Direct Walk-in / Referral Sheet',
+                      ],
+                      onChanged: (v) {
+                        if (v != null) cubit.setSourceEvent(v);
+                      },
+                    ),
+                  ),
+                  SizedBox(
+                    width: fieldW2,
+                    child: AcadenoDropdown.strings(
+                      label: 'DPDP Consent Basis',
+                      value: state.consentBasis,
+                      items: const [
+                        'Event registration form',
+                        'College attendance sheet',
+                        'Website inquiry form',
+                        'Direct verbal consent / Walk-in',
+                      ],
+                      onChanged: (v) {
+                        if (v != null) cubit.setConsentBasis(v);
+                      },
+                    ),
+                  ),
+                ],
+              );
+            },
           ),
           const Gap(24),
 

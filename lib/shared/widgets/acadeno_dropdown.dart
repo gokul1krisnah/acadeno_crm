@@ -161,26 +161,63 @@ class AcadenoDropdown<T> extends StatelessWidget {
           borderSide: const BorderSide(color: Color(0xFFEF4444), width: 1.5),
         ),
       ),
-      items: items.map((item) {
-        return DropdownMenuItem<T>(
-          value: item.value,
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
+      selectedItemBuilder: (BuildContext context) {
+        return items.map<Widget>((item) {
+          return Row(
             children: [
               if (item.icon != null) ...[item.icon!, const Gap(8)],
-              Text(
-                item.label,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  fontSize: 13.5,
-                  fontWeight: FontWeight.w500,
-                  color: Color(0xFF111827),
+              Expanded(
+                child: Text(
+                  item.label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 13.5,
+                    fontWeight: FontWeight.w500,
+                    color: Color(0xFF111827),
+                  ),
                 ),
               ),
               if (item.subtitle != null) ...[
                 const Gap(6),
                 Text(
                   item.subtitle!,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 11.5,
+                    color: Color(0xFF6B7280),
+                  ),
+                ),
+              ],
+            ],
+          );
+        }).toList();
+      },
+      items: items.map((item) {
+        return DropdownMenuItem<T>(
+          value: item.value,
+          child: Row(
+            children: [
+              if (item.icon != null) ...[item.icon!, const Gap(8)],
+              Expanded(
+                child: Text(
+                  item.label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 13.5,
+                    fontWeight: FontWeight.w500,
+                    color: Color(0xFF111827),
+                  ),
+                ),
+              ),
+              if (item.subtitle != null) ...[
+                const Gap(6),
+                Text(
+                  item.subtitle!,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     fontSize: 11.5,
                     color: Color(0xFF6B7280),
