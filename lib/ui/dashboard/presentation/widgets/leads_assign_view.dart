@@ -2460,7 +2460,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Expanded(
-                    flex: 5,
+                    flex: 10,
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
@@ -2475,19 +2475,19 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                     ),
                   ),
                   const Expanded(
-                    flex: 9,
+                    flex: 13,
                     child: Text('COLLEGE - BRANCH', style: h),
                   ),
-                  const Expanded(flex: 4, child: Text('SOURCE', style: h)),
-                  const Expanded(flex: 3, child: Text('STATUS', style: h)),
+                  const Expanded(flex: 11, child: Text('SOURCE', style: h)),
+                  const Expanded(flex: 6, child: Text('STATUS', style: h)),
                   Expanded(
-                    flex: 3,
+                    flex: 6,
                     child: Text(
                       'LAST\nCONTACT',
                       style: h.copyWith(height: 1.2),
                     ),
                   ),
-                  const Expanded(flex: 3, child: Text('ASSIGNED TO', style: h)),
+                  const Expanded(flex: 6, child: Text('ASSIGNED TO', style: h)),
                 ],
               ),
             ),
@@ -2513,7 +2513,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           Expanded(
-                            flex: 5,
+                            flex: 10,
                             child: Row(
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
@@ -2564,7 +2564,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                             ),
                           ),
                           Expanded(
-                            flex: 9,
+                            flex: 13,
                             child: Align(
                               alignment: Alignment.centerLeft,
                               child: Text(
@@ -2580,7 +2580,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                             ),
                           ),
                           Expanded(
-                            flex: 4,
+                            flex: 11,
                             child: Align(
                               alignment: Alignment.centerLeft,
                               child: Text(
@@ -2596,14 +2596,14 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                             ),
                           ),
                           Expanded(
-                            flex: 3,
+                            flex: 6,
                             child: Align(
                               alignment: Alignment.centerLeft,
                               child: _statusBadge(r.status),
                             ),
                           ),
                           Expanded(
-                            flex: 3,
+                            flex: 6,
                             child: Align(
                               alignment: Alignment.centerLeft,
                               child: Text(
@@ -2617,7 +2617,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                             ),
                           ),
                           Expanded(
-                            flex: 3,
+                            flex: 6,
                             child: Align(
                               alignment: Alignment.centerLeft,
                               child: Text(
