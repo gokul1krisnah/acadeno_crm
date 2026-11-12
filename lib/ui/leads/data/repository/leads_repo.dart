@@ -75,6 +75,11 @@ class LeadsRepository {
     allowReassign: allowReassign,
   );
 
+  Future<void> deleteLead(String leadId) => _rds.deleteLead(leadId);
+
+  Future<int> deleteMultipleLeads(List<String> leadIds) =>
+      _rds.deleteMultipleLeads(leadIds);
+
   // ---------------------------------------------------------------------------
   // Sales Executive Today Dashboard Operations
   // ---------------------------------------------------------------------------

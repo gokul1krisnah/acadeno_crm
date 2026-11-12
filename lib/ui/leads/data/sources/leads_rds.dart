@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
 import 'package:acadeno_crm/core/services/offline_queue_service.dart';
 import 'dart:convert';
@@ -70,6 +71,12 @@ abstract class LeadsBackend {
     required String dateLabel,
     bool allowReassign = false,
   });
+
+  /// Deletes a lead and its phone index entry.
+  Future<void> deleteLead(String leadId);
+
+  /// Deletes multiple leads in batches.
+  Future<int> deleteMultipleLeads(List<String> leadIds);
 
   /// Streams ONLY the currently authenticated Sales Executive's assigned leads
   /// for [dateKey] (defaults to Today). Never fetches all leads locally.
@@ -162,6 +169,11 @@ class LeadsRds {
     status: status,
     notes: notes,
   );
+
+  Future<void> deleteLead(String leadId) => _backend.deleteLead(leadId);
+
+  Future<int> deleteMultipleLeads(List<String> leadIds) =>
+      _backend.deleteMultipleLeads(leadIds);
 
   Future<AssignmentBatchSummary> assignLeadsToExecutive({
     required List<String> leadIds,
@@ -786,6 +798,61 @@ class FirestoreLeadsBackend implements LeadsBackend {
     );
 
     return updatedRecord;
+  }
+
+  @override
+  Future<void> deleteLead(String leadId) async {
+    final actor = await _verifyCurrentActor(requireAdminOrManager: true);
+    final leadDoc = await _leads.doc(leadId).get();
+    if (!leadDoc.exists) return;
+    final data = leadDoc.data() ?? {};
+    final phoneNormalized = (data['phoneNormalized'] ?? '').toString();
+    final leadName = (data['name'] ?? 'Lead').toString();
+    final leadPhone = (data['phone'] ?? '').toString();
+
+    final batch = _firestore.batch();
+    batch.delete(_leads.doc(leadId));
+    if (phoneNormalized.isNotEmpty) {
+      batch.delete(_leadPhones.doc(phoneNormalized));
+    }
+    await batch.commit();
+
+    await _appendAudit(
+      actorUid: actor.uid,
+      actorName: actor.name,
+      action: 'Deleted lead',
+      target: '$leadName ($leadPhone)',
+      category: 'lead_deletion',
+    );
+  }
+
+  @override
+  Future<int> deleteMultipleLeads(List<String> leadIds) async {
+    final cleanIds =
+        leadIds.map((e) => e.trim()).where((e) => e.isNotEmpty).toSet().toList();
+    if (cleanIds.isEmpty) return 0;
+    final actor = await _verifyCurrentActor(requireAdminOrManager: true);
+
+    int deletedCount = 0;
+    for (var i = 0; i < cleanIds.length; i += 300) {
+      final chunk = cleanIds.sublist(i, math.min(i + 300, cleanIds.length));
+      final batch = _firestore.batch();
+      for (final id in chunk) {
+        batch.delete(_leads.doc(id));
+      }
+      await batch.commit();
+      deletedCount += chunk.length;
+    }
+
+    await _appendAudit(
+      actorUid: actor.uid,
+      actorName: actor.name,
+      action: 'Deleted multiple leads',
+      target: '$deletedCount leads',
+      category: 'lead_deletion',
+    );
+
+    return deletedCount;
   }
 
   @override

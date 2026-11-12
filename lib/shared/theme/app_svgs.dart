@@ -13,4 +13,5 @@ abstract class AppSvgs {
   static const String clipboardCheck = 'assets/svgs/clipboard_check.svg';
   static const String refresh = 'assets/svgs/refresh.svg';
   static const String arrowLeft = 'assets/svgs/arrow_left.svg';
+  static const String delete = 'assets/svgs/delete.svg';
 }

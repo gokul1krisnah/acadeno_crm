@@ -204,6 +204,53 @@ class AdminLeadsCubit extends Cubit<AdminLeadsState> {
     emit(state.copyWith(selectedLeadIds: const {}, clearToast: true));
   }
 
+  Future<bool> deleteLead(String leadId) async {
+    try {
+      await _repository.deleteLead(leadId);
+      final next = Set<String>.from(state.selectedLeadIds)..remove(leadId);
+      emit(
+        state.copyWith(
+          selectedLeadIds: next,
+          toastMessage: 'Lead deleted successfully',
+          isToastError: false,
+        ),
+      );
+      return true;
+    } catch (e) {
+      emit(
+        state.copyWith(
+          toastMessage: 'Failed to delete lead: $e',
+          isToastError: true,
+        ),
+      );
+      return false;
+    }
+  }
+
+  Future<int> deleteSelectedLeads() async {
+    final toDelete = state.selectedLeadIds.toList();
+    if (toDelete.isEmpty) return 0;
+    try {
+      final count = await _repository.deleteMultipleLeads(toDelete);
+      emit(
+        state.copyWith(
+          selectedLeadIds: const {},
+          toastMessage: '$count leads deleted successfully',
+          isToastError: false,
+        ),
+      );
+      return count;
+    } catch (e) {
+      emit(
+        state.copyWith(
+          toastMessage: 'Failed to delete leads: $e',
+          isToastError: true,
+        ),
+      );
+      return 0;
+    }
+  }
+
   void selectExecutive(String executiveUid) {
     emit(state.copyWith(selectedExecutiveUid: executiveUid, clearToast: true));
   }

@@ -14,6 +14,8 @@ import 'package:acadeno_crm/ui/leads/data/sources/leads_rds.dart';
 import 'package:acadeno_crm/ui/leads/data/sources/lead_export_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:acadeno_crm/shared/theme/app_svgs.dart';
 
 import '../../application/dashboard_cubit.dart';
 
@@ -85,6 +87,157 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
       return context.read<DashboardCubit>();
     } catch (_) {
       return null;
+    }
+  }
+
+  Future<void> _confirmAndDeleteLead(
+    BuildContext context,
+    LeadRecord lead,
+  ) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        title: const Row(
+          children: [
+            Icon(
+              Icons.warning_amber_rounded,
+              color: Color(0xFFDC2626),
+              size: 24,
+            ),
+            Gap(10),
+            Text(
+              'Delete Lead?',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF111827),
+              ),
+            ),
+          ],
+        ),
+        content: Text(
+          'Are you sure you want to permanently delete "${lead.name}" (${lead.phone})? This action cannot be undone.',
+          style: const TextStyle(
+            fontSize: 14,
+            color: Color(0xFF4B5563),
+            height: 1.4,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text(
+              'Cancel',
+              style: TextStyle(
+                color: Color(0xFF6B7280),
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFDC2626),
+              foregroundColor: Colors.white,
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text(
+              'Delete',
+              style: TextStyle(fontWeight: FontWeight.w600),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && context.mounted) {
+      await context.read<AdminLeadsCubit>().deleteLead(lead.id);
+    }
+  }
+
+  Future<void> _confirmAndDeleteSelectedLeads(
+    BuildContext context,
+    int count,
+  ) async {
+    if (count == 0) {
+      SnackBarAlert.showToast(
+        context: context,
+        message: 'Please select at least one lead to delete.',
+        isWarning: true,
+      );
+      return;
+    }
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        title: const Row(
+          children: [
+            Icon(
+              Icons.warning_amber_rounded,
+              color: Color(0xFFDC2626),
+              size: 24,
+            ),
+            Gap(10),
+            Text(
+              'Delete Selected Leads?',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF111827),
+              ),
+            ),
+          ],
+        ),
+        content: Text(
+          'Are you sure you want to permanently delete $count selected lead(s)? This action cannot be undone.',
+          style: const TextStyle(
+            fontSize: 14,
+            color: Color(0xFF4B5563),
+            height: 1.4,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text(
+              'Cancel',
+              style: TextStyle(
+                color: Color(0xFF6B7280),
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFDC2626),
+              foregroundColor: Colors.white,
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: Text(
+              'Delete $count Leads',
+              style: const TextStyle(fontWeight: FontWeight.w600),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && context.mounted) {
+      await context.read<AdminLeadsCubit>().deleteSelectedLeads();
     }
   }
 
@@ -2180,6 +2333,39 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                   ),
                 );
 
+                final bulkDeleteBtn = Tooltip(
+                  message: 'Delete Selected Leads',
+                  child: InkWell(
+                    onTap: () => _confirmAndDeleteSelectedLeads(
+                      context,
+                      state.selectedLeadIds.length,
+                    ),
+                    borderRadius: BorderRadius.circular(8),
+                    child: Container(
+                      width: 38,
+                      height: 38,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: const Color(0x1ADC2626),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: const Color(0xFFDC2626),
+                          width: 1.2,
+                        ),
+                      ),
+                      child: SvgPicture.asset(
+                        AppSvgs.delete,
+                        width: 14,
+                        height: 16,
+                        colorFilter: const ColorFilter.mode(
+                          Color(0xFFDC2626),
+                          BlendMode.srcIn,
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+
                 if (isMobileBar) {
                   return Container(
                     width: double.infinity,
@@ -2201,15 +2387,23 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        Text(
-                          '${state.selectedLeadIds.length} leads selected',
-                          style: GoogleFonts.poppins(
-                            color: Colors.white,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            height: 20 / 14,
-                            letterSpacing: 0.35,
-                          ),
+                        Row(
+                          children: [
+                            bulkDeleteBtn,
+                            const Gap(12),
+                            Expanded(
+                              child: Text(
+                                '${state.selectedLeadIds.length} Leads selected',
+                                style: GoogleFonts.poppins(
+                                  color: Colors.white,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  height: 20 / 14,
+                                  letterSpacing: 0.35,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                         const Gap(12),
                         Row(
@@ -2248,15 +2442,23 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      Text(
-                        '${state.selectedLeadIds.length} leads selected',
-                        style: GoogleFonts.poppins(
-                          color: Colors.white,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          height: 20 / 14,
-                          letterSpacing: 0.35,
-                        ),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          bulkDeleteBtn,
+                          const Gap(14),
+                          Text(
+                            '${state.selectedLeadIds.length} Leads selected',
+                            style: GoogleFonts.poppins(
+                              color: Colors.white,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              height: 20 / 14,
+                              letterSpacing: 0.35,
+                            ),
+                          ),
+                        ],
                       ),
                       Flexible(
                         child: SingleChildScrollView(
@@ -2594,6 +2796,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                       cubit.toggleLeadSelection(rows[i].id, v ?? false),
                   statusBadge: _statusBadge(rows[i].status),
                   checkboxBuilder: _buildFigmaCheckbox,
+                  onDelete: (lead) => _confirmAndDeleteLead(context, lead),
                 ),
               ],
             ],
@@ -2634,16 +2837,17 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                     flex: 7,
                     child: Text('COLLEGE - BRANCH', style: h),
                   ),
-                  Expanded(flex: 6, child: Text('SOURCE', style: h)),
-                  Expanded(flex: 5, child: Text('STATUS', style: h)),
+                  Expanded(flex: 5, child: Text('SOURCE', style: h)),
+                  Expanded(flex: 4, child: Text('STATUS', style: h)),
                   Expanded(
                     flex: 5,
-                    child: Text(
-                      'LAST\nCONTACT',
-                      style: h.copyWith(height: 1.2),
-                    ),
+                    child: Text('LAST CONTACT', style: h),
                   ),
-                  Expanded(flex: 6, child: Text('ASSIGNED TO', style: h)),
+                  Expanded(flex: 5, child: Text('ASSIGNED TO', style: h)),
+                  Expanded(
+                    flex: 3,
+                    child: Center(child: Text('ACTIONS', style: h)),
+                  ),
                 ],
               ),
             ),
@@ -2659,6 +2863,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                     cubit.toggleLeadSelection(rows[i].id, v ?? false),
                 statusBadge: _statusBadge(rows[i].status),
                 checkboxBuilder: _buildFigmaCheckbox,
+                onDelete: (lead) => _confirmAndDeleteLead(context, lead),
               ),
             ],
           ],
@@ -2757,6 +2962,7 @@ class _DesktopLeadTableRow extends StatefulWidget {
     Color activeColor,
     bool isRowHovered,
   }) checkboxBuilder;
+  final void Function(LeadRecord lead)? onDelete;
 
   const _DesktopLeadTableRow({
     required this.lead,
@@ -2765,6 +2971,7 @@ class _DesktopLeadTableRow extends StatefulWidget {
     required this.onSelectChanged,
     required this.statusBadge,
     required this.checkboxBuilder,
+    this.onDelete,
   });
 
   @override
@@ -2899,7 +3106,7 @@ class _DesktopLeadTableRowState extends State<_DesktopLeadTableRow> {
                         ),
                       ),
                       Expanded(
-                        flex: 6,
+                        flex: 5,
                         child: Align(
                           alignment: Alignment.centerLeft,
                           child: Text(
@@ -2917,7 +3124,7 @@ class _DesktopLeadTableRowState extends State<_DesktopLeadTableRow> {
                         ),
                       ),
                       Expanded(
-                        flex: 5,
+                        flex: 4,
                         child: Align(
                           alignment: Alignment.centerLeft,
                           child: widget.statusBadge,
@@ -2939,7 +3146,7 @@ class _DesktopLeadTableRowState extends State<_DesktopLeadTableRow> {
                         ),
                       ),
                       Expanded(
-                        flex: 6,
+                        flex: 5,
                         child: Align(
                           alignment: Alignment.centerLeft,
                           child: Text(
@@ -2952,6 +3159,32 @@ class _DesktopLeadTableRowState extends State<_DesktopLeadTableRow> {
                               height: 20 / 14,
                               letterSpacing: 0.0684,
                               color: const Color(0xFF4B5563),
+                            ),
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        flex: 3,
+                        child: Center(
+                          child: Tooltip(
+                            message: 'Delete Lead',
+                            child: InkWell(
+                              onTap: widget.onDelete != null
+                                  ? () => widget.onDelete!(r)
+                                  : null,
+                              borderRadius: BorderRadius.circular(6),
+                              child: Padding(
+                                padding: const EdgeInsets.all(6),
+                                child: SvgPicture.asset(
+                                  AppSvgs.delete,
+                                  width: 14,
+                                  height: 16,
+                                  colorFilter: const ColorFilter.mode(
+                                    Color(0xFFDC2626),
+                                    BlendMode.srcIn,
+                                  ),
+                                ),
+                              ),
                             ),
                           ),
                         ),
@@ -2980,6 +3213,7 @@ class _MobileLeadCardRow extends StatefulWidget {
     Color activeColor,
     bool isRowHovered,
   }) checkboxBuilder;
+  final void Function(LeadRecord lead)? onDelete;
 
   const _MobileLeadCardRow({
     required this.lead,
@@ -2988,6 +3222,7 @@ class _MobileLeadCardRow extends StatefulWidget {
     required this.onSelectChanged,
     required this.statusBadge,
     required this.checkboxBuilder,
+    this.onDelete,
   });
 
   @override
@@ -3076,7 +3311,34 @@ class _MobileLeadCardRowState extends State<_MobileLeadCardRow> {
                                     ),
                                   ),
                                 ),
-                                widget.statusBadge,
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    widget.statusBadge,
+                                    const Gap(8),
+                                    Tooltip(
+                                      message: 'Delete Lead',
+                                      child: InkWell(
+                                        onTap: widget.onDelete != null
+                                            ? () => widget.onDelete!(r)
+                                            : null,
+                                        borderRadius: BorderRadius.circular(6),
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(4),
+                                          child: SvgPicture.asset(
+                                            AppSvgs.delete,
+                                            width: 14,
+                                            height: 16,
+                                            colorFilter: const ColorFilter.mode(
+                                              Color(0xFFDC2626),
+                                              BlendMode.srcIn,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ],
                             ),
                             Text(
