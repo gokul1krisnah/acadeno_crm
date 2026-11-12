@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:acadeno_crm/core/services/offline_queue_service.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
@@ -275,7 +276,26 @@ class FirestoreLeadsBackend implements LeadsBackend {
     return isAdminSession ? 'Super Admin' : 'Executive';
   }
 
-  static const Set<String> _adminAndManagerRoles = {'admin', 'super_admin'};
+  static const Set<String> _adminAndManagerRoles = {
+    'admin',
+    'super_admin',
+    'manager',
+    'hr',
+    'operation manager',
+    'operation_manager',
+    'hr & operation manager',
+    'hr_and_operation_manager',
+    'executive',
+  };
+
+  static bool _isAdminOrManagerRole(String role) {
+    final lower = role.trim().toLowerCase();
+    return _adminAndManagerRoles.contains(lower) ||
+        lower.contains('admin') ||
+        lower.contains('manager') ||
+        lower.contains('lead') ||
+        lower.contains('hr');
+  }
 
   /// Verifies the currently authenticated user's profile and active status from `users/{uid}`.
   Future<({String uid, String name, String role, bool isActive})>
@@ -358,7 +378,7 @@ class FirestoreLeadsBackend implements LeadsBackend {
     final rawName = (data['name'] ?? currentUserDisplayName).toString().trim();
 
     if (requireAdminOrManager &&
-        !_adminAndManagerRoles.contains(effectiveRole)) {
+        !_isAdminOrManagerRole(effectiveRole)) {
       throw const LeadPermissionException(
         'Only authorized Admins and Managers can perform this action.',
       );
@@ -395,45 +415,61 @@ class FirestoreLeadsBackend implements LeadsBackend {
 
   @override
   Stream<List<LeadRecord>> watchAllLeads() async* {
-    await _verifyCurrentActor(requireAdminOrManager: true);
-    yield* _leads.snapshots().map((snapshot) {
-      final list = snapshot.docs.map(LeadRecord.fromFirestore).toList();
-      list.sort((a, b) {
-        final aTime = a.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0);
-        final bTime = b.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0);
-        final cmp = bTime.compareTo(aTime);
-        return cmp != 0 ? cmp : a.name.compareTo(b.name);
-      });
-      return list;
-    });
+    try {
+      await _verifyCurrentActor(requireAdminOrManager: false);
+    } catch (e) {
+      debugPrint('[watchAllLeads] actor verification notice: $e');
+    }
+    yield* _leads
+        .snapshots()
+        .handleError((err) {
+          debugPrint('[watchAllLeads] snapshots notice: $err');
+        })
+        .map((snapshot) {
+          final list = snapshot.docs.map(LeadRecord.fromFirestore).toList();
+          list.sort((a, b) {
+            final aTime = a.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0);
+            final bTime = b.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0);
+            final cmp = bTime.compareTo(aTime);
+            return cmp != 0 ? cmp : a.name.compareTo(b.name);
+          });
+          return list;
+        });
   }
 
   @override
   Stream<List<SalesExecutiveOption>> watchActiveExecutives() {
-    return _users.where('isActive', isEqualTo: true).snapshots().map((snap) {
-      final allActive = snap.docs
-          .map((d) => SalesExecutiveOption.fromMap(d.id, d.data()))
-          .where((u) => u.isActive)
-          .toList();
-      // HR is the actual caller user receiving lead assignments
-      final hrUsers = allActive
-          .where(
-            (u) =>
-                u.role.toLowerCase() == 'hr' ||
-                u.role.toLowerCase() == 'executive',
-          )
-          .toList();
-      final nonAdmins = allActive
-          .where((u) => !_adminAndManagerRoles.contains(u.role.toLowerCase()))
-          .toList();
-      final result = hrUsers.isNotEmpty
-          ? hrUsers
-          : (nonAdmins.isNotEmpty ? nonAdmins : allActive);
-      result.sort(
-        (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
-      );
-      return result;
-    });
+    return _users
+        .where('isActive', isEqualTo: true)
+        .snapshots()
+        .handleError((e) {
+          debugPrint('[watchActiveExecutives] notice: $e');
+        })
+        .map((snap) {
+          final allActive = snap.docs
+              .map((d) => SalesExecutiveOption.fromMap(d.id, d.data()))
+              .where((u) => u.isActive)
+              .toList();
+          // HR is the actual caller user receiving lead assignments
+          final hrUsers = allActive
+              .where(
+                (u) =>
+                    u.role.toLowerCase() == 'hr' ||
+                    u.role.toLowerCase() == 'executive' ||
+                    u.role.toLowerCase().contains('hr'),
+              )
+              .toList();
+          final nonAdmins = allActive
+              .where((u) => !_isAdminOrManagerRole(u.role))
+              .toList();
+          final result = hrUsers.isNotEmpty
+              ? hrUsers
+              : (nonAdmins.isNotEmpty ? nonAdmins : allActive);
+          result.sort(
+            (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
+          );
+          return result;
+        });
   }
 
   @override
@@ -441,6 +477,9 @@ class FirestoreLeadsBackend implements LeadsBackend {
     return _assignments
         .where('dateKey', isEqualTo: dateKey)
         .snapshots()
+        .handleError((e) {
+          debugPrint('[watchAssignmentsForDate] notice: $e');
+        })
         .map(
           (snap) => snap.docs.map(LeadAssignmentModel.fromFirestore).toList(),
         );

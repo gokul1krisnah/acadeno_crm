@@ -92,14 +92,14 @@ abstract class AppTypography {
   /// font-family: Inter;
   /// font-weight: 600 (Semi Bold);
   /// font-size: 14px;
-  /// line-height: 20px (height: 20/14);
+  /// line-height: 20px;
   /// letter-spacing: 1.17% (14 * 0.0117);
   /// text-align: center;
+  /// vertical-align: middle;
   static TextStyle figmaButton({Color? color}) => GoogleFonts.inter(
     fontSize: 14,
     fontWeight: FontWeight.w600,
-    height: 20 / 14,
     letterSpacing: 14 * 0.0117,
     color: color,
-  ).copyWith(leadingDistribution: TextLeadingDistribution.even);
+  );
 }

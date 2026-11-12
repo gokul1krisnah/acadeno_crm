@@ -678,55 +678,67 @@ class _TeamManagementViewState extends State<TeamManagementView> {
                           child: const Row(
                             children: [
                               Expanded(
-                                flex: 20,
+                                flex: 28,
                                 child: Text('TEAM MEMBER', style: _tblHdr),
                               ),
                               Expanded(
-                                flex: 13,
-                                child: Text(
-                                  'ASSIGNED',
-                                  textAlign: TextAlign.center,
-                                  style: _tblHdr,
-                                ),
-                              ),
-                              Expanded(
-                                flex: 16,
-                                child: Text(
-                                  'CONTACTED',
-                                  textAlign: TextAlign.center,
-                                  style: _tblHdr,
-                                ),
-                              ),
-                              Expanded(
-                                flex: 13,
-                                child: Text(
-                                  'INTERESTED',
-                                  textAlign: TextAlign.center,
-                                  style: _tblHdr,
+                                flex: 12,
+                                child: Center(
+                                  child: Text(
+                                    'ASSIGNED',
+                                    textAlign: TextAlign.center,
+                                    style: _tblHdr,
+                                  ),
                                 ),
                               ),
                               Expanded(
                                 flex: 15,
-                                child: Text(
-                                  'ACTIONS DONE',
-                                  textAlign: TextAlign.center,
-                                  style: _tblHdr,
+                                child: Center(
+                                  child: Text(
+                                    'CONTACTED',
+                                    textAlign: TextAlign.center,
+                                    style: _tblHdr,
+                                  ),
+                                ),
+                              ),
+                              Expanded(
+                                flex: 12,
+                                child: Center(
+                                  child: Text(
+                                    'INTERESTED',
+                                    textAlign: TextAlign.center,
+                                    style: _tblHdr,
+                                  ),
                                 ),
                               ),
                               Expanded(
                                 flex: 13,
-                                child: Text(
-                                  'CONVERTED',
-                                  textAlign: TextAlign.center,
-                                  style: _tblHdr,
+                                child: Center(
+                                  child: Text(
+                                    'ACTIONS DONE',
+                                    textAlign: TextAlign.center,
+                                    style: _tblHdr,
+                                  ),
                                 ),
                               ),
                               Expanded(
-                                flex: 14,
-                                child: Text(
-                                  'PENDING',
-                                  textAlign: TextAlign.center,
-                                  style: _tblHdr,
+                                flex: 12,
+                                child: Center(
+                                  child: Text(
+                                    'CONVERTED',
+                                    textAlign: TextAlign.center,
+                                    style: _tblHdr,
+                                  ),
+                                ),
+                              ),
+                              Expanded(
+                                flex: 12,
+                                child: Center(
+                                  child: Text(
+                                    'PENDING',
+                                    textAlign: TextAlign.center,
+                                    style: _tblHdr,
+                                  ),
                                 ),
                               ),
                             ],
@@ -808,7 +820,7 @@ class _TeamManagementViewState extends State<TeamManagementView> {
                             child: Row(
                               children: [
                                 Expanded(
-                                  flex: 20,
+                                  flex: 28,
                                   child: Column(
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
@@ -840,62 +852,74 @@ class _TeamManagementViewState extends State<TeamManagementView> {
                                   ),
                                 ),
                                 Expanded(
-                                  flex: 13,
-                                  child: Text(
-                                    '$assignedCount',
-                                    textAlign: TextAlign.center,
-                                    style: _tblCell,
-                                  ),
-                                ),
-                                Expanded(
-                                  flex: 16,
-                                  child: Text(
-                                    assignedCount > 0
-                                        ? '$contactedCount ($contactedPct%)'
-                                        : '—',
-                                    textAlign: TextAlign.center,
-                                    style: _tblCell,
-                                  ),
-                                ),
-                                Expanded(
-                                  flex: 13,
-                                  child: Text(
-                                    '$interestedCount',
-                                    textAlign: TextAlign.center,
-                                    style: _tblCell,
-                                  ),
-                                ),
-                                Expanded(
-                                  flex: 15,
-                                  child: Text(
-                                    '$actionsDone',
-                                    textAlign: TextAlign.center,
-                                    style: _tblCell,
-                                  ),
-                                ),
-                                Expanded(
-                                  flex: 13,
-                                  child: Text(
-                                    '$convertedCount',
-                                    textAlign: TextAlign.center,
-                                    style: const TextStyle(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w700,
-                                      color: Color(0xFF15803D),
+                                  flex: 12,
+                                  child: Center(
+                                    child: Text(
+                                      '$assignedCount',
+                                      textAlign: TextAlign.center,
+                                      style: _tblCell,
                                     ),
                                   ),
                                 ),
                                 Expanded(
-                                  flex: 14,
-                                  child: Text(
-                                    '$pendingCount',
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w700,
-                                      color: pendingCount == 0
-                                          ? const Color(0xFF667085)
-                                          : const Color(0xFFB42318),
+                                  flex: 15,
+                                  child: Center(
+                                    child: Text(
+                                      assignedCount > 0
+                                          ? '$contactedCount ($contactedPct%)'
+                                          : '—',
+                                      textAlign: TextAlign.center,
+                                      style: _tblCell,
+                                    ),
+                                  ),
+                                ),
+                                Expanded(
+                                  flex: 12,
+                                  child: Center(
+                                    child: Text(
+                                      '$interestedCount',
+                                      textAlign: TextAlign.center,
+                                      style: _tblCell,
+                                    ),
+                                  ),
+                                ),
+                                Expanded(
+                                  flex: 13,
+                                  child: Center(
+                                    child: Text(
+                                      '$actionsDone',
+                                      textAlign: TextAlign.center,
+                                      style: _tblCell,
+                                    ),
+                                  ),
+                                ),
+                                Expanded(
+                                  flex: 12,
+                                  child: Center(
+                                    child: Text(
+                                      '$convertedCount',
+                                      textAlign: TextAlign.center,
+                                      style: const TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w700,
+                                        color: Color(0xFF15803D),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                Expanded(
+                                  flex: 12,
+                                  child: Center(
+                                    child: Text(
+                                      '$pendingCount',
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w700,
+                                        color: pendingCount == 0
+                                            ? const Color(0xFF667085)
+                                            : const Color(0xFFB42318),
+                                      ),
                                     ),
                                   ),
                                 ),

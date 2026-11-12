@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:flutter/cupertino.dart';
 import 'package:gap/gap.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -1505,7 +1506,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
             LayoutBuilder(
               builder: (context, c) {
                 final isNarrow =
-                    MediaQuery.of(context).size.width < 768 || c.maxWidth < 760;
+                    MediaQuery.of(context).size.width < 960 || c.maxWidth < 900;
                 final titleCol = Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -1888,7 +1889,10 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                     onChanged: cubit.setStatusFilter,
                   );
 
-                  if (c.maxWidth >= 880) {
+                  final availableW = math.max(0.0, c.maxWidth);
+                  if (availableW <= 0) return const SizedBox.shrink();
+
+                  if (availableW >= 900) {
                     return Row(
                       children: [
                         Expanded(flex: 3, child: searchField),
@@ -1906,20 +1910,22 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                     );
                   }
 
-                  final colW = c.maxWidth >= 520
-                      ? (c.maxWidth - 20) / 3
-                      : (c.maxWidth - 10) / 2;
+                  final colW = availableW >= 560
+                      ? math.max(100.0, (availableW - 20) / 3)
+                      : (availableW >= 360
+                          ? math.max(100.0, (availableW - 10) / 2)
+                          : availableW);
                   return Wrap(
                     spacing: 10,
                     runSpacing: 10,
                     children: [
-                      SizedBox(width: c.maxWidth, child: searchField),
+                      SizedBox(width: availableW, child: searchField),
                       SizedBox(width: colW, child: fSource),
                       SizedBox(width: colW, child: fCollege),
                       SizedBox(width: colW, child: fBranch),
                       SizedBox(width: colW, child: fYear),
                       SizedBox(
-                        width: c.maxWidth >= 520 ? colW : c.maxWidth,
+                        width: availableW >= 560 ? colW : availableW,
                         child: fStatus,
                       ),
                     ],
@@ -1934,8 +1940,8 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
             LayoutBuilder(
               builder: (context, barC) {
                 final isMobileBar =
-                    MediaQuery.of(context).size.width < 768 ||
-                    barC.maxWidth < 640;
+                    MediaQuery.of(context).size.width < 900 ||
+                    barC.maxWidth < 820;
 
                 final safeExecutives = state.activeExecutives;
                 final safeSelectedExecUid = safeExecutives.any((e) => e.uid == state.selectedExecutive?.uid)
@@ -2099,6 +2105,8 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       alignment: Alignment.center,
+                      minimumSize: Size.zero,
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                       backgroundColor: state.selectedLeadIds.isEmpty
                           ? const Color(0xFF1F2937)
                           : const Color(0xFFEF8144),
@@ -2108,7 +2116,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                       disabledBackgroundColor: const Color(0xFF1F2937),
                       disabledForegroundColor: const Color(0xFF9CA3AF),
                       elevation: 0,
-                      padding: EdgeInsets.zero,
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                         side: BorderSide(
@@ -2228,38 +2236,43 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                           letterSpacing: 0.35,
                         ),
                       ),
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Text(
-                            'Assign to',
-                            style: GoogleFonts.poppins(
-                              color: const Color(0xFF9CA3AF),
-                              fontSize: 12,
-                              fontWeight: FontWeight.w500,
-                              height: 16 / 12,
-                              letterSpacing: 12 * 0.0049,
-                            ),
+                      Flexible(
+                        child: SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Text(
+                                'Assign to',
+                                style: GoogleFonts.poppins(
+                                  color: const Color(0xFF9CA3AF),
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                  height: 16 / 12,
+                                  letterSpacing: 12 * 0.0049,
+                                ),
+                              ),
+                              const Gap(16),
+                              execDropdown,
+                              const Gap(16),
+                              Text(
+                                'for',
+                                style: GoogleFonts.poppins(
+                                  color: const Color(0xFF9CA3AF),
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                  height: 16 / 12,
+                                  letterSpacing: 12 * 0.0313,
+                                ),
+                              ),
+                              const Gap(16),
+                              dateDropdown,
+                              const Gap(16),
+                              assignBtn,
+                            ],
                           ),
-                          const Gap(16),
-                          execDropdown,
-                          const Gap(16),
-                          Text(
-                            'for',
-                            style: GoogleFonts.poppins(
-                              color: const Color(0xFF9CA3AF),
-                              fontSize: 12,
-                              fontWeight: FontWeight.w500,
-                              height: 16 / 12,
-                              letterSpacing: 12 * 0.0313,
-                            ),
-                          ),
-                          const Gap(16),
-                          dateDropdown,
-                          const Gap(16),
-                          assignBtn,
-                        ],
+                        ),
                       ),
                     ],
                   ),
@@ -2664,13 +2677,13 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                     ),
                   ),
                   Expanded(
-                    flex: 10,
+                    flex: 7,
                     child: Text('COLLEGE - BRANCH', style: h),
                   ),
-                  Expanded(flex: 8, child: Text('SOURCE', style: h)),
-                  Expanded(flex: 6, child: Text('STATUS', style: h)),
+                  Expanded(flex: 6, child: Text('SOURCE', style: h)),
+                  Expanded(flex: 5, child: Text('STATUS', style: h)),
                   Expanded(
-                    flex: 6,
+                    flex: 5,
                     child: Text(
                       'LAST\nCONTACT',
                       style: h.copyWith(height: 1.2),
@@ -2753,7 +2766,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                             ),
                           ),
                           Expanded(
-                            flex: 10,
+                            flex: 7,
                             child: Align(
                               alignment: Alignment.centerLeft,
                               child: Text(
@@ -2771,7 +2784,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                             ),
                           ),
                           Expanded(
-                            flex: 8,
+                            flex: 6,
                             child: Align(
                               alignment: Alignment.centerLeft,
                               child: Text(
@@ -2789,14 +2802,14 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                             ),
                           ),
                           Expanded(
-                            flex: 6,
+                            flex: 5,
                             child: Align(
                               alignment: Alignment.centerLeft,
                               child: _statusBadge(r.status),
                             ),
                           ),
                           Expanded(
-                            flex: 6,
+                            flex: 5,
                             child: Align(
                               alignment: Alignment.centerLeft,
                               child: Text(
