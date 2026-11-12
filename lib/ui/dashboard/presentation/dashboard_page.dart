@@ -99,28 +99,23 @@ class _SidebarNavItemState extends State<_SidebarNavItem> {
   Widget build(BuildContext context) {
     final isSelected = widget.isSelected;
     final item = widget.item;
+    final isActiveOrHovered = isSelected || _isHovered;
 
+    // Hover background color with increased lightness for a luminous, clean peach tint
     final Color bgColor = isSelected
-        ? const Color(0xFFFFF4ED)
-        : (_isHovered ? const Color(0xFFF8FAFC) : Colors.transparent);
+        ? const Color(0xFFFFEDE2)
+        : (_isHovered ? const Color(0xFFFFF6F0) : Colors.transparent);
 
-    final Border border = Border.all(
-      color: isSelected
-          ? const Color(0xFFFFDEC9)
-          : (_isHovered ? const Color(0xFFE2E8F0) : Colors.transparent),
-      width: 1,
-    );
-
-    final Color iconColor = isSelected
+    final Color contentColor = isActiveOrHovered
         ? _orangeAccent
-        : (_isHovered ? const Color(0xFF0F172A) : const Color(0xFF64748B));
+        : const Color(0xFF475569);
 
-    final Color labelColor = isSelected
+    final Color iconColor = isActiveOrHovered
         ? _orangeAccent
-        : (_isHovered ? const Color(0xFF0F172A) : const Color(0xFF334155));
+        : const Color(0xFF64748B);
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 1.5),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2.5),
       child: MouseRegion(
         cursor: SystemMouseCursors.click,
         onEnter: (_) => setState(() => _isHovered = true),
@@ -128,116 +123,81 @@ class _SidebarNavItemState extends State<_SidebarNavItem> {
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 180),
           curve: Curves.easeOutCubic,
-          transform: Matrix4.translationValues(
-            _isHovered && !isSelected ? 3 : 0,
-            0,
-            0,
-          ),
+          clipBehavior: Clip.antiAlias,
           decoration: BoxDecoration(
             color: bgColor,
-            borderRadius: BorderRadius.circular(10),
-            border: border,
-            boxShadow: isSelected
-                ? const [
-                    BoxShadow(
-                      color: Color(0x12EF8144),
-                      blurRadius: 8,
-                      offset: Offset(0, 2),
-                    ),
-                  ]
-                : (_isHovered
-                    ? const [
-                        BoxShadow(
-                          color: Color(0x0A0F172A),
-                          blurRadius: 6,
-                          offset: Offset(0, 2),
-                        ),
-                      ]
-                    : const []),
+            borderRadius: BorderRadius.circular(16),
           ),
           child: Material(
             color: Colors.transparent,
-            borderRadius: BorderRadius.circular(10),
             child: InkWell(
-              borderRadius: BorderRadius.circular(10),
-              splashColor: _orangeAccent.withValues(alpha: 0.08),
-              highlightColor: _orangeAccent.withValues(alpha: 0.04),
+              borderRadius: BorderRadius.circular(16),
+              splashColor: _orangeAccent.withValues(alpha: 0.10),
+              highlightColor: _orangeAccent.withValues(alpha: 0.05),
               onTap: widget.onTap,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-                child: Row(
-                  children: [
-                    // Dynamic vertical active/hover indicator bar
-                    AnimatedContainer(
-                      duration: const Duration(milliseconds: 180),
-                      curve: Curves.easeOutCubic,
-                      width: 3.5,
-                      height: isSelected ? 18 : (_isHovered ? 12 : 0),
-                      decoration: BoxDecoration(
-                        color: isSelected
-                            ? _orangeAccent
-                            : (_isHovered ? const Color(0xFF94A3B8) : Colors.transparent),
-                        borderRadius: BorderRadius.circular(2),
-                      ),
+              child: Stack(
+                alignment: Alignment.centerLeft,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
                     ),
-                    AnimatedContainer(
-                      duration: const Duration(milliseconds: 180),
-                      width: isSelected || _isHovered ? 8 : 4,
-                    ),
-                    // Icon with subtle animated scale
-                    AnimatedScale(
-                      scale: _isHovered ? 1.10 : (isSelected ? 1.05 : 1.0),
-                      duration: const Duration(milliseconds: 180),
-                      curve: Curves.easeOutBack,
-                      child: SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: Center(
-                          child: SvgPicture.asset(
-                            item.svgAsset,
-                            width: 18,
-                            height: 18,
-                            fit: BoxFit.contain,
-                            colorFilter: ColorFilter.mode(
-                              iconColor,
-                              BlendMode.srcIn,
+                    child: Row(
+                      children: [
+                        SizedBox(
+                          width: 22,
+                          height: 22,
+                          child: Center(
+                            child: SvgPicture.asset(
+                              item.svgAsset,
+                              width: 19,
+                              height: 19,
+                              fit: BoxFit.contain,
+                              colorFilter: ColorFilter.mode(
+                                iconColor,
+                                BlendMode.srcIn,
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                    ),
-                    const Gap(12),
-                    Expanded(
-                      child: AnimatedDefaultTextStyle(
-                        duration: const Duration(milliseconds: 180),
-                        curve: Curves.easeOutCubic,
-                        style: TextStyle(
-                          fontSize: 13.5,
-                          fontWeight: isSelected
-                              ? FontWeight.w700
-                              : (_isHovered ? FontWeight.w600 : FontWeight.w500),
-                          color: labelColor,
-                          letterSpacing: -0.2,
+                        const Gap(14),
+                        Expanded(
+                          child: Text(
+                            item.label,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: GoogleFonts.inter(
+                              fontSize: 14.5,
+                              fontWeight: isSelected
+                                  ? FontWeight.w700
+                                  : (_isHovered ? FontWeight.w600 : FontWeight.w500),
+                              color: contentColor,
+                              letterSpacing: -0.2,
+                            ),
+                          ),
                         ),
-                        child: Text(
-                          item.label,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
+                        // Margin on the right so text doesn't collide with the right accent
+                        const Gap(8),
+                      ],
                     ),
-                    // Subtle chevron that smoothly fades in on hover or stays visible when selected
-                    AnimatedOpacity(
-                      opacity: isSelected ? 1.0 : (_isHovered ? 0.6 : 0.0),
+                  ),
+
+                  // Right Curved Accent Bar (exact match to user screenshot)
+                  Positioned(
+                    top: 0,
+                    bottom: 0,
+                    right: 0,
+                    child: AnimatedContainer(
                       duration: const Duration(milliseconds: 180),
-                      child: Icon(
-                        Icons.chevron_right_rounded,
-                        size: 16,
-                        color: isSelected ? _orangeAccent : const Color(0xFF94A3B8),
+                      curve: Curves.easeOutCubic,
+                      width: isActiveOrHovered ? 7.5 : 0,
+                      decoration: const BoxDecoration(
+                        color: _orangeAccent,
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ),
