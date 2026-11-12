@@ -60,11 +60,24 @@ class _LeadsAssignBody extends StatefulWidget {
 
 class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
   final _searchC = TextEditingController();
+  bool _isRefreshing = false;
 
   @override
   void dispose() {
     _searchC.dispose();
     super.dispose();
+  }
+
+  Future<void> _performRefresh() async {
+    if (_isRefreshing) return;
+    setState(() => _isRefreshing = true);
+    final cubit = context.read<AdminLeadsCubit>();
+    cubit.clearSelection();
+    cubit.refresh();
+    await Future.delayed(const Duration(milliseconds: 800));
+    if (mounted) {
+      setState(() => _isRefreshing = false);
+    }
   }
 
   DashboardCubit? _tryDashboardCubit() {
@@ -1556,14 +1569,23 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                           ),
                           elevation: 0,
                         ),
-                        onPressed: cubit.refresh,
-                        icon: const Icon(
-                          CupertinoIcons.refresh,
-                          size: 14,
-                          color: Color(0xFF1A1A1A),
-                        ),
+                        onPressed: _isRefreshing ? null : _performRefresh,
+                        icon: _isRefreshing
+                            ? const SizedBox(
+                                width: 14,
+                                height: 14,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: _primary,
+                                ),
+                              )
+                            : const Icon(
+                                CupertinoIcons.refresh,
+                                size: 14,
+                                color: Color(0xFF1A1A1A),
+                              ),
                         label: Text(
-                          'Refresh',
+                          _isRefreshing ? 'Refreshing...' : 'Refresh',
                           style: GoogleFonts.poppins(
                             fontSize: 14,
                             fontWeight: FontWeight.w500,
@@ -2445,18 +2467,18 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
   ) {
     final cubit = context.read<AdminLeadsCubit>();
 
-    if (state.isLoading) {
-      return const Padding(
-        padding: EdgeInsets.symmetric(vertical: 48, horizontal: 24),
+    if (state.isLoading || _isRefreshing) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 48, horizontal: 24),
         child: Center(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              CircularProgressIndicator(color: _primary),
-              Gap(12),
+              const CircularProgressIndicator(color: _primary),
+              const Gap(12),
               Text(
-                'Loading leads...',
-                style: TextStyle(
+                _isRefreshing ? 'Refreshing leads...' : 'Loading leads...',
+                style: const TextStyle(
                   color: _muted,
                   fontSize: 13.5,
                   fontWeight: FontWeight.w600,
@@ -2501,7 +2523,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
               ),
               const Gap(14),
               OutlinedButton.icon(
-                onPressed: cubit.refresh,
+                onPressed: _isRefreshing ? null : _performRefresh,
                 icon: const Icon(CupertinoIcons.refresh, size: 16),
                 label: const Text('Retry'),
               ),

@@ -99,7 +99,17 @@ class AdminLeadsCubit extends Cubit<AdminLeadsState> {
     }, onError: (_) {});
   }
 
-  void refresh() => _subscribeAll();
+  void refresh() {
+    emit(
+      state.copyWith(
+        selectedLeadIds: const {},
+        isLoading: true,
+        clearError: true,
+        isPermissionDenied: false,
+      ),
+    );
+    _subscribeAll();
+  }
 
   void clearToast() {
     if (state.toastMessage != null) {
