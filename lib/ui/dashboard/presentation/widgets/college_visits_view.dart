@@ -1141,12 +1141,12 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
                       onPressed: _showPlanVisitDialog,
                       style: ElevatedButton.styleFrom(
                         alignment: Alignment.center,
-                        backgroundColor: const Color(0xFFEF8144),
+                        backgroundColor: const Color(0xFFEE7438),
                         foregroundColor: Colors.white,
                         elevation: 0,
                         padding: const EdgeInsets.symmetric(
                           horizontal: 24,
-                          vertical: 10,
+                          vertical: 12,
                         ),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -1433,7 +1433,10 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
                         margin: const EdgeInsets.only(bottom: 24),
                         padding: isMobile
                             ? const EdgeInsets.all(18)
-                            : const EdgeInsets.fromLTRB(24, 24, 24, 32),
+                            : const EdgeInsets.symmetric(
+                                horizontal: 28,
+                                vertical: 24,
+                              ),
                         decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(16),
@@ -1560,10 +1563,9 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
                                   ),
                                   if (visit.outcomeNotes.isNotEmpty) ...[
                                     TextSpan(
-                                      text: '  •  ',
+                                      text: ' ',
                                       style: GoogleFonts.poppins(
-                                        color: const Color(0xFFCBD5E1),
-                                        fontWeight: FontWeight.w700,
+                                        color: const Color(0xFF64748B),
                                       ),
                                     ),
                                     TextSpan(

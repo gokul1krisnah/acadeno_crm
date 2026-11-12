@@ -223,7 +223,10 @@ class _TeamManagementViewState extends State<TeamManagementView> {
                   );
                 }
 
-                if (usersSnap.hasError && !usersSnap.hasData) {
+                final hasError = (usersSnap.hasError && !usersSnap.hasData) ||
+                    (leadsSnap.hasError && !leadsSnap.hasData);
+
+                if (hasError) {
                   return Padding(
                     padding: const EdgeInsets.symmetric(vertical: 40),
                     child: Center(
@@ -237,7 +240,7 @@ class _TeamManagementViewState extends State<TeamManagementView> {
                           ),
                           const Gap(12),
                           Text(
-                            'Could not load team data: ${usersSnap.error}',
+                            'Could not load team data: ${usersSnap.error ?? leadsSnap.error}',
                             style: const TextStyle(
                               color: Color(0xFFDC2626),
                               fontSize: 13.5,
@@ -283,7 +286,7 @@ class _TeamManagementViewState extends State<TeamManagementView> {
                         const Gap(32),
 
                         // Executive Performance Comparison Table (Figma Node 1363:2068)
-                        _buildTeamPerformanceCard(activeUsers, filteredLeads),
+                        _buildTeamPerformanceCard(maxWidth, activeUsers, filteredLeads),
                       ],
                     );
                   },
@@ -558,13 +561,17 @@ class _TeamManagementViewState extends State<TeamManagementView> {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      '$assignedCount Leads',
-                      style: GoogleFonts.inter(
-                        fontSize: 36,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.white,
-                        height: 40 / 36,
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        '$assignedCount Leads',
+                        style: GoogleFonts.inter(
+                          fontSize: 36,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
+                          height: 40 / 36,
+                        ),
                       ),
                     ),
                     const Gap(4),
@@ -628,28 +635,32 @@ class _TeamManagementViewState extends State<TeamManagementView> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              RichText(
-                text: TextSpan(
-                  children: [
-                    TextSpan(
-                      text: '$contactedCount ',
-                      style: GoogleFonts.inter(
-                        fontSize: 36,
-                        fontWeight: FontWeight.w700,
-                        color: const Color(0xFF3F3FB4),
-                        height: 40 / 36,
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: RichText(
+                  text: TextSpan(
+                    children: [
+                      TextSpan(
+                        text: '$contactedCount ',
+                        style: GoogleFonts.inter(
+                          fontSize: 36,
+                          fontWeight: FontWeight.w700,
+                          color: const Color(0xFF3F3FB4),
+                          height: 40 / 36,
+                        ),
                       ),
-                    ),
-                    TextSpan(
-                      text: '($contactedPct%)',
-                      style: GoogleFonts.inter(
-                        fontSize: 24,
-                        fontWeight: FontWeight.w700,
-                        color: const Color(0xFF3F3FB4),
-                        height: 40 / 24,
+                      TextSpan(
+                        text: '($contactedPct%)',
+                        style: GoogleFonts.inter(
+                          fontSize: 24,
+                          fontWeight: FontWeight.w700,
+                          color: const Color(0xFF3F3FB4),
+                          height: 40 / 24,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
               const Gap(4),
@@ -707,13 +718,17 @@ class _TeamManagementViewState extends State<TeamManagementView> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                '$pendingCount',
-                style: GoogleFonts.inter(
-                  fontSize: 36,
-                  fontWeight: FontWeight.w700,
-                  color: const Color(0xFF4C0CBF),
-                  height: 40 / 36,
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  '$pendingCount',
+                  style: GoogleFonts.inter(
+                    fontSize: 36,
+                    fontWeight: FontWeight.w700,
+                    color: const Color(0xFF4C0CBF),
+                    height: 40 / 36,
+                  ),
                 ),
               ),
               const Gap(4),
@@ -774,13 +789,17 @@ class _TeamManagementViewState extends State<TeamManagementView> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                '$convertedCount',
-                style: GoogleFonts.inter(
-                  fontSize: 36,
-                  fontWeight: FontWeight.w700,
-                  color: const Color(0xFF22C55E),
-                  height: 40 / 36,
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  '$convertedCount',
+                  style: GoogleFonts.inter(
+                    fontSize: 36,
+                    fontWeight: FontWeight.w700,
+                    color: const Color(0xFF22C55E),
+                    height: 40 / 36,
+                  ),
                 ),
               ),
               const Gap(4),
@@ -804,6 +823,7 @@ class _TeamManagementViewState extends State<TeamManagementView> {
   // EXECUTIVE PERFORMANCE COMPARISON TABLE (Figma Node 1363:2068)
   // ===========================================================================
   Widget _buildTeamPerformanceCard(
+    double maxWidth,
     List<DashboardUserModel> activeUsers,
     List<Map<String, dynamic>> leads,
   ) {
@@ -927,7 +947,9 @@ class _TeamManagementViewState extends State<TeamManagementView> {
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: ConstrainedBox(
-                constraints: const BoxConstraints(minWidth: 1000),
+                constraints: BoxConstraints(
+                  minWidth: maxWidth > 1050 ? maxWidth : 1050,
+                ),
                 child: Column(
                   children: [
                     // Table Header Row
