@@ -2389,6 +2389,11 @@ class _Conversions extends StatelessWidget {
             }))
         : const [];
 
+    final isMobile = MediaQuery.of(context).size.width < 600;
+    final cardPadding = isMobile
+        ? const EdgeInsets.all(16)
+        : const EdgeInsets.all(24);
+
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -2406,7 +2411,7 @@ class _Conversions extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            padding: const EdgeInsets.all(24),
+            padding: cardPadding,
             decoration: const BoxDecoration(
               border: Border(
                 bottom: BorderSide(color: Color(0xFFF9FAFB), width: 1),
@@ -2415,16 +2420,21 @@ class _Conversions extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  'Conversions by source',
-                  style: GoogleFonts.inter(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700,
-                    color: const Color(0xFF111827),
-                    letterSpacing: 0.0527,
-                    height: 28 / 18,
+                Expanded(
+                  child: Text(
+                    'Conversions by source',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.inter(
+                      fontSize: isMobile ? 16 : 18,
+                      fontWeight: FontWeight.w700,
+                      color: const Color(0xFF111827),
+                      letterSpacing: 0.0527,
+                      height: 28 / 18,
+                    ),
                   ),
                 ),
+                const Gap(8),
                 Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 10,
@@ -2449,7 +2459,7 @@ class _Conversions extends StatelessWidget {
             ),
           ),
           Padding(
-            padding: const EdgeInsets.all(24),
+            padding: cardPadding,
             child: displaySources.isEmpty
                 ? Center(
                     child: Padding(
@@ -2474,8 +2484,8 @@ class _Conversions extends StatelessWidget {
                             final r = displaySources[i];
                             return Row(
                               children: [
-                                ConstrainedBox(
-                                  constraints: const BoxConstraints(maxWidth: 120, minWidth: 64),
+                                Expanded(
+                                  flex: 32,
                                   child: Text(
                                     r.$1,
                                     maxLines: 1,
@@ -2490,6 +2500,7 @@ class _Conversions extends StatelessWidget {
                                 ),
                                 const Gap(10),
                                 Expanded(
+                                  flex: 40,
                                   child: ClipRRect(
                                     borderRadius: BorderRadius.circular(9999),
                                     child: LinearProgressIndicator(
@@ -2507,7 +2518,10 @@ class _Conversions extends StatelessWidget {
                                 const Gap(10),
                                 SizedBox(
                                   width: 52,
-                                  child: RichText(
+                                  child: FittedBox(
+                                    fit: BoxFit.scaleDown,
+                                    alignment: Alignment.centerRight,
+                                    child: RichText(
                                     textAlign: TextAlign.right,
                                     text: TextSpan(
                                       children: [
@@ -2535,6 +2549,7 @@ class _Conversions extends StatelessWidget {
                                         ),
                                       ],
                                     ),
+                                  ),
                                   ),
                                 ),
                               ],
