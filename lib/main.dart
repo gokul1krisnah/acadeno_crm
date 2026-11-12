@@ -241,13 +241,25 @@ class _AcadenoAppState extends State<AcadenoApp> with WidgetsBindingObserver {
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-            textStyle: const TextStyle(overflow: TextOverflow.ellipsis),
+            textStyle: AppTypography.figmaButton(),
           ),
         ),
         outlinedButtonTheme: OutlinedButtonThemeData(
           style: OutlinedButton.styleFrom(
             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-            textStyle: const TextStyle(overflow: TextOverflow.ellipsis),
+            textStyle: AppTypography.figmaButton(),
+          ),
+        ),
+        filledButtonTheme: FilledButtonThemeData(
+          style: FilledButton.styleFrom(
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            textStyle: AppTypography.figmaButton(),
+          ),
+        ),
+        textButtonTheme: TextButtonThemeData(
+          style: TextButton.styleFrom(
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            textStyle: AppTypography.figmaButton(),
           ),
         ),
       ),

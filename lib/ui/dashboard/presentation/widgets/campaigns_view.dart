@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../shared/extensions/build_context_extension.dart';
 import '../../../../shared/snackbar_alerts/snack_alert.dart';
+import 'package:acadeno_crm/shared/theme/app_typography.dart';
 
 class _CampaignReason {
   final String label;
@@ -725,7 +726,11 @@ class _CampaignsViewState extends State<CampaignsView> {
                         child: ElevatedButton.icon(
                           onPressed: _showNewCampaignDialog,
                           icon: const Icon(Icons.add, size: 18),
-                          label: const Text('New Campaign'),
+                          label: Text(
+                            'New Campaign',
+                            textAlign: TextAlign.center,
+                            style: AppTypography.figmaButton(color: Colors.white),
+                          ),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFFEF8144),
                             foregroundColor: Colors.white,
@@ -766,7 +771,11 @@ class _CampaignsViewState extends State<CampaignsView> {
                       ElevatedButton.icon(
                         onPressed: _showNewCampaignDialog,
                         icon: const Icon(Icons.add, size: 18),
-                        label: const Text('New Campaign'),
+                        label: Text(
+                          'New Campaign',
+                          textAlign: TextAlign.center,
+                          style: AppTypography.figmaButton(color: Colors.white),
+                        ),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFFEF8144),
                           foregroundColor: Colors.white,
@@ -932,12 +941,10 @@ class _CampaignsViewState extends State<CampaignsView> {
                         borderRadius: BorderRadius.circular(9),
                       ),
                     ),
-                    child: const Text(
+                    child: Text(
                       'Assign For Tomorrow',
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                      ),
+                      textAlign: TextAlign.center,
+                      style: AppTypography.figmaButton(color: Colors.white),
                     ),
                   ),
                 );
@@ -1662,7 +1669,11 @@ class _CampaignsViewState extends State<CampaignsView> {
                     child: ElevatedButton.icon(
                       onPressed: _showNewCampaignDialog,
                       icon: const Icon(Icons.add, size: 16),
-                      label: const Text('New campaign'),
+                      label: Text(
+                        'New campaign',
+                        textAlign: TextAlign.center,
+                        style: AppTypography.figmaButton(color: Colors.white),
+                      ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFFEF8144),
                         foregroundColor: Colors.white,
@@ -1698,7 +1709,11 @@ class _CampaignsViewState extends State<CampaignsView> {
                   ElevatedButton.icon(
                     onPressed: _showNewCampaignDialog,
                     icon: const Icon(Icons.add, size: 16),
-                    label: const Text('New campaign'),
+                    label: Text(
+                      'New campaign',
+                      textAlign: TextAlign.center,
+                      style: AppTypography.figmaButton(color: Colors.white),
+                    ),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFFEF8144),
                       foregroundColor: Colors.white,

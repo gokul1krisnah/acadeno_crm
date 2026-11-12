@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:gap/gap.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:acadeno_crm/shared/theme/app_typography.dart';
 import 'package:acadeno_crm/shared/widgets/college_selector_field.dart';
 import 'package:acadeno_crm/shared/extensions/build_context_extension.dart';
 import 'package:acadeno_crm/shared/snackbar_alerts/snack_alert.dart';
@@ -1598,12 +1599,10 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                         ),
                         onPressed: () => _openAddLeadDialog(context, state),
                         icon: const Icon(Icons.add, size: 16),
-                        label: const Text(
+                        label: Text(
                           'Add lead',
-                          style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                          ),
+                          textAlign: TextAlign.center,
+                          style: AppTypography.figmaButton(color: Colors.white),
                         ),
                       ),
                     ),
@@ -1990,9 +1989,11 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                         isMobileBar && state.selectedLeadIds.isNotEmpty
                             ? 'Assign ${state.selectedLeadIds.length} Selected Leads'
                             : 'Assign',
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w700,
-                          fontSize: 13,
+                        textAlign: TextAlign.center,
+                        style: AppTypography.figmaButton(
+                          color: state.selectedLeadIds.isEmpty
+                              ? const Color(0xFF64748B)
+                              : Colors.white,
                         ),
                       ),
                     ),

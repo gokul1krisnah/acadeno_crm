@@ -9,6 +9,7 @@ import 'package:acadeno_crm/core/router/app_router.dart';
 import 'package:acadeno_crm/shared/extensions/build_context_extension.dart';
 import 'package:acadeno_crm/shared/snackbar_alerts/snack_alert.dart';
 import 'package:acadeno_crm/shared/theme/app_images.dart';
+import 'package:acadeno_crm/shared/theme/app_typography.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
@@ -267,11 +268,11 @@ class _DashboardViewState extends State<_DashboardView> {
                               borderRadius: BorderRadius.circular(12),
                             ),
                           ),
-                          child: const Text(
+                          child: Text(
                             'Cancel',
-                            style: TextStyle(
-                              color: Color(0xFF475467),
-                              fontWeight: FontWeight.w600,
+                            textAlign: TextAlign.center,
+                            style: AppTypography.figmaButton(
+                              color: const Color(0xFF475467),
                             ),
                           ),
                         ),
@@ -294,9 +295,12 @@ class _DashboardViewState extends State<_DashboardView> {
                             Navigator.pop(ctx);
                             await cubit.signOut();
                           },
-                          child: const Text(
+                          child: Text(
                             'Sign out',
-                            style: TextStyle(fontWeight: FontWeight.w700),
+                            textAlign: TextAlign.center,
+                            style: AppTypography.figmaButton(
+                              color: Colors.white,
+                            ),
                           ),
                         ),
                       ),
@@ -713,11 +717,11 @@ class _DashboardViewState extends State<_DashboardView> {
                       ),
                       visualDensity: VisualDensity.compact,
                     ),
-                    child: const Text(
+                    child: Text(
                       'Logout',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
+                      textAlign: TextAlign.center,
+                      style: AppTypography.figmaButton(
+                        color: const Color(0xFFDC2626),
                       ),
                     ),
                   ),
@@ -875,9 +879,10 @@ class _DashboardViewState extends State<_DashboardView> {
                 ),
               ),
               icon: const Icon(Icons.add, size: 18),
-              label: const Text(
+              label: Text(
                 "Assign Today's Leads",
-                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+                textAlign: TextAlign.center,
+                style: AppTypography.figmaButton(color: Colors.white),
               ),
               onPressed: () => context.read<DashboardCubit>().selectNav(1),
             ),
@@ -944,9 +949,10 @@ class _DashboardViewState extends State<_DashboardView> {
               ),
             ),
             icon: const Icon(Icons.add, size: 18),
-            label: const Text(
+            label: Text(
               "Assign Today's Leads",
-              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+              textAlign: TextAlign.center,
+              style: AppTypography.figmaButton(color: Colors.white),
             ),
             onPressed: () => context.read<DashboardCubit>().selectNav(1),
           ),
@@ -2381,13 +2387,13 @@ class _OverdueFollowUps extends StatelessWidget {
                             ),
                             visualDensity: VisualDensity.compact,
                           ),
-                          child: const FittedBox(
+                          child: FittedBox(
                             fit: BoxFit.scaleDown,
                             child: Text(
                               'Reassign',
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w700,
+                              textAlign: TextAlign.center,
+                              style: AppTypography.figmaButton(
+                                color: const Color(0xFF4338CA),
                               ),
                             ),
                           ),
@@ -2459,14 +2465,10 @@ class _CollegeVisits extends StatelessWidget {
                     color: const Color(0xFFEEF2FF),
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: const Text(
+                  child: Text(
                     'Plan Visit',
                     textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: _primary,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
-                    ),
+                    style: AppTypography.figmaButton(color: _primary),
                   ),
                 ),
               ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import 'app_colors.dart';
 
@@ -85,5 +86,20 @@ abstract class AppTypography {
     fontSize: 16,
     fontWeight: wSemiBold,
     height: 1.57,
+  );
+
+  /// Figma Dashboard Button Specification:
+  /// font-family: Inter;
+  /// font-weight: 600 (Semi Bold);
+  /// font-size: 14px;
+  /// line-height: 20px (height: 20/14);
+  /// letter-spacing: 1.17% (14 * 0.0117);
+  /// text-align: center;
+  static TextStyle figmaButton({Color? color}) => GoogleFonts.inter(
+    fontSize: 14,
+    fontWeight: FontWeight.w600,
+    height: 20 / 14,
+    letterSpacing: 14 * 0.0117,
+    color: color,
   );
 }
