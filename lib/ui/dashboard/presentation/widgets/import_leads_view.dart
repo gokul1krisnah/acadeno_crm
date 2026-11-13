@@ -1075,8 +1075,9 @@ class _ImportLeadsBodyState extends State<_ImportLeadsBody> {
                   Expanded(
                     flex: 28,
                     child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Expanded(
+                        Flexible(
                           child: Container(
                             padding: const EdgeInsets.symmetric(
                               horizontal: 9,
