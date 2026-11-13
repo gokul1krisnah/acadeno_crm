@@ -50,90 +50,109 @@ class _VisitsTabViewState extends State<VisitsTabView> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Top White Header (Always anchored at top)
+              // Top White Header (Matches Figma node 1606:1480)
               Container(
                 width: double.infinity,
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                  border: Border(
-                    bottom: BorderSide(color: Color(0xFFEAECF0)),
-                  ),
+                color: Colors.white,
+                padding: EdgeInsets.fromLTRB(
+                  pad.clamp(16.0, 24.0),
+                  MediaQuery.paddingOf(context).top > 0
+                      ? MediaQuery.paddingOf(context).top + 16
+                      : 24,
+                  pad.clamp(16.0, 24.0),
+                  24,
                 ),
-                padding: EdgeInsets.fromLTRB(pad, 16, pad, 16),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      'College visits',
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.w700,
-                        color: Color(0xFF0F172A),
-                        letterSpacing: -0.4,
-                      ),
-                    ),
-                    SizedBox(
-                      height: 40,
-                      child: ElevatedButton.icon(
-                        onPressed: () => _showLogVisitModal(context),
-                        icon: const Icon(Icons.add, size: 17),
-                        label: const FittedBox(
-                          fit: BoxFit.scaleDown,
-                          child: Text(
-                            'Log visit',
-                            maxLines: 1,
-                            softWrap: false,
-                            style: TextStyle(
-                              fontSize: 13.5,
-                              fontWeight: FontWeight.w700,
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 800),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Text(
+                          'College visits',
+                          style: GoogleFonts.inter(
+                            fontSize: 24,
+                            fontWeight: FontWeight.w500,
+                            color: const Color(0xFF1A1A1A),
+                            letterSpacing: -0.6,
+                            height: 32 / 24,
+                          ),
+                        ),
+                        SizedBox(
+                          height: 40,
+                          child: ElevatedButton.icon(
+                            onPressed: () => _showLogVisitModal(context),
+                            icon: const Icon(Icons.add, size: 14, color: Colors.white),
+                            label: Text(
+                              'Log visit',
+                              style: GoogleFonts.inter(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white,
+                                letterSpacing: 0.11,
+                                height: 20 / 14,
+                              ),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFFE64A19),
+                              foregroundColor: Colors.white,
+                              elevation: 0,
+                              shadowColor: const Color(0x0D000000),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 20,
+                                vertical: 10,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(9999),
+                              ),
                             ),
                           ),
                         ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFD95D24),
-                          foregroundColor: Colors.white,
-                          elevation: 0,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 14,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                      ),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
               ),
 
               // Body Content (Scrollable with RefreshIndicator and Ambient Shade)
               Expanded(
-                child: Stack(
-                  children: [
-                    RefreshIndicator.adaptive(
-                      color: const Color(0xFF4338CA),
-                      backgroundColor: Colors.white,
-                      displacement: 20,
-                      onRefresh: () async {
-                        context.read<VisitsCubit>().refresh();
-                        await Future.delayed(
-                          const Duration(milliseconds: 1000),
-                        );
-                      },
-                      child: NotificationListener<ScrollNotification>(
-                        onNotification: _handleScroll,
-                        child: SingleChildScrollView(
-                          physics: isEmptyState
-                              ? const AlwaysScrollableScrollPhysics(
-                                  parent: ClampingScrollPhysics(),
-                                )
-                              : const AlwaysScrollableScrollPhysics(
-                                  parent: BouncingScrollPhysics(),
-                                ),
-                          padding: EdgeInsets.fromLTRB(pad, 18, pad, 24),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
+                child: Container(
+                  color: const Color(0xFFF8F9FA),
+                  child: Stack(
+                    children: [
+                      RefreshIndicator.adaptive(
+                        color: const Color(0xFF4338CA),
+                        backgroundColor: Colors.white,
+                        displacement: 20,
+                        onRefresh: () async {
+                          context.read<VisitsCubit>().refresh();
+                          await Future.delayed(
+                            const Duration(milliseconds: 1000),
+                          );
+                        },
+                        child: NotificationListener<ScrollNotification>(
+                          onNotification: _handleScroll,
+                          child: SingleChildScrollView(
+                            physics: isEmptyState
+                                ? const AlwaysScrollableScrollPhysics(
+                                    parent: ClampingScrollPhysics(),
+                                  )
+                                : const AlwaysScrollableScrollPhysics(
+                                    parent: BouncingScrollPhysics(),
+                                  ),
+                            padding: EdgeInsets.fromLTRB(
+                              pad.clamp(16.0, 24.0),
+                              16,
+                              pad.clamp(16.0, 24.0),
+                              32,
+                            ),
+                            child: Center(
+                              child: ConstrainedBox(
+                                constraints: const BoxConstraints(maxWidth: 800),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
                         if (upcoming.isEmpty && recent.isEmpty) ...[
                           Container(
                             width: double.infinity,
@@ -202,14 +221,15 @@ class _VisitsTabViewState extends State<VisitsTabView> {
                             ),
                           ),
                         ] else ...[
-                          // UPCOMING · ASSIGNED TO YOU
-                          const Text(
+                          // UPCOMING · ASSIGNED TO YOU (Figma node 1606:1489)
+                          Text(
                             'UPCOMING · ASSIGNED TO YOU',
-                            style: TextStyle(
-                              fontSize: 11.5,
-                              fontWeight: FontWeight.w600,
-                              letterSpacing: 0.7,
-                              color: Color(0xFF667085),
+                            style: GoogleFonts.inter(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 1.1,
+                              color: const Color(0xFF6B7280),
+                              height: 16.5 / 11,
                             ),
                           ),
                           const Gap(10),
@@ -266,14 +286,15 @@ class _VisitsTabViewState extends State<VisitsTabView> {
                             ),
                           const Gap(10),
 
-                          // RECENT
-                          const Text(
+                          // RECENT (Figma node 1606:1525)
+                          Text(
                             'RECENT',
-                            style: TextStyle(
-                              fontSize: 11.5,
-                              fontWeight: FontWeight.w600,
-                              letterSpacing: 0.7,
-                              color: Color(0xFF667085),
+                            style: GoogleFonts.inter(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 1.1,
+                              color: const Color(0xFF6B7280),
+                              height: 16.5 / 11,
                             ),
                           ),
                           const Gap(10),
@@ -334,6 +355,8 @@ class _VisitsTabViewState extends State<VisitsTabView> {
                   ),
                 ),
               ),
+            ),
+          ),
               // Top Ambient Shade Overlay when scrolling (Smooth gradient shade without cutting)
               if (_scrollProgress > 0.01)
                 Positioned(
@@ -365,9 +388,10 @@ class _VisitsTabViewState extends State<VisitsTabView> {
             ],
           ),
         ),
-      ],
-    ),
-  );
+      ),
+    ],
+  ),
+);
 },
 );
 }
@@ -1777,26 +1801,32 @@ class _UpcomingVisitCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final initials = visit.staffInitials.isNotEmpty
-        ? visit.staffInitials
+        ? visit.staffInitials.first
         : (visit.staffNames.trim().isNotEmpty
-              ? [
-                  visit.staffNames
-                      .trim()
-                      .split(' ')
-                      .firstWhere(
-                        (s) => s.isNotEmpty,
-                        orElse: () => 'E',
-                      )[0]
-                      .toUpperCase(),
-                ]
-              : const ['EX']);
+              ? visit.staffNames
+                    .trim()
+                    .split(' ')
+                    .take(2)
+                    .map((s) => s.isNotEmpty ? s[0].toUpperCase() : '')
+                    .join()
+              : 'AT');
+
+    final month = visit.monthShort.isNotEmpty ? visit.monthShort : 'Nov';
+    final day = visit.dayNumber.isNotEmpty ? visit.dayNumber : '11';
 
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: const Color(0xFFF1F5F9)),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFF3F4F6), width: 1),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x0D000000),
+            blurRadius: 1,
+            offset: Offset(0, 1),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1804,148 +1834,139 @@ class _UpcomingVisitCard extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Date Badge (OCT / 29)
+              // Date Badge (Figma Node 1606:1494): #EEEBF6, rounded 12px, 56x56
               Container(
-                width: 48,
-                padding: const EdgeInsets.symmetric(vertical: 8),
+                width: 56,
+                height: 56,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFEEEDFD),
+                  color: const Color(0xFFEEEBF6),
                   borderRadius: BorderRadius.circular(12),
                 ),
+                alignment: Alignment.center,
                 child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      visit.monthShort,
-                      style: const TextStyle(
+                      month,
+                      style: GoogleFonts.inter(
                         fontSize: 10,
-                        fontWeight: FontWeight.w800,
-                        color: Color(0xFF3730A3),
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.37,
+                        color: const Color(0xFF4A3AFF),
+                        height: 15 / 10,
                       ),
                     ),
-                    const Gap(1),
                     Text(
-                      visit.dayNumber,
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w800,
-                        color: Color(0xFF312E81),
+                      day,
+                      style: GoogleFonts.inter(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFF4A3AFF),
+                        height: 28 / 20,
                       ),
                     ),
                   ],
                 ),
               ),
-              const Gap(12),
+              const Gap(16),
 
-              // College & Subtitle
+              // College & Subtitle (Figma Node 1606:1500)
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       visit.collegeName,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF0F172A),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.inter(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.07,
+                        color: const Color(0xFF1A1A1A),
+                        height: 22.5 / 18,
                       ),
                     ),
-                    const Gap(2),
-                    Text(
-                      visit.subtitle,
-                      style: const TextStyle(
-                        fontSize: 12.5,
-                        color: Color(0xFF667085),
-                        height: 1.3,
+                    if (visit.subtitle.isNotEmpty) ...[
+                      const Gap(2),
+                      Text(
+                        visit.subtitle,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.inter(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w400,
+                          letterSpacing: 0.15,
+                          color: const Color(0xFF6B7280),
+                          height: 20 / 14,
+                        ),
                       ),
-                    ),
+                    ],
                   ],
                 ),
               ),
               const Gap(8),
 
-              // Planned Status Pill
+              // Planned Status Pill (Figma Node 1606:1505)
               Container(
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
+                  horizontal: 12,
                   vertical: 4,
                 ),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFEEEDFD),
-                  borderRadius: BorderRadius.circular(12),
+                  color: const Color(0xFFF3E8FF),
+                  borderRadius: BorderRadius.circular(9999),
                 ),
                 child: Text(
-                  visit.statusLabel,
-                  style: const TextStyle(
-                    fontSize: 11.5,
+                  visit.statusLabel.isNotEmpty ? visit.statusLabel : 'Planned',
+                  style: GoogleFonts.inter(
+                    fontSize: 10,
                     fontWeight: FontWeight.w700,
-                    color: Color(0xFF3730A3),
+                    color: const Color(0xFF6B21A8),
+                    height: 15 / 10,
                   ),
                 ),
               ),
             ],
           ),
-          const Gap(12),
 
-          // Purpose
-          Text(
-            visit.purpose,
-            style: const TextStyle(
-              fontSize: 13.5,
-              color: Color(0xFF344054),
-              height: 1.35,
+          // Purpose / Notes (Figma Node 1606:1507)
+          if (visit.purpose.isNotEmpty) ...[
+            const Gap(12),
+            Text(
+              visit.purpose,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: GoogleFonts.inter(
+                fontSize: 14,
+                fontWeight: FontWeight.w400,
+                color: const Color(0xFF9CA3AF),
+                height: 20 / 14,
+              ),
             ),
-          ),
-          const Gap(12),
+          ],
 
-          // Overlapping Avatars (AR + RM) + Names
+          // Assigned Team Row (Figma Node 1606:1509)
+          const Gap(12),
           Row(
             children: [
-              SizedBox(
-                width: initials.length > 1 ? 50 : 28,
-                height: 28,
-                child: Stack(
-                  children: [
-                    Container(
-                      width: 28,
-                      height: 28,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF4338CA),
-                        shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white, width: 1.5),
-                      ),
-                      alignment: Alignment.center,
-                      child: Text(
-                        initials.isNotEmpty ? initials.first : 'EX',
-                        style: const TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w800,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                    if (initials.length > 1)
-                      Positioned(
-                        left: 20,
-                        child: Container(
-                          width: 28,
-                          height: 28,
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF2563EB),
-                            shape: BoxShape.circle,
-                            border: Border.all(color: Colors.white, width: 1.5),
-                          ),
-                          alignment: Alignment.center,
-                          child: Text(
-                            initials[1],
-                            style: const TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.w800,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                      ),
-                  ],
+              Container(
+                width: 24,
+                height: 24,
+                decoration: const BoxDecoration(
+                  color: Color(0xFF1A119B),
+                  shape: BoxShape.circle,
+                ),
+                alignment: Alignment.center,
+                child: Text(
+                  initials.isNotEmpty ? initials : 'AT',
+                  style: GoogleFonts.inter(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                    letterSpacing: 0.72,
+                    height: 15 / 10,
+                  ),
                 ),
               ),
               const Gap(8),
@@ -1953,18 +1974,23 @@ class _UpcomingVisitCard extends StatelessWidget {
                 child: Text(
                   visit.staffNames.isNotEmpty
                       ? visit.staffNames
-                      : 'Assigned Staff',
-                  style: const TextStyle(
-                    fontSize: 12.5,
-                    color: Color(0xFF475467),
+                      : 'Assigned Team',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.inter(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: const Color(0xFF374151),
+                    letterSpacing: 0.12,
+                    height: 20 / 14,
                   ),
                 ),
               ),
             ],
           ),
-          const Gap(14),
 
-          // Action Buttons Row: Delete if Cancelled, otherwise Directions | Record outcome
+          // Action Buttons (Figma Node 1606:1514)
+          const Gap(16),
           if (visit.statusLabel.toLowerCase() == 'cancelled')
             Align(
               alignment: Alignment.centerRight,
@@ -1994,60 +2020,57 @@ class _UpcomingVisitCard extends StatelessWidget {
               children: [
                 Expanded(
                   child: SizedBox(
-                    height: 42,
+                    height: 50,
                     child: OutlinedButton.icon(
                       onPressed: onDirections,
                       icon: const Icon(
-                        Icons.location_on_outlined,
-                        size: 17,
-                        color: Color(0xFF0F172A),
+                        Icons.navigation_rounded,
+                        size: 14,
+                        color: Color(0xFF374151),
                       ),
-                      label: const FittedBox(
-                        fit: BoxFit.scaleDown,
-                        child: Text(
-                          'Directions',
-                          maxLines: 1,
-                          softWrap: false,
-                          style: TextStyle(
-                            fontSize: 13.5,
-                            fontWeight: FontWeight.w700,
-                            color: Color(0xFF0F172A),
-                          ),
+                      label: Text(
+                        'Directions',
+                        style: GoogleFonts.inter(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: const Color(0xFF374151),
+                          letterSpacing: 0.1,
+                          height: 20 / 14,
                         ),
                       ),
                       style: OutlinedButton.styleFrom(
-                        side: const BorderSide(color: Color(0xFFD0D5DD)),
+                        side: const BorderSide(color: Color(0xFFE5E7EB)),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(11),
+                          borderRadius: BorderRadius.circular(12),
                         ),
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
                       ),
                     ),
                   ),
                 ),
-                const Gap(10),
+                const Gap(14),
                 Expanded(
                   child: SizedBox(
-                    height: 42,
+                    height: 50,
                     child: ElevatedButton(
                       onPressed: onRecordOutcome,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF4338CA),
+                        backgroundColor: const Color(0xFF1A119B),
                         foregroundColor: Colors.white,
                         elevation: 0,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(11),
+                          borderRadius: BorderRadius.circular(12),
                         ),
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
                       ),
-                      child: const FittedBox(
-                        fit: BoxFit.scaleDown,
-                        child: Text(
-                          'Record outcome',
-                          maxLines: 1,
-                          softWrap: false,
-                          style: TextStyle(
-                            fontSize: 13.5,
-                            fontWeight: FontWeight.w700,
-                          ),
+                      child: Text(
+                        'Record Outcome',
+                        style: GoogleFonts.inter(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                          letterSpacing: 0.2,
+                          height: 14 / 14,
                         ),
                       ),
                     ),
@@ -2116,9 +2139,6 @@ class _RecentVisitCard extends StatelessWidget {
             : (matchedInterested.isNotEmpty ? matchedInterested.length : 0);
 
         final isCancelled = visit.statusLabel.toLowerCase() == 'cancelled';
-        final isCompleted =
-            visit.statusLabel.toLowerCase().contains('complete') ||
-            visit.statusLabel.toLowerCase() == 'done';
         final month = visit.monthShort.isNotEmpty ? visit.monthShort : 'NOV';
         final day = visit.dayNumber.isNotEmpty
             ? (visit.dayNumber.length == 1
@@ -2141,430 +2161,342 @@ class _RecentVisitCard extends StatelessWidget {
                   ? 'None'
                   : 'Follow up with faculty & registered students.');
 
-        return Center(
-          child: Container(
-            constraints: const BoxConstraints(maxWidth: 377, minHeight: 263.19),
-            width: double.infinity,
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(24),
-              border: Border.all(color: const Color(0xFFF1F5F9), width: 1),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Top Row: Date Badge + Title/Subtitle/Status + Action Buttons
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Date Badge
-                    Container(
-                      width: 56,
-                      height: 56,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF0FDF4),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: const Color(0xFFBBF7D0),
-                          width: 1,
-                        ),
-                      ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            month,
-                            style: const TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w700,
-                              letterSpacing: 0.5,
-                              color: Color(0xFF166534),
-                            ),
-                          ),
-                          const Gap(1),
-                          Text(
-                            day,
-                            style: const TextStyle(
-                              fontSize: 21,
-                              fontWeight: FontWeight.w700,
-                              color: Color(0xFF166534),
-                              height: 1.1,
-                            ),
-                          ),
-                        ],
+        return Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: const Color(0xFFF3F4F6), width: 1),
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x0D000000),
+                blurRadius: 1,
+                offset: Offset(0, 1),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Top Row: Date Badge + Title/Subtitle/Status + Action Buttons (Figma Node 1606:1528)
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Date Badge (Figma Node 1606:1530)
+                  Container(
+                    width: 56,
+                    height: 56,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF0FDF4),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: const Color(0xFFDCFCE7),
+                        width: 1,
                       ),
                     ),
-                    const Gap(14),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          month,
+                          style: GoogleFonts.inter(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 0.37,
+                            color: const Color(0xFF166534),
+                            height: 15 / 10,
+                          ),
+                        ),
+                        Text(
+                          day,
+                          style: GoogleFonts.inter(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 0.02,
+                            color: const Color(0xFF166534),
+                            height: 28 / 20,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Gap(16),
 
-                    // Title, Subtitle & Status
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
+                  // Title, Subtitle & Status (Figma Node 1606:1536)
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          title,
+                          style: GoogleFonts.inter(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 0.07,
+                            color: const Color(0xFF1A1A1A),
+                            height: 22.5 / 18,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        if (subtitle.isNotEmpty) ...[
+                          const Gap(2),
                           Text(
-                            title,
-                            style: const TextStyle(
-                              fontSize: 17,
-                              fontWeight: FontWeight.w600,
-                              color: Color(0xFF0F172A),
-                              letterSpacing: -0.2,
+                            subtitle,
+                            style: GoogleFonts.inter(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w400,
+                              color: const Color(0xFF6B7280),
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
-                          if (subtitle.isNotEmpty) ...[
-                            const Gap(3),
-                            Text(
-                              subtitle,
-                              style: const TextStyle(
-                                fontSize: 12.5,
-                                fontWeight: FontWeight.w500,
-                                color: Color(0xFF64748B),
+                        ],
+                        const Gap(4),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              width: 6,
+                              height: 6,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: isCancelled
+                                    ? const Color(0xFFDC2626)
+                                    : const Color(0xFF10B981),
                               ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const Gap(6),
+                            Text(
+                              isCancelled ? 'CANCELLED' : 'COMPLETED',
+                              style: GoogleFonts.inter(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: 0.02,
+                                color: isCancelled
+                                    ? const Color(0xFFDC2626)
+                                    : const Color(0xFF059669),
+                                height: 15 / 10,
+                              ),
                             ),
                           ],
-                          const Gap(5),
-                          Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Container(
-                                width: 6,
-                                height: 6,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: isCancelled
-                                      ? const Color(0xFFDC2626)
-                                      : const Color(0xFF047857),
-                                ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Gap(8),
+
+                  // Direction & Outcome or Delete Button (Figma Node 1606:1542)
+                  if (isCancelled) ...[
+                    if (onDelete != null)
+                      Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          onTap: onDelete,
+                          borderRadius: BorderRadius.circular(8),
+                          child: Container(
+                            padding: const EdgeInsets.all(5.5),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFFEF2F2),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
+                                color: const Color(0xFFFECACA),
                               ),
-                              const Gap(6),
-                              Text(
-                                isCancelled ? 'CANCELLED' : 'COMPLETED',
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w800,
-                                  letterSpacing: 0.5,
-                                  color: isCancelled
-                                      ? const Color(0xFFDC2626)
-                                      : const Color(0xFF047857),
-                                ),
+                            ),
+                            child: const Icon(
+                              CupertinoIcons.trash,
+                              size: 13,
+                              color: Color(0xFFDC2626),
+                            ),
+                          ),
+                        ),
+                      ),
+                  ] else if (onRecordOutcome != null) ...[
+                    InkWell(
+                      onTap: onRecordOutcome,
+                      borderRadius: BorderRadius.circular(8),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 4,
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.description_outlined,
+                              size: 13,
+                              color: Color(0xFF6B7280),
+                            ),
+                            const Gap(6),
+                            Text(
+                              'Outcome',
+                              style: GoogleFonts.inter(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                                color: const Color(0xFF6B7280),
+                                letterSpacing: 0.08,
+                                height: 16 / 12,
                               ),
-                            ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+              const Gap(16),
+
+              // Stat Divider Section (Figma Node 1606:1549)
+              Container(
+                decoration: const BoxDecoration(
+                  border: Border(
+                    top: BorderSide(color: Color(0xFFF3F4F6), width: 1),
+                    bottom: BorderSide(color: Color(0xFFF3F4F6), width: 1),
+                  ),
+                ),
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            '$leads',
+                            style: GoogleFonts.inter(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              color: const Color(0xFF1A1A1A),
+                              height: 24 / 16,
+                            ),
+                          ),
+                          const Gap(6),
+                          Text(
+                            'LEADS',
+                            style: GoogleFonts.inter(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w700,
+                              color: const Color(0xFF6B7280),
+                              letterSpacing: 0.25,
+                              height: 15 / 10,
+                            ),
                           ),
                         ],
                       ),
                     ),
-                    const Gap(8),
-
-                    // Direction & Outcome or Delete Button
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        if (isCancelled) ...[
-                          if (onDelete != null)
-                            Material(
-                              color: Colors.transparent,
-                              child: InkWell(
-                                onTap: onDelete,
-                                borderRadius: BorderRadius.circular(8),
-                                child: Container(
-                                  padding: const EdgeInsets.all(5.5),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFFFEF2F2),
-                                    borderRadius: BorderRadius.circular(8),
-                                    border: Border.all(
-                                      color: const Color(0xFFFECACA),
-                                    ),
-                                  ),
-                                  child: const Icon(
-                                    CupertinoIcons.trash,
-                                    size: 13,
-                                    color: Color(0xFFDC2626),
-                                  ),
-                                ),
-                              ),
-                            ),
-                        ] else if (isCompleted) ...[
-                          if (onRecordOutcome != null)
-                            Material(
-                              color: Colors.transparent,
-                              child: InkWell(
-                                onTap: onRecordOutcome,
-                                borderRadius: BorderRadius.circular(10),
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 10,
-                                    vertical: 6,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFFF1F5F9),
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                  child: const Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Icon(
-                                        Icons.edit_note_rounded,
-                                        size: 14,
-                                        color: Color(0xFF334155),
-                                      ),
-                                      Gap(4),
-                                      Text(
-                                        'Outcome',
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w700,
-                                          color: Color(0xFF334155),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
-                        ] else ...[
-                          Material(
-                            color: Colors.transparent,
-                            child: InkWell(
-                              onTap:
-                                  onDirections ??
-                                  () =>
-                                      LinkLauncher.launchCollegeMapsDirections(
-                                        visit.collegeName,
-                                        locationHint: visit.subtitle,
-                                      ),
-                              borderRadius: BorderRadius.circular(10),
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 10,
-                                  vertical: 6,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFEEF2FF),
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                child: const Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Icon(
-                                      Icons.directions_rounded,
-                                      size: 14,
-                                      color: Color(0xFF4F46E5),
-                                    ),
-                                    Gap(4),
-                                    Text(
-                                      'Direction',
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w700,
-                                        color: Color(0xFF4F46E5),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
+                    Container(
+                      width: 1,
+                      height: 16,
+                      color: const Color(0xFFE5E7EB),
+                    ),
+                    Expanded(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            '$interested',
+                            style: GoogleFonts.inter(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              color: const Color(0xFF1A1A1A),
+                              height: 24 / 16,
                             ),
                           ),
-                          if (onRecordOutcome != null) ...[
-                            const Gap(6),
-                            Material(
-                              color: Colors.transparent,
-                              child: InkWell(
-                                onTap: onRecordOutcome,
-                                borderRadius: BorderRadius.circular(10),
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 9,
-                                    vertical: 6,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFFF1F5F9),
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                  child: const Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Icon(
-                                        Icons.edit_note_rounded,
-                                        size: 14,
-                                        color: Color(0xFF334155),
-                                      ),
-                                      Gap(3),
-                                      Text(
-                                        'Outcome',
-                                        style: TextStyle(
-                                          fontSize: 11.5,
-                                          fontWeight: FontWeight.w700,
-                                          color: Color(0xFF334155),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
+                          const Gap(6),
+                          Text(
+                            'INTERESTED',
+                            style: GoogleFonts.inter(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w700,
+                              color: const Color(0xFF6B7280),
+                              letterSpacing: 0.25,
+                              height: 15 / 10,
                             ),
-                          ],
+                          ),
                         ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Gap(16),
+
+              // Notes Box (Figma Node 1606:1563)
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF8F9FA),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Met: ',
+                          style: GoogleFonts.inter(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 0.2,
+                            color: const Color(0xFF374151),
+                            height: 16 / 12,
+                          ),
+                        ),
+                        Expanded(
+                          child: Text(
+                            met,
+                            style: GoogleFonts.inter(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w400,
+                              color: const Color(0xFF4B5563),
+                              height: 16 / 12,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const Gap(8),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Next: ',
+                          style: GoogleFonts.inter(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 0.25,
+                            color: const Color(0xFF374151),
+                            height: 16 / 12,
+                          ),
+                        ),
+                        Expanded(
+                          child: Text(
+                            next,
+                            style: GoogleFonts.inter(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w400,
+                              color: const Color(0xFF4B5563),
+                              height: 16 / 12,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
                       ],
                     ),
                   ],
                 ),
-                const Gap(16),
-
-                // Middle Box: Actual Real Data $leads LEADS | $interested INTERESTED
-                Container(
-                  height: 44,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF8FAFC),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: const Color(0xFFF1F5F9),
-                      width: 1,
-                    ),
-                  ),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: FittedBox(
-                          fit: BoxFit.scaleDown,
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 8),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                  '$leads',
-                                  style: const TextStyle(
-                                    fontSize: 17,
-                                    fontWeight: FontWeight.w800,
-                                    color: Color(0xFF0F172A),
-                                  ),
-                                ),
-                                const Gap(6),
-                                const Text(
-                                  'LEADS',
-                                  style: TextStyle(
-                                    fontSize: 11.5,
-                                    fontWeight: FontWeight.w700,
-                                    color: Color(0xFF64748B),
-                                    letterSpacing: 0.4,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                      Container(
-                        width: 1,
-                        height: 18,
-                        color: const Color(0xFFE2E8F0),
-                      ),
-                      Expanded(
-                        child: FittedBox(
-                          fit: BoxFit.scaleDown,
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 8),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                  '$interested',
-                                  style: const TextStyle(
-                                    fontSize: 17,
-                                    fontWeight: FontWeight.w800,
-                                    color: Color(0xFF0F172A),
-                                  ),
-                                ),
-                                const Gap(6),
-                                const Text(
-                                  'INTERESTED',
-                                  style: TextStyle(
-                                    fontSize: 11.5,
-                                    fontWeight: FontWeight.w700,
-                                    color: Color(0xFF64748B),
-                                    letterSpacing: 0.4,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const Gap(16),
-
-                // Bottom Met Box (Exact Figma Spec)
-                Container(
-                  width: double.infinity,
-                  constraints: const BoxConstraints(minHeight: 80.19),
-                  padding: const EdgeInsets.fromLTRB(16, 15, 16, 16),
-                  decoration: BoxDecoration(
-                    color: const Color(0x80FFF7ED), // #FFF7ED80
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: const Color(0xFFFFF7ED),
-                      width: 1,
-                    ),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      RichText(
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        text: TextSpan(
-                          style: const TextStyle(
-                            fontSize: 13,
-                            color: Color(0xFF334155),
-                            height: 1.3,
-                          ),
-                          children: [
-                            const TextSpan(
-                              text: 'Met: ',
-                              style: TextStyle(
-                                fontWeight: FontWeight.w800,
-                                color: Color(0xFF0F172A),
-                              ),
-                            ),
-                            TextSpan(text: met),
-                          ],
-                        ),
-                      ),
-                      const Gap(6),
-                      RichText(
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        text: TextSpan(
-                          style: const TextStyle(
-                            fontSize: 13,
-                            color: Color(0xFF334155),
-                            height: 1.3,
-                          ),
-                          children: [
-                            const TextSpan(
-                              text: 'Next: ',
-                              style: TextStyle(
-                                fontWeight: FontWeight.w800,
-                                color: Color(0xFF0F172A),
-                              ),
-                            ),
-                            TextSpan(text: next),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
         );
       },

@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:gap/gap.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:acadeno_crm/core/router/app_router.dart';
 import 'package:acadeno_crm/shared/extensions/build_context_extension.dart';
 import 'package:acadeno_crm/shared/snackbar_alerts/snack_alert.dart';
@@ -209,9 +210,16 @@ class _ExecutiveBottomNavBar extends StatelessWidget {
     return Container(
       decoration: const BoxDecoration(
         color: Colors.white,
-        border: Border(top: BorderSide(color: Color(0xFFEAECF0))),
+        border: Border(top: BorderSide(color: Color(0xFFF3F4F6))),
       ),
-      padding: EdgeInsets.symmetric(horizontal: hPad, vertical: 8),
+      padding: EdgeInsets.fromLTRB(
+        hPad,
+        12,
+        hPad,
+        MediaQuery.paddingOf(context).bottom > 0
+            ? MediaQuery.paddingOf(context).bottom + 8
+            : 20,
+      ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: List.generate(_items.length, (index) {
@@ -227,34 +235,35 @@ class _ExecutiveBottomNavBar extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Container(
-                    width: 56,
-                    height: 30,
+                    width: 48,
+                    height: 32,
                     decoration: BoxDecoration(
                       color: isSelected
-                          ? const Color(0xFFEEF2FF)
+                          ? const Color(0xFFEEEBF6)
                           : Colors.transparent,
-                      borderRadius: BorderRadius.circular(15),
+                      borderRadius: BorderRadius.circular(9999),
                     ),
                     alignment: Alignment.center,
                     child: Icon(
                       item.$1,
                       size: 20,
                       color: isSelected
-                          ? const Color(0xFF4F46E5)
-                          : const Color(0xFF64748B),
+                          ? const Color(0xFF1A119B)
+                          : const Color(0xFF9CA3AF),
                     ),
                   ),
-                  const Gap(3),
+                  const Gap(4),
                   Text(
                     item.$2,
-                    style: TextStyle(
-                      fontSize: 11.5,
+                    style: GoogleFonts.inter(
+                      fontSize: 11,
                       fontWeight: isSelected
                           ? FontWeight.w700
                           : FontWeight.w500,
                       color: isSelected
-                          ? const Color(0xFF4F46E5)
-                          : const Color(0xFF64748B),
+                          ? const Color(0xFF1A119B)
+                          : const Color(0xFF9CA3AF),
+                      height: 16.5 / 11,
                     ),
                   ),
                 ],
