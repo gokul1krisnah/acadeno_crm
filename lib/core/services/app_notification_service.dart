@@ -77,6 +77,9 @@ class AppNotificationService {
   }
   String? _fcmToken;
   String? get fcmToken => _fcmToken;
+  bool _isSyncingToken = false;
+  String? _lastSyncedToken;
+  String? _lastSyncedUid;
 
   Timer? _morningTimer;
   Timer? _morningPeriodicTimer;
@@ -210,13 +213,13 @@ class AppNotificationService {
       _auth.authStateChanges().listen((user) {
         if (user != null) {
           syncUserFcmToken(user.uid);
+        } else {
+          _lastSyncedUid = null;
+          _lastSyncedToken = null;
         }
       });
 
-      // 9. Sync token in background if user is already signed in (non-blocking)
-      unawaited(syncCurrentUserToken());
-
-      // 10. Start automated 9:00 AM daily morning notification
+      // 9. Start automated 9:00 AM daily morning notification
       scheduleDailyMorningBriefing();
     } catch (e) {
       debugPrint('AppNotificationService init notice: $e');
@@ -355,22 +358,48 @@ class AppNotificationService {
 
   /// Saves the device FCM token to `users/{uid}` in Firestore so the backend can target this user.
   Future<void> syncUserFcmToken(String uid) async {
-    if (_fcmToken == null || _fcmToken!.isEmpty) {
-      _fcmToken = await _fetchTokenSafely(timeout: const Duration(seconds: 3));
+    if (_isSyncingToken) return;
+    if (_fcmToken != null &&
+        _fcmToken!.isNotEmpty &&
+        _lastSyncedUid == uid &&
+        _lastSyncedToken == _fcmToken) {
+      return;
     }
 
-    if (_fcmToken != null && _fcmToken!.isNotEmpty) {
-      try {
-        await _firestore.collection('users').doc(uid).set({
-          'fcmToken': _fcmToken,
-          'fcmUpdatedAt': FieldValue.serverTimestamp(),
-        }, SetOptions(merge: true));
-        debugPrint(
-          '✅ Automatically registered device token to Firestore users/$uid',
+    _isSyncingToken = true;
+    try {
+      // Allow initial Firestore auth/session listeners to settle before writing token
+      await Future<void>.delayed(const Duration(milliseconds: 1500));
+      if (_auth.currentUser?.uid != uid) return;
+
+      if (_fcmToken == null || _fcmToken!.isEmpty) {
+        _fcmToken = await _fetchTokenSafely(
+          timeout: const Duration(seconds: 3),
         );
-      } catch (e) {
-        debugPrint('Failed to save FCM token to users/$uid: $e');
       }
+
+      if (_fcmToken != null && _fcmToken!.isNotEmpty) {
+        try {
+          await _firestore.collection('users').doc(uid).set({
+            'fcmToken': _fcmToken,
+            'fcmUpdatedAt': FieldValue.serverTimestamp(),
+          }, SetOptions(merge: true));
+          _lastSyncedUid = uid;
+          _lastSyncedToken = _fcmToken;
+          debugPrint(
+            '✅ Automatically registered device token to Firestore users/$uid',
+          );
+        } catch (e) {
+          final msg = e.toString();
+          if (!msg.contains('INTERNAL ASSERTION FAILED') &&
+              !msg.contains('b815') &&
+              !msg.contains('ca9')) {
+            debugPrint('Failed to save FCM token to users/$uid: $e');
+          }
+        }
+      }
+    } finally {
+      _isSyncingToken = false;
     }
   }
 

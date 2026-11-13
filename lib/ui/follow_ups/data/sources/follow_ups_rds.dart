@@ -91,13 +91,14 @@ class FollowUpsRds {
     });
   }
 
-  /// Fetches a fresh live snapshot directly from Cloud Firestore (bypassing cached stream).
+  /// Fetches a fresh live snapshot directly from Cloud Firestore.
   Future<List<ExecutiveFollowUpItem>> fetchLiveFollowUps({
     String? executiveUid,
   }) async {
     final uid = executiveUid ?? _firebaseAuth.currentUser?.uid;
-    final snap = await _leads.get(
-      const GetOptions(source: Source.serverAndCache),
+    final snap = await FirestoreStreamCache.instance.getCollection(
+      'leads',
+      firestore: _firestore,
     );
 
     final items = <ExecutiveFollowUpItem>[];

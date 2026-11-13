@@ -828,7 +828,8 @@ class _DashboardViewState extends State<_DashboardView> {
         ? rawName
         : (user?.email?.split('@').first ?? 'Admin');
 
-    if (!_hasAutoHealedRole &&
+    if (me.isNotEmpty &&
+        !_hasAutoHealedRole &&
         (me['role'] != 'admin' || me['email'] == null) &&
         cubit.currentUserId != null) {
       _hasAutoHealedRole = true;

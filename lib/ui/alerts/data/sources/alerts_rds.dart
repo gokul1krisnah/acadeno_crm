@@ -579,7 +579,10 @@ class AlertsRds {
   Future<void> purgeOldNotifications() async {
     try {
       final cutoff = DateTime.now().subtract(const Duration(days: 3));
-      final snap = await _firestore.collection('alerts').get();
+      final snap = await FirestoreStreamCache.instance.getCollection(
+        'alerts',
+        firestore: _firestore,
+      );
       for (final doc in snap.docs) {
         final data = doc.data();
         final dt = _parseDateTime(data['createdAt'], data['timestamp']);

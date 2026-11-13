@@ -380,7 +380,7 @@ class _CampaignsViewState extends State<CampaignsView> {
 
   void _fetchLiveExecutives() async {
     try {
-      final snap = await FirebaseFirestore.instance.collection('users').get();
+      final snap = await FirestoreStreamCache.instance.getCollection('users');
       if (snap.docs.isNotEmpty) {
         final names = snap.docs
             .map((d) => (d.data()['name'] ?? '').toString().trim())

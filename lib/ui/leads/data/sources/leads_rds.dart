@@ -344,9 +344,8 @@ class FirestoreLeadsBackend implements LeadsBackend {
 
     DocumentSnapshot<Map<String, dynamic>>? doc;
     try {
-      doc = await _users
-          .doc(uid)
-          .get()
+      doc = await FirestoreStreamCache.instance
+          .getDoc('users', uid, firestore: _firestore)
           .timeout(const Duration(milliseconds: 1000));
     } catch (_) {
       return (uid: uid, name: fallbackName, role: fallbackRole, isActive: true);

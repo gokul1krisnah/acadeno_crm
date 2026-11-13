@@ -1,4 +1,5 @@
 import 'package:acadeno_crm/core/services/device_security_service.dart';
+import 'package:acadeno_crm/core/services/firestore_stream_cache.dart';
 import 'package:acadeno_crm/core/services/session_security_service.dart';
 import 'dart:async';
 import '../data/sources/auth_session_local_ds.dart';
@@ -166,10 +167,8 @@ class LoginCubit extends Cubit<LoginState> {
 
     DocumentSnapshot<Map<String, dynamic>>? doc;
     try {
-      doc = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(user.uid)
-          .get()
+      doc = await FirestoreStreamCache.instance
+          .getDoc('users', user.uid)
           .timeout(const Duration(milliseconds: 1200));
     } catch (e) {
       // Backend unreachable or timed out: trust cached session from Hive
