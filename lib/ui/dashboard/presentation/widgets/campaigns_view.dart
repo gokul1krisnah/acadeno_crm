@@ -880,6 +880,7 @@ class _CampaignsViewState extends State<CampaignsView> {
                         controller: _splitCountController,
                         keyboardType: TextInputType.number,
                         textAlign: TextAlign.center,
+                        textAlignVertical: TextAlignVertical.center,
                         onChanged: (_) => setState(() {}),
                         style: GoogleFonts.inter(
                           fontSize: 16,

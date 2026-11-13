@@ -559,6 +559,7 @@ class _SettingsViewState extends State<SettingsView>
                     height: 48,
                     child: TextField(
                       controller: _nameController,
+                      textAlignVertical: TextAlignVertical.center,
                       decoration: InputDecoration(
                         prefixIcon: const Icon(
                           Icons.person_outline,
@@ -622,6 +623,7 @@ class _SettingsViewState extends State<SettingsView>
                           height: 48,
                           child: TextField(
                             controller: _nameController,
+                            textAlignVertical: TextAlignVertical.center,
                             decoration: InputDecoration(
                               prefixIcon: const Icon(
                                 Icons.person_outline,
@@ -703,6 +705,7 @@ class _SettingsViewState extends State<SettingsView>
                 const Gap(6),
                 TextField(
                   controller: _emailController,
+                  textAlignVertical: TextAlignVertical.center,
                   decoration: InputDecoration(
                     prefixIcon: const Icon(
                       Icons.email_outlined,
@@ -736,6 +739,7 @@ class _SettingsViewState extends State<SettingsView>
                 TextField(
                   controller: _emailPasswordController,
                   obscureText: _obscureEmailPass,
+                  textAlignVertical: TextAlignVertical.center,
                   decoration: InputDecoration(
                     prefixIcon: const Icon(
                       Icons.lock_outline,
@@ -827,6 +831,7 @@ class _SettingsViewState extends State<SettingsView>
                 TextField(
                   controller: _currentPasswordController,
                   obscureText: _obscureCurrentPass,
+                  textAlignVertical: TextAlignVertical.center,
                   decoration: InputDecoration(
                     prefixIcon: const Icon(
                       Icons.lock_outline,
@@ -876,6 +881,7 @@ class _SettingsViewState extends State<SettingsView>
                       TextField(
                         controller: _newPasswordController,
                         obscureText: _obscureNewPass,
+                        textAlignVertical: TextAlignVertical.center,
                         decoration: InputDecoration(
                           prefixIcon: const Icon(
                             Icons.lock_outline,
@@ -926,6 +932,7 @@ class _SettingsViewState extends State<SettingsView>
                       TextField(
                         controller: _confirmPasswordController,
                         obscureText: _obscureConfirmPass,
+                        textAlignVertical: TextAlignVertical.center,
                         decoration: InputDecoration(
                           prefixIcon: const Icon(
                             Icons.lock_outline,
@@ -979,6 +986,7 @@ class _SettingsViewState extends State<SettingsView>
                             TextField(
                               controller: _newPasswordController,
                               obscureText: _obscureNewPass,
+                              textAlignVertical: TextAlignVertical.center,
                               decoration: InputDecoration(
                                 prefixIcon: const Icon(
                                   Icons.lock_outline,
@@ -1031,6 +1039,7 @@ class _SettingsViewState extends State<SettingsView>
                             TextField(
                               controller: _confirmPasswordController,
                               obscureText: _obscureConfirmPass,
+                              textAlignVertical: TextAlignVertical.center,
                               decoration: InputDecoration(
                                 prefixIcon: const Icon(
                                   Icons.lock_outline,

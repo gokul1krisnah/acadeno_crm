@@ -653,6 +653,7 @@ class _UserManagementViewState extends State<UserManagementView> {
                       TextField(
                         controller: newPassCtrl,
                         obscureText: obscurePassword,
+                        textAlignVertical: TextAlignVertical.center,
                         decoration: InputDecoration(
                           labelText: 'New Password',
                           labelStyle: const TextStyle(fontSize: 13, color: _textMuted),
@@ -1017,6 +1018,7 @@ class _UserManagementViewState extends State<UserManagementView> {
                     if (byUid) ...[
                       TextFormField(
                         controller: uidCtrl,
+                        textAlignVertical: TextAlignVertical.center,
                         decoration: inputDeco(
                           'Firebase Auth UID *',
                           Icons.vpn_key_outlined,
@@ -1029,6 +1031,7 @@ class _UserManagementViewState extends State<UserManagementView> {
                     ],
                     TextFormField(
                       controller: nameCtrl,
+                      textAlignVertical: TextAlignVertical.center,
                       decoration: inputDeco(
                         'Full Name *',
                         Icons.person_outline_rounded,
@@ -1041,6 +1044,7 @@ class _UserManagementViewState extends State<UserManagementView> {
                     TextFormField(
                       controller: emailCtrl,
                       keyboardType: TextInputType.emailAddress,
+                      textAlignVertical: TextAlignVertical.center,
                       decoration: inputDeco(
                         'Work Email *',
                         Icons.email_outlined,
@@ -1060,6 +1064,7 @@ class _UserManagementViewState extends State<UserManagementView> {
                       TextFormField(
                         controller: passCtrl,
                         obscureText: obscurePassword,
+                        textAlignVertical: TextAlignVertical.center,
                         decoration: inputDeco(
                           'Temporary Password *',
                           Icons.lock_outline_rounded,
@@ -1626,17 +1631,20 @@ class _UserManagementViewState extends State<UserManagementView> {
                 final isNarrow = c.maxWidth < 768;
                 final searchField = Container(
                   height: 46,
+                  alignment: Alignment.center,
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(color: const Color(0xFFE2E8F0)),
                   ),
                   child: TextField(
+                    textAlignVertical: TextAlignVertical.center,
                     onChanged: (v) => setState(() => _searchQuery = v),
                     style: GoogleFonts.inter(
                       fontSize: 14,
                       fontWeight: FontWeight.w400,
                       color: const Color(0xFF0F172A),
+                      height: 20 / 14,
                     ),
                     decoration: InputDecoration(
                       hintText: 'Search by name, email, or UID...',
@@ -1644,11 +1652,16 @@ class _UserManagementViewState extends State<UserManagementView> {
                         fontSize: 14,
                         fontWeight: FontWeight.w400,
                         color: const Color(0xFF9CA3AF),
+                        height: 20 / 14,
                       ),
                       prefixIcon: const Icon(
                         Icons.search,
                         size: 16,
                         color: Color(0xFF9CA3AF),
+                      ),
+                      prefixIconConstraints: const BoxConstraints(
+                        minWidth: 42,
+                        minHeight: 46,
                       ),
                       suffixIcon: _searchQuery.isNotEmpty
                           ? IconButton(
@@ -1657,8 +1670,14 @@ class _UserManagementViewState extends State<UserManagementView> {
                                   setState(() => _searchQuery = ''),
                             )
                           : null,
+                      suffixIconConstraints: const BoxConstraints(
+                        minWidth: 42,
+                        minHeight: 46,
+                      ),
                       border: InputBorder.none,
-                      isDense: true,
+                      enabledBorder: InputBorder.none,
+                      focusedBorder: InputBorder.none,
+                      isCollapsed: true,
                       contentPadding: const EdgeInsets.symmetric(
                         horizontal: 14,
                         vertical: 12,
@@ -1925,6 +1944,7 @@ class _UserManagementViewState extends State<UserManagementView> {
 
     return Container(
       height: 46,
+      alignment: Alignment.center,
       padding: const EdgeInsets.symmetric(horizontal: 10),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -1935,6 +1955,7 @@ class _UserManagementViewState extends State<UserManagementView> {
         child: DropdownButton<String>(
           value: _roleFilter,
           isExpanded: true,
+          isDense: true,
           dropdownColor: Colors.white,
           borderRadius: BorderRadius.circular(12),
           icon: const Icon(
@@ -2015,6 +2036,7 @@ class _UserManagementViewState extends State<UserManagementView> {
 
     return Container(
       height: 46,
+      alignment: Alignment.center,
       padding: const EdgeInsets.symmetric(horizontal: 10),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -2025,6 +2047,7 @@ class _UserManagementViewState extends State<UserManagementView> {
         child: DropdownButton<String>(
           value: _statusFilter,
           isExpanded: true,
+          isDense: true,
           dropdownColor: Colors.white,
           borderRadius: BorderRadius.circular(12),
           icon: const Icon(

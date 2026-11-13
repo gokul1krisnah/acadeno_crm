@@ -504,6 +504,7 @@ class _AdminAccountDialogState extends State<AdminAccountDialog>
           TextField(
             controller: _emailController,
             keyboardType: TextInputType.emailAddress,
+            textAlignVertical: TextAlignVertical.center,
             decoration: InputDecoration(
               hintText: 'e.g. admin@gmail.com',
               prefixIcon: const Icon(Icons.email_outlined, size: 18),
@@ -523,6 +524,7 @@ class _AdminAccountDialogState extends State<AdminAccountDialog>
           TextField(
             controller: _emailPasswordController,
             obscureText: _obscureEmailPass,
+            textAlignVertical: TextAlignVertical.center,
             decoration: InputDecoration(
               hintText: 'Enter current password',
               prefixIcon: const Icon(Icons.lock_outline, size: 18),
@@ -584,6 +586,7 @@ class _AdminAccountDialogState extends State<AdminAccountDialog>
           TextField(
             controller: _currentPasswordController,
             obscureText: _obscureCurrentPass,
+            textAlignVertical: TextAlignVertical.center,
             decoration: InputDecoration(
               labelText: 'Current Password',
               prefixIcon: const Icon(Icons.lock_outline, size: 18),
@@ -606,6 +609,7 @@ class _AdminAccountDialogState extends State<AdminAccountDialog>
           TextField(
             controller: _newPasswordController,
             obscureText: _obscureNewPass,
+            textAlignVertical: TextAlignVertical.center,
             decoration: InputDecoration(
               labelText: 'New Password (min 6 characters)',
               prefixIcon: const Icon(Icons.key_rounded, size: 18),
@@ -628,6 +632,7 @@ class _AdminAccountDialogState extends State<AdminAccountDialog>
           TextField(
             controller: _confirmPasswordController,
             obscureText: _obscureConfirmPass,
+            textAlignVertical: TextAlignVertical.center,
             decoration: InputDecoration(
               labelText: 'Confirm New Password',
               prefixIcon: const Icon(Icons.key_rounded, size: 18),
@@ -693,6 +698,7 @@ class _AdminAccountDialogState extends State<AdminAccountDialog>
           const Gap(6),
           TextField(
             controller: _nameController,
+            textAlignVertical: TextAlignVertical.center,
             decoration: InputDecoration(
               hintText: 'Enter Admin Name',
               prefixIcon: const Icon(Icons.person_outline, size: 18),

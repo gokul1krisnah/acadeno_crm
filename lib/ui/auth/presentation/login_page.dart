@@ -182,6 +182,8 @@ class _LoginViewState extends State<_LoginView> {
                                       controller: _emailController,
                                       keyboardType: TextInputType.emailAddress,
                                       textInputAction: TextInputAction.next,
+                                      textAlignVertical:
+                                          TextAlignVertical.center,
                                       style: _body(size: 15),
                                       cursorColor: AppColors.indigo,
                                       decoration: _decoration(),
@@ -204,6 +206,8 @@ class _LoginViewState extends State<_LoginView> {
                                       controller: _passwordController,
                                       obscureText: _obscurePassword,
                                       textInputAction: TextInputAction.done,
+                                      textAlignVertical:
+                                          TextAlignVertical.center,
                                       style: _body(size: 15),
                                       cursorColor: AppColors.indigo,
                                       onFieldSubmitted: (_) =>

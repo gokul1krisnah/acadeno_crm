@@ -217,6 +217,7 @@ class _CollegeSelectorFieldState extends State<CollegeSelectorField> {
           const Gap(6),
           TextFormField(
             controller: _customCollegeCtrl,
+            textAlignVertical: TextAlignVertical.center,
             onChanged: _onCustomCollegeChanged,
             decoration: InputDecoration(
               hintText: 'e.g. Malabar College of Engineering',
@@ -265,6 +266,7 @@ class _CollegeSelectorFieldState extends State<CollegeSelectorField> {
         const Gap(6),
         TextFormField(
           controller: widget.controller,
+          textAlignVertical: TextAlignVertical.center,
           decoration: InputDecoration(
             hintText: 'College · Branch · Year',
             isDense: true,

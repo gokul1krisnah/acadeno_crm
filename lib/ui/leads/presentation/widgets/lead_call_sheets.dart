@@ -865,6 +865,7 @@ class LeadCallSheets {
                               child: TextField(
                                 controller: phoneCtrl,
                                 keyboardType: TextInputType.phone,
+                                textAlignVertical: TextAlignVertical.center,
                                 style: GoogleFonts.inter(
                                   fontSize: 13,
                                   fontWeight: FontWeight.w400,
@@ -1007,6 +1008,7 @@ class LeadCallSheets {
                         height: 54,
                         child: TextField(
                           controller: nameCtrl,
+                          textAlignVertical: TextAlignVertical.center,
                           style: GoogleFonts.inter(
                             fontSize: 13,
                             fontWeight: FontWeight.w400,
@@ -1065,6 +1067,7 @@ class LeadCallSheets {
                       // College Selection Dropdown (Figma styling: height 54, borderRadius 12, padding 16)
                       Container(
                         height: 54,
+                        alignment: Alignment.center,
                         decoration: BoxDecoration(
                           color: const Color(0xFFF8FAFC),
                           borderRadius: BorderRadius.circular(12),
@@ -1078,6 +1081,7 @@ class LeadCallSheets {
                           child: DropdownButton<String>(
                             value: selectedCollege,
                             isExpanded: true,
+                            isDense: true,
                             dropdownColor: Colors.white,
                             borderRadius: BorderRadius.circular(12),
                             icon: const Icon(
@@ -1129,6 +1133,7 @@ class LeadCallSheets {
                         height: 54,
                         child: TextField(
                           controller: collegeCtrl,
+                          textAlignVertical: TextAlignVertical.center,
                           style: GoogleFonts.inter(
                             fontSize: 13,
                             fontWeight: FontWeight.w400,

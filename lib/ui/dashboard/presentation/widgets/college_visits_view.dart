@@ -8,6 +8,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../shared/utilities/link_launcher.dart';
+import 'figma_calendar_dialog.dart';
 
 class _CollegeVisit {
   final String id;
@@ -110,6 +111,7 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
                     const Gap(18),
                     TextFormField(
                       controller: collegeCtrl,
+                      textAlignVertical: TextAlignVertical.center,
                       validator: (v) {
                         if (v == null || v.trim().isEmpty) {
                           return 'Please enter college & department';
@@ -187,6 +189,7 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
                       child: TextField(
                         controller: dateCtrl,
                         readOnly: true,
+                        textAlignVertical: TextAlignVertical.center,
                         style: GoogleFonts.inter(
                           fontSize: 13,
                           fontWeight: FontWeight.w400,
@@ -194,23 +197,11 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
                         ),
                         onTap: () async {
                           final now = DateTime.now();
-                          final picked = await showDatePicker(
+                          final picked = await showFigmaCalendarDialog(
                             context: ctx,
                             initialDate: now,
                             firstDate: DateTime(2024),
                             lastDate: DateTime(2030),
-                            builder: (context, child) {
-                              return Theme(
-                                data: Theme.of(context).copyWith(
-                                  colorScheme: const ColorScheme.light(
-                                    primary: Color(0xFFD45107),
-                                    onPrimary: Colors.white,
-                                    onSurface: Color(0xFF0F172A),
-                                  ),
-                                ),
-                                child: child!,
-                              );
-                            },
                           );
                           if (picked != null) {
                             dateCtrl.text = DateFormat(
@@ -263,6 +254,7 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
                     const Gap(14),
                     TextFormField(
                       controller: purposeCtrl,
+                      textAlignVertical: TextAlignVertical.center,
                       validator: (v) {
                         if (v == null || v.trim().isEmpty) {
                           return 'Please enter purpose / event';
@@ -337,6 +329,7 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
                     const Gap(14),
                     TextFormField(
                       controller: staffCtrl,
+                      textAlignVertical: TextAlignVertical.center,
                       validator: (v) {
                         if (v == null || v.trim().isEmpty) {
                           return 'Please enter assigned staff';
@@ -705,6 +698,7 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
                     TextFormField(
                       key: ValueKey('visit_outcome_notes_$isCancelled'),
                       controller: notesCtrl,
+                      textAlignVertical: TextAlignVertical.center,
                       validator: (v) {
                         if (v == null || v.trim().isEmpty) {
                           return isCancelled
@@ -788,6 +782,7 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
                         key: const ValueKey('visit_outcome_leads'),
                         controller: leadsCtrl,
                         keyboardType: TextInputType.number,
+                        textAlignVertical: TextAlignVertical.center,
                         validator: (v) {
                           if (isCancelled) return null;
                           if (v == null || v.trim().isEmpty) {

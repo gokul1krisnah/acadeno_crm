@@ -28,6 +28,7 @@ import 'package:acadeno_crm/ui/leads/data/repository/leads_repo.dart';
 import 'package:acadeno_crm/ui/leads/data/sources/leads_rds.dart';
 
 import 'widgets/campaigns_view.dart';
+import 'widgets/figma_calendar_dialog.dart';
 import 'widgets/college_visits_view.dart';
 import 'widgets/follow_ups_view.dart';
 import 'widgets/import_leads_view.dart';
@@ -351,23 +352,11 @@ class _DashboardViewState extends State<_DashboardView> {
 
   Future<void> _pickDashboardDate() async {
     final now = DateTime.now();
-    final picked = await showDatePicker(
+    final picked = await showFigmaCalendarDialog(
       context: context,
       initialDate: _selectedDashboardDate ?? now,
       firstDate: DateTime(2024),
       lastDate: DateTime(2030),
-      builder: (ctx, child) {
-        return Theme(
-          data: Theme.of(ctx).copyWith(
-            colorScheme: const ColorScheme.light(
-              primary: _orangeAccent,
-              onPrimary: Colors.white,
-              onSurface: Color(0xFF0F172A),
-            ),
-          ),
-          child: child!,
-        );
-      },
     );
     if (picked != null) {
       setState(() {
@@ -1279,16 +1268,17 @@ class _DashboardViewState extends State<_DashboardView> {
           fontSize: 14,
           color: const Color(0xFF111827),
           fontWeight: FontWeight.w400,
+          height: 20 / 14,
         ),
         decoration: InputDecoration(
-          isDense: true,
+          isCollapsed: true,
           filled: false,
           border: InputBorder.none,
           enabledBorder: InputBorder.none,
           focusedBorder: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(
             horizontal: 16,
-            vertical: 14,
+            vertical: 12,
           ),
           prefixIcon: const Padding(
             padding: EdgeInsets.only(left: 16, right: 12),
@@ -1298,9 +1288,9 @@ class _DashboardViewState extends State<_DashboardView> {
               color: Color(0xFF9CA3AF),
             ),
           ),
-          prefixIconConstraints: const BoxConstraints(
+          prefixIconConstraints: BoxConstraints(
             minWidth: 46,
-            minHeight: 18,
+            minHeight: height,
           ),
           suffixIcon: _searchQuery.isNotEmpty
               ? IconButton(
@@ -1318,11 +1308,16 @@ class _DashboardViewState extends State<_DashboardView> {
                   },
                 )
               : null,
+          suffixIconConstraints: BoxConstraints(
+            minWidth: 42,
+            minHeight: height,
+          ),
           hintText: 'Search',
           hintStyle: GoogleFonts.inter(
             fontSize: 14,
             color: const Color(0xFF9CA3AF),
             fontWeight: FontWeight.w400,
+            height: 20 / 14,
           ),
         ),
       ),

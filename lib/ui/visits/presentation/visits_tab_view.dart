@@ -856,6 +856,7 @@ class _VisitsTabViewState extends State<VisitsTabView> {
                       TextFormField(
                         key: const ValueKey('completed_persons_met'),
                         controller: metCtrl,
+                        textAlignVertical: TextAlignVertical.center,
                         validator: (v) {
                           if (isCancelled) return null;
                           if (v == null || v.trim().isEmpty) {
@@ -937,6 +938,7 @@ class _VisitsTabViewState extends State<VisitsTabView> {
                               key: const ValueKey('completed_leads_collected'),
                               controller: leadsCtrl,
                               keyboardType: TextInputType.number,
+                              textAlignVertical: TextAlignVertical.center,
                               validator: (v) {
                                 if (isCancelled) return null;
                                 if (v == null || v.trim().isEmpty) {
@@ -1020,6 +1022,7 @@ class _VisitsTabViewState extends State<VisitsTabView> {
                               key: const ValueKey('completed_interested_count'),
                               controller: interestedCtrl,
                               keyboardType: TextInputType.number,
+                              textAlignVertical: TextAlignVertical.center,
                               validator: (v) {
                                 if (isCancelled) return null;
                                 if (v == null || v.trim().isEmpty) {
@@ -1103,6 +1106,7 @@ class _VisitsTabViewState extends State<VisitsTabView> {
                       TextFormField(
                         key: const ValueKey('completed_next_action'),
                         controller: nextCtrl,
+                        textAlignVertical: TextAlignVertical.center,
                         validator: (v) {
                           if (isCancelled) return null;
                           if (v == null || v.trim().isEmpty) {
@@ -1179,6 +1183,7 @@ class _VisitsTabViewState extends State<VisitsTabView> {
                       TextFormField(
                         key: const ValueKey('cancelled_reason_notes'),
                         controller: cancelReasonCtrl,
+                        textAlignVertical: TextAlignVertical.center,
                         validator: (v) {
                           if (!isCancelled) return null;
                           if (v == null || v.trim().isEmpty) {
@@ -1382,6 +1387,7 @@ class _VisitsTabViewState extends State<VisitsTabView> {
                       const Gap(18),
                       TextFormField(
                         controller: collegeCtrl,
+                        textAlignVertical: TextAlignVertical.center,
                         validator: (v) {
                           if (v == null || v.trim().isEmpty) {
                             return 'Please enter college name';
@@ -1474,6 +1480,7 @@ class _VisitsTabViewState extends State<VisitsTabView> {
                         child: IgnorePointer(
                           child: TextFormField(
                             controller: dateCtrl,
+                            textAlignVertical: TextAlignVertical.center,
                             style: GoogleFonts.inter(
                               fontSize: 13,
                               fontWeight: FontWeight.w400,
@@ -1544,6 +1551,7 @@ class _VisitsTabViewState extends State<VisitsTabView> {
                       const Gap(14),
                       TextFormField(
                         controller: subCtrl,
+                        textAlignVertical: TextAlignVertical.center,
                         validator: (v) {
                           if (v == null || v.trim().isEmpty) {
                             return 'Please enter department or location';
@@ -1618,6 +1626,7 @@ class _VisitsTabViewState extends State<VisitsTabView> {
                       const Gap(14),
                       TextFormField(
                         controller: purposeCtrl,
+                        textAlignVertical: TextAlignVertical.center,
                         validator: (v) {
                           if (v == null || v.trim().isEmpty) {
                             return 'Please enter visit purpose';

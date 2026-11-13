@@ -18,6 +18,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:acadeno_crm/shared/theme/app_svgs.dart';
 
 import '../../application/dashboard_cubit.dart';
+import 'figma_calendar_dialog.dart';
 
 const _primary = Color(0xFFEF8144);
 const _border = Color(0xFFE5E7EB);
@@ -539,6 +540,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                       TextFormField(
                         controller: phoneC,
                         keyboardType: TextInputType.phone,
+                        textAlignVertical: TextAlignVertical.center,
                         style: GoogleFonts.inter(
                           fontSize: 13,
                           fontWeight: FontWeight.w400,
@@ -586,6 +588,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                       const Gap(14),
                       TextFormField(
                         controller: nameC,
+                        textAlignVertical: TextAlignVertical.center,
                         style: GoogleFonts.inter(
                           fontSize: 13,
                           fontWeight: FontWeight.w400,
@@ -642,6 +645,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                       const Gap(6),
                       TextFormField(
                         controller: collegeC,
+                        textAlignVertical: TextAlignVertical.center,
                         style: GoogleFonts.inter(
                           fontSize: 13,
                           fontWeight: FontWeight.w400,
@@ -1040,6 +1044,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                       const Gap(6),
                       TextFormField(
                         controller: nameC,
+                        textAlignVertical: TextAlignVertical.center,
                         style: GoogleFonts.inter(
                           fontSize: 13,
                           fontWeight: FontWeight.w400,
@@ -1096,6 +1101,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                       TextFormField(
                         controller: phoneC,
                         keyboardType: TextInputType.phone,
+                        textAlignVertical: TextAlignVertical.center,
                         style: GoogleFonts.inter(
                           fontSize: 13,
                           fontWeight: FontWeight.w400,
@@ -1169,6 +1175,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                                 const Gap(6),
                                 Container(
                                   height: 52,
+                                  alignment: Alignment.center,
                                   decoration: BoxDecoration(
                                     color: const Color(0xFFF8FAFC),
                                     borderRadius: BorderRadius.circular(12),
@@ -1184,6 +1191,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                                     child: DropdownButton<String>(
                                       value: selectedSource,
                                       isExpanded: true,
+                                      isDense: true,
                                       dropdownColor: Colors.white,
                                       borderRadius: BorderRadius.circular(12),
                                       icon: const Icon(
@@ -1234,6 +1242,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                                 const Gap(6),
                                 Container(
                                   height: 52,
+                                  alignment: Alignment.center,
                                   decoration: BoxDecoration(
                                     color: const Color(0xFFF8FAFC),
                                     borderRadius: BorderRadius.circular(12),
@@ -1249,6 +1258,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                                     child: DropdownButton<String>(
                                       value: selectedStatus,
                                       isExpanded: true,
+                                      isDense: true,
                                       dropdownColor: Colors.white,
                                       borderRadius: BorderRadius.circular(12),
                                       icon: const Icon(
@@ -1946,18 +1956,22 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                         height: 42,
                         child: TextField(
                           controller: _searchC,
+                          textAlignVertical: TextAlignVertical.center,
                           onChanged: cubit.setSearchQuery,
                           style: GoogleFonts.poppins(
                             fontSize: 14,
                             fontWeight: FontWeight.w500,
                             color: const Color(0xFF111827),
+                            height: 20 / 14,
                           ),
                           decoration: InputDecoration(
+                            isDense: true,
                             hintText: 'Name, phone or college',
                             hintStyle: GoogleFonts.poppins(
                               fontSize: 14,
                               fontWeight: FontWeight.w500,
                               color: const Color(0xFF9CA3AF),
+                              height: 20 / 14,
                             ),
                             contentPadding: const EdgeInsets.symmetric(
                               horizontal: 16,
@@ -2241,23 +2255,11 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                           final now = DateTime.now();
                           final parsed =
                               DateTime.tryParse(state.selectedDateKey) ?? now;
-                          final picked = await showDatePicker(
+                          final picked = await showFigmaCalendarDialog(
                             context: context,
                             initialDate: parsed,
                             firstDate: DateTime(2024),
                             lastDate: DateTime(2030),
-                            builder: (ctx, child) {
-                              return Theme(
-                                data: Theme.of(ctx).copyWith(
-                                  colorScheme: const ColorScheme.light(
-                                    primary: Color(0xFFEF8144),
-                                    onPrimary: Colors.white,
-                                    onSurface: Color(0xFF0F172A),
-                                  ),
-                                ),
-                                child: child!,
-                              );
-                            },
                           );
                           if (picked != null) {
                             cubit.selectCustomAssignmentDate(picked);
@@ -2389,8 +2391,10 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                       children: [
                         Row(
                           children: [
-                            bulkDeleteBtn,
-                            const Gap(12),
+                            if (state.selectedLeadIds.isNotEmpty) ...[
+                              bulkDeleteBtn,
+                              const Gap(12),
+                            ],
                             Expanded(
                               child: Text(
                                 '${state.selectedLeadIds.length} Leads selected',
@@ -2446,8 +2450,10 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                         mainAxisSize: MainAxisSize.min,
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          bulkDeleteBtn,
-                          const Gap(14),
+                          if (state.selectedLeadIds.isNotEmpty) ...[
+                            bulkDeleteBtn,
+                            const Gap(14),
+                          ],
                           Text(
                             '${state.selectedLeadIds.length} Leads selected',
                             style: GoogleFonts.poppins(
