@@ -562,59 +562,17 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                             (v == null || v.trim().isEmpty) ? 'Required' : null,
                       ),
                       const Gap(14),
-                      Text(
-                        'College · Branch · Year',
-                        style: GoogleFonts.inter(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                          letterSpacing: 0.5,
-                          color: const Color(0xFF94A3B8),
-                        ),
-                      ),
-                      const Gap(6),
-                      TextFormField(
+                      CollegeSelectorField(
                         controller: collegeC,
-                        textAlignVertical: TextAlignVertical.center,
-                        style: GoogleFonts.inter(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w400,
-                          color: const Color(0xFF0F172A),
-                        ),
-                        decoration: InputDecoration(
-                          filled: true,
-                          fillColor: const Color(0xFFF8FAFC),
-                          prefixIcon: const Icon(
-                            Icons.notes_rounded,
-                            size: 20,
-                            color: Color(0xFF94A3B8),
-                          ),
-                          isDense: true,
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 16,
-                          ),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(
-                              color: Color(0xFFE2E8F0),
-                              width: 1,
-                            ),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(
-                              color: Color(0xFFE2E8F0),
-                              width: 1,
-                            ),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(
-                              color: Color(0xFFD45107),
-                              width: 1.5,
-                            ),
-                          ),
-                        ),
+                        additionalColleges: state.allLeads
+                            .map(
+                              (l) => l.collegeBranch
+                                  .split(RegExp(r'[·\-]'))
+                                  .first
+                                  .trim(),
+                            )
+                            .where((s) => s.isNotEmpty)
+                            .toList(),
                       ),
                       const Gap(14),
                       Text(

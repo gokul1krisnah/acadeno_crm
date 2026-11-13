@@ -856,19 +856,9 @@ class LeadCallSheets {
     final collegeCtrl = TextEditingController(
       text: 'MES College · CSE · 3rd yr',
     );
-    String selectedCollege = 'MES College';
     String selectedCampaign = 'Direct Walk-in';
     String? lookupFeedback;
     bool lookupFoundDuplicate = false;
-
-    const knownColleges = [
-      'MES College',
-      'NIT Calicut',
-      'Farook College',
-      'GEC Kozhikode',
-      'KMCT College of Engineering',
-      'Government Polytechnic',
-    ];
 
     showDialog(
       context: context,
@@ -1121,127 +1111,9 @@ class LeadCallSheets {
                       ),
                       const Gap(14),
 
-                      // College Selection Label
-                      Text(
-                        'College Selection',
-                        style: GoogleFonts.inter(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          color: const Color(0xFF334155),
-                        ),
-                      ),
-                      const Gap(6),
-                      // College Selection Dropdown (Figma styling: height 54, borderRadius 12, padding 16)
-                      Container(
-                        height: 54,
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFF8FAFC),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: const Color(0xFFE2E8F0),
-                            width: 1,
-                          ),
-                        ),
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        child: DropdownButtonHideUnderline(
-                          child: DropdownButton<String>(
-                            value: selectedCollege,
-                            isExpanded: true,
-                            isDense: true,
-                            dropdownColor: Colors.white,
-                            borderRadius: BorderRadius.circular(12),
-                            icon: const Icon(
-                              Icons.keyboard_arrow_down_rounded,
-                              color: Color(0xFF64748B),
-                              size: 22,
-                            ),
-                            style: GoogleFonts.inter(
-                              fontSize: 13.5,
-                              fontWeight: FontWeight.w400,
-                              color: const Color(0xFF0F172A),
-                            ),
-                            items: knownColleges.map((col) {
-                              return DropdownMenuItem<String>(
-                                value: col,
-                                child: Text(col),
-                              );
-                            }).toList(),
-                            onChanged: (val) {
-                              if (val != null) {
-                                setSheetState(() {
-                                  selectedCollege = val;
-                                  final parts = collegeCtrl.text.split('·');
-                                  final branchYear = parts.length > 1
-                                      ? ' ·${parts.sublist(1).join('·')}'
-                                      : ' · CSE · 3rd yr';
-                                  collegeCtrl.text = '$val$branchYear';
-                                });
-                              }
-                            },
-                          ),
-                        ),
-                      ),
-                      const Gap(14),
-
-                      // COLLEGE · BRANCH · YEAR Label
-                      Text(
-                        'COLLEGE · BRANCH · YEAR',
-                        style: GoogleFonts.inter(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                          letterSpacing: 0.5,
-                          color: const Color(0xFF94A3B8),
-                        ),
-                      ),
-                      const Gap(6),
-                      // Editable College · Branch · Year text input (height 54, borderRadius 12)
-                      SizedBox(
-                        height: 54,
-                        child: TextField(
-                          controller: collegeCtrl,
-                          textAlignVertical: TextAlignVertical.center,
-                          style: GoogleFonts.inter(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w400,
-                            color: const Color(0xFF0F172A),
-                          ),
-                          decoration: InputDecoration(
-                            filled: true,
-                            fillColor: const Color(0xFFF8FAFC),
-                            prefixIcon: const Icon(
-                              Icons.notes_rounded,
-                              size: 20,
-                              color: Color(0xFF94A3B8),
-                            ),
-                            isDense: true,
-                            contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 16,
-                            ),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(
-                                color: Color(0xFFE2E8F0),
-                                width: 1,
-                              ),
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(
-                                color: Color(0xFFE2E8F0),
-                                width: 1,
-                              ),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(
-                                color: Color(0xFFD45107),
-                                width: 1.5,
-                              ),
-                            ),
-                          ),
-                        ),
+                      // College Selection Dropdown + Add New College + College · Branch · Year
+                      CollegeSelectorField(
+                        controller: collegeCtrl,
                       ),
                       const Gap(4),
                       Text(
