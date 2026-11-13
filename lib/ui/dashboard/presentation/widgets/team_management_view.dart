@@ -523,91 +523,13 @@ class _TeamManagementViewState extends State<TeamManagementView> {
     required int assignedCount,
     required int totalPool,
   }) {
-    return Container(
-      height: 140,
-      decoration: BoxDecoration(
-        color: const Color(0xFF4338CA),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: Stack(
-        children: [
-          Positioned(
-            right: -48,
-            top: -48,
-            child: Container(
-              width: 96,
-              height: 96,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white.withValues(alpha: 0.05),
-              ),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Total Assigned',
-                      style: GoogleFonts.inter(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.white.withValues(alpha: 0.9),
-                        letterSpacing: -0.5195,
-                        height: 20 / 14,
-                      ),
-                    ),
-                    SvgPicture.asset(
-                      'assets/svgs/stat_total_leads.svg',
-                      width: 18,
-                      height: 18,
-                      colorFilter: const ColorFilter.mode(
-                        Colors.white,
-                        BlendMode.srcIn,
-                      ),
-                    ),
-                  ],
-                ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    FittedBox(
-                      fit: BoxFit.scaleDown,
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        '$assignedCount Leads',
-                        style: GoogleFonts.inter(
-                          fontSize: 36,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.white,
-                          height: 40 / 36,
-                        ),
-                      ),
-                    ),
-                    const Gap(4),
-                    Text(
-                      '$totalPool total in pool',
-                      style: GoogleFonts.inter(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w400,
-                        color: Colors.white.withValues(alpha: 0.8),
-                        letterSpacing: -0.2344,
-                        height: 15 / 10,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
+    return _TeamStatCard(
+      label: 'Total Assigned',
+      valueText: '$assignedCount Leads',
+      sub: '$totalPool total in pool',
+      color: const Color(0xFF4338CA),
+      svgAsset: 'assets/svgs/stat_total_leads.svg',
+      isSolidHero: true,
     );
   }
 
@@ -616,152 +538,46 @@ class _TeamManagementViewState extends State<TeamManagementView> {
     required int contactedCount,
     required int contactedPct,
   }) {
-    return Container(
-      height: 140,
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE2E8E5)),
+    return _TeamStatCard(
+      label: 'Contacted',
+      valueWidget: RichText(
+        text: TextSpan(
+          children: [
+            TextSpan(
+              text: '$contactedCount ',
+              style: GoogleFonts.inter(
+                fontSize: 36,
+                fontWeight: FontWeight.w700,
+                color: const Color(0xFF3F3FB4),
+                height: 40 / 36,
+              ),
+            ),
+            TextSpan(
+              text: '($contactedPct%)',
+              style: GoogleFonts.inter(
+                fontSize: 24,
+                fontWeight: FontWeight.w700,
+                color: const Color(0xFF3F3FB4),
+                height: 40 / 24,
+              ),
+            ),
+          ],
+        ),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Contacted',
-                style: GoogleFonts.inter(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                  color: const Color(0xFF718096),
-                  letterSpacing: -0.5469,
-                  height: 20 / 14,
-                ),
-              ),
-              SvgPicture.asset(
-                'assets/svgs/stat_phone.svg',
-                width: 18,
-                height: 18,
-              ),
-            ],
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              FittedBox(
-                fit: BoxFit.scaleDown,
-                alignment: Alignment.centerLeft,
-                child: RichText(
-                  text: TextSpan(
-                    children: [
-                      TextSpan(
-                        text: '$contactedCount ',
-                        style: GoogleFonts.inter(
-                          fontSize: 36,
-                          fontWeight: FontWeight.w700,
-                          color: const Color(0xFF3F3FB4),
-                          height: 40 / 36,
-                        ),
-                      ),
-                      TextSpan(
-                        text: '($contactedPct%)',
-                        style: GoogleFonts.inter(
-                          fontSize: 24,
-                          fontWeight: FontWeight.w700,
-                          color: const Color(0xFF3F3FB4),
-                          height: 40 / 24,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const Gap(4),
-              Text(
-                'Goal: >80%',
-                style: GoogleFonts.inter(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w400,
-                  color: const Color(0xFFA0AEC0),
-                  letterSpacing: -0.3125,
-                  height: 15 / 10,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
+      sub: 'Goal: >80%',
+      color: const Color(0xFF3F3FB4),
+      svgAsset: 'assets/svgs/stat_phone.svg',
     );
   }
 
   // Card 3: Pending follow-ups (Node 1363:2271)
   Widget _buildPendingCard({required int pendingCount}) {
-    return Container(
-      height: 140,
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE2E8E5)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Pending follow-ups',
-                style: GoogleFonts.inter(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                  color: const Color(0xFF718096),
-                  letterSpacing: -0.4648,
-                  height: 20 / 14,
-                ),
-              ),
-              SvgPicture.asset(
-                'assets/svgs/stat_hourglass.svg',
-                width: 18,
-                height: 18,
-              ),
-            ],
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              FittedBox(
-                fit: BoxFit.scaleDown,
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  '$pendingCount',
-                  style: GoogleFonts.inter(
-                    fontSize: 36,
-                    fontWeight: FontWeight.w700,
-                    color: const Color(0xFF4C0CBF),
-                    height: 40 / 36,
-                  ),
-                ),
-              ),
-              const Gap(4),
-              Text(
-                pendingCount > 0 ? 'Requires attention' : 'All clear',
-                style: GoogleFonts.inter(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w400,
-                  color: const Color(0xFFA0AEC0),
-                  letterSpacing: -0.2637,
-                  height: 15 / 10,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
+    return _TeamStatCard(
+      label: 'Pending follow-ups',
+      valueText: '$pendingCount',
+      sub: pendingCount > 0 ? 'Requires attention' : 'All clear',
+      color: const Color(0xFF4C0CBF),
+      svgAsset: 'assets/svgs/stat_hourglass.svg',
     );
   }
 
@@ -770,68 +586,12 @@ class _TeamManagementViewState extends State<TeamManagementView> {
     required int convertedCount,
     required int conversionPct,
   }) {
-    return Container(
-      height: 140,
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE2E8E5)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Converted Leads',
-                style: GoogleFonts.inter(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                  color: const Color(0xFF718096),
-                  letterSpacing: -0.5605,
-                  height: 20 / 14,
-                ),
-              ),
-              SvgPicture.asset(
-                'assets/svgs/stat_star.svg',
-                width: 18,
-                height: 18,
-              ),
-            ],
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              FittedBox(
-                fit: BoxFit.scaleDown,
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  '$convertedCount',
-                  style: GoogleFonts.inter(
-                    fontSize: 36,
-                    fontWeight: FontWeight.w700,
-                    color: const Color(0xFF22C55E),
-                    height: 40 / 36,
-                  ),
-                ),
-              ),
-              const Gap(4),
-              Text(
-                '$conversionPct% conversion rate',
-                style: GoogleFonts.inter(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w400,
-                  color: const Color(0xFFA0AEC0),
-                  height: 15 / 10,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
+    return _TeamStatCard(
+      label: 'Converted Leads',
+      valueText: '$convertedCount',
+      sub: '$conversionPct% conversion rate',
+      color: const Color(0xFF22C55E),
+      svgAsset: 'assets/svgs/stat_star.svg',
     );
   }
 
@@ -1223,6 +983,290 @@ class _TeamManagementViewState extends State<TeamManagementView> {
           color: const Color(0xFF64748B),
           letterSpacing: 0.6,
           height: 16 / 12,
+        ),
+      ),
+    );
+  }
+}
+
+class _TeamStatCard extends StatefulWidget {
+  final String label;
+  final String? valueText;
+  final Widget? valueWidget;
+  final String sub;
+  final Color color;
+  final String svgAsset;
+  final bool isSolidHero;
+
+  const _TeamStatCard({
+    required this.label,
+    this.valueText,
+    this.valueWidget,
+    required this.sub,
+    required this.color,
+    required this.svgAsset,
+    this.isSolidHero = false,
+  });
+
+  @override
+  State<_TeamStatCard> createState() => _TeamStatCardState();
+}
+
+class _TeamStatCardState extends State<_TeamStatCard> {
+  bool _isHovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    if (widget.isSolidHero) {
+      return MouseRegion(
+        onEnter: (_) => setState(() => _isHovered = true),
+        onExit: (_) => setState(() => _isHovered = false),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeOutCubic,
+          transform: Matrix4.translationValues(0, _isHovered ? -4 : 0, 0),
+          height: 140,
+          clipBehavior: Clip.antiAlias,
+          decoration: BoxDecoration(
+            color: widget.color,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: _isHovered
+                ? [
+                    BoxShadow(
+                      color: widget.color.withValues(alpha: 0.38),
+                      blurRadius: 20,
+                      offset: const Offset(0, 10),
+                    ),
+                  ]
+                : [
+                    BoxShadow(
+                      color: widget.color.withValues(alpha: 0.18),
+                      blurRadius: 8,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
+          ),
+          child: Stack(
+            children: [
+              Positioned(
+                right: -48,
+                top: -48,
+                child: AnimatedScale(
+                  duration: const Duration(milliseconds: 200),
+                  scale: _isHovered ? 1.15 : 1.0,
+                  child: Container(
+                    width: 96,
+                    height: 96,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white.withValues(alpha: 0.05),
+                    ),
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              widget.label,
+                              maxLines: 1,
+                              style: GoogleFonts.inter(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.white.withValues(alpha: 0.9),
+                                letterSpacing: -0.5195,
+                                height: 20 / 14,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const Gap(4),
+                        AnimatedScale(
+                          duration: const Duration(milliseconds: 200),
+                          scale: _isHovered ? 1.12 : 1.0,
+                          curve: Curves.easeOutBack,
+                          child: SvgPicture.asset(
+                            widget.svgAsset,
+                            width: 18,
+                            height: 18,
+                            colorFilter: const ColorFilter.mode(
+                              Colors.white,
+                              BlendMode.srcIn,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        FittedBox(
+                          fit: BoxFit.scaleDown,
+                          alignment: Alignment.centerLeft,
+                          child:
+                              widget.valueWidget ??
+                              Text(
+                                widget.valueText ?? '',
+                                style: GoogleFonts.inter(
+                                  fontSize: 36,
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.white,
+                                  height: 40 / 36,
+                                ),
+                              ),
+                        ),
+                        const Gap(4),
+                        FittedBox(
+                          fit: BoxFit.scaleDown,
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            widget.sub,
+                            maxLines: 1,
+                            style: GoogleFonts.inter(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w400,
+                              color: Colors.white.withValues(alpha: 0.8),
+                              letterSpacing: -0.2344,
+                              height: 15 / 10,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return MouseRegion(
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeOutCubic,
+        transform: Matrix4.translationValues(0, _isHovered ? -4 : 0, 0),
+        height: 140,
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: _isHovered
+                ? widget.color.withValues(alpha: 0.35)
+                : const Color(0xFFE2E8E5),
+            width: _isHovered ? 1.2 : 1,
+          ),
+          boxShadow: _isHovered
+              ? [
+                  BoxShadow(
+                    color: widget.color.withValues(alpha: 0.12),
+                    blurRadius: 18,
+                    offset: const Offset(0, 8),
+                  ),
+                  const BoxShadow(
+                    color: Color(0x060F172A),
+                    blurRadius: 6,
+                    offset: Offset(0, 2),
+                  ),
+                ]
+              : const [
+                  BoxShadow(
+                    color: Color(0x05000000),
+                    blurRadius: 4,
+                    offset: Offset(0, 1),
+                  ),
+                ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      widget.label,
+                      maxLines: 1,
+                      style: GoogleFonts.inter(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: _isHovered
+                            ? const Color(0xFF1E293B)
+                            : const Color(0xFF718096),
+                        letterSpacing: -0.5,
+                        height: 20 / 14,
+                      ),
+                    ),
+                  ),
+                ),
+                const Gap(4),
+                AnimatedScale(
+                  duration: const Duration(milliseconds: 200),
+                  scale: _isHovered ? 1.12 : 1.0,
+                  curve: Curves.easeOutBack,
+                  child: SvgPicture.asset(
+                    widget.svgAsset,
+                    width: 18,
+                    height: 18,
+                  ),
+                ),
+              ],
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child:
+                      widget.valueWidget ??
+                      Text(
+                        widget.valueText ?? '',
+                        style: GoogleFonts.inter(
+                          fontSize: 36,
+                          fontWeight: FontWeight.w700,
+                          color: widget.color,
+                          height: 40 / 36,
+                        ),
+                      ),
+                ),
+                const Gap(4),
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    widget.sub,
+                    maxLines: 1,
+                    style: GoogleFonts.inter(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w400,
+                      color: const Color(0xFFA0AEC0),
+                      letterSpacing: -0.3,
+                      height: 15 / 10,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
         ),
       ),
     );
