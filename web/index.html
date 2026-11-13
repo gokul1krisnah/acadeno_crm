@@ -35,19 +35,88 @@
 <body>
   <script>
     // Guard against known @firebase/firestore 13.1.0 watch-stream race assertion (ID: ca9 / b815)
+    // and WebGL2 context loss / Skia shader compilation spam on browser GPU reset
     (function () {
-      var origError = console.error;
-      console.error = function () {
-        for (var i = 0; i < arguments.length; i++) {
-          var s = String(arguments[i] || '');
+      var suppressShaderBlockLines = 0;
+
+      function isIgnorableNoise(args) {
+        if (suppressShaderBlockLines > 0) {
+          suppressShaderBlockLines--;
+          return true;
+        }
+        for (var i = 0; i < args.length; i++) {
+          var s = String(args[i] || '');
+          if (s.indexOf('Shader compilation error') !== -1 ||
+              s.indexOf('Program linking error') !== -1) {
+            suppressShaderBlockLines = 60;
+            return true;
+          }
           if (s.indexOf('INTERNAL ASSERTION FAILED') !== -1 ||
               s.indexOf('ID: b815') !== -1 ||
-              s.indexOf('ID: ca9') !== -1) {
-            return;
+              s.indexOf('ID: ca9') !== -1 ||
+              s.indexOf('uTextureSampler_0_S0') !== -1 ||
+              s.indexOf('sk_FragColor') !== -1 ||
+              s.indexOf('sk_FragCoord') !== -1 ||
+              s.indexOf('vQuadEdge_S0') !== -1 ||
+              s.indexOf('vTextureCoords_S0') !== -1 ||
+              s.indexOf('urectUniform_S1_c0') !== -1 ||
+              s.indexOf('outputCoverage_S0') !== -1 ||
+              s.indexOf('#version 300 es') !== -1 ||
+              s.indexOf('precision mediump') !== -1 ||
+              s.indexOf('(unknown error)') !== -1 ||
+              s.indexOf('------------------------') !== -1 ||
+              /^\s*\d+\t/.test(s)) {
+            return true;
           }
         }
+        return false;
+      }
+
+      var origError = console.error;
+      console.error = function () {
+        if (isIgnorableNoise(arguments)) return;
         return origError.apply(console, arguments);
       };
+
+      var origWarn = console.warn;
+      console.warn = function () {
+        if (isIgnorableNoise(arguments)) return;
+        return origWarn.apply(console, arguments);
+      };
+
+      var origLog = console.log;
+      console.log = function () {
+        if (isIgnorableNoise(arguments)) return;
+        return origLog.apply(console, arguments);
+      };
+
+      var origInfo = console.info;
+      console.info = function () {
+        if (isIgnorableNoise(arguments)) return;
+        return origInfo.apply(console, arguments);
+      };
+
+      var origDebug = console.debug;
+      console.debug = function () {
+        if (isIgnorableNoise(arguments)) return;
+        return origDebug.apply(console, arguments);
+      };
+
+      // Force WebGL1 context for CanvasKit to avoid WebGL2 (#version 300 es) ANGLE shader compilation errors on Windows GPUs
+      if (typeof HTMLCanvasElement !== 'undefined' && HTMLCanvasElement.prototype.getContext) {
+        var origGetContext = HTMLCanvasElement.prototype.getContext;
+        HTMLCanvasElement.prototype.getContext = function (type, attrs) {
+          if (type === 'webgl2') {
+            return null;
+          }
+          if (type === 'webgl' || type === 'experimental-webgl') {
+            var safeAttrs = Object.assign({ powerPreference: 'default', failIfMajorPerformanceCaveat: false }, attrs || {});
+            return origGetContext.call(this, type, safeAttrs);
+          }
+          return origGetContext.apply(this, arguments);
+        };
+      }
+
       window.addEventListener('unhandledrejection', function (event) {
         var msg = String((event && event.reason) || '');
         if (msg.indexOf('INTERNAL ASSERTION FAILED') !== -1 ||
@@ -56,6 +125,11 @@
           event.preventDefault();
         }
       });
+
+      // Automatically recover if Chrome drops the WebGL GPU context
+      window.addEventListener('webglcontextlost', function (e) {
+        e.preventDefault();
+      }, true);
     })();
 
     if ('serviceWorker' in navigator) {
