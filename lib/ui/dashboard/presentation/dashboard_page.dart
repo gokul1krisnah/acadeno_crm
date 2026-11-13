@@ -24,6 +24,7 @@ import '../data/repository/dashboard_repo.dart';
 import '../data/sources/dashboard_rds.dart';
 
 import 'package:acadeno_crm/ui/leads/application/admin_leads_cubit.dart';
+import 'package:acadeno_crm/ui/leads/data/model/lead_models.dart';
 import 'package:acadeno_crm/ui/leads/data/repository/leads_repo.dart';
 import 'package:acadeno_crm/ui/leads/data/sources/leads_rds.dart';
 
@@ -345,9 +346,19 @@ class _DashboardViewState extends State<_DashboardView> {
 
   DateTime? _selectedDashboardDate;
 
-  String get _today {
+  DateTime get _effectiveDashboardDate {
     final n = _selectedDashboardDate ?? DateTime.now();
-    return DateFormat('EEEE, d MMMM').format(n);
+    return DateTime(n.year, n.month, n.day);
+  }
+
+  bool get _isTodaySelected {
+    final now = DateTime.now();
+    final d = _effectiveDashboardDate;
+    return d.year == now.year && d.month == now.month && d.day == now.day;
+  }
+
+  String get _today {
+    return DateFormat('EEEE, d MMMM').format(_effectiveDashboardDate);
   }
 
   Future<void> _pickDashboardDate() async {
@@ -359,13 +370,337 @@ class _DashboardViewState extends State<_DashboardView> {
       lastDate: DateTime(2030),
     );
     if (picked != null) {
+      final normalizedPicked = DateTime(picked.year, picked.month, picked.day);
+      final normalizedToday = DateTime(now.year, now.month, now.day);
       setState(() {
-        _selectedDashboardDate = picked;
+        _selectedDashboardDate = normalizedPicked == normalizedToday
+            ? null
+            : normalizedPicked;
       });
-      if (mounted) {
-        context.read<AdminLeadsCubit>().selectCustomAssignmentDate(picked);
+      if (mounted && !normalizedPicked.isBefore(normalizedToday)) {
+        context.read<AdminLeadsCubit>().selectCustomAssignmentDate(
+          normalizedPicked,
+        );
       }
     }
+  }
+
+  static String? _extractDateKey(dynamic val, {DateTime? now}) {
+    if (val == null) return null;
+    if (val is Timestamp) {
+      return LeadDateHelper.dateKey(val.toDate());
+    }
+    if (val is DateTime) {
+      return LeadDateHelper.dateKey(val);
+    }
+    if (val is String) {
+      final s = val.trim();
+      if (s.isEmpty || s == '—' || s.toLowerCase() == 'never') return null;
+      if (RegExp(r'^\d{4}-\d{2}-\d{2}').hasMatch(s)) {
+        return s.substring(0, 10);
+      }
+      final iso = DateTime.tryParse(s);
+      if (iso != null) {
+        return LeadDateHelper.dateKey(iso);
+      }
+      final parsed = LeadDateHelper.parseStamp(s, now: now);
+      if (parsed != null) {
+        return LeadDateHelper.dateKey(parsed.dt);
+      }
+    }
+    return null;
+  }
+
+  List<Map<String, dynamic>> _filterLeadsForDashboardDate({
+    required List<Map<String, dynamic>> rawLeads,
+    required List<Map<String, dynamic>> rawAssignments,
+    required List<Map<String, dynamic>> rawCallLogs,
+    required DateTime targetDate,
+  }) {
+    final now = DateTime.now();
+    final todayDay = DateTime(now.year, now.month, now.day);
+    final targetDay = DateTime(
+      targetDate.year,
+      targetDate.month,
+      targetDate.day,
+    );
+    final targetKey = LeadDateHelper.dateKey(targetDay);
+    final todayKey = LeadDateHelper.dateKey(todayDay);
+
+    final assignmentsOnTarget = <String, Map<String, dynamic>>{};
+    for (final a in rawAssignments) {
+      final aKey =
+          _extractDateKey(a['dateKey'], now: now) ??
+          _extractDateKey(a['assignedAt'], now: now);
+      final leadId = (a['leadId'] ?? '').toString().trim();
+      if (aKey == targetKey && leadId.isNotEmpty) {
+        assignmentsOnTarget[leadId] = a;
+      }
+    }
+
+    final callLogsOnTargetByLeadId = <String, Map<String, dynamic>>{};
+    final callLogsOnTargetByName = <String, Map<String, dynamic>>{};
+    for (final c in rawCallLogs) {
+      final cKey = _extractDateKey(c['createdAt'] ?? c['timestamp'], now: now);
+      if (cKey == targetKey) {
+        final leadId = (c['leadId'] ?? '').toString().trim();
+        final leadName = (c['leadName'] ?? '').toString().trim().toLowerCase();
+        if (leadId.isNotEmpty) {
+          callLogsOnTargetByLeadId.putIfAbsent(leadId, () => c);
+        }
+        if (leadName.isNotEmpty) {
+          callLogsOnTargetByName.putIfAbsent(leadName, () => c);
+        }
+      }
+    }
+
+    final result = <Map<String, dynamic>>[];
+    final includedLeadIds = <String>{};
+
+    for (final l in rawLeads) {
+      final leadId = (l['id'] ?? '').toString().trim();
+      final leadNameLower = (l['name'] ?? l['studentName'] ?? '')
+          .toString()
+          .trim()
+          .toLowerCase();
+
+      final assignedDateKey =
+          _extractDateKey(l['assignedDateKey'], now: now) ??
+          _extractDateKey(l['assignedDateLabel'], now: now);
+      final assignedAtKey = _extractDateKey(l['assignedAt'], now: now);
+      final createdAtKey = _extractDateKey(l['createdAt'], now: now);
+      final lastCalledKey =
+          _extractDateKey(l['lastCalledAt'], now: now) ??
+          _extractDateKey(l['lastContactAt'], now: now);
+      final updatedAtKey = _extractDateKey(l['updatedAt'], now: now);
+
+      String? timelineOutcomeOnTarget;
+      String? timelineCallExecOnTarget;
+      String? timelineAssignedExecOnTarget;
+      bool wasAssignedOnTargetInTimeline = false;
+      bool hasTimelineEntryOnTarget = false;
+      bool hasAnyTimelineDate = false;
+
+      final rawTimeline = l['timeline'];
+      if (rawTimeline is Iterable) {
+        for (final item in rawTimeline) {
+          final entryStr = item.toString().trim();
+          if (entryStr.isEmpty) continue;
+          final parts = entryStr.split('·').map((s) => s.trim()).toList();
+          final stampPart = parts.first;
+          final actionPart = parts.length > 1
+              ? parts.sublist(1).join(' · ')
+              : '';
+
+          final entryKey = _extractDateKey(stampPart, now: now);
+          if (entryKey != null) hasAnyTimelineDate = true;
+
+          final forMatch = RegExp(
+            r'\(For\s+([^\)]+)\)',
+            caseSensitive: false,
+          ).firstMatch(actionPart);
+          final forKey = forMatch != null
+              ? _extractDateKey(forMatch.group(1), now: now)
+              : null;
+          if (forKey != null) hasAnyTimelineDate = true;
+
+          if (entryKey == targetKey) {
+            hasTimelineEntryOnTarget = true;
+            final logMatch = RegExp(
+              r'^(.+?)\s+logged by\s+([^\(]+)',
+              caseSensitive: false,
+            ).firstMatch(actionPart);
+            if (logMatch != null) {
+              timelineOutcomeOnTarget ??= logMatch.group(1)!.trim();
+              timelineCallExecOnTarget ??= logMatch.group(2)!.trim();
+            }
+            final claimMatch = RegExp(
+              r'Walk-in claimed by\s+([^\(]+)',
+              caseSensitive: false,
+            ).firstMatch(actionPart);
+            if (claimMatch != null) {
+              wasAssignedOnTargetInTimeline = true;
+              timelineAssignedExecOnTarget ??= claimMatch.group(1)!.trim();
+            }
+          }
+
+          if (forKey == targetKey ||
+              (entryKey == targetKey &&
+                  (actionPart.toLowerCase().startsWith('assigned to ') ||
+                      actionPart.toLowerCase().startsWith('reassigned ')))) {
+            wasAssignedOnTargetInTimeline = true;
+            final assignMatch = RegExp(
+              r'(?:Assigned to|to)\s+(.+?)\s+by\s+',
+              caseSensitive: false,
+            ).firstMatch(actionPart);
+            if (assignMatch != null) {
+              timelineAssignedExecOnTarget ??= assignMatch.group(1)!.trim();
+            }
+          }
+        }
+      }
+
+      final matchingAssign = leadId.isNotEmpty
+          ? assignmentsOnTarget[leadId]
+          : null;
+      final matchingCallLog =
+          (leadId.isNotEmpty ? callLogsOnTargetByLeadId[leadId] : null) ??
+          (leadNameLower.isNotEmpty
+              ? callLogsOnTargetByName[leadNameLower]
+              : null);
+
+      final hasAssignedMatch =
+          (assignedDateKey == targetKey) ||
+          (assignedDateKey == null && assignedAtKey == targetKey) ||
+          wasAssignedOnTargetInTimeline ||
+          matchingAssign != null;
+      final hasCallMatch =
+          (lastCalledKey == targetKey) ||
+          (timelineOutcomeOnTarget != null) ||
+          (matchingCallLog != null);
+      final hasCreatedMatch =
+          (createdAtKey == targetKey) &&
+          (assignedDateKey == null || assignedDateKey == targetKey);
+      final hasUpdatedMatch =
+          (updatedAtKey == targetKey) &&
+          (assignedDateKey == null || assignedDateKey == targetKey);
+      final hasNoDatesAtAll =
+          assignedDateKey == null &&
+          assignedAtKey == null &&
+          createdAtKey == null &&
+          lastCalledKey == null &&
+          updatedAtKey == null &&
+          !hasAnyTimelineDate;
+
+      final includeLead =
+          hasAssignedMatch ||
+          hasCallMatch ||
+          hasCreatedMatch ||
+          hasUpdatedMatch ||
+          hasTimelineEntryOnTarget ||
+          (hasNoDatesAtAll && targetKey == todayKey);
+
+      if (!includeLead) continue;
+
+      final projected = Map<String, dynamic>.from(l);
+
+      if (matchingAssign != null) {
+        projected['assignedToUid'] =
+            matchingAssign['executiveUid'] ?? projected['assignedToUid'];
+        projected['assignedToName'] =
+            matchingAssign['executiveName'] ?? projected['assignedToName'];
+        projected['assignedTo'] = projected['assignedToName'];
+        projected['assignedDateKey'] = targetKey;
+      } else if (timelineAssignedExecOnTarget != null &&
+          assignedDateKey != targetKey) {
+        projected['assignedToName'] = timelineAssignedExecOnTarget;
+        projected['assignedTo'] = timelineAssignedExecOnTarget;
+        projected['assignedDateKey'] = targetKey;
+      } else if (!hasAssignedMatch &&
+          !hasCallMatch &&
+          assignedDateKey != null &&
+          assignedDateKey != targetKey) {
+        // Lead was only created on targetKey and assigned on a different date
+        projected['assignedToUid'] = null;
+        projected['assignedToName'] = '—';
+        projected['assignedTo'] = '—';
+      }
+
+      if (matchingCallLog != null) {
+        projected['status'] =
+            (matchingCallLog['outcome'] ?? projected['status']).toString();
+        projected['isDone'] = true;
+        final curExec = (projected['assignedToName'] ?? '').toString().trim();
+        if ((curExec.isEmpty || curExec == '—') &&
+            matchingCallLog['executiveName'] != null) {
+          projected['assignedToUid'] = matchingCallLog['executiveUid'];
+          projected['assignedToName'] = matchingCallLog['executiveName'];
+          projected['assignedTo'] = matchingCallLog['executiveName'];
+        }
+      } else if (timelineOutcomeOnTarget != null) {
+        projected['status'] = timelineOutcomeOnTarget;
+        projected['isDone'] = true;
+        final curExec = (projected['assignedToName'] ?? '').toString().trim();
+        if ((curExec.isEmpty || curExec == '—') &&
+            timelineCallExecOnTarget != null) {
+          projected['assignedToName'] = timelineCallExecOnTarget;
+          projected['assignedTo'] = timelineCallExecOnTarget;
+        }
+      } else if (matchingAssign != null &&
+          (matchingAssign['isDone'] == true ||
+              matchingAssign['lastOutcome'] != null)) {
+        projected['status'] =
+            (matchingAssign['lastOutcome'] ??
+                    matchingAssign['leadStatus'] ??
+                    projected['status'])
+                .toString();
+        projected['isDone'] = matchingAssign['isDone'] == true;
+      } else if (lastCalledKey != null && lastCalledKey != targetKey) {
+        // Called on another date, not on targetKey
+        final isAssignedOnTarget =
+            (projected['assignedToUid'] != null &&
+                projected['assignedToUid'].toString().trim().isNotEmpty) ||
+            (projected['assignedToName'] != null &&
+                projected['assignedToName'].toString().trim().isNotEmpty &&
+                projected['assignedToName'] != '—');
+        projected['status'] = isAssignedOnTarget ? 'Assigned' : 'New';
+        projected['isDone'] = false;
+      }
+
+      if (leadId.isNotEmpty) {
+        includedLeadIds.add(leadId);
+      }
+      result.add(projected);
+    }
+
+    // Include any assignments on targetKey whose lead doc was not in rawLeads
+    for (final entry in assignmentsOnTarget.entries) {
+      if (!includedLeadIds.contains(entry.key)) {
+        final a = entry.value;
+        final c = callLogsOnTargetByLeadId[entry.key];
+        final isCalled = c != null || a['isDone'] == true;
+        result.add({
+          'id': entry.key,
+          'name': a['leadName'] ?? 'Lead',
+          'phone': a['leadPhone'] ?? '',
+          'collegeBranch': a['collegeBranch'] ?? '—',
+          'source': a['source'] ?? 'Direct Visit',
+          'assignedToUid': a['executiveUid'],
+          'assignedToName': a['executiveName'] ?? '—',
+          'assignedTo': a['executiveName'] ?? '—',
+          'assignedDateKey': targetKey,
+          'status': c != null
+              ? (c['outcome'] ?? 'Contacted')
+              : (a['lastOutcome'] ??
+                    (isCalled ? 'Contacted' : (a['leadStatus'] ?? 'Assigned'))),
+          'isDone': isCalled,
+        });
+        includedLeadIds.add(entry.key);
+      }
+    }
+
+    // Include any call logs on targetKey whose lead doc was not in rawLeads
+    for (final entry in callLogsOnTargetByLeadId.entries) {
+      if (!includedLeadIds.contains(entry.key)) {
+        final c = entry.value;
+        result.add({
+          'id': entry.key,
+          'name': c['leadName'] ?? 'Lead',
+          'phone': '',
+          'collegeBranch': c['collegeInfo'] ?? '—',
+          'source': c['campaign'] ?? 'Direct Visit',
+          'assignedToUid': c['executiveUid'],
+          'assignedToName': c['executiveName'] ?? '—',
+          'assignedTo': c['executiveName'] ?? '—',
+          'assignedDateKey': targetKey,
+          'status': c['outcome'] ?? 'Contacted',
+          'isDone': true,
+        });
+        includedLeadIds.add(entry.key);
+      }
+    }
+
+    return result;
   }
 
   void _toast(String msg, {bool error = false}) {
@@ -613,145 +948,236 @@ class _DashboardViewState extends State<_DashboardView> {
                                       >(
                                         stream: cubit.watchAllLeads(),
                                         builder: (context, leadsSnap) {
-                                          final allUsers = cubit
-                                              .mapAndSortUsers(usersSnap.data);
-                                          final activeUsers = allUsers
-                                              .where((u) => u.isActive)
-                                              .toList();
-                                          final rawLeads =
-                                              leadsSnap.data?.docs
-                                                  .map((d) => d.data())
-                                                  .toList() ??
-                                              <Map<String, dynamic>>[];
-
-                                          return LayoutBuilder(
-                                            builder: (context, contentBox) {
-                                              final contentWidth =
-                                                  contentBox.maxWidth;
-                                              // Tablet (768px) to Laptop (1024px) to Laptop Large (1440px+)
-                                              // all share the same 1440px screen structure and 2-column alignment
-                                              final isWideContent =
-                                                  contentWidth >= 520;
-                                              final sectionGap =
-                                                  contentWidth >= 1000
-                                                  ? 24.0
-                                                  : (contentWidth >= 700
-                                                        ? 18.0
-                                                        : 14.0);
-
-                                              return Column(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
-                                                children: [
-                                                  _header(
-                                                    me: me,
-                                                    contentWidth: contentWidth,
-                                                    showMenuButton:
-                                                        !showSidebar,
-                                                  ),
-                                                  Gap(sectionGap),
-                                                  if (_searchQuery
-                                                      .trim()
-                                                      .isNotEmpty) ...[
-                                                    _buildLiveSearchResults(
-                                                      query: _searchQuery
-                                                          .trim(),
-                                                      leads: rawLeads,
-                                                      users: allUsers,
-                                                      onClear: () {
-                                                        setState(() {
-                                                          _searchCtrl.clear();
-                                                          _searchQuery = '';
-                                                        });
-                                                        context
-                                                            .read<
-                                                              AdminLeadsCubit
-                                                            >()
-                                                            .setSearchQuery('');
-                                                      },
+                                          return StreamBuilder<
+                                            QuerySnapshot<Map<String, dynamic>>
+                                          >(
+                                            stream: FirestoreStreamCache
+                                                .instance
+                                                .watchCollection('assignments'),
+                                            builder: (context, assignSnap) {
+                                              return StreamBuilder<
+                                                QuerySnapshot<
+                                                  Map<String, dynamic>
+                                                >
+                                              >(
+                                                stream: FirestoreStreamCache
+                                                    .instance
+                                                    .watchCollection(
+                                                      'call_logs',
                                                     ),
-                                                    Gap(sectionGap),
-                                                  ],
-                                                  _stats(rawLeads, activeUsers),
-                                                  Gap(sectionGap),
-                                                  if (isWideContent)
-                                                    Row(
-                                                      crossAxisAlignment:
-                                                          CrossAxisAlignment
-                                                              .start,
-                                                      children: [
-                                                        Expanded(
-                                                          flex: 58,
-                                                          child: Column(
-                                                            children: [
-                                                              _TeamToday(
-                                                                activeUsers:
-                                                                    activeUsers,
-                                                                leads: rawLeads,
-                                                              ),
-                                                              Gap(sectionGap),
-                                                              _OverdueFollowUps(
-                                                                leads: rawLeads,
-                                                                onReassign:
-                                                                    () => cubit
-                                                                        .selectNav(
+                                                builder: (context, logsSnap) {
+                                                  final allUsers = cubit
+                                                      .mapAndSortUsers(
+                                                        usersSnap.data,
+                                                      );
+                                                  final activeUsers = allUsers
+                                                      .where((u) => u.isActive)
+                                                      .toList();
+                                                  final rawLeads =
+                                                      leadsSnap.data?.docs
+                                                          .map(
+                                                            (d) =>
+                                                                <
+                                                                  String,
+                                                                  dynamic
+                                                                >{
+                                                                  'id': d.id,
+                                                                  ...d.data(),
+                                                                },
+                                                          )
+                                                          .toList() ??
+                                                      <Map<String, dynamic>>[];
+                                                  final rawAssignments =
+                                                      assignSnap.data?.docs
+                                                          .map(
+                                                            (d) =>
+                                                                <
+                                                                  String,
+                                                                  dynamic
+                                                                >{
+                                                                  'id': d.id,
+                                                                  ...d.data(),
+                                                                },
+                                                          )
+                                                          .toList() ??
+                                                      <Map<String, dynamic>>[];
+                                                  final rawCallLogs =
+                                                      logsSnap.data?.docs
+                                                          .map(
+                                                            (d) =>
+                                                                <
+                                                                  String,
+                                                                  dynamic
+                                                                >{
+                                                                  'id': d.id,
+                                                                  ...d.data(),
+                                                                },
+                                                          )
+                                                          .toList() ??
+                                                      <Map<String, dynamic>>[];
+                                                  final dashboardLeads =
+                                                      _filterLeadsForDashboardDate(
+                                                        rawLeads: rawLeads,
+                                                        rawAssignments:
+                                                            rawAssignments,
+                                                        rawCallLogs:
+                                                            rawCallLogs,
+                                                        targetDate:
+                                                            _effectiveDashboardDate,
+                                                      );
+
+                                                  return LayoutBuilder(
+                                                    builder: (context, contentBox) {
+                                                      final contentWidth =
+                                                          contentBox.maxWidth;
+                                                      // Tablet (768px) to Laptop (1024px) to Laptop Large (1440px+)
+                                                      // all share the same 1440px screen structure and 2-column alignment
+                                                      final isWideContent =
+                                                          contentWidth >= 520;
+                                                      final sectionGap =
+                                                          contentWidth >= 1000
+                                                          ? 24.0
+                                                          : (contentWidth >= 700
+                                                                ? 18.0
+                                                                : 14.0);
+
+                                                      return Column(
+                                                        crossAxisAlignment:
+                                                            CrossAxisAlignment
+                                                                .start,
+                                                        children: [
+                                                          _header(
+                                                            me: me,
+                                                            contentWidth:
+                                                                contentWidth,
+                                                            showMenuButton:
+                                                                !showSidebar,
+                                                          ),
+                                                          Gap(sectionGap),
+                                                          if (_searchQuery
+                                                              .trim()
+                                                              .isNotEmpty) ...[
+                                                            _buildLiveSearchResults(
+                                                              query:
+                                                                  _searchQuery
+                                                                      .trim(),
+                                                              leads: rawLeads,
+                                                              users: allUsers,
+                                                              onClear: () {
+                                                                setState(() {
+                                                                  _searchCtrl
+                                                                      .clear();
+                                                                  _searchQuery =
+                                                                      '';
+                                                                });
+                                                                context
+                                                                    .read<
+                                                                      AdminLeadsCubit
+                                                                    >()
+                                                                    .setSearchQuery(
+                                                                      '',
+                                                                    );
+                                                              },
+                                                            ),
+                                                            Gap(sectionGap),
+                                                          ],
+                                                          _stats(
+                                                            dashboardLeads,
+                                                            activeUsers,
+                                                          ),
+                                                          Gap(sectionGap),
+                                                          if (isWideContent)
+                                                            Row(
+                                                              crossAxisAlignment:
+                                                                  CrossAxisAlignment
+                                                                      .start,
+                                                              children: [
+                                                                Expanded(
+                                                                  flex: 58,
+                                                                  child: Column(
+                                                                    children: [
+                                                                      _TeamToday(
+                                                                        activeUsers:
+                                                                            activeUsers,
+                                                                        leads:
+                                                                            dashboardLeads,
+                                                                      ),
+                                                                      Gap(
+                                                                        sectionGap,
+                                                                      ),
+                                                                      _OverdueFollowUps(
+                                                                        leads:
+                                                                            dashboardLeads,
+                                                                        referenceDate:
+                                                                            _effectiveDashboardDate,
+                                                                        onReassign: () => cubit.selectNav(
                                                                           1,
                                                                         ),
-                                                              ),
-                                                            ],
-                                                          ),
-                                                        ),
-                                                        Gap(sectionGap),
-                                                        Expanded(
-                                                          flex: 42,
-                                                          child: Column(
-                                                            children: [
-                                                              _Conversions(
-                                                                leads: rawLeads,
-                                                              ),
-                                                              Gap(sectionGap),
-                                                              _CollegeVisits(
-                                                                onPlanVisit:
-                                                                    () => cubit
-                                                                        .selectNav(
+                                                                      ),
+                                                                    ],
+                                                                  ),
+                                                                ),
+                                                                Gap(sectionGap),
+                                                                Expanded(
+                                                                  flex: 42,
+                                                                  child: Column(
+                                                                    children: [
+                                                                      _Conversions(
+                                                                        leads:
+                                                                            dashboardLeads,
+                                                                      ),
+                                                                      Gap(
+                                                                        sectionGap,
+                                                                      ),
+                                                                      _CollegeVisits(
+                                                                        onPlanVisit: () => cubit.selectNav(
                                                                           4,
                                                                         ),
-                                                              ),
-                                                            ],
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    )
-                                                  else
-                                                    Column(
-                                                      children: [
-                                                        _TeamToday(
-                                                          activeUsers:
-                                                              activeUsers,
-                                                          leads: rawLeads,
-                                                        ),
-                                                        const Gap(16),
-                                                        _Conversions(
-                                                          leads: rawLeads,
-                                                        ),
-                                                        const Gap(16),
-                                                        _OverdueFollowUps(
-                                                          leads: rawLeads,
-                                                          onReassign: () =>
-                                                              cubit.selectNav(
-                                                                1,
-                                                              ),
-                                                        ),
-                                                        const Gap(16),
-                                                        _CollegeVisits(
-                                                          onPlanVisit: () =>
-                                                              cubit.selectNav(
-                                                                4,
-                                                              ),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                ],
+                                                                      ),
+                                                                    ],
+                                                                  ),
+                                                                ),
+                                                              ],
+                                                            )
+                                                          else
+                                                            Column(
+                                                              children: [
+                                                                _TeamToday(
+                                                                  activeUsers:
+                                                                      activeUsers,
+                                                                  leads:
+                                                                      dashboardLeads,
+                                                                ),
+                                                                const Gap(16),
+                                                                _Conversions(
+                                                                  leads:
+                                                                      dashboardLeads,
+                                                                ),
+                                                                const Gap(16),
+                                                                _OverdueFollowUps(
+                                                                  leads:
+                                                                      dashboardLeads,
+                                                                  referenceDate:
+                                                                      _effectiveDashboardDate,
+                                                                  onReassign: () =>
+                                                                      cubit.selectNav(
+                                                                        1,
+                                                                      ),
+                                                                ),
+                                                                const Gap(16),
+                                                                _CollegeVisits(
+                                                                  onPlanVisit: () =>
+                                                                      cubit.selectNav(
+                                                                        4,
+                                                                      ),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                        ],
+                                                      );
+                                                    },
+                                                  );
+                                                },
                                               );
                                             },
                                           );
@@ -1006,6 +1432,11 @@ class _DashboardViewState extends State<_DashboardView> {
       isSelected: selectedIndex == index,
       compact: compact,
       onTap: () {
+        if (index == 0 && _selectedDashboardDate != null) {
+          setState(() {
+            _selectedDashboardDate = null;
+          });
+        }
         cubit.selectNav(index);
         if (inDrawer) {
           Navigator.of(context).pop();
@@ -1060,18 +1491,54 @@ class _DashboardViewState extends State<_DashboardView> {
                       ),
                     ),
                     const Gap(2),
-                    InkWell(
-                      onTap: _pickDashboardDate,
-                      borderRadius: BorderRadius.circular(6),
-                      child: Text(
-                        _today,
-                        style: GoogleFonts.inter(
-                          color: const Color(0xFF718096),
-                          fontSize: 13,
-                          fontWeight: FontWeight.w400,
-                          letterSpacing: -0.3418,
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Flexible(
+                          child: InkWell(
+                            onTap: _pickDashboardDate,
+                            borderRadius: BorderRadius.circular(6),
+                            child: Text(
+                              _today,
+                              style: GoogleFonts.inter(
+                                color: const Color(0xFF718096),
+                                fontSize: 13,
+                                fontWeight: FontWeight.w400,
+                                letterSpacing: -0.3418,
+                              ),
+                            ),
+                          ),
                         ),
-                      ),
+                        if (!_isTodaySelected) ...[
+                          const Gap(8),
+                          InkWell(
+                            onTap: () {
+                              setState(() {
+                                _selectedDashboardDate = null;
+                              });
+                            },
+                            borderRadius: BorderRadius.circular(999),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 2,
+                              ),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFEEF2FF),
+                                borderRadius: BorderRadius.circular(999),
+                              ),
+                              child: Text(
+                                'Today',
+                                style: GoogleFonts.inter(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                  color: const Color(0xFF4338CA),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
                     ),
                   ],
                 ),
@@ -1172,21 +1639,57 @@ class _DashboardViewState extends State<_DashboardView> {
                 ),
               ),
               const Gap(4),
-              InkWell(
-                onTap: _pickDashboardDate,
-                borderRadius: BorderRadius.circular(6),
-                child: Text(
-                  _today,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.inter(
-                    color: const Color(0xFF718096),
-                    fontSize: dateFontSize,
-                    fontWeight: FontWeight.w400,
-                    letterSpacing: -0.3418,
-                    height: 20 / 14,
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Flexible(
+                    child: InkWell(
+                      onTap: _pickDashboardDate,
+                      borderRadius: BorderRadius.circular(6),
+                      child: Text(
+                        _today,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.inter(
+                          color: const Color(0xFF718096),
+                          fontSize: dateFontSize,
+                          fontWeight: FontWeight.w400,
+                          letterSpacing: -0.3418,
+                          height: 20 / 14,
+                        ),
+                      ),
+                    ),
                   ),
-                ),
+                  if (!_isTodaySelected) ...[
+                    const Gap(8),
+                    InkWell(
+                      onTap: () {
+                        setState(() {
+                          _selectedDashboardDate = null;
+                        });
+                      },
+                      borderRadius: BorderRadius.circular(999),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFEEF2FF),
+                          borderRadius: BorderRadius.circular(999),
+                        ),
+                        child: Text(
+                          'Today',
+                          style: GoogleFonts.inter(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            color: const Color(0xFF4338CA),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
               ),
             ],
           ),
@@ -1271,14 +1774,13 @@ class _DashboardViewState extends State<_DashboardView> {
           height: 20 / 14,
         ),
         decoration: InputDecoration(
-          isCollapsed: true,
+          isDense: true,
           filled: false,
           border: InputBorder.none,
           enabledBorder: InputBorder.none,
           focusedBorder: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(
             horizontal: 16,
-            vertical: 12,
           ),
           prefixIcon: const Padding(
             padding: EdgeInsets.only(left: 16, right: 12),
@@ -1862,6 +2364,7 @@ class _DashboardViewState extends State<_DashboardView> {
             updatedAt: l['updatedAt'],
             createdAt: l['createdAt'],
             status: (l['status'] ?? '').toString(),
+            currentTime: _effectiveDashboardDate,
           );
           return (lead: l, eval: eval);
         })
@@ -2843,9 +3346,14 @@ class _Conversions extends StatelessWidget {
 
 class _OverdueFollowUps extends StatelessWidget {
   final List<Map<String, dynamic>> leads;
+  final DateTime? referenceDate;
   final VoidCallback onReassign;
 
-  const _OverdueFollowUps({required this.leads, required this.onReassign});
+  const _OverdueFollowUps({
+    required this.leads,
+    this.referenceDate,
+    required this.onReassign,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -2860,6 +3368,7 @@ class _OverdueFollowUps extends StatelessWidget {
         updatedAt: l['updatedAt'],
         createdAt: l['createdAt'],
         status: (l['status'] ?? '').toString(),
+        currentTime: referenceDate,
       );
       return eval.isOverdue;
     }).toList();

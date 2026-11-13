@@ -1677,10 +1677,9 @@ class _UserManagementViewState extends State<UserManagementView> {
                       border: InputBorder.none,
                       enabledBorder: InputBorder.none,
                       focusedBorder: InputBorder.none,
-                      isCollapsed: true,
+                      isDense: true,
                       contentPadding: const EdgeInsets.symmetric(
                         horizontal: 14,
-                        vertical: 12,
                       ),
                     ),
                   ),
