@@ -218,9 +218,9 @@ class _ExecutiveBottomNavBar extends StatelessWidget {
           final isSelected = index == currentIndex;
           final item = _items[index];
 
-          return InkWell(
+          return GestureDetector(
+            behavior: HitTestBehavior.opaque,
             onTap: () => onSelect(index),
-            borderRadius: BorderRadius.circular(16),
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
               child: Column(

@@ -177,18 +177,18 @@ class _SidebarNavItemState extends State<_SidebarNavItem> {
     final item = widget.item;
     final compact = widget.compact;
 
-    // Hover background color: soft, subtle light tint without dark blinking splash
+    // Only selected item has background fill; no hover/click splash on nav bar items
     final Color bgColor = isSelected
         ? const Color(0xFFFFEDE2)
-        : (_isHovered ? const Color(0xFFFFF8F4) : Colors.transparent);
+        : Colors.transparent;
 
     final Color contentColor = isSelected
         ? _orangeAccent
-        : (_isHovered ? const Color(0xFF1E293B) : const Color(0xFF475569));
+        : (_isHovered ? _orangeAccent : const Color(0xFF475569));
 
     final Color iconColor = isSelected
         ? _orangeAccent
-        : (_isHovered ? const Color(0xFF1E293B) : const Color(0xFF64748B));
+        : (_isHovered ? _orangeAccent : const Color(0xFF64748B));
 
     // Exact Figma Specs:
     // width: 223 (in 240px sidebar: 8.5px horizontal margin on each side)
@@ -205,74 +205,63 @@ class _SidebarNavItemState extends State<_SidebarNavItem> {
         cursor: SystemMouseCursors.click,
         onEnter: (_) => setState(() => _isHovered = true),
         onExit: (_) => setState(() => _isHovered = false),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 180),
-          curve: Curves.easeOutCubic,
-          height: compact ? 40 : 44,
-          decoration: BoxDecoration(
-            color: bgColor,
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Material(
-            color: Colors.transparent,
-            borderRadius: BorderRadius.circular(12),
-            child: InkWell(
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: widget.onTap,
+          child: Container(
+            height: compact ? 40 : 44,
+            decoration: BoxDecoration(
+              color: bgColor,
               borderRadius: BorderRadius.circular(12),
-              hoverColor: Colors.transparent,
-              splashColor: Colors.transparent,
-              highlightColor: Colors.transparent,
-              onTap: widget.onTap,
-              child: CustomPaint(
-                foregroundPainter: _FigmaRightBorderPainter(
-                  color: isSelected ? _orangeAccent : Colors.transparent,
-                  radius: 12.0,
-                  strokeWidth: 4.0,
+            ),
+            child: CustomPaint(
+              foregroundPainter: _FigmaRightBorderPainter(
+                color: isSelected ? _orangeAccent : Colors.transparent,
+                radius: 12.0,
+                strokeWidth: 4.0,
+              ),
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(
+                  compact ? 12 : 16,
+                  compact ? 10 : 12,
+                  compact ? 10 : 16,
+                  compact ? 10 : 12,
                 ),
-                child: Padding(
-                  padding: EdgeInsets.fromLTRB(
-                    compact ? 12 : 16,
-                    compact ? 10 : 12,
-                    compact ? 10 : 16,
-                    compact ? 10 : 12,
-                  ),
-                  child: Row(
-                    children: [
-                      SizedBox(
-                        width: compact ? 18 : 20,
-                        height: compact ? 18 : 20,
-                        child: Center(
-                          child: SvgPicture.asset(
-                            item.svgAsset,
-                            width: compact ? 16 : 18,
-                            height: compact ? 16 : 18,
-                            fit: BoxFit.contain,
-                            colorFilter: ColorFilter.mode(
-                              iconColor,
-                              BlendMode.srcIn,
-                            ),
+                child: Row(
+                  children: [
+                    SizedBox(
+                      width: compact ? 18 : 20,
+                      height: compact ? 18 : 20,
+                      child: Center(
+                        child: SvgPicture.asset(
+                          item.svgAsset,
+                          width: compact ? 16 : 18,
+                          height: compact ? 16 : 18,
+                          fit: BoxFit.contain,
+                          colorFilter: ColorFilter.mode(
+                            iconColor,
+                            BlendMode.srcIn,
                           ),
                         ),
                       ),
-                      Gap(compact ? 9 : 12),
-                      Expanded(
-                        child: Text(
-                          item.label,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: GoogleFonts.inter(
-                            fontSize: compact ? 13 : 14,
-                            fontWeight: isSelected
-                                ? FontWeight.w700
-                                : (_isHovered
-                                      ? FontWeight.w600
-                                      : FontWeight.w500),
-                            color: contentColor,
-                            letterSpacing: -0.2,
-                          ),
+                    ),
+                    Gap(compact ? 9 : 12),
+                    Expanded(
+                      child: Text(
+                        item.label,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.inter(
+                          fontSize: compact ? 13 : 14,
+                          fontWeight: isSelected
+                              ? FontWeight.w700
+                              : FontWeight.w500,
+                          color: contentColor,
+                          letterSpacing: -0.2,
                         ),
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -987,6 +976,8 @@ class _DashboardViewState extends State<_DashboardView> {
                       foregroundColor: const Color(0xFFDC2626),
                       side: const BorderSide(color: Color(0xFFFCA5A5)),
                       shape: const StadiumBorder(),
+                      splashFactory: NoSplash.splashFactory,
+                      overlayColor: Colors.transparent,
                       padding: EdgeInsets.symmetric(
                         horizontal: compactSidebar ? 10 : 14,
                         vertical: 6,
