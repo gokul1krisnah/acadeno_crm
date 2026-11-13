@@ -179,10 +179,10 @@ class _SidebarNavItemState extends State<_SidebarNavItem> {
     final item = widget.item;
     final compact = widget.compact;
 
-    // Only selected item has background fill; no hover/click splash on nav bar items
+    // Hover & selected background fill; no click splash on nav bar items
     final Color bgColor = isSelected
         ? const Color(0xFFFFEDE2)
-        : Colors.transparent;
+        : (_isHovered ? const Color(0xFFFFF6F0) : Colors.transparent);
 
     final Color contentColor = isSelected
         ? _orangeAccent
@@ -210,7 +210,9 @@ class _SidebarNavItemState extends State<_SidebarNavItem> {
         child: GestureDetector(
           behavior: HitTestBehavior.opaque,
           onTap: widget.onTap,
-          child: Container(
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 180),
+            curve: Curves.easeOutCubic,
             height: compact ? 40 : 44,
             decoration: BoxDecoration(
               color: bgColor,
@@ -257,7 +259,9 @@ class _SidebarNavItemState extends State<_SidebarNavItem> {
                           fontSize: compact ? 13 : 14,
                           fontWeight: isSelected
                               ? FontWeight.w700
-                              : FontWeight.w500,
+                              : (_isHovered
+                                    ? FontWeight.w600
+                                    : FontWeight.w500),
                           color: contentColor,
                           letterSpacing: -0.2,
                         ),
