@@ -899,14 +899,6 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Lead ID: ${lead.id}',
-                              style: GoogleFonts.inter(
-                                fontSize: 11.5,
-                                color: const Color(0xFF64748B),
-                              ),
-                            ),
-                            const Gap(2),
-                            Text(
                               'Assigned To: ${lead.assignedToName}${lead.dynamicAssignedDateLabel != null ? " (${lead.dynamicAssignedDateLabel})" : ""}',
                               style: GoogleFonts.inter(
                                 fontSize: 12.5,
