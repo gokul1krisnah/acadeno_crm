@@ -204,6 +204,9 @@ class _AcadenoAppState extends State<AcadenoApp> with WidgetsBindingObserver {
       title: 'ACADENO CRM',
       scaffoldMessengerKey: _scaffoldMessengerKey,
       debugShowCheckedModeBanner: false,
+      scrollBehavior: const MaterialScrollBehavior().copyWith(
+        scrollbars: false,
+      ),
       theme: ThemeData(
         fontFamily: AppTypography.fontFamily,
         colorScheme: ColorScheme.fromSeed(seedColor: AppColors.primary),
@@ -290,6 +293,11 @@ class _AcadenoAppState extends State<AcadenoApp> with WidgetsBindingObserver {
             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
             textStyle: AppTypography.figmaButton(),
           ),
+        ),
+        scrollbarTheme: const ScrollbarThemeData(
+          thumbVisibility: WidgetStatePropertyAll(false),
+          trackVisibility: WidgetStatePropertyAll(false),
+          thickness: WidgetStatePropertyAll(0),
         ),
       ),
       builder: (context, child) {

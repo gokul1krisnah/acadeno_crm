@@ -403,8 +403,12 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
             constraints: const BoxConstraints(maxWidth: 420),
             child: Padding(
               padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
-              child: SingleChildScrollView(
-                child: Form(
+              child: ScrollConfiguration(
+                behavior: ScrollConfiguration.of(dCtx).copyWith(
+                  scrollbars: false,
+                ),
+                child: SingleChildScrollView(
+                  child: Form(
                   key: formKey,
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
@@ -748,6 +752,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                     ],
                   ),
                 ),
+                ),
               ),
             ),
           ),
@@ -810,8 +815,12 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
             constraints: const BoxConstraints(maxWidth: 440),
             child: Padding(
               padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
-              child: SingleChildScrollView(
-                child: Form(
+              child: ScrollConfiguration(
+                behavior: ScrollConfiguration.of(dCtx).copyWith(
+                  scrollbars: false,
+                ),
+                child: SingleChildScrollView(
+                  child: Form(
                   key: formKey,
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
@@ -1395,6 +1404,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                       ),
                     ],
                   ),
+                ),
                 ),
               ),
             ),
