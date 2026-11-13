@@ -107,11 +107,7 @@ class _FigmaRightBorderPainter extends CustomPainter {
     path.moveTo(w - r, 0);
 
     // Outer top-right arc (circular radius r)
-    path.arcToPoint(
-      Offset(w, r),
-      radius: Radius.circular(r),
-      clockwise: true,
-    );
+    path.arcToPoint(Offset(w, r), radius: Radius.circular(r), clockwise: true);
 
     // Outer straight right vertical line
     path.lineTo(w, h - r);
@@ -157,12 +153,14 @@ class _SidebarNavItem extends StatefulWidget {
   final int index;
   final bool isSelected;
   final VoidCallback onTap;
+  final bool compact;
 
   const _SidebarNavItem({
     required this.item,
     required this.index,
     required this.isSelected,
     required this.onTap,
+    this.compact = false,
   });
 
   @override
@@ -176,6 +174,7 @@ class _SidebarNavItemState extends State<_SidebarNavItem> {
   Widget build(BuildContext context) {
     final isSelected = widget.isSelected;
     final item = widget.item;
+    final compact = widget.compact;
 
     // Hover background color: soft, subtle light tint without dark blinking splash
     final Color bgColor = isSelected
@@ -197,7 +196,10 @@ class _SidebarNavItemState extends State<_SidebarNavItem> {
     // border-right-width: 4px
     // padding: 12px vertical, 16px horizontal
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8.5, vertical: 2.0),
+      padding: EdgeInsets.symmetric(
+        horizontal: compact ? 6.0 : 8.5,
+        vertical: 2.0,
+      ),
       child: MouseRegion(
         cursor: SystemMouseCursors.click,
         onEnter: (_) => setState(() => _isHovered = true),
@@ -205,7 +207,7 @@ class _SidebarNavItemState extends State<_SidebarNavItem> {
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 180),
           curve: Curves.easeOutCubic,
-          height: 44,
+          height: compact ? 40 : 44,
           decoration: BoxDecoration(
             color: bgColor,
             borderRadius: BorderRadius.circular(12),
@@ -226,17 +228,22 @@ class _SidebarNavItemState extends State<_SidebarNavItem> {
                   strokeWidth: 4.0,
                 ),
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+                  padding: EdgeInsets.fromLTRB(
+                    compact ? 12 : 16,
+                    compact ? 10 : 12,
+                    compact ? 10 : 16,
+                    compact ? 10 : 12,
+                  ),
                   child: Row(
                     children: [
                       SizedBox(
-                        width: 20,
-                        height: 20,
+                        width: compact ? 18 : 20,
+                        height: compact ? 18 : 20,
                         child: Center(
                           child: SvgPicture.asset(
                             item.svgAsset,
-                            width: 18,
-                            height: 18,
+                            width: compact ? 16 : 18,
+                            height: compact ? 16 : 18,
                             fit: BoxFit.contain,
                             colorFilter: ColorFilter.mode(
                               iconColor,
@@ -245,17 +252,19 @@ class _SidebarNavItemState extends State<_SidebarNavItem> {
                           ),
                         ),
                       ),
-                      const Gap(12),
+                      Gap(compact ? 9 : 12),
                       Expanded(
                         child: Text(
                           item.label,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: GoogleFonts.inter(
-                            fontSize: 14,
+                            fontSize: compact ? 13 : 14,
                             fontWeight: isSelected
                                 ? FontWeight.w700
-                                : (_isHovered ? FontWeight.w600 : FontWeight.w500),
+                                : (_isHovered
+                                      ? FontWeight.w600
+                                      : FontWeight.w500),
                             color: contentColor,
                             letterSpacing: -0.2,
                           ),
@@ -534,8 +543,21 @@ class _DashboardViewState extends State<_DashboardView> {
             final me = snap.data?.data() ?? {};
             return LayoutBuilder(
               builder: (context, c) {
-                final showSidebar = c.maxWidth >= 960;
+                final showSidebar = c.maxWidth >= 768;
+                final sidebarWidth = c.maxWidth >= 1200
+                    ? 240.0
+                    : (c.maxWidth >= 960 ? 216.0 : 185.0);
                 final pad = context.devicePadding;
+                final horizontalPad = c.maxWidth >= 1280
+                    ? 32.0
+                    : (c.maxWidth >= 960
+                          ? 20.0
+                          : (c.maxWidth >= 768 ? 16.0 : pad.clamp(16.0, 24.0)));
+                final verticalPad = c.maxWidth >= 1280
+                    ? 32.0
+                    : (c.maxWidth >= 960
+                          ? 24.0
+                          : (c.maxWidth >= 768 ? 20.0 : pad.clamp(16.0, 24.0)));
 
                 return Scaffold(
                   key: _scaffoldKey,
@@ -557,13 +579,18 @@ class _DashboardViewState extends State<_DashboardView> {
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        if (showSidebar) _sidebar(me, state.selectedNavIndex),
+                        if (showSidebar)
+                          _sidebar(
+                            me,
+                            state.selectedNavIndex,
+                            sidebarWidth: sidebarWidth,
+                          ),
                         Expanded(
                           child: SingleChildScrollView(
                             physics: const ClampingScrollPhysics(),
                             padding: EdgeInsets.symmetric(
-                              horizontal: pad.clamp(16.0, 32.0),
-                              vertical: pad.clamp(16.0, 32.0),
+                              horizontal: horizontalPad,
+                              vertical: verticalPad,
                             ),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -622,8 +649,16 @@ class _DashboardViewState extends State<_DashboardView> {
                                             builder: (context, contentBox) {
                                               final contentWidth =
                                                   contentBox.maxWidth;
+                                              // Tablet (768px) to Laptop (1024px) to Laptop Large (1440px+)
+                                              // all share the same 1440px screen structure and 2-column alignment
                                               final isWideContent =
-                                                  contentWidth >= 1080;
+                                                  contentWidth >= 520;
+                                              final sectionGap =
+                                                  contentWidth >= 1000
+                                                  ? 24.0
+                                                  : (contentWidth >= 700
+                                                        ? 18.0
+                                                        : 14.0);
 
                                               return Column(
                                                 crossAxisAlignment:
@@ -635,106 +670,117 @@ class _DashboardViewState extends State<_DashboardView> {
                                                     showMenuButton:
                                                         !showSidebar,
                                                   ),
-                                                  const Gap(24),
-                                              if (_searchQuery
-                                                  .trim()
-                                                  .isNotEmpty) ...[
-                                                _buildLiveSearchResults(
-                                                  query: _searchQuery.trim(),
-                                                  leads: rawLeads,
-                                                  users: allUsers,
-                                                  onClear: () {
-                                                    setState(() {
-                                                      _searchCtrl.clear();
-                                                      _searchQuery = '';
-                                                    });
-                                                    context
-                                                        .read<AdminLeadsCubit>()
-                                                        .setSearchQuery('');
-                                                  },
-                                                ),
-                                                const Gap(24),
-                                              ],
-                                              _stats(rawLeads, activeUsers),
-                                              const Gap(24),
-                                              if (isWideContent)
-                                                Row(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-                                                  children: [
-                                                    Expanded(
-                                                      flex: 58,
-                                                      child: Column(
-                                                        children: [
-                                                          _TeamToday(
-                                                            activeUsers:
-                                                                activeUsers,
-                                                            leads: rawLeads,
-                                                          ),
-                                                          const Gap(24),
-                                                          _OverdueFollowUps(
-                                                            leads: rawLeads,
-                                                            onReassign: () =>
-                                                                cubit.selectNav(
-                                                                  1,
-                                                                ),
-                                                          ),
-                                                        ],
-                                                      ),
+                                                  Gap(sectionGap),
+                                                  if (_searchQuery
+                                                      .trim()
+                                                      .isNotEmpty) ...[
+                                                    _buildLiveSearchResults(
+                                                      query: _searchQuery
+                                                          .trim(),
+                                                      leads: rawLeads,
+                                                      users: allUsers,
+                                                      onClear: () {
+                                                        setState(() {
+                                                          _searchCtrl.clear();
+                                                          _searchQuery = '';
+                                                        });
+                                                        context
+                                                            .read<
+                                                              AdminLeadsCubit
+                                                            >()
+                                                            .setSearchQuery('');
+                                                      },
                                                     ),
-                                                    const Gap(24),
-                                                    Expanded(
-                                                      flex: 42,
-                                                      child: Column(
-                                                        children: [
-                                                          _Conversions(
-                                                            leads: rawLeads,
-                                                          ),
-                                                          const Gap(24),
-                                                          _CollegeVisits(
-                                                            onPlanVisit: () =>
-                                                                cubit.selectNav(
-                                                                  4,
-                                                                ),
-                                                          ),
-                                                        ],
-                                                      ),
-                                                    ),
+                                                    Gap(sectionGap),
                                                   ],
-                                                )
-                                              else
-                                                Column(
-                                                  children: [
-                                                    _TeamToday(
-                                                      activeUsers: activeUsers,
-                                                      leads: rawLeads,
+                                                  _stats(rawLeads, activeUsers),
+                                                  Gap(sectionGap),
+                                                  if (isWideContent)
+                                                    Row(
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .start,
+                                                      children: [
+                                                        Expanded(
+                                                          flex: 58,
+                                                          child: Column(
+                                                            children: [
+                                                              _TeamToday(
+                                                                activeUsers:
+                                                                    activeUsers,
+                                                                leads: rawLeads,
+                                                              ),
+                                                              Gap(sectionGap),
+                                                              _OverdueFollowUps(
+                                                                leads: rawLeads,
+                                                                onReassign:
+                                                                    () => cubit
+                                                                        .selectNav(
+                                                                          1,
+                                                                        ),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                        ),
+                                                        Gap(sectionGap),
+                                                        Expanded(
+                                                          flex: 42,
+                                                          child: Column(
+                                                            children: [
+                                                              _Conversions(
+                                                                leads: rawLeads,
+                                                              ),
+                                                              Gap(sectionGap),
+                                                              _CollegeVisits(
+                                                                onPlanVisit:
+                                                                    () => cubit
+                                                                        .selectNav(
+                                                                          4,
+                                                                        ),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    )
+                                                  else
+                                                    Column(
+                                                      children: [
+                                                        _TeamToday(
+                                                          activeUsers:
+                                                              activeUsers,
+                                                          leads: rawLeads,
+                                                        ),
+                                                        const Gap(16),
+                                                        _Conversions(
+                                                          leads: rawLeads,
+                                                        ),
+                                                        const Gap(16),
+                                                        _OverdueFollowUps(
+                                                          leads: rawLeads,
+                                                          onReassign: () =>
+                                                              cubit.selectNav(
+                                                                1,
+                                                              ),
+                                                        ),
+                                                        const Gap(16),
+                                                        _CollegeVisits(
+                                                          onPlanVisit: () =>
+                                                              cubit.selectNav(
+                                                                4,
+                                                              ),
+                                                        ),
+                                                      ],
                                                     ),
-                                                    const Gap(16),
-                                                    _Conversions(
-                                                      leads: rawLeads,
-                                                    ),
-                                                    const Gap(16),
-                                                    _OverdueFollowUps(
-                                                      leads: rawLeads,
-                                                      onReassign: () =>
-                                                          cubit.selectNav(1),
-                                                    ),
-                                                    const Gap(16),
-                                                    _CollegeVisits(
-                                                      onPlanVisit: () =>
-                                                          cubit.selectNav(4),
-                                                    ),
-                                                  ],
-                                                ),
-                                            ],
+                                                ],
+                                              );
+                                            },
                                           );
                                         },
                                       );
                                     },
-                                  );
-                                },
-                              ),
-                            ] else if (state.selectedNavIndex == 1)
+                                  ),
+                                ] else if (state.selectedNavIndex == 1)
                                   const LeadsAssignView()
                                 else if (state.selectedNavIndex == 2)
                                   const CampaignsView()
@@ -772,6 +818,7 @@ class _DashboardViewState extends State<_DashboardView> {
     Map<String, dynamic> me,
     int selectedIndex, {
     bool inDrawer = false,
+    double sidebarWidth = 240,
   }) {
     final cubit = context.read<DashboardCubit>();
     final user = cubit.currentUser;
@@ -803,9 +850,10 @@ class _DashboardViewState extends State<_DashboardView> {
         .take(2)
         .map((e) => e.isEmpty ? '' : e[0].toUpperCase())
         .join();
+    final compactSidebar = !inDrawer && sidebarWidth < 210;
 
     return Container(
-      width: inDrawer ? double.infinity : 240,
+      width: inDrawer ? double.infinity : sidebarWidth,
       decoration: BoxDecoration(
         color: Colors.white,
         border: inDrawer
@@ -816,14 +864,19 @@ class _DashboardViewState extends State<_DashboardView> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+            padding: EdgeInsets.fromLTRB(
+              compactSidebar ? 12 : 16,
+              12,
+              compactSidebar ? 12 : 16,
+              8,
+            ),
             child: SizedBox(
-              height: 72,
+              height: compactSidebar ? 60 : 72,
               child: Align(
                 alignment: Alignment.centerLeft,
                 child: Image.asset(
                   AppImages.logo,
-                  height: 72,
+                  height: compactSidebar ? 60 : 72,
                   fit: BoxFit.contain,
                   alignment: Alignment.centerLeft,
                   errorBuilder: (_, _, _) => const Text(
@@ -847,9 +900,7 @@ class _DashboardViewState extends State<_DashboardView> {
                 final itemGap = h > 900
                     ? 12.0
                     : (h > 760 ? 8.0 : (h > 640 ? 5.0 : 2.0));
-                final sectionGap = h > 900
-                    ? 32.0
-                    : (h > 760 ? 24.0 : 16.0);
+                final sectionGap = h > 900 ? 32.0 : (h > 760 ? 24.0 : 16.0);
 
                 return SingleChildScrollView(
                   padding: const EdgeInsets.symmetric(vertical: 6),
@@ -863,12 +914,18 @@ class _DashboardViewState extends State<_DashboardView> {
                           index: i,
                           selectedIndex: selectedIndex,
                           inDrawer: inDrawer,
+                          compact: compactSidebar,
                         ),
                       ],
                       Gap(sectionGap),
-                      const Padding(
-                        padding: EdgeInsets.fromLTRB(20, 0, 16, 10),
-                        child: Text(
+                      Padding(
+                        padding: EdgeInsets.fromLTRB(
+                          compactSidebar ? 14 : 20,
+                          0,
+                          16,
+                          10,
+                        ),
+                        child: const Text(
                           'GENERAL',
                           style: TextStyle(
                             fontSize: 11,
@@ -885,6 +942,7 @@ class _DashboardViewState extends State<_DashboardView> {
                           index: i + 5,
                           selectedIndex: selectedIndex,
                           inDrawer: inDrawer,
+                          compact: compactSidebar,
                         ),
                       ],
                     ],
@@ -894,12 +952,15 @@ class _DashboardViewState extends State<_DashboardView> {
             ),
           ),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            padding: EdgeInsets.symmetric(
+              horizontal: compactSidebar ? 12 : 16,
+              vertical: 14,
+            ),
             child: Row(
               children: [
                 Container(
-                  width: 34,
-                  height: 34,
+                  width: compactSidebar ? 30 : 34,
+                  height: compactSidebar ? 30 : 34,
                   decoration: BoxDecoration(
                     color: const Color(0xFFF1F5F9),
                     shape: BoxShape.circle,
@@ -908,14 +969,14 @@ class _DashboardViewState extends State<_DashboardView> {
                   alignment: Alignment.center,
                   child: Text(
                     initials.isNotEmpty ? initials[0] : 'U',
-                    style: const TextStyle(
-                      color: Color(0xFF475569),
-                      fontSize: 13,
+                    style: TextStyle(
+                      color: const Color(0xFF475569),
+                      fontSize: compactSidebar ? 12 : 13,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
                 ),
-                const Gap(10),
+                Gap(compactSidebar ? 8 : 10),
                 Expanded(
                   child: OutlinedButton(
                     onPressed: _logout,
@@ -924,8 +985,8 @@ class _DashboardViewState extends State<_DashboardView> {
                       foregroundColor: const Color(0xFFDC2626),
                       side: const BorderSide(color: Color(0xFFFCA5A5)),
                       shape: const StadiumBorder(),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 14,
+                      padding: EdgeInsets.symmetric(
+                        horizontal: compactSidebar ? 10 : 14,
                         vertical: 6,
                       ),
                       visualDensity: VisualDensity.compact,
@@ -954,12 +1015,14 @@ class _DashboardViewState extends State<_DashboardView> {
     required int index,
     required int selectedIndex,
     required bool inDrawer,
+    bool compact = false,
   }) {
     final cubit = context.read<DashboardCubit>();
     return _SidebarNavItem(
       item: item,
       index: index,
       isSelected: selectedIndex == index,
+      compact: compact,
       onTap: () {
         cubit.selectNav(index);
         if (inDrawer) {
@@ -974,7 +1037,7 @@ class _DashboardViewState extends State<_DashboardView> {
     required double contentWidth,
     required bool showMenuButton,
   }) {
-    if (contentWidth < 680) {
+    if (contentWidth < 520) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -1077,94 +1140,28 @@ class _DashboardViewState extends State<_DashboardView> {
       );
     }
 
-    if (contentWidth < 1080) {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              if (showMenuButton) ...[
-                IconButton(
-                  onPressed: () => _scaffoldKey.currentState?.openDrawer(),
-                  icon: const Icon(Icons.menu_rounded, color: _text),
-                ),
-                const Gap(8),
-              ],
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Dashboard',
-                      style: GoogleFonts.inter(
-                        fontSize: 28,
-                        fontWeight: FontWeight.w700,
-                        color: const Color(0xFF2D312E),
-                        letterSpacing: -0.4102,
-                      ),
-                    ),
-                    const Gap(2),
-                    InkWell(
-                      onTap: _pickDashboardDate,
-                      borderRadius: BorderRadius.circular(6),
-                      child: Text(
-                        _today,
-                        style: GoogleFonts.inter(
-                          color: const Color(0xFF718096),
-                          fontSize: 13,
-                          fontWeight: FontWeight.w400,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const Gap(16),
-              SizedBox(
-                height: 48,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    alignment: Alignment.center,
-                    backgroundColor: const Color(0xFFEF8144),
-                    foregroundColor: Colors.white,
-                    elevation: 0,
-                    padding: const EdgeInsets.symmetric(horizontal: 18),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  onPressed: () => context.read<DashboardCubit>().selectNav(1),
-                  child: Center(
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        const Icon(Icons.add, size: 16, color: Colors.white),
-                        const Gap(8),
-                        Text(
-                          "Assign Today's Leads",
-                          textAlign: TextAlign.center,
-                          style: GoogleFonts.inter(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.white,
-                            height: 1.0,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const Gap(14),
-          _buildFigmaSearchBar(),
-        ],
-      );
-    }
+    final isCompactHeader = contentWidth < 700;
+    final isMediumHeader = contentWidth >= 700 && contentWidth < 1000;
+    final titleFontSize = isCompactHeader
+        ? 22.0
+        : (isMediumHeader ? 26.0 : 30.0);
+    final dateFontSize = isCompactHeader ? 12.0 : 14.0;
+    final searchMaxWidth = isCompactHeader
+        ? 185.0
+        : (isMediumHeader ? 260.0 : 360.0);
+    final searchMinWidth = isCompactHeader
+        ? 130.0
+        : (isMediumHeader ? 180.0 : 220.0);
+    final controlHeight = isCompactHeader
+        ? 42.0
+        : (isMediumHeader ? 46.0 : 52.0);
+    final buttonHorizontalPad = isCompactHeader
+        ? 14.0
+        : (isMediumHeader ? 16.0 : 20.0);
+    final buttonFontSize = isCompactHeader
+        ? 12.5
+        : (isMediumHeader ? 13.5 : 14.0);
+    final headerGap = isCompactHeader ? 10.0 : (isMediumHeader ? 12.0 : 16.0);
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -1182,8 +1179,10 @@ class _DashboardViewState extends State<_DashboardView> {
             children: [
               Text(
                 'Dashboard',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
                 style: GoogleFonts.inter(
-                  fontSize: 30,
+                  fontSize: titleFontSize,
                   fontWeight: FontWeight.w700,
                   color: const Color(0xFF2D312E),
                   letterSpacing: -0.4102,
@@ -1196,9 +1195,11 @@ class _DashboardViewState extends State<_DashboardView> {
                 borderRadius: BorderRadius.circular(6),
                 child: Text(
                   _today,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: GoogleFonts.inter(
                     color: const Color(0xFF718096),
-                    fontSize: 14,
+                    fontSize: dateFontSize,
                     fontWeight: FontWeight.w400,
                     letterSpacing: -0.3418,
                     height: 20 / 14,
@@ -1208,21 +1209,24 @@ class _DashboardViewState extends State<_DashboardView> {
             ],
           ),
         ),
-        const Gap(16),
+        Gap(headerGap),
         ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 360, minWidth: 220),
-          child: _buildFigmaSearchBar(),
+          constraints: BoxConstraints(
+            maxWidth: searchMaxWidth,
+            minWidth: searchMinWidth,
+          ),
+          child: _buildFigmaSearchBar(height: controlHeight),
         ),
-        const Gap(16),
+        Gap(headerGap),
         SizedBox(
-          height: 52,
+          height: controlHeight,
           child: ElevatedButton(
             style: ElevatedButton.styleFrom(
               alignment: Alignment.center,
               backgroundColor: const Color(0xFFEF8144),
               foregroundColor: Colors.white,
               elevation: 0,
-              padding: const EdgeInsets.symmetric(horizontal: 20),
+              padding: EdgeInsets.symmetric(horizontal: buttonHorizontalPad),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
@@ -1234,13 +1238,17 @@ class _DashboardViewState extends State<_DashboardView> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  const Icon(Icons.add, size: 16, color: Colors.white),
-                  const Gap(8),
+                  Icon(
+                    Icons.add,
+                    size: isCompactHeader ? 14 : 16,
+                    color: Colors.white,
+                  ),
+                  Gap(isCompactHeader ? 6 : 8),
                   Text(
                     "Assign Today's Leads",
                     textAlign: TextAlign.center,
                     style: GoogleFonts.inter(
-                      fontSize: 14,
+                      fontSize: buttonFontSize,
                       fontWeight: FontWeight.w600,
                       color: Colors.white,
                       height: 1.0,
@@ -1255,10 +1263,10 @@ class _DashboardViewState extends State<_DashboardView> {
     );
   }
 
-  Widget _buildFigmaSearchBar({double? width}) {
+  Widget _buildFigmaSearchBar({double? width, double height = 48}) {
     return Container(
       width: width,
-      height: 48,
+      height: height,
       decoration: BoxDecoration(
         color: const Color(0xFFFFFFFF),
         borderRadius: BorderRadius.circular(12),
@@ -1941,52 +1949,18 @@ class _DashboardViewState extends State<_DashboardView> {
     return LayoutBuilder(
       builder: (context, constraints) {
         final w = constraints.maxWidth;
-        if (w >= 1140) {
+        // From Tablet (768px -> w >= 520) through Laptop (1024px) to Laptop Large (1440px+),
+        // keep all 5 KPI cards in a single horizontal row matching the 1440px layout.
+        if (w >= 520) {
+          final gap = w >= 1000 ? 16.0 : (w >= 700 ? 12.0 : 8.0);
           return Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               for (var i = 0; i < cards.length; i++) ...[
-                if (i > 0) const Gap(16),
+                if (i > 0) Gap(gap),
                 Expanded(child: cards[i]),
               ],
             ],
-          );
-        }
-
-        if (w >= 740) {
-          if (cards.length == 5) {
-            return Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(child: cards[0]),
-                    const Gap(16),
-                    Expanded(child: cards[1]),
-                    const Gap(16),
-                    Expanded(child: cards[2]),
-                  ],
-                ),
-                const Gap(16),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(child: cards[3]),
-                    const Gap(16),
-                    Expanded(child: cards[4]),
-                  ],
-                ),
-              ],
-            );
-          }
-          final cardW = ((w - 2 * 16) / 3).floorToDouble() - 1;
-          return Wrap(
-            spacing: 16,
-            runSpacing: 16,
-            children: cards
-                .map((c) => SizedBox(width: cardW, child: c))
-                .toList(),
           );
         }
 
@@ -2050,253 +2024,286 @@ class _StatCardState extends State<_StatCard> {
 
   @override
   Widget build(BuildContext context) {
-    final isMobile = MediaQuery.of(context).size.width < 600;
-    final cardPadding = isMobile
-        ? const EdgeInsets.symmetric(horizontal: 16, vertical: 16)
-        : const EdgeInsets.all(20);
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final cardW = constraints.maxWidth;
+        final isCompact = cardW < 130;
+        final isMedium = cardW >= 130 && cardW < 180;
 
-    if (widget.isSolidHero) {
-      return MouseRegion(
-        onEnter: (_) => setState(() => _isHovered = true),
-        onExit: (_) => setState(() => _isHovered = false),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          curve: Curves.easeOutCubic,
-          transform: Matrix4.translationValues(0, _isHovered ? -4 : 0, 0),
-          constraints: const BoxConstraints(minHeight: 125),
-          clipBehavior: Clip.antiAlias,
-          decoration: BoxDecoration(
-            color: widget.color,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: _isHovered
-                ? [
-                    BoxShadow(
-                      color: widget.color.withValues(alpha: 0.38),
-                      blurRadius: 20,
-                      offset: const Offset(0, 10),
-                    ),
-                  ]
-                : [
-                    BoxShadow(
-                      color: widget.color.withValues(alpha: 0.18),
-                      blurRadius: 8,
-                      offset: const Offset(0, 3),
-                    ),
-                  ],
-          ),
-          child: Stack(
-            children: [
-              Positioned(
-                right: -48,
-                top: -48,
-                child: AnimatedScale(
-                  duration: const Duration(milliseconds: 200),
-                  scale: _isHovered ? 1.15 : 1.0,
-                  child: Container(
-                    width: 96,
-                    height: 96,
-                    decoration: const BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Color(0x0DFFFFFF),
+        final cardPadding = isCompact
+            ? const EdgeInsets.symmetric(horizontal: 10, vertical: 12)
+            : (isMedium
+                  ? const EdgeInsets.symmetric(horizontal: 14, vertical: 16)
+                  : const EdgeInsets.all(20));
+        final minCardHeight = isCompact ? 96.0 : (isMedium ? 112.0 : 125.0);
+        final labelFontSize = isCompact ? 11.0 : (isMedium ? 12.5 : 14.0);
+        final valueFontSize = isCompact ? 22.0 : (isMedium ? 28.0 : 34.0);
+        final subFontSize = isCompact ? 8.5 : (isMedium ? 9.5 : 10.0);
+        final svgSize = isCompact ? 13.0 : (isMedium ? 15.0 : 18.0);
+        final iconSize = isCompact ? 12.0 : (isMedium ? 14.0 : 16.0);
+
+        if (widget.isSolidHero) {
+          return MouseRegion(
+            onEnter: (_) => setState(() => _isHovered = true),
+            onExit: (_) => setState(() => _isHovered = false),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              curve: Curves.easeOutCubic,
+              transform: Matrix4.translationValues(0, _isHovered ? -4 : 0, 0),
+              constraints: BoxConstraints(minHeight: minCardHeight),
+              clipBehavior: Clip.antiAlias,
+              decoration: BoxDecoration(
+                color: widget.color,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: _isHovered
+                    ? [
+                        BoxShadow(
+                          color: widget.color.withValues(alpha: 0.38),
+                          blurRadius: 20,
+                          offset: const Offset(0, 10),
+                        ),
+                      ]
+                    : [
+                        BoxShadow(
+                          color: widget.color.withValues(alpha: 0.18),
+                          blurRadius: 8,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
+              ),
+              child: Stack(
+                children: [
+                  Positioned(
+                    right: -48,
+                    top: -48,
+                    child: AnimatedScale(
+                      duration: const Duration(milliseconds: 200),
+                      scale: _isHovered ? 1.15 : 1.0,
+                      child: Container(
+                        width: 96,
+                        height: 96,
+                        decoration: const BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Color(0x0DFFFFFF),
+                        ),
+                      ),
                     ),
                   ),
-                ),
-              ),
-              Padding(
-                padding: cardPadding,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
+                  Padding(
+                    padding: cardPadding,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Expanded(
-                          child: Text(
-                            widget.label,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: GoogleFonts.inter(
-                              color: const Color(0xE6FFFFFF),
-                              fontSize: isMobile ? 12.5 : 14,
-                              fontWeight: FontWeight.w500,
-                              letterSpacing: -0.5195,
-                            ),
-                          ),
-                        ),
-                        AnimatedScale(
-                          duration: const Duration(milliseconds: 200),
-                          scale: _isHovered ? 1.12 : 1.0,
-                          curve: Curves.easeOutBack,
-                          child: widget.svgAsset != null
-                              ? SvgPicture.asset(
-                                  widget.svgAsset!,
-                                  width: isMobile ? 15 : 18,
-                                  height: isMobile ? 15 : 18,
-                                  colorFilter: const ColorFilter.mode(
-                                    Colors.white,
-                                    BlendMode.srcIn,
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: FittedBox(
+                                fit: BoxFit.scaleDown,
+                                alignment: Alignment.centerLeft,
+                                child: Text(
+                                  widget.label,
+                                  maxLines: 1,
+                                  style: GoogleFonts.inter(
+                                    color: const Color(0xE6FFFFFF),
+                                    fontSize: labelFontSize,
+                                    fontWeight: FontWeight.w500,
+                                    letterSpacing: -0.5195,
                                   ),
-                                )
-                              : (widget.icon != null
-                                  ? Icon(widget.icon,
-                                      color: Colors.white,
-                                      size: isMobile ? 14 : 16)
-                                  : const SizedBox.shrink()),
+                                ),
+                              ),
+                            ),
+                            const Gap(4),
+                            AnimatedScale(
+                              duration: const Duration(milliseconds: 200),
+                              scale: _isHovered ? 1.12 : 1.0,
+                              curve: Curves.easeOutBack,
+                              child: widget.svgAsset != null
+                                  ? SvgPicture.asset(
+                                      widget.svgAsset!,
+                                      width: svgSize,
+                                      height: svgSize,
+                                      colorFilter: const ColorFilter.mode(
+                                        Colors.white,
+                                        BlendMode.srcIn,
+                                      ),
+                                    )
+                                  : (widget.icon != null
+                                        ? Icon(
+                                            widget.icon,
+                                            color: Colors.white,
+                                            size: iconSize,
+                                          )
+                                        : const SizedBox.shrink()),
+                            ),
+                          ],
+                        ),
+                        Gap(isCompact ? 6 : 8),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            FittedBox(
+                              fit: BoxFit.scaleDown,
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                widget.value,
+                                style: GoogleFonts.inter(
+                                  fontSize: valueFontSize,
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                            const Gap(4),
+                            FittedBox(
+                              fit: BoxFit.scaleDown,
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                widget.sub,
+                                maxLines: 1,
+                                style: GoogleFonts.inter(
+                                  color: const Color(0xCCFFFFFF),
+                                  fontSize: subFontSize,
+                                  fontWeight: FontWeight.w400,
+                                  letterSpacing: -0.2344,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
-                    const Gap(8),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        FittedBox(
-                          fit: BoxFit.scaleDown,
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            widget.value,
-                            style: GoogleFonts.inter(
-                              fontSize: isMobile ? 28 : 34,
-                              fontWeight: FontWeight.w700,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                        const Gap(4),
-                        Text(
-                          widget.sub,
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+
+        return MouseRegion(
+          onEnter: (_) => setState(() => _isHovered = true),
+          onExit: (_) => setState(() => _isHovered = false),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            curve: Curves.easeOutCubic,
+            transform: Matrix4.translationValues(0, _isHovered ? -4 : 0, 0),
+            constraints: BoxConstraints(minHeight: minCardHeight),
+            padding: cardPadding,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: _isHovered
+                    ? widget.color.withValues(alpha: 0.35)
+                    : const Color(0xFFE2E8E5),
+                width: _isHovered ? 1.2 : 1,
+              ),
+              boxShadow: _isHovered
+                  ? [
+                      BoxShadow(
+                        color: widget.color.withValues(alpha: 0.12),
+                        blurRadius: 18,
+                        offset: const Offset(0, 8),
+                      ),
+                      const BoxShadow(
+                        color: Color(0x060F172A),
+                        blurRadius: 6,
+                        offset: Offset(0, 2),
+                      ),
+                    ]
+                  : const [
+                      BoxShadow(
+                        color: Color(0x05000000),
+                        blurRadius: 4,
+                        offset: Offset(0, 1),
+                      ),
+                    ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          widget.label,
                           maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
                           style: GoogleFonts.inter(
-                            color: const Color(0xCCFFFFFF),
-                            fontSize: 10,
-                            fontWeight: FontWeight.w400,
-                            letterSpacing: -0.2344,
+                            color: _isHovered
+                                ? const Color(0xFF1E293B)
+                                : const Color(0xFF718096),
+                            fontSize: labelFontSize,
+                            fontWeight: FontWeight.w500,
+                            letterSpacing: -0.5,
                           ),
                         ),
-                      ],
+                      ),
+                    ),
+                    const Gap(4),
+                    AnimatedScale(
+                      duration: const Duration(milliseconds: 200),
+                      scale: _isHovered ? 1.12 : 1.0,
+                      curve: Curves.easeOutBack,
+                      child: widget.svgAsset != null
+                          ? SvgPicture.asset(
+                              widget.svgAsset!,
+                              width: svgSize,
+                              height: svgSize,
+                            )
+                          : (widget.icon != null
+                                ? Icon(
+                                    widget.icon,
+                                    color: widget.color,
+                                    size: iconSize,
+                                  )
+                                : const SizedBox.shrink()),
                     ),
                   ],
                 ),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
-    return MouseRegion(
-      onEnter: (_) => setState(() => _isHovered = true),
-      onExit: (_) => setState(() => _isHovered = false),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        curve: Curves.easeOutCubic,
-        transform: Matrix4.translationValues(0, _isHovered ? -4 : 0, 0),
-        constraints: const BoxConstraints(minHeight: 125),
-        padding: cardPadding,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: _isHovered
-                ? widget.color.withValues(alpha: 0.35)
-                : const Color(0xFFE2E8E5),
-            width: _isHovered ? 1.2 : 1,
-          ),
-          boxShadow: _isHovered
-              ? [
-                  BoxShadow(
-                    color: widget.color.withValues(alpha: 0.12),
-                    blurRadius: 18,
-                    offset: const Offset(0, 8),
-                  ),
-                  const BoxShadow(
-                    color: Color(0x060F172A),
-                    blurRadius: 6,
-                    offset: Offset(0, 2),
-                  ),
-                ]
-              : const [
-                  BoxShadow(
-                    color: Color(0x05000000),
-                    blurRadius: 4,
-                    offset: Offset(0, 1),
-                  ),
-                ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Text(
-                    widget.label,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.inter(
-                      color: _isHovered
-                          ? const Color(0xFF1E293B)
-                          : const Color(0xFF718096),
-                      fontSize: isMobile ? 12.5 : 14,
-                      fontWeight: FontWeight.w500,
-                      letterSpacing: -0.5,
+                Gap(isCompact ? 6 : 8),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        widget.value,
+                        style: GoogleFonts.inter(
+                          fontSize: valueFontSize,
+                          fontWeight: FontWeight.w700,
+                          color: widget.valueColor ?? widget.color,
+                        ),
+                      ),
                     ),
-                  ),
-                ),
-                AnimatedScale(
-                  duration: const Duration(milliseconds: 200),
-                  scale: _isHovered ? 1.12 : 1.0,
-                  curve: Curves.easeOutBack,
-                  child: widget.svgAsset != null
-                      ? SvgPicture.asset(
-                          widget.svgAsset!,
-                          width: isMobile ? 15 : 18,
-                          height: isMobile ? 15 : 18,
-                        )
-                      : (widget.icon != null
-                          ? Icon(widget.icon,
-                              color: widget.color,
-                              size: isMobile ? 14 : 16)
-                          : const SizedBox.shrink()),
+                    const Gap(4),
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        widget.sub,
+                        maxLines: 1,
+                        style: GoogleFonts.inter(
+                          color: const Color(0xFFA0AEC0),
+                          fontSize: subFontSize,
+                          fontWeight: FontWeight.w400,
+                          letterSpacing: -0.3,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
-            const Gap(8),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                FittedBox(
-                  fit: BoxFit.scaleDown,
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    widget.value,
-                    style: GoogleFonts.inter(
-                      fontSize: isMobile ? 28 : 34,
-                      fontWeight: FontWeight.w700,
-                      color: widget.valueColor ?? widget.color,
-                    ),
-                  ),
-                ),
-                const Gap(4),
-                Text(
-                  widget.sub,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.inter(
-                    color: const Color(0xFFA0AEC0),
-                    fontSize: 10,
-                    fontWeight: FontWeight.w400,
-                    letterSpacing: -0.3,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }
@@ -2355,6 +2362,14 @@ class _TeamToday extends StatelessWidget {
       );
     }).toList();
 
+    final screenW = MediaQuery.of(context).size.width;
+    final cardPad = screenW < 960
+        ? const EdgeInsets.all(16)
+        : (screenW < 1280
+              ? const EdgeInsets.all(20)
+              : const EdgeInsets.all(24));
+    final titleSize = screenW < 960 ? 15.5 : (screenW < 1280 ? 16.5 : 18.0);
+
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -2372,7 +2387,7 @@ class _TeamToday extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            padding: const EdgeInsets.all(24),
+            padding: cardPad,
             decoration: const BoxDecoration(
               border: Border(
                 bottom: BorderSide(color: Color(0xFFF9FAFB), width: 1),
@@ -2383,7 +2398,7 @@ class _TeamToday extends StatelessWidget {
                 Text(
                   'Team Today',
                   style: GoogleFonts.inter(
-                    fontSize: 18,
+                    fontSize: titleSize,
                     fontWeight: FontWeight.w700,
                     color: const Color(0xFF111827),
                     letterSpacing: 0.0527,
@@ -2429,17 +2444,14 @@ class _TeamToday extends StatelessWidget {
             ),
           ),
           Padding(
-            padding: const EdgeInsets.all(24),
+            padding: cardPad,
             child: rows.isEmpty
                 ? Center(
                     child: Padding(
                       padding: const EdgeInsets.symmetric(vertical: 24),
                       child: Text(
                         'No active team members registered yet.',
-                        style: GoogleFonts.inter(
-                          color: _muted,
-                          fontSize: 13,
-                        ),
+                        style: GoogleFonts.inter(color: _muted, fontSize: 13),
                       ),
                     ),
                   )
@@ -2555,8 +2567,9 @@ class _TeamToday extends StatelessWidget {
                                         ),
                                         decoration: BoxDecoration(
                                           color: const Color(0xFFFFF7ED),
-                                          borderRadius:
-                                              BorderRadius.circular(8),
+                                          borderRadius: BorderRadius.circular(
+                                            8,
+                                          ),
                                           border: Border.all(
                                             color: const Color(0xFFFFEDD5),
                                             width: 1,
@@ -2651,10 +2664,13 @@ class _Conversions extends StatelessWidget {
             }))
         : const [];
 
-    final isMobile = MediaQuery.of(context).size.width < 600;
-    final cardPadding = isMobile
+    final screenW = MediaQuery.of(context).size.width;
+    final cardPadding = screenW < 960
         ? const EdgeInsets.all(16)
-        : const EdgeInsets.all(24);
+        : (screenW < 1280
+              ? const EdgeInsets.all(20)
+              : const EdgeInsets.all(24));
+    final titleSize = screenW < 960 ? 15.0 : (screenW < 1280 ? 16.5 : 18.0);
 
     return Container(
       decoration: BoxDecoration(
@@ -2683,16 +2699,19 @@ class _Conversions extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Expanded(
-                  child: Text(
-                    'Conversions by source',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.inter(
-                      fontSize: isMobile ? 16 : 18,
-                      fontWeight: FontWeight.w700,
-                      color: const Color(0xFF111827),
-                      letterSpacing: 0.0527,
-                      height: 28 / 18,
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      'Conversions by source',
+                      maxLines: 1,
+                      style: GoogleFonts.inter(
+                        fontSize: titleSize,
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFF111827),
+                        letterSpacing: 0.0527,
+                        height: 28 / 18,
+                      ),
                     ),
                   ),
                 ),
@@ -2739,7 +2758,11 @@ class _Conversions extends StatelessWidget {
                 : Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      for (var i = 0; i < displaySources.take(6).length; i++) ...[
+                      for (
+                        var i = 0;
+                        i < displaySources.take(6).length;
+                        i++
+                      ) ...[
                         if (i > 0) const Gap(20),
                         Builder(
                           builder: (_) {
@@ -2784,34 +2807,36 @@ class _Conversions extends StatelessWidget {
                                     fit: BoxFit.scaleDown,
                                     alignment: Alignment.centerRight,
                                     child: RichText(
-                                    textAlign: TextAlign.right,
-                                    text: TextSpan(
-                                      children: [
-                                        TextSpan(
-                                          text: '${r.$2}',
-                                          style: GoogleFonts.inter(
-                                            fontSize: 20,
-                                            fontWeight: FontWeight.w700,
-                                            color: const Color(0xFF111827),
-                                            height: 16 / 20,
+                                      textAlign: TextAlign.right,
+                                      text: TextSpan(
+                                        children: [
+                                          TextSpan(
+                                            text: '${r.$2}',
+                                            style: GoogleFonts.inter(
+                                              fontSize: 20,
+                                              fontWeight: FontWeight.w700,
+                                              color: const Color(0xFF111827),
+                                              height: 16 / 20,
+                                            ),
                                           ),
-                                        ),
-                                        TextSpan(
-                                          text: ' ',
-                                          style: GoogleFonts.inter(fontSize: 12),
-                                        ),
-                                        TextSpan(
-                                          text: '/ ${r.$3}',
-                                          style: GoogleFonts.inter(
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.w400,
-                                            color: const Color(0xFF9FA0A1),
-                                            height: 16 / 12,
+                                          TextSpan(
+                                            text: ' ',
+                                            style: GoogleFonts.inter(
+                                              fontSize: 12,
+                                            ),
                                           ),
-                                        ),
-                                      ],
+                                          TextSpan(
+                                            text: '/ ${r.$3}',
+                                            style: GoogleFonts.inter(
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w400,
+                                              color: const Color(0xFF9FA0A1),
+                                              height: 16 / 12,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
                                     ),
-                                  ),
                                   ),
                                 ),
                               ],
@@ -2851,8 +2876,16 @@ class _OverdueFollowUps extends StatelessWidget {
       return eval.isOverdue;
     }).toList();
 
+    final screenW = MediaQuery.of(context).size.width;
+    final cardPad = screenW < 960
+        ? const EdgeInsets.all(16)
+        : (screenW < 1280
+              ? const EdgeInsets.all(20)
+              : const EdgeInsets.all(24));
+    final titleSize = screenW < 960 ? 15.5 : (screenW < 1280 ? 16.5 : 18.0);
+
     return Container(
-      padding: const EdgeInsets.all(24),
+      padding: cardPad,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
@@ -2872,15 +2905,18 @@ class _OverdueFollowUps extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Expanded(
-                child: Text(
-                  'Overdue Follow ups',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.inter(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700,
-                    color: const Color(0xFF1A1A1A),
-                    letterSpacing: -0.2813,
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    'Overdue Follow ups',
+                    maxLines: 1,
+                    style: GoogleFonts.inter(
+                      fontSize: titleSize,
+                      fontWeight: FontWeight.w700,
+                      color: const Color(0xFF1A1A1A),
+                      letterSpacing: -0.2813,
+                    ),
                   ),
                 ),
               ),
@@ -2903,7 +2939,7 @@ class _OverdueFollowUps extends StatelessWidget {
                     textAlign: TextAlign.center,
                     style: GoogleFonts.inter(
                       color: const Color(0xFF5C59B6),
-                      fontSize: 14,
+                      fontSize: screenW < 960 ? 12.5 : 14,
                       fontWeight: FontWeight.w600,
                       letterSpacing: 0.041,
                       height: 20 / 14,
@@ -3036,8 +3072,16 @@ class _CollegeVisits extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenW = MediaQuery.of(context).size.width;
+    final cardPad = screenW < 960
+        ? const EdgeInsets.all(16)
+        : (screenW < 1280
+              ? const EdgeInsets.all(20)
+              : const EdgeInsets.all(24));
+    final titleSize = screenW < 960 ? 15.0 : (screenW < 1280 ? 16.5 : 18.0);
+
     return Container(
-      padding: const EdgeInsets.all(24),
+      padding: cardPad,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
@@ -3057,15 +3101,18 @@ class _CollegeVisits extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Expanded(
-                child: Text(
-                  'College visits this week',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.inter(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700,
-                    color: const Color(0xFF1A1A1A),
-                    letterSpacing: -0.2813,
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    'College visits this week',
+                    maxLines: 1,
+                    style: GoogleFonts.inter(
+                      fontSize: titleSize,
+                      fontWeight: FontWeight.w700,
+                      color: const Color(0xFF1A1A1A),
+                      letterSpacing: -0.2813,
+                    ),
                   ),
                 ),
               ),
@@ -3106,11 +3153,8 @@ class _CollegeVisits extends StatelessWidget {
             builder: (context, snapshot) {
               final List<Map<String, dynamic>> displayVisits =
                   snapshot.hasData && snapshot.data!.docs.isNotEmpty
-                      ? snapshot.data!.docs
-                          .take(4)
-                          .map((d) => d.data())
-                          .toList()
-                      : <Map<String, dynamic>>[];
+                  ? snapshot.data!.docs.take(4).map((d) => d.data()).toList()
+                  : <Map<String, dynamic>>[];
 
               if (displayVisits.isEmpty) {
                 return Padding(
