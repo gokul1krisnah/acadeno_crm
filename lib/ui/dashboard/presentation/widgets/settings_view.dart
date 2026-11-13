@@ -1276,7 +1276,7 @@ class _SettingsViewState extends State<SettingsView>
                 const Divider(height: 24),
                 _buildStatusRow(
                   'Screen Privacy & Capture Protection',
-                  'FLAG_SECURE Active',
+                  'Screenshots Enabled',
                   Icons.verified_user_outlined,
                   _primary,
                 ),
