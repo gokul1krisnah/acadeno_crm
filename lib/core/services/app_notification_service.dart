@@ -65,16 +65,7 @@ class AppNotificationService {
   final FlutterLocalNotificationsPlugin _localNotifications =
       FlutterLocalNotificationsPlugin();
 
-  Future<String?> _fetchTokenSafely({Duration timeout = const Duration(seconds: 4)}) async {
-    try {
-      final tokenFuture = _fcm.onRegistered.first;
-      await _fcm.register();
-      final token = await tokenFuture.timeout(timeout);
-      if (token.isNotEmpty) return token;
-    } catch (_) {}
-
-    return null;
-  }
+  Completer<String>? _initialTokenCompleter;
   String? _fcmToken;
   String? get fcmToken => _fcmToken;
   bool _isSyncingToken = false;
@@ -172,23 +163,33 @@ class AppNotificationService {
         sound: true,
       );
 
-      // 4. Retrieve FCM device token with fast timeout so offline startup never hangs
+      // 4. Listen to token registration & refresh events cleanly
       try {
-        _fcmToken = await _fetchTokenSafely(timeout: const Duration(seconds: 3));
-        if (_fcmToken != null && _fcmToken!.isNotEmpty) {
+        _fcm.onRegistered.listen((newToken) {
+          _fcmToken = newToken;
+          if (_initialTokenCompleter != null &&
+              !_initialTokenCompleter!.isCompleted) {
+            _initialTokenCompleter!.complete(newToken);
+          }
+          syncCurrentUserToken();
+        });
+      } catch (_) {}
+
+      // 5. Trigger FCM registration
+      try {
+        _initialTokenCompleter = Completer<String>();
+        await _fcm.register();
+        final registeredToken = await _initialTokenCompleter!.future.timeout(
+          const Duration(seconds: 3),
+          onTimeout: () => _fcmToken ?? '',
+        );
+        if (registeredToken.isNotEmpty) {
+          _fcmToken = registeredToken;
           debugPrint('FCM Device Token: $_fcmToken');
         }
       } catch (e) {
         debugPrint('FCM register notice (offline or skipped): $e');
       }
-
-      // 5. Listen to token refresh events
-      try {
-        _fcm.onRegistered.listen((newToken) {
-          _fcmToken = newToken;
-          syncCurrentUserToken();
-        });
-      } catch (_) {}
 
       // 6. Listen to incoming foreground messages
       FirebaseMessaging.onMessage.listen((RemoteMessage message) {
@@ -373,9 +374,7 @@ class AppNotificationService {
       if (_auth.currentUser?.uid != uid) return;
 
       if (_fcmToken == null || _fcmToken!.isEmpty) {
-        _fcmToken = await _fetchTokenSafely(
-          timeout: const Duration(seconds: 3),
-        );
+        _fcmToken = await refreshToken();
       }
 
       if (_fcmToken != null && _fcmToken!.isNotEmpty) {
@@ -406,7 +405,15 @@ class AppNotificationService {
   /// Forces a fresh FCM device token retrieval and syncs it with Firestore.
   Future<String?> refreshToken() async {
     try {
-      _fcmToken = await _fetchTokenSafely(timeout: const Duration(seconds: 5));
+      _initialTokenCompleter = Completer<String>();
+      await _fcm.register();
+      final freshToken = await _initialTokenCompleter!.future.timeout(
+        const Duration(seconds: 4),
+        onTimeout: () => _fcmToken ?? '',
+      );
+      if (freshToken.isNotEmpty) {
+        _fcmToken = freshToken;
+      }
       await syncCurrentUserToken();
       return _fcmToken;
     } catch (e) {
