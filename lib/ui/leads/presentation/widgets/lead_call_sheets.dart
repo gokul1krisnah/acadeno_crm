@@ -1,7 +1,11 @@
+import 'dart:ui' show ImageFilter;
 import '../pages/lead_detail_page.dart';
 import 'package:gap/gap.dart';
 import 'package:intl/intl.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:acadeno_crm/shared/theme/app_images.dart';
+import 'package:acadeno_crm/shared/theme/app_svgs.dart';
 import 'package:acadeno_crm/shared/widgets/college_selector_field.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -73,7 +77,7 @@ class LeadCallSheets {
     return acadenoPrograms.first;
   }
 
-  // 1. Mandatory Call & Outcome Sheet (Matches Exact UI)
+  // 1. Mandatory Call & Outcome Sheet (Matches Exact Figma UI node-id=1643-2)
   // ---------------------------------------------------------------------------
   static void showCallAndOutcomeSheet(
     BuildContext context, {
@@ -88,526 +92,589 @@ class LeadCallSheets {
   }) {
     final cubit = context.read<LeadsCubit>();
     final followUpsCubit = context.read<FollowUpsCubit>();
+    HomeCubit? homeCubit;
+    try {
+      homeCubit = context.read<HomeCubit>();
+    } catch (_) {
+      homeCubit = null;
+    }
+
+    final greeting = homeCubit?.state.greeting ?? 'Good afternoon';
+    final firstName = (homeCubit?.state.user.firstName.isNotEmpty ?? false)
+        ? homeCubit!.state.user.firstName
+        : 'Test';
+    final todayLabel = (homeCubit?.state.todayLabel.isNotEmpty ?? false)
+        ? homeCubit!.state.todayLabel
+        : DateFormat('EEE, d MMM').format(DateTime.now());
+
     String selectedOutcome = 'Follow-up';
-    String selectedFollowUpSlot = 'Tomorrow 10:30';
+    const String selectedFollowUpSlot = 'Tomorrow 10:30';
     final notesCtrl = TextEditingController();
 
     const outcomeRows = [
-      [('Interested', Color(0xFF10B981)), ('Follow-up', Color(0xFFE85926))],
-      [('No answer', Color(0xFF2563EB)), ('Busy', Color(0xFF2563EB))],
-      [('Switched off', Color(0xFF334155)), ('Converted', Color(0xFF2563EB))],
+      [('Interested', Color(0xFF22C55E)), ('Follow-up', Color(0xFFE8612D))],
+      [('No answer', Color(0xFF1E3A8A)), ('Busy', Color(0xFF3730A3))],
+      [('Switched off', Color(0xFF1E293B)), ('Converted', Color(0xFF2563EB))],
       [
         ('Not interested', Color(0xFFEF4444)),
-        ('Wrong number', Color(0xFF64748B)),
+        ('Wrong number', Color(0xFF6B7280)),
       ],
     ];
 
     final displayDuration = initialDuration.trim().isNotEmpty
         ? initialDuration.trim()
-        : '0s';
+        : '7s';
 
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      barrierColor: Colors.black,
+      barrierColor: Colors.black.withValues(alpha: 0.75),
       elevation: 0,
       builder: (ctx) {
         return SizedBox(
           height: MediaQuery.sizeOf(ctx).height,
+          width: double.infinity,
           child: Scaffold(
             backgroundColor: Colors.black,
-            body: SafeArea(
-              bottom: false,
-              child: Center(
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 440),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      // Top Dark Section: "Follow-ups" header + Call ended card
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(20, 12, 20, 14),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'Follow-ups',
-                              style: TextStyle(
-                                fontSize: 26,
-                                fontWeight: FontWeight.w700,
-                                color: Colors.white,
-                                letterSpacing: -0.5,
+            body: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 512),
+                child: Column(
+                  children: [
+                    // Top Blurred Header (Figma node 1643:31 + 1643:116, height 96px)
+                    SizedBox(
+                      height: 96,
+                      width: double.infinity,
+                      child: Stack(
+                        fit: StackFit.expand,
+                        children: [
+                          Container(
+                            color: Colors.white,
+                            padding: const EdgeInsets.fromLTRB(20, 32, 20, 12),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Expanded(
+                                  child: Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
+                                    children: [
+                                      Image.asset(
+                                        AppImages.acadenoALogo,
+                                        width: 38,
+                                        height: 38,
+                                        fit: BoxFit.contain,
+                                      ),
+                                      const Gap(12),
+                                      Expanded(
+                                        child: Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              '$greeting, $firstName',
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                              style: GoogleFonts.inter(
+                                                fontSize: 20,
+                                                fontWeight: FontWeight.w700,
+                                                color: const Color(0xFF111827),
+                                                letterSpacing: -0.0195,
+                                                height: 28 / 20,
+                                              ),
+                                            ),
+                                            Text(
+                                              todayLabel,
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                              style: GoogleFonts.inter(
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.w500,
+                                                color: const Color(0xFF6B7280),
+                                                height: 16 / 12,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Container(
+                                  width: 40,
+                                  height: 40,
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFF9FAFB),
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(
+                                      color: const Color(0xFFF3F4F6),
+                                      width: 1,
+                                    ),
+                                  ),
+                                  alignment: Alignment.center,
+                                  child: SvgPicture.asset(
+                                    AppSvgs.logout,
+                                    width: 16,
+                                    height: 16,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Positioned.fill(
+                            child: ClipRect(
+                              child: BackdropFilter(
+                                filter: ImageFilter.blur(
+                                  sigmaX: 2.2,
+                                  sigmaY: 2.2,
+                                ),
+                                child: Container(
+                                  color: const Color(0x33D9D9D9),
+                                ),
                               ),
                             ),
-                            const Gap(14),
-                            Container(
-                              width: double.infinity,
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 15,
-                              ),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF1E2024),
-                                borderRadius: BorderRadius.circular(16),
-                                border: Border.all(
-                                  color: Colors.white.withValues(alpha: 0.08),
-                                ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    // Post Call Feedback Screen (Figma node 1606:1689 / 1606:1609)
+                    Expanded(
+                      child: Container(
+                        width: double.infinity,
+                        color: Colors.black,
+                        child: StatefulBuilder(
+                          builder: (ctx, setSheetState) {
+                            return SingleChildScrollView(
+                              physics: const ClampingScrollPhysics(),
+                              padding: EdgeInsets.only(
+                                bottom:
+                                    MediaQuery.viewInsetsOf(ctx).bottom + 32,
                               ),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(
-                                    'Call ended • $displayDuration',
-                                    style: const TextStyle(
-                                      fontSize: 12.5,
-                                      fontWeight: FontWeight.w500,
-                                      color: Color(0xFF94A3B8),
+                                  // "Follow-ups" Title (Figma node 1606:1625)
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 24,
+                                      vertical: 16,
+                                    ),
+                                    child: Text(
+                                      'Follow-ups',
+                                      style: GoogleFonts.inter(
+                                        fontSize: 30,
+                                        fontWeight: FontWeight.w700,
+                                        color: Colors.white,
+                                        height: 36 / 30,
+                                      ),
                                     ),
                                   ),
-                                  const Gap(4),
-                                  Text(
-                                    leadName,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: const TextStyle(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.w700,
-                                      color: Colors.white,
-                                      letterSpacing: -0.3,
+
+                                  // Call ended card (Figma node 1606:1628 -> 1606:1629)
+                                  Padding(
+                                    padding: const EdgeInsets.fromLTRB(
+                                      24,
+                                      8,
+                                      24,
+                                      32,
+                                    ),
+                                    child: Container(
+                                      width: double.infinity,
+                                      padding: const EdgeInsets.all(24),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFF1C1C1C),
+                                        borderRadius: BorderRadius.circular(16),
+                                      ),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            'Call ended • $displayDuration',
+                                            style: GoogleFonts.inter(
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w500,
+                                              color: const Color(0xFF9CA3AF),
+                                              height: 20 / 14,
+                                            ),
+                                          ),
+                                          const Gap(4),
+                                          Text(
+                                            leadName,
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: GoogleFonts.inter(
+                                              fontSize: 24,
+                                              fontWeight: FontWeight.w700,
+                                              color: Colors.white,
+                                              height: 32 / 24,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+
+                                  // Light Rounded Sheet (Figma node 1606:1635)
+                                  Container(
+                                    width: double.infinity,
+                                    padding: const EdgeInsets.fromLTRB(
+                                      24,
+                                      16,
+                                      24,
+                                      28,
+                                    ),
+                                    decoration: const BoxDecoration(
+                                      color: Color(0xFFF8F9FA),
+                                      borderRadius: BorderRadius.vertical(
+                                        top: Radius.circular(32),
+                                      ),
+                                    ),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        // Top Drag Handle (Figma node 1606:1636)
+                                        Center(
+                                          child: Container(
+                                            width: 40,
+                                            height: 4,
+                                            decoration: BoxDecoration(
+                                              color: const Color(0xFFD1D5DB),
+                                              borderRadius:
+                                                  BorderRadius.circular(9999),
+                                            ),
+                                          ),
+                                        ),
+                                        const Gap(24),
+
+                                        // Heading 3: How did the call go? (Figma node 1606:1637)
+                                        Text(
+                                          'How did the call go?',
+                                          style: GoogleFonts.inter(
+                                            fontSize: 20,
+                                            fontWeight: FontWeight.w700,
+                                            color: const Color(0xFF111827),
+                                            height: 28 / 20,
+                                          ),
+                                        ),
+                                        const Gap(24),
+
+                                        // 2x4 Outcomes Grid (Figma node 1606:1639)
+                                        LayoutBuilder(
+                                          builder: (context, gridConstraints) {
+                                            final availW =
+                                                gridConstraints.maxWidth;
+                                            final colGap = availW >= 420
+                                                ? 48.0
+                                                : (availW * 0.06)
+                                                      .clamp(12.0, 48.0);
+                                            return Column(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: List.generate(
+                                                outcomeRows.length,
+                                                (rowIdx) {
+                                                  final row =
+                                                      outcomeRows[rowIdx];
+                                                  return Padding(
+                                                    padding: EdgeInsets.only(
+                                                      bottom:
+                                                          rowIdx <
+                                                              outcomeRows
+                                                                      .length -
+                                                                  1
+                                                          ? 14
+                                                          : 0,
+                                                    ),
+                                                    child: Row(
+                                                      children: [
+                                                        Expanded(
+                                                          flex: 201,
+                                                          child: _buildOutcomeButton(
+                                                            name: row[0].$1,
+                                                            dotColor: row[0].$2,
+                                                            isSelected:
+                                                                selectedOutcome ==
+                                                                row[0].$1,
+                                                            dotToTextGap:
+                                                                row[0].$1 ==
+                                                                    'Not interested'
+                                                                ? 24.89
+                                                                : 12.0,
+                                                            onTap: () {
+                                                              setSheetState(
+                                                                () =>
+                                                                    selectedOutcome =
+                                                                        row[0]
+                                                                            .$1,
+                                                              );
+                                                            },
+                                                          ),
+                                                        ),
+                                                        SizedBox(width: colGap),
+                                                        Expanded(
+                                                          flex: 190,
+                                                          child: _buildOutcomeButton(
+                                                            name: row[1].$1,
+                                                            dotColor: row[1].$2,
+                                                            isSelected:
+                                                                selectedOutcome ==
+                                                                row[1].$1,
+                                                            dotToTextGap: 12.0,
+                                                            onTap: () {
+                                                              setSheetState(
+                                                                () =>
+                                                                    selectedOutcome =
+                                                                        row[1]
+                                                                            .$1,
+                                                              );
+                                                            },
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  );
+                                                },
+                                              ),
+                                            );
+                                          },
+                                        ),
+
+                                        const Gap(32),
+
+                                        // Notes (optional) (Figma node 1606:1677)
+                                        Text(
+                                          'Notes (optional)',
+                                          style: GoogleFonts.inter(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w700,
+                                            color: const Color(0xFF374151),
+                                            height: 24 / 16,
+                                          ),
+                                        ),
+                                        const Gap(16),
+
+                                        Container(
+                                          width: double.infinity,
+                                          constraints: const BoxConstraints(
+                                            minHeight: 100,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: Colors.white,
+                                            borderRadius: BorderRadius.circular(
+                                              16,
+                                            ),
+                                            border: Border.all(
+                                              color: const Color(0xFFE5E7EB),
+                                              width: 1,
+                                            ),
+                                            boxShadow: const [
+                                              BoxShadow(
+                                                color: Color(0x0D000000),
+                                                blurRadius: 1,
+                                                offset: Offset(0, 1),
+                                              ),
+                                            ],
+                                          ),
+                                          padding: const EdgeInsets.fromLTRB(
+                                            16,
+                                            15,
+                                            16,
+                                            16,
+                                          ),
+                                          child: TextField(
+                                            controller: notesCtrl,
+                                            maxLines: 3,
+                                            minLines: 2,
+                                            style: GoogleFonts.inter(
+                                              fontSize: 15,
+                                              fontWeight: FontWeight.w400,
+                                              color: const Color(0xFF4B5563),
+                                              height: 24.38 / 15,
+                                            ),
+                                            decoration: InputDecoration(
+                                              isDense: true,
+                                              contentPadding: EdgeInsets.zero,
+                                              hintText:
+                                                  'Wants fee details and batch timings.\nPrefers WhatsApp.',
+                                              hintStyle: GoogleFonts.inter(
+                                                color: const Color(0xFF4B5563),
+                                                fontSize: 15,
+                                                fontWeight: FontWeight.w400,
+                                                height: 24.38 / 15,
+                                              ),
+                                              border: InputBorder.none,
+                                              enabledBorder: InputBorder.none,
+                                              focusedBorder: InputBorder.none,
+                                            ),
+                                          ),
+                                        ),
+                                        const Gap(24),
+
+                                        // Save Button (Figma node 1606:1683)
+                                        SizedBox(
+                                          width: double.infinity,
+                                          height: 60,
+                                          child: ElevatedButton(
+                                            onPressed: () async {
+                                              if (ctx.mounted) {
+                                                Navigator.pop(ctx);
+                                              }
+                                              try {
+                                                final result = await cubit
+                                                    .recordCallOutcome(
+                                                      leadId: leadId,
+                                                      leadName: leadName,
+                                                      outcome: selectedOutcome,
+                                                      duration: displayDuration,
+                                                      notes: notesCtrl.text
+                                                          .trim(),
+                                                      followUpTime:
+                                                          selectedFollowUpSlot,
+                                                    );
+                                                followUpsCubit
+                                                    .addFromCallOutcome(
+                                                      leadName: leadName,
+                                                      collegeInfo:
+                                                          result.collegeInfo,
+                                                      outcome: selectedOutcome,
+                                                      notes: notesCtrl.text
+                                                          .trim(),
+                                                      followUpTimeLabel:
+                                                          selectedFollowUpSlot,
+                                                    );
+                                                if (context.mounted) {
+                                                  SnackBarAlert.showToast(
+                                                    context: context,
+                                                    message:
+                                                        'Outcome saved for $leadName',
+                                                  );
+                                                }
+                                              } catch (e) {
+                                                debugPrint(
+                                                  'recordCallOutcome error: $e',
+                                                );
+                                              }
+                                            },
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor: const Color(
+                                                0xFFE8612D,
+                                              ),
+                                              foregroundColor: Colors.white,
+                                              elevation: 0,
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(12),
+                                              ),
+                                            ),
+                                            child: Text(
+                                              'Save',
+                                              textAlign: TextAlign.center,
+                                              style: GoogleFonts.inter(
+                                                fontSize: 18,
+                                                fontWeight: FontWeight.w700,
+                                                color: Colors.white,
+                                                letterSpacing: 0.0879,
+                                                height: 28 / 18,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ),
                                 ],
                               ),
-                            ),
-                          ],
+                            );
+                          },
                         ),
                       ),
-
-                      // Spacer pushes sheet to bottom and absorbs extra vertical room
-                      const Spacer(),
-
-                      // Bottom White Sheet (Hugs content cleanly with Save button docked at bottom)
-                      Container(
-                        width: double.infinity,
-                        decoration: const BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.vertical(
-                            top: Radius.circular(28),
-                          ),
-                        ),
-                        child: SafeArea(
-                          top: false,
-                          child: StatefulBuilder(
-                            builder: (ctx, setSheetState) {
-                              return ConstrainedBox(
-                                constraints: BoxConstraints(
-                                  maxHeight: MediaQuery.sizeOf(ctx).height * 0.78,
-                                ),
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    // Top Drag Handle
-                                    Center(
-                                      child: Container(
-                                        width: 38,
-                                        height: 4,
-                                        margin: const EdgeInsets.only(top: 12, bottom: 14),
-                                        decoration: BoxDecoration(
-                                          color: const Color(0xFFCBD5E1),
-                                          borderRadius: BorderRadius.circular(2),
-                                        ),
-                                      ),
-                                    ),
-
-                                    // Scrollable content area
-                                    Flexible(
-                                      child: SingleChildScrollView(
-                                        physics: const BouncingScrollPhysics(),
-                                        padding: const EdgeInsets.symmetric(horizontal: 20),
-                                        child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            // Title: How did the call go?
-                                            const Text(
-                                              'How did the call go?',
-                                              style: TextStyle(
-                                                fontSize: 18.5,
-                                                fontWeight: FontWeight.w700,
-                                                color: Color(0xFF0F172A),
-                                                letterSpacing: -0.3,
-                                              ),
-                                            ),
-                                            const Gap(14),
-
-                                            // 2x4 Outcomes Grid
-                                            ...outcomeRows.map((row) {
-                                              return Padding(
-                                                padding: const EdgeInsets.only(bottom: 10),
-                                                child: Row(
-                                                  children: row.map((item) {
-                                                    final name = item.$1;
-                                                    final dotColor = item.$2;
-                                                    final isSelected =
-                                                        selectedOutcome == name;
-
-                                                    return Expanded(
-                                                      child: Padding(
-                                                        padding: EdgeInsets.only(
-                                                          right: item == row.first ? 5 : 0,
-                                                          left: item == row.last ? 5 : 0,
-                                                        ),
-                                                        child: InkWell(
-                                                          onTap: () {
-                                                            setSheetState(
-                                                              () => selectedOutcome = name,
-                                                            );
-                                                          },
-                                                          borderRadius:
-                                                              BorderRadius.circular(12),
-                                                          child: Container(
-                                                            height: 48,
-                                                            decoration: BoxDecoration(
-                                                              color: isSelected
-                                                                  ? const Color(0xFFEA580C)
-                                                                  : Colors.white,
-                                                              borderRadius:
-                                                                  BorderRadius.circular(12),
-                                                              border: Border.all(
-                                                                color: isSelected
-                                                                    ? const Color(0xFFEA580C)
-                                                                    : const Color(
-                                                                        0xFFE2E8F0,
-                                                                      ),
-                                                              ),
-                                                            ),
-                                                            padding:
-                                                                const EdgeInsets.symmetric(
-                                                              horizontal: 14,
-                                                            ),
-                                                            child: Row(
-                                                              children: [
-                                                                Container(
-                                                                  width: 8,
-                                                                  height: 8,
-                                                                  decoration: BoxDecoration(
-                                                                    color: isSelected
-                                                                        ? Colors.white
-                                                                        : dotColor,
-                                                                    shape: BoxShape.circle,
-                                                                  ),
-                                                                ),
-                                                                const Gap(9),
-                                                                Expanded(
-                                                                  child: Text(
-                                                                    name,
-                                                                    style: TextStyle(
-                                                                      fontSize: 13.5,
-                                                                      fontWeight:
-                                                                          FontWeight.w700,
-                                                                      color: isSelected
-                                                                          ? Colors.white
-                                                                          : const Color(
-                                                                              0xFF0F172A,
-                                                                            ),
-                                                                    ),
-                                                                    overflow: TextOverflow
-                                                                        .ellipsis,
-                                                                  ),
-                                                                ),
-                                                              ],
-                                                            ),
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    );
-                                                  }).toList(),
-                                                ),
-                                              );
-                                            }),
-
-                                            // Follow up when? (Shown when Follow-up is selected)
-                                            if (selectedOutcome == 'Follow-up') ...[
-                                              const Gap(10),
-                                              const Text(
-                                                'Follow up when?',
-                                                style: TextStyle(
-                                                  fontSize: 14,
-                                                  fontWeight: FontWeight.w700,
-                                                  color: Color(0xFF0F172A),
-                                                ),
-                                              ),
-                                              const Gap(10),
-                                              Wrap(
-                                                spacing: 8,
-                                                runSpacing: 8,
-                                                children: [
-                                                  _buildSlotPill(
-                                                    label: 'Today 5 PM',
-                                                    selected: selectedFollowUpSlot ==
-                                                        'Today 5 PM',
-                                                    onTap: () => setSheetState(
-                                                      () => selectedFollowUpSlot =
-                                                          'Today 5 PM',
-                                                    ),
-                                                  ),
-                                                  _buildSlotPill(
-                                                    label: 'Tomorrow 10:30',
-                                                    selected: selectedFollowUpSlot ==
-                                                        'Tomorrow 10:30',
-                                                    onTap: () => setSheetState(
-                                                      () => selectedFollowUpSlot =
-                                                          'Tomorrow 10:30',
-                                                    ),
-                                                  ),
-                                                  _buildSlotPill(
-                                                    label: selectedFollowUpSlot
-                                                                .startsWith('Pick') ||
-                                                            [
-                                                              'Today 5 PM',
-                                                              'Tomorrow 10:30',
-                                                              'In 3 days',
-                                                            ].contains(
-                                                              selectedFollowUpSlot,
-                                                            )
-                                                        ? 'Pick date...'
-                                                        : selectedFollowUpSlot,
-                                                    selected: ![
-                                                      'Today 5 PM',
-                                                      'Tomorrow 10:30',
-                                                      'In 3 days',
-                                                    ].contains(selectedFollowUpSlot),
-                                                    onTap: () async {
-                                                      final now = DateTime.now();
-                                                      final pickedDate =
-                                                          await showDatePicker(
-                                                        context: ctx,
-                                                        initialDate: now.add(
-                                                          const Duration(days: 1),
-                                                        ),
-                                                        firstDate: now,
-                                                        lastDate: now.add(
-                                                          const Duration(days: 90),
-                                                        ),
-                                                      );
-                                                      if (pickedDate != null &&
-                                                          ctx.mounted) {
-                                                        final pickedTime =
-                                                            await showTimePicker(
-                                                          context: ctx,
-                                                          initialTime: const TimeOfDay(
-                                                            hour: 10,
-                                                            minute: 30,
-                                                          ),
-                                                        );
-                                                        if (pickedTime != null &&
-                                                            ctx.mounted) {
-                                                          final dt = DateTime(
-                                                            pickedDate.year,
-                                                            pickedDate.month,
-                                                            pickedDate.day,
-                                                            pickedTime.hour,
-                                                            pickedTime.minute,
-                                                          );
-                                                          setSheetState(() {
-                                                            selectedFollowUpSlot =
-                                                                DateFormat(
-                                                              'EEE, d MMM · h:mm a',
-                                                            ).format(dt);
-                                                          });
-                                                        }
-                                                      }
-                                                    },
-                                                  ),
-                                                  _buildSlotPill(
-                                                    label: 'In 3 days',
-                                                    selected: selectedFollowUpSlot ==
-                                                        'In 3 days',
-                                                    onTap: () => setSheetState(
-                                                      () => selectedFollowUpSlot =
-                                                          'In 3 days',
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ],
-
-                                            const Gap(14),
-
-                                            // Notes (optional)
-                                            const Text(
-                                              'Notes (optional)',
-                                              style: TextStyle(
-                                                fontSize: 14,
-                                                fontWeight: FontWeight.w700,
-                                                color: Color(0xFF0F172A),
-                                              ),
-                                            ),
-                                            const Gap(8),
-
-                                            Container(
-                                              decoration: BoxDecoration(
-                                                color: Colors.white,
-                                                borderRadius: BorderRadius.circular(14),
-                                                border: Border.all(
-                                                  color: const Color(0xFFE2E8F0),
-                                                ),
-                                              ),
-                                              padding: const EdgeInsets.symmetric(
-                                                horizontal: 14,
-                                                vertical: 12,
-                                              ),
-                                              child: TextField(
-                                                controller: notesCtrl,
-                                                maxLines: 3,
-                                                minLines: 2,
-                                                style: const TextStyle(
-                                                  fontSize: 13.5,
-                                                  color: Color(0xFF334155),
-                                                  height: 1.4,
-                                                ),
-                                                decoration: const InputDecoration(
-                                                  isDense: true,
-                                                  contentPadding: EdgeInsets.zero,
-                                                  hintText:
-                                                      'Wants fee details and batch timings.\nPrefers WhatsApp.',
-                                                  hintStyle: TextStyle(
-                                                    color: Color(0xFF64748B),
-                                                    fontSize: 13,
-                                                    height: 1.4,
-                                                  ),
-                                                  border: InputBorder.none,
-                                                  enabledBorder: InputBorder.none,
-                                                  focusedBorder: InputBorder.none,
-                                                ),
-                                              ),
-                                            ),
-                                            const Gap(12),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-
-                                    // Pinned Save Button at the Bottom (Zero extra white space)
-                                    Padding(
-                                      padding: EdgeInsets.fromLTRB(
-                                        20,
-                                        8,
-                                        20,
-                                        16 +
-                                            MediaQuery.paddingOf(ctx).bottom +
-                                            MediaQuery.viewInsetsOf(ctx).bottom,
-                                      ),
-                                      child: SizedBox(
-                                        width: double.infinity,
-                                        height: 52,
-                                        child: ElevatedButton(
-                                          onPressed: () async {
-                                            if (ctx.mounted) {
-                                              Navigator.pop(ctx);
-                                            }
-                                            try {
-                                              final result = await cubit
-                                                  .recordCallOutcome(
-                                                    leadId: leadId,
-                                                    leadName: leadName,
-                                                    outcome: selectedOutcome,
-                                                    duration: displayDuration,
-                                                    notes: notesCtrl.text.trim(),
-                                                    followUpTime:
-                                                        selectedFollowUpSlot,
-                                                  );
-                                              followUpsCubit.addFromCallOutcome(
-                                                leadName: leadName,
-                                                collegeInfo: result.collegeInfo,
-                                                outcome: selectedOutcome,
-                                                notes: notesCtrl.text.trim(),
-                                                followUpTimeLabel:
-                                                    selectedFollowUpSlot,
-                                              );
-                                              if (context.mounted) {
-                                                SnackBarAlert.showToast(
-                                                  context: context,
-                                                  message:
-                                                      'Outcome saved for $leadName',
-                                                );
-                                              }
-                                            } catch (e) {
-                                              debugPrint(
-                                                'recordCallOutcome error: $e',
-                                              );
-                                            }
-                                          },
-                                          style: ElevatedButton.styleFrom(
-                                            backgroundColor:
-                                                const Color(0xFFE85926),
-                                            foregroundColor: Colors.white,
-                                            elevation: 0,
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(14),
-                                            ),
-                                          ),
-                                          child: const Text(
-                                            'Save',
-                                            style: TextStyle(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.w700,
-                                              color: Colors.white,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-                      ),
-                ],
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
-  },
-);
-}
+  }
 
-  static Widget _buildSlotPill({
-    required String label,
-    required bool selected,
+  static Widget _buildOutcomeButton({
+    required String name,
+    required Color dotColor,
+    required bool isSelected,
+    required double dotToTextGap,
     required VoidCallback onTap,
   }) {
-    return InkWell(
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
       onTap: onTap,
-      borderRadius: BorderRadius.circular(20),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8.5),
+        height: 52,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
+          color: isSelected ? const Color(0xFFE8612D) : Colors.white,
+          borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: selected
-                ? const Color(0xFF2563EB)
-                : const Color(0xFFE2E8F0),
-            width: selected ? 1.6 : 1.0,
+            color: isSelected
+                ? const Color(0xFFE8612D)
+                : const Color(0xFFE5E7EB),
+            width: 1,
           ),
+          boxShadow: isSelected
+              ? const [
+                  BoxShadow(
+                    color: Color(0x1A000000),
+                    blurRadius: 6,
+                    offset: Offset(0, 4),
+                    spreadRadius: -1,
+                  ),
+                  BoxShadow(
+                    color: Color(0x1A000000),
+                    blurRadius: 4,
+                    offset: Offset(0, 2),
+                    spreadRadius: -2,
+                  ),
+                ]
+              : const [
+                  BoxShadow(
+                    color: Color(0x0D000000),
+                    blurRadius: 1,
+                    offset: Offset(0, 1),
+                  ),
+                ],
         ),
-        child: Text(
-          label,
-          style: TextStyle(
-            fontSize: 13,
-            fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-            color: selected
-                ? const Color(0xFF2563EB)
-                : const Color(0xFF64748B),
-          ),
+        child: Row(
+          children: [
+            Container(
+              width: 8,
+              height: 8,
+              decoration: BoxDecoration(
+                color: isSelected ? Colors.white : dotColor,
+                shape: BoxShape.circle,
+              ),
+            ),
+            SizedBox(width: dotToTextGap),
+            Expanded(
+              child: Text(
+                name,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: GoogleFonts.inter(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: isSelected ? Colors.white : const Color(0xFF374151),
+                  height: 24 / 16,
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
