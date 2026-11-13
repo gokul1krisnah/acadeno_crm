@@ -885,7 +885,7 @@ class _TeamManagementViewState extends State<TeamManagementView> {
                               child: Text(
                                 assignedCount > 0
                                     ? '$contactedCount ($contactedPct%)'
-                                    : '—',
+                                    : 'None',
                                 style: GoogleFonts.inter(
                                   fontSize: 14,
                                   fontWeight: FontWeight.w500,
