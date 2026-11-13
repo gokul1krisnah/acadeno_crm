@@ -372,75 +372,72 @@ class LeadCallSheets {
                                                 gridConstraints.maxWidth;
                                             final colGap = availW >= 420
                                                 ? 48.0
-                                                : (availW * 0.06)
-                                                      .clamp(12.0, 48.0);
+                                                : (availW * 0.06).clamp(
+                                                    12.0,
+                                                    48.0,
+                                                  );
                                             return Column(
                                               mainAxisSize: MainAxisSize.min,
-                                              children: List.generate(
-                                                outcomeRows.length,
-                                                (rowIdx) {
-                                                  final row =
-                                                      outcomeRows[rowIdx];
-                                                  return Padding(
-                                                    padding: EdgeInsets.only(
-                                                      bottom:
-                                                          rowIdx <
-                                                              outcomeRows
-                                                                      .length -
-                                                                  1
-                                                          ? 14
-                                                          : 0,
-                                                    ),
-                                                    child: Row(
-                                                      children: [
-                                                        Expanded(
-                                                          flex: 201,
-                                                          child: _buildOutcomeButton(
-                                                            name: row[0].$1,
-                                                            dotColor: row[0].$2,
-                                                            isSelected:
-                                                                selectedOutcome ==
-                                                                row[0].$1,
-                                                            dotToTextGap:
-                                                                row[0].$1 ==
-                                                                    'Not interested'
-                                                                ? 24.89
-                                                                : 12.0,
-                                                            onTap: () {
-                                                              setSheetState(
-                                                                () =>
-                                                                    selectedOutcome =
-                                                                        row[0]
-                                                                            .$1,
-                                                              );
-                                                            },
-                                                          ),
+                                              children: List.generate(outcomeRows.length, (
+                                                rowIdx,
+                                              ) {
+                                                final row = outcomeRows[rowIdx];
+                                                return Padding(
+                                                  padding: EdgeInsets.only(
+                                                    bottom:
+                                                        rowIdx <
+                                                            outcomeRows.length -
+                                                                1
+                                                        ? 14
+                                                        : 0,
+                                                  ),
+                                                  child: Row(
+                                                    children: [
+                                                      Expanded(
+                                                        flex: 201,
+                                                        child: _buildOutcomeButton(
+                                                          name: row[0].$1,
+                                                          dotColor: row[0].$2,
+                                                          isSelected:
+                                                              selectedOutcome ==
+                                                              row[0].$1,
+                                                          dotToTextGap:
+                                                              row[0].$1 ==
+                                                                  'Not interested'
+                                                              ? 24.89
+                                                              : 12.0,
+                                                          onTap: () {
+                                                            setSheetState(
+                                                              () =>
+                                                                  selectedOutcome =
+                                                                      row[0].$1,
+                                                            );
+                                                          },
                                                         ),
-                                                        SizedBox(width: colGap),
-                                                        Expanded(
-                                                          flex: 190,
-                                                          child: _buildOutcomeButton(
-                                                            name: row[1].$1,
-                                                            dotColor: row[1].$2,
-                                                            isSelected:
-                                                                selectedOutcome ==
-                                                                row[1].$1,
-                                                            dotToTextGap: 12.0,
-                                                            onTap: () {
-                                                              setSheetState(
-                                                                () =>
-                                                                    selectedOutcome =
-                                                                        row[1]
-                                                                            .$1,
-                                                              );
-                                                            },
-                                                          ),
+                                                      ),
+                                                      SizedBox(width: colGap),
+                                                      Expanded(
+                                                        flex: 190,
+                                                        child: _buildOutcomeButton(
+                                                          name: row[1].$1,
+                                                          dotColor: row[1].$2,
+                                                          isSelected:
+                                                              selectedOutcome ==
+                                                              row[1].$1,
+                                                          dotToTextGap: 12.0,
+                                                          onTap: () {
+                                                            setSheetState(
+                                                              () =>
+                                                                  selectedOutcome =
+                                                                      row[1].$1,
+                                                            );
+                                                          },
                                                         ),
-                                                      ],
-                                                    ),
-                                                  );
-                                                },
-                                              ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                );
+                                              }),
                                             );
                                           },
                                         ),
@@ -1112,9 +1109,7 @@ class LeadCallSheets {
                       const Gap(14),
 
                       // College Selection Dropdown + Add New College + College · Branch · Year
-                      CollegeSelectorField(
-                        controller: collegeCtrl,
-                      ),
+                      CollegeSelectorField(controller: collegeCtrl),
                       const Gap(4),
                       Text(
                         'You can freely edit or fine-tune college, bran...',
