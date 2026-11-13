@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../../ui/auth/data/sources/auth_session_local_ds.dart';
 import '../router/app_router.dart';
+import 'firestore_stream_cache.dart';
 
 /// Central Real-Time Session Security & Remote Deactivation Listener.
 ///
@@ -46,10 +47,8 @@ class SessionSecurityService {
 
     _userDocSub?.cancel();
 
-    _userDocSub = FirebaseFirestore.instance
-        .collection('users')
-        .doc(uid)
-        .snapshots()
+    _userDocSub = FirestoreStreamCache.instance
+        .watchDoc('users', uid)
         .listen(
           (doc) => _handleUserDocUpdate(doc),
           onError: (err) {

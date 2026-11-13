@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:acadeno_crm/core/services/firestore_stream_cache.dart';
 import 'package:gap/gap.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:acadeno_crm/ui/leads/data/model/lead_models.dart';
@@ -152,9 +153,8 @@ class _CampaignsViewState extends State<CampaignsView> {
 
   void _listenLiveCampaigns() {
     _campaignsSubscription?.cancel();
-    _campaignsSubscription = FirebaseFirestore.instance
-        .collection('campaigns')
-        .snapshots()
+    _campaignsSubscription = FirestoreStreamCache.instance
+        .watchCollection('campaigns')
         .listen((snap) {
           if (snap.docs.isEmpty) {
             if (mounted) {
@@ -197,9 +197,8 @@ class _CampaignsViewState extends State<CampaignsView> {
 
   void _listenLiveLeadsAndRank() {
     _leadsSubscription?.cancel();
-    _leadsSubscription = FirebaseFirestore.instance
-        .collection('leads')
-        .snapshots()
+    _leadsSubscription = FirestoreStreamCache.instance
+        .watchCollection('leads')
         .listen((snap) {
           _liveLeadDocs = snap.docs;
           _recalculateAllCampaignsAndActiveRanking();

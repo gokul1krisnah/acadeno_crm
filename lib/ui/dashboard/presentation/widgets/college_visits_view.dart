@@ -1,3 +1,4 @@
+import 'package:acadeno_crm/core/services/firestore_stream_cache.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:gap/gap.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -1061,7 +1062,7 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-      stream: _visitsCollection.snapshots(),
+      stream: FirestoreStreamCache.instance.watchCollection('college_visits'),
       builder: (context, snapshot) {
         final List<_CollegeVisit> visits;
 

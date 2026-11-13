@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:acadeno_crm/core/services/firestore_stream_cache.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
@@ -139,47 +140,58 @@ class AlertsRds {
       }
 
       // 1. Current user profile for personalized greeting
-      userSub = _firestore.collection('users').doc(uid).snapshots().listen((
-        doc,
-      ) {
-        if (doc.exists) {
-          userData = doc.data();
-          emitCombined(uid);
-        }
-      }, onError: (_) {});
+      userSub = FirestoreStreamCache.instance
+          .watchDoc('users', uid, firestore: _firestore)
+          .listen((doc) {
+            if (doc.exists) {
+              userData = doc.data();
+              emitCombined(uid);
+            }
+          }, onError: (_) {});
 
       // 2. Collection 'alerts' (direct server alerts)
-      alertsSub = _firestore.collection('alerts').snapshots().listen((snap) {
-        alertsDocs = snap.docs;
-        emitCombined(uid);
-      }, onError: (_) {});
+      alertsSub = FirestoreStreamCache.instance
+          .watchCollection('alerts', firestore: _firestore)
+          .listen((snap) {
+            alertsDocs = snap.docs;
+            emitCombined(uid);
+          }, onError: (_) {});
 
       // 3. Collection 'assignments' (real assigned leads for this executive)
-      assignmentsSub = _firestore
-          .collection('assignments')
-          .where('executiveUid', isEqualTo: uid)
-          .snapshots()
+      assignmentsSub = FirestoreStreamCache.instance
+          .watchQuery(
+            'assignments:executiveUid:$uid',
+            () => _firestore
+                .collection('assignments')
+                .where('executiveUid', isEqualTo: uid),
+          )
           .listen((snap) {
             assignmentsDocs = snap.docs;
             emitCombined(uid);
           }, onError: (_) {});
 
       // 4. Collection 'leads' (real follow-ups and overdue tasks)
-      leadsSub = _firestore
-          .collection('leads')
-          .where('assignedToUid', isEqualTo: uid)
-          .snapshots()
+      leadsSub = FirestoreStreamCache.instance
+          .watchQuery(
+            'leads:assignedToUid:$uid',
+            () => _firestore
+                .collection('leads')
+                .where('assignedToUid', isEqualTo: uid),
+          )
           .listen((snap) {
             leadsDocs = snap.docs;
             emitCombined(uid);
           }, onError: (_) {});
 
       // 5. Collection 'call_logs' (real call activity)
-      callLogsSub = _firestore
-          .collection('call_logs')
-          .where('executiveUid', isEqualTo: uid)
-          .limit(15)
-          .snapshots()
+      callLogsSub = FirestoreStreamCache.instance
+          .watchQuery(
+            'call_logs:executiveUid:$uid:limit15',
+            () => _firestore
+                .collection('call_logs')
+                .where('executiveUid', isEqualTo: uid)
+                .limit(15),
+          )
           .listen((snap) {
             callLogsDocs = snap.docs;
             emitCombined(uid);

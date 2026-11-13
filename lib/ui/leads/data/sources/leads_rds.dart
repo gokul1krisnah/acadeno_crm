@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
+import 'package:acadeno_crm/core/services/firestore_stream_cache.dart';
 import 'package:acadeno_crm/core/services/offline_queue_service.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
@@ -432,8 +433,8 @@ class FirestoreLeadsBackend implements LeadsBackend {
     } catch (e) {
       debugPrint('[watchAllLeads] actor verification notice: $e');
     }
-    yield* _leads
-        .snapshots()
+    yield* FirestoreStreamCache.instance
+        .watchCollection('leads', firestore: _firestore)
         .handleError((err) {
           debugPrint('[watchAllLeads] snapshots notice: $err');
         })
@@ -451,9 +452,8 @@ class FirestoreLeadsBackend implements LeadsBackend {
 
   @override
   Stream<List<SalesExecutiveOption>> watchActiveExecutives() {
-    return _users
-        .where('isActive', isEqualTo: true)
-        .snapshots()
+    return FirestoreStreamCache.instance
+        .watchCollection('users', firestore: _firestore)
         .handleError((e) {
           debugPrint('[watchActiveExecutives] notice: $e');
         })
@@ -486,9 +486,11 @@ class FirestoreLeadsBackend implements LeadsBackend {
 
   @override
   Stream<List<LeadAssignmentModel>> watchAssignmentsForDate(String dateKey) {
-    return _assignments
-        .where('dateKey', isEqualTo: dateKey)
-        .snapshots()
+    return FirestoreStreamCache.instance
+        .watchQuery(
+          'assignments:dateKey:$dateKey',
+          () => _assignments.where('dateKey', isEqualTo: dateKey),
+        )
         .handleError((e) {
           debugPrint('[watchAssignmentsForDate] notice: $e');
         })
@@ -1176,9 +1178,11 @@ class FirestoreLeadsBackend implements LeadsBackend {
     final todayKey = LeadDateHelper.todayDateKey();
 
     // 2. Query ALL leads assigned to this executive in real-time from the authoritative leads collection
-    yield* _leads
-        .where('assignedToUid', isEqualTo: actor.uid)
-        .snapshots()
+    yield* FirestoreStreamCache.instance
+        .watchQuery(
+          'leads:assignedToUid:${actor.uid}',
+          () => _leads.where('assignedToUid', isEqualTo: actor.uid),
+        )
         .map((snap) {
           final items = <ExecutiveLeadItem>[];
           for (final doc in snap.docs) {
@@ -1225,7 +1229,12 @@ class FirestoreLeadsBackend implements LeadsBackend {
       yield const <CallHistoryRecord>[];
       return;
     }
-    yield* _callLogs.where('executiveUid', isEqualTo: uid).snapshots().map((
+    yield* FirestoreStreamCache.instance
+        .watchQuery(
+          'call_logs:executiveUid:$uid',
+          () => _callLogs.where('executiveUid', isEqualTo: uid),
+        )
+        .map((
       snap,
     ) {
       final records = snap.docs

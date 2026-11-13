@@ -10,6 +10,7 @@ import 'core/router/app_router.dart';
 import 'core/services/app_notification_service.dart';
 import 'core/services/app_phone_call_service.dart';
 import 'core/services/app_security_service.dart';
+import 'core/services/firestore_stream_cache.dart';
 import 'core/services/offline_queue_service.dart';
 import 'core/services/session_security_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -24,9 +25,21 @@ Future<void> main() async {
 
   // Global error safety shield: prevent internal JS SDK assertion popups from breaking user UI
   FlutterError.onError = (details) {
-    debugPrint('[FlutterError] ${details.exceptionAsString()}');
+    final msg = details.exceptionAsString();
+    if (msg.contains('INTERNAL ASSERTION FAILED') ||
+        msg.contains('b815') ||
+        msg.contains('ca9')) {
+      return;
+    }
+    debugPrint('[FlutterError] $msg');
   };
   PlatformDispatcher.instance.onError = (error, stack) {
+    final msg = error.toString();
+    if (msg.contains('INTERNAL ASSERTION FAILED') ||
+        msg.contains('b815') ||
+        msg.contains('ca9')) {
+      return true;
+    }
     debugPrint('[PlatformDispatcher Error] $error');
     return true;
   };
@@ -96,6 +109,7 @@ class _AcadenoAppState extends State<AcadenoApp> with WidgetsBindingObserver {
     FirebaseAuth.instance.authStateChanges().listen((user) {
       if (user == null) {
         SessionSecurityService.instance.stopListening();
+        FirestoreStreamCache.instance.clearAll();
       }
     });
     // Listen for incoming foreground push notifications from Firebase

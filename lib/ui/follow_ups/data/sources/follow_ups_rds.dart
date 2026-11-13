@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:acadeno_crm/core/services/firestore_stream_cache.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -28,7 +29,9 @@ class FollowUpsRds {
   Stream<List<ExecutiveFollowUpItem>> watchFollowUps({String? executiveUid}) {
     final uid = executiveUid ?? _firebaseAuth.currentUser?.uid;
 
-    return _leads.snapshots().map((snap) {
+    return FirestoreStreamCache.instance
+        .watchCollection('leads', firestore: _firestore)
+        .map((snap) {
       if (snap.docs.isEmpty) {
         return const <ExecutiveFollowUpItem>[];
       }
@@ -72,7 +75,9 @@ class FollowUpsRds {
 
   /// Streams all open follow-ups across all executives for the Admin Dashboard.
   Stream<List<ExecutiveFollowUpItem>> watchAllFollowUps() {
-    return _leads.snapshots().map((snap) {
+    return FirestoreStreamCache.instance
+        .watchCollection('leads', firestore: _firestore)
+        .map((snap) {
       final items = <ExecutiveFollowUpItem>[];
       for (final doc in snap.docs) {
         final data = doc.data();

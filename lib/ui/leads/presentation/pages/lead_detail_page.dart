@@ -6,6 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/services/app_phone_call_service.dart';
+import '../../../../core/services/firestore_stream_cache.dart';
 import '../../../follow_ups/application/follow_ups_cubit.dart';
 import '../../../follow_ups/data/model/follow_up_time_helper.dart';
 import '../../data/model/lead_models.dart';
@@ -110,10 +111,7 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
     final lead = widget.lead;
 
     return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
-      stream: FirebaseFirestore.instance
-          .collection('leads')
-          .doc(lead.id)
-          .snapshots(),
+      stream: FirestoreStreamCache.instance.watchDoc('leads', lead.id),
       builder: (context, snapshot) {
         final snapData = snapshot.hasData && snapshot.data!.exists
             ? snapshot.data!.data()

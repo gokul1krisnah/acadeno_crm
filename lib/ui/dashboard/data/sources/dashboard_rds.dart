@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:acadeno_crm/core/services/firestore_stream_cache.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -18,9 +19,6 @@ class DashboardRds {
   CollectionReference<Map<String, dynamic>> get _auditLogs =>
       _firestore.collection('audit_log');
 
-  CollectionReference<Map<String, dynamic>> get _leads =>
-      _firestore.collection('leads');
-
   String? get currentUserId => _firebaseAuth.currentUser?.uid;
 
   User? get currentUser => _firebaseAuth.currentUser;
@@ -33,19 +31,25 @@ class DashboardRds {
   Stream<DocumentSnapshot<Map<String, dynamic>>>? watchCurrentUserDoc() {
     final uid = currentUserId;
     if (uid == null) return null;
-    return _users.doc(uid).snapshots();
+    return FirestoreStreamCache.instance.watchDoc(
+      'users',
+      uid,
+      firestore: _firestore,
+    );
   }
 
   Stream<QuerySnapshot<Map<String, dynamic>>> watchAllUsers() {
-    return _users.snapshots().handleError((err) {
-      // Catch and log any stream-level Firestore exceptions to prevent unhandled errors
-    });
+    return FirestoreStreamCache.instance.watchCollection(
+      'users',
+      firestore: _firestore,
+    );
   }
 
   Stream<QuerySnapshot<Map<String, dynamic>>> watchAllLeads() {
-    return _leads.snapshots().handleError((err) {
-      // Catch and log any stream-level Firestore exceptions to prevent unhandled errors
-    });
+    return FirestoreStreamCache.instance.watchCollection(
+      'leads',
+      firestore: _firestore,
+    );
   }
 
   /// A secondary Firebase app ensures creating a user does NOT sign the admin out.

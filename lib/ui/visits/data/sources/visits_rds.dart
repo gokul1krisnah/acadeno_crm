@@ -1,3 +1,4 @@
+import 'package:acadeno_crm/core/services/firestore_stream_cache.dart';
 import 'package:acadeno_crm/core/services/offline_queue_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -20,7 +21,9 @@ class VisitsRds {
 
   /// Streams real-time college visits from Firestore.
   Stream<List<ExecutiveCollegeVisit>> watchVisits({String? executiveUid}) {
-    return _visits.snapshots().map((snap) {
+    return FirestoreStreamCache.instance
+        .watchCollection('college_visits', firestore: _firestore)
+        .map((snap) {
       if (snap.docs.isEmpty) {
         return const <ExecutiveCollegeVisit>[];
       }

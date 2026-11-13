@@ -1,4 +1,5 @@
 import 'package:acadeno_crm/ui/follow_ups/data/model/follow_up_models.dart';
+import 'package:acadeno_crm/core/services/firestore_stream_cache.dart';
 import 'package:gap/gap.dart';
 import 'package:acadeno_crm/ui/follow_ups/data/model/follow_up_time_helper.dart';
 import 'package:acadeno_crm/core/utils/url_dialer_helper.dart';
@@ -3147,9 +3148,9 @@ class _CollegeVisits extends StatelessWidget {
           ),
           const Gap(16),
           StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-            stream: FirebaseFirestore.instance
-                .collection('college_visits')
-                .snapshots(),
+            stream: FirestoreStreamCache.instance.watchCollection(
+              'college_visits',
+            ),
             builder: (context, snapshot) {
               final List<Map<String, dynamic>> displayVisits =
                   snapshot.hasData && snapshot.data!.docs.isNotEmpty

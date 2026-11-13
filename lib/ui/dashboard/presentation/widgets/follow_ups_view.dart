@@ -1,3 +1,4 @@
+import 'package:acadeno_crm/core/services/firestore_stream_cache.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -163,10 +164,10 @@ class _FollowUpsViewState extends State<FollowUpsView> {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-      stream: FirebaseFirestore.instance.collection('users').snapshots(),
+      stream: FirestoreStreamCache.instance.watchCollection('users'),
       builder: (context, usersSnap) {
         return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-          stream: FirebaseFirestore.instance.collection('leads').snapshots(),
+          stream: FirestoreStreamCache.instance.watchCollection('leads'),
           builder: (context, leadsSnap) {
             // Extract active executives
             final execs = (usersSnap.data?.docs ?? [])

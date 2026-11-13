@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:acadeno_crm/core/services/firestore_stream_cache.dart';
 import 'package:gap/gap.dart';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -76,9 +77,8 @@ class _CollegeSelectorFieldState extends State<CollegeSelectorField> {
     _determineSelectionFromText(widget.controller.text);
 
     // Stream real-time colleges from Firestore with graceful fallback handling
-    _collegeSub = FirebaseFirestore.instance
-        .collection('colleges')
-        .snapshots()
+    _collegeSub = FirestoreStreamCache.instance
+        .watchCollection('colleges')
         .listen(
           (snap) {
             if (!mounted) return;

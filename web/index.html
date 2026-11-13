@@ -34,6 +34,30 @@
 </head>
 <body>
   <script>
+    // Guard against known @firebase/firestore 13.1.0 watch-stream race assertion (ID: ca9 / b815)
+    (function () {
+      var origError = console.error;
+      console.error = function () {
+        for (var i = 0; i < arguments.length; i++) {
+          var s = String(arguments[i] || '');
+          if (s.indexOf('INTERNAL ASSERTION FAILED') !== -1 ||
+              s.indexOf('ID: b815') !== -1 ||
+              s.indexOf('ID: ca9') !== -1) {
+            return;
+          }
+        }
+        return origError.apply(console, arguments);
+      };
+      window.addEventListener('unhandledrejection', function (event) {
+        var msg = String((event && event.reason) || '');
+        if (msg.indexOf('INTERNAL ASSERTION FAILED') !== -1 ||
+            msg.indexOf('ID: b815') !== -1 ||
+            msg.indexOf('ID: ca9') !== -1) {
+          event.preventDefault();
+        }
+      });
+    })();
+
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', function () {
         navigator.serviceWorker.register('/firebase-messaging-sw.js')

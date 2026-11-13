@@ -1,3 +1,4 @@
+import 'package:acadeno_crm/core/services/firestore_stream_cache.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:gap/gap.dart';
 import 'package:intl/intl.dart';
@@ -2067,7 +2068,7 @@ class _RecentVisitCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-      stream: FirebaseFirestore.instance.collection('leads').snapshots(),
+      stream: FirestoreStreamCache.instance.watchCollection('leads'),
       builder: (context, snapshot) {
         final allDocs = snapshot.data?.docs ?? const [];
         final collegeQuery = visit.collegeName.trim().toLowerCase();

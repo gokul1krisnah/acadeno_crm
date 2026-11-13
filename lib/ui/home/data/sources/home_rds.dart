@@ -1,3 +1,4 @@
+import 'package:acadeno_crm/core/services/firestore_stream_cache.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -16,6 +17,10 @@ class HomeRds {
   Stream<DocumentSnapshot<Map<String, dynamic>>>? watchCurrentUserDoc() {
     final uid = currentUser?.uid;
     if (uid == null) return null;
-    return _firestore.collection('users').doc(uid).snapshots();
+    return FirestoreStreamCache.instance.watchDoc(
+      'users',
+      uid,
+      firestore: _firestore,
+    );
   }
 }
