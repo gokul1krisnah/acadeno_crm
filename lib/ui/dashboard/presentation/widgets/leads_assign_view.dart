@@ -91,77 +91,6 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
     }
   }
 
-  Future<void> _confirmAndDeleteLead(
-    BuildContext context,
-    LeadRecord lead,
-  ) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-        title: const Row(
-          children: [
-            Icon(
-              Icons.warning_amber_rounded,
-              color: Color(0xFFDC2626),
-              size: 24,
-            ),
-            Gap(10),
-            Text(
-              'Delete Lead?',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
-                color: Color(0xFF111827),
-              ),
-            ),
-          ],
-        ),
-        content: Text(
-          'Are you sure you want to permanently delete "${lead.name}" (${lead.phone})? This action cannot be undone.',
-          style: const TextStyle(
-            fontSize: 14,
-            color: Color(0xFF4B5563),
-            height: 1.4,
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text(
-              'Cancel',
-              style: TextStyle(
-                color: Color(0xFF6B7280),
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFDC2626),
-              foregroundColor: Colors.white,
-              elevation: 0,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-            ),
-            onPressed: () => Navigator.of(ctx).pop(true),
-            child: const Text(
-              'Delete',
-              style: TextStyle(fontWeight: FontWeight.w600),
-            ),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmed == true && context.mounted) {
-      await context.read<AdminLeadsCubit>().deleteLead(lead.id);
-    }
-  }
-
   Future<void> _confirmAndDeleteSelectedLeads(
     BuildContext context,
     int count,
@@ -2802,7 +2731,6 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                       cubit.toggleLeadSelection(rows[i].id, v ?? false),
                   statusBadge: _statusBadge(rows[i].status),
                   checkboxBuilder: _buildFigmaCheckbox,
-                  onDelete: (lead) => _confirmAndDeleteLead(context, lead),
                 ),
               ],
             ],
@@ -2850,10 +2778,6 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                     child: Text('LAST CONTACT', style: h),
                   ),
                   Expanded(flex: 5, child: Text('ASSIGNED TO', style: h)),
-                  Expanded(
-                    flex: 3,
-                    child: Center(child: Text('ACTIONS', style: h)),
-                  ),
                 ],
               ),
             ),
@@ -2869,7 +2793,6 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                     cubit.toggleLeadSelection(rows[i].id, v ?? false),
                 statusBadge: _statusBadge(rows[i].status),
                 checkboxBuilder: _buildFigmaCheckbox,
-                onDelete: (lead) => _confirmAndDeleteLead(context, lead),
               ),
             ],
           ],
@@ -2968,7 +2891,6 @@ class _DesktopLeadTableRow extends StatefulWidget {
     Color activeColor,
     bool isRowHovered,
   }) checkboxBuilder;
-  final void Function(LeadRecord lead)? onDelete;
 
   const _DesktopLeadTableRow({
     required this.lead,
@@ -2977,7 +2899,6 @@ class _DesktopLeadTableRow extends StatefulWidget {
     required this.onSelectChanged,
     required this.statusBadge,
     required this.checkboxBuilder,
-    this.onDelete,
   });
 
   @override
@@ -3169,32 +3090,6 @@ class _DesktopLeadTableRowState extends State<_DesktopLeadTableRow> {
                           ),
                         ),
                       ),
-                      Expanded(
-                        flex: 3,
-                        child: Center(
-                          child: Tooltip(
-                            message: 'Delete Lead',
-                            child: InkWell(
-                              onTap: widget.onDelete != null
-                                  ? () => widget.onDelete!(r)
-                                  : null,
-                              borderRadius: BorderRadius.circular(6),
-                              child: Padding(
-                                padding: const EdgeInsets.all(6),
-                                child: SvgPicture.asset(
-                                  AppSvgs.delete,
-                                  width: 14,
-                                  height: 16,
-                                  colorFilter: const ColorFilter.mode(
-                                    Color(0xFFDC2626),
-                                    BlendMode.srcIn,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
                     ],
                   ),
                 ),
@@ -3219,7 +3114,6 @@ class _MobileLeadCardRow extends StatefulWidget {
     Color activeColor,
     bool isRowHovered,
   }) checkboxBuilder;
-  final void Function(LeadRecord lead)? onDelete;
 
   const _MobileLeadCardRow({
     required this.lead,
@@ -3228,7 +3122,6 @@ class _MobileLeadCardRow extends StatefulWidget {
     required this.onSelectChanged,
     required this.statusBadge,
     required this.checkboxBuilder,
-    this.onDelete,
   });
 
   @override
@@ -3317,34 +3210,7 @@ class _MobileLeadCardRowState extends State<_MobileLeadCardRow> {
                                     ),
                                   ),
                                 ),
-                                Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    widget.statusBadge,
-                                    const Gap(8),
-                                    Tooltip(
-                                      message: 'Delete Lead',
-                                      child: InkWell(
-                                        onTap: widget.onDelete != null
-                                            ? () => widget.onDelete!(r)
-                                            : null,
-                                        borderRadius: BorderRadius.circular(6),
-                                        child: Padding(
-                                          padding: const EdgeInsets.all(4),
-                                          child: SvgPicture.asset(
-                                            AppSvgs.delete,
-                                            width: 14,
-                                            height: 16,
-                                            colorFilter: const ColorFilter.mode(
-                                              Color(0xFFDC2626),
-                                              BlendMode.srcIn,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
+                                widget.statusBadge,
                               ],
                             ),
                             Text(
