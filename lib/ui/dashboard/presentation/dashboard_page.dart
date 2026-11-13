@@ -355,12 +355,6 @@ class _DashboardViewState extends State<_DashboardView> {
     return DateTime(n.year, n.month, n.day);
   }
 
-  bool get _isTodaySelected {
-    final now = DateTime.now();
-    final d = _effectiveDashboardDate;
-    return d.year == now.year && d.month == now.month && d.day == now.day;
-  }
-
   String get _today {
     return DateFormat('EEEE, d MMMM').format(_effectiveDashboardDate);
   }
@@ -1495,54 +1489,18 @@ class _DashboardViewState extends State<_DashboardView> {
                       ),
                     ),
                     const Gap(2),
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Flexible(
-                          child: InkWell(
-                            onTap: _pickDashboardDate,
-                            borderRadius: BorderRadius.circular(6),
-                            child: Text(
-                              _today,
-                              style: GoogleFonts.inter(
-                                color: const Color(0xFF718096),
-                                fontSize: 13,
-                                fontWeight: FontWeight.w400,
-                                letterSpacing: -0.3418,
-                              ),
-                            ),
-                          ),
+                    InkWell(
+                      onTap: _pickDashboardDate,
+                      borderRadius: BorderRadius.circular(6),
+                      child: Text(
+                        _today,
+                        style: GoogleFonts.inter(
+                          color: const Color(0xFF718096),
+                          fontSize: 13,
+                          fontWeight: FontWeight.w400,
+                          letterSpacing: -0.3418,
                         ),
-                        if (!_isTodaySelected) ...[
-                          const Gap(8),
-                          InkWell(
-                            onTap: () {
-                              setState(() {
-                                _selectedDashboardDate = null;
-                              });
-                            },
-                            borderRadius: BorderRadius.circular(999),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 2,
-                              ),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFEEF2FF),
-                                borderRadius: BorderRadius.circular(999),
-                              ),
-                              child: Text(
-                                'Today',
-                                style: GoogleFonts.inter(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w600,
-                                  color: const Color(0xFF4338CA),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ],
+                      ),
                     ),
                   ],
                 ),
@@ -1643,57 +1601,21 @@ class _DashboardViewState extends State<_DashboardView> {
                 ),
               ),
               const Gap(4),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Flexible(
-                    child: InkWell(
-                      onTap: _pickDashboardDate,
-                      borderRadius: BorderRadius.circular(6),
-                      child: Text(
-                        _today,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.inter(
-                          color: const Color(0xFF718096),
-                          fontSize: dateFontSize,
-                          fontWeight: FontWeight.w400,
-                          letterSpacing: -0.3418,
-                          height: 20 / 14,
-                        ),
-                      ),
-                    ),
+              InkWell(
+                onTap: _pickDashboardDate,
+                borderRadius: BorderRadius.circular(6),
+                child: Text(
+                  _today,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.inter(
+                    color: const Color(0xFF718096),
+                    fontSize: dateFontSize,
+                    fontWeight: FontWeight.w400,
+                    letterSpacing: -0.3418,
+                    height: 20 / 14,
                   ),
-                  if (!_isTodaySelected) ...[
-                    const Gap(8),
-                    InkWell(
-                      onTap: () {
-                        setState(() {
-                          _selectedDashboardDate = null;
-                        });
-                      },
-                      borderRadius: BorderRadius.circular(999),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 2,
-                        ),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFEEF2FF),
-                          borderRadius: BorderRadius.circular(999),
-                        ),
-                        child: Text(
-                          'Today',
-                          style: GoogleFonts.inter(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
-                            color: const Color(0xFF4338CA),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ],
+                ),
               ),
             ],
           ),
