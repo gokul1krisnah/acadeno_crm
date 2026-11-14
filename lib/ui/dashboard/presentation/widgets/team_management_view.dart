@@ -1,3 +1,5 @@
+import 'package:acadeno_crm/ui/follow_ups/data/model/follow_up_models.dart';
+import 'package:acadeno_crm/ui/follow_ups/data/model/follow_up_time_helper.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
@@ -282,8 +284,8 @@ class _TeamManagementViewState extends State<TeamManagementView> {
                         _buildHeader(maxWidth, activeUsers, filteredLeads),
                         const Gap(32),
 
-                        // 4 KPI Summary Cards (Figma Node 1363:2236)
-                        _buildStatCards(maxWidth, filteredLeads),
+                        // 5 KPI Summary Cards (Matching Dashboard Page)
+                        _buildStatCards(maxWidth, filteredLeads, activeUsers),
                         const Gap(32),
 
                         // Executive Performance Comparison Table (Figma Node 1363:2068)
@@ -417,9 +419,14 @@ class _TeamManagementViewState extends State<TeamManagementView> {
   }
 
   // ===========================================================================
-  // 4 KPI SUMMARY CARDS (Figma Node 1363:2236)
+  // 5 KPI SUMMARY CARDS (Exact match to Dashboard Page boxes, width & height)
   // ===========================================================================
-  Widget _buildStatCards(double maxWidth, List<Map<String, dynamic>> leads) {
+  Widget _buildStatCards(
+    double maxWidth,
+    List<Map<String, dynamic>> leads,
+    List<DashboardUserModel> activeUsers,
+  ) {
+    final totalLeads = leads.length;
     final totalAssigned = leads.where((l) {
       final uid = l['assignedToUid'];
       final name = l['assignedToName'] ?? l['assignedTo'];
@@ -435,54 +442,88 @@ class _TeamManagementViewState extends State<TeamManagementView> {
 
     final contactedPct = totalAssigned > 0
         ? (contactedCount / totalAssigned * 100).round()
-        : (leads.isNotEmpty
-              ? (contactedCount / leads.length * 100).round()
-              : 0);
+        : (totalLeads > 0 ? (contactedCount / totalLeads * 100).round() : 0);
+
+    final evaluatedFollowUps = leads
+        .where((l) => !_leadIsDone(l['isDone']))
+        .map((l) {
+          final eval = FollowUpTimeHelper.evaluate(
+            rawFollowUpTime: l['followUpTime'],
+            assignedDateKey: l['assignedDateKey'],
+            assignedDateLabel: l['assignedDateLabel'],
+            assignedAt: l['assignedAt'],
+            updatedAt: l['updatedAt'],
+            createdAt: l['createdAt'],
+            status: (l['status'] ?? '').toString(),
+          );
+          return (lead: l, eval: eval);
+        })
+        .toList();
+
+    final followUpsCount = evaluatedFollowUps.where((e) {
+      final s = (e.lead['status'] ?? '').toString().toLowerCase();
+      return e.eval.bucket == FollowUpBucket.today ||
+          s == 'follow-up' ||
+          s == 'claimed';
+    }).length;
+
+    final overdueCount = evaluatedFollowUps
+        .where((e) => e.eval.isOverdue)
+        .length;
 
     final convertedCount = leads.where((l) {
       final status = (l['status'] ?? '').toString().toLowerCase();
       return status.contains('convert');
     }).length;
 
-    final conversionPct = totalAssigned > 0
-        ? (convertedCount / totalAssigned * 100).round()
-        : (leads.isNotEmpty
-              ? (convertedCount / leads.length * 100).round()
-              : 0);
+    final conversionPct = totalLeads > 0
+        ? (convertedCount / totalLeads * 100).round()
+        : 0;
 
-    final pendingCount = leads.where((l) {
-      final status = (l['status'] ?? '').toString().toLowerCase();
-      final isDone = _leadIsDone(l['isDone']);
-      return !isDone &&
-          (status == 'new' ||
-              status == 'claimed' ||
-              status == 'follow-up' ||
-              status.contains('pending'));
-    }).length;
-
-    final card1 = _buildTotalAssignedCard(
-      assignedCount: totalAssigned > 0 ? totalAssigned : leads.length,
-      totalPool: leads.length,
-    );
-
-    final card2 = _buildContactedCard(
-      contactedCount: contactedCount,
-      contactedPct: contactedPct,
-    );
-
-    final card3 = _buildPendingCard(pendingCount: pendingCount);
-
-    final card4 = _buildConvertedCard(
-      convertedCount: convertedCount,
-      conversionPct: conversionPct,
-    );
-
-    final cards = [card1, card2, card3, card4];
+    final cards = [
+      _TeamStatCard(
+        label: 'Total Leads',
+        valueText: '$totalLeads',
+        sub: '$totalAssigned assigned to team',
+        color: const Color(0xFF4338CA),
+        svgAsset: 'assets/svgs/stat_total_leads.svg',
+        isSolidHero: true,
+      ),
+      _TeamStatCard(
+        label: 'Calls / Contacted',
+        valueText: '$contactedCount/$totalAssigned',
+        sub: '$contactedPct% of assigned',
+        color: const Color(0xFF3F3FB4),
+        svgAsset: 'assets/svgs/stat_phone.svg',
+      ),
+      _TeamStatCard(
+        label: 'Follow-ups Due',
+        valueText: '$followUpsCount',
+        sub: 'Across ${activeUsers.length} active members',
+        color: const Color(0xFFE96849),
+        svgAsset: 'assets/svgs/stat_calendar_check.svg',
+      ),
+      _TeamStatCard(
+        label: 'Overdue / Pending',
+        valueText: '$overdueCount',
+        sub: 'Requires team attention',
+        color: const Color(0xFF4C0CBF),
+        svgAsset: 'assets/svgs/stat_hourglass.svg',
+      ),
+      _TeamStatCard(
+        label: 'Converted Leads',
+        valueText: '$convertedCount',
+        sub: '$conversionPct% conversion rate',
+        color: const Color(0xFF22C55E),
+        svgAsset: 'assets/svgs/stat_star.svg',
+      ),
+    ];
 
     return LayoutBuilder(
       builder: (context, constraints) {
         final w = constraints.maxWidth;
-        // Keep all 4 KPI cards in a single horizontal row on tablets and desktop matching dashboard home
+        // From Tablet (768px -> w >= 520) through Laptop (1024px) to Laptop Large (1440px+),
+        // keep all 5 KPI cards in a single horizontal row matching the 1440px layout.
         if (w >= 520) {
           final gap = w >= 1000 ? 16.0 : (w >= 700 ? 12.0 : 8.0);
           return Row(
@@ -504,7 +545,7 @@ class _TeamManagementViewState extends State<TeamManagementView> {
             children: [
               for (var i = 0; i < cards.length; i++)
                 SizedBox(
-                  width: cardW,
+                  width: i == cards.length - 1 ? w : cardW,
                   child: cards[i],
                 ),
             ],
@@ -518,66 +559,12 @@ class _TeamManagementViewState extends State<TeamManagementView> {
           children: [
             for (var i = 0; i < cards.length; i++)
               SizedBox(
-                width: w < 320 ? w : cardW,
+                width: i == cards.length - 1 ? w : (w < 320 ? w : cardW),
                 child: cards[i],
               ),
           ],
         );
       },
-    );
-  }
-
-  // Card 1: Total Assigned (Hero Indigo, Node 1363:2237)
-  Widget _buildTotalAssignedCard({
-    required int assignedCount,
-    required int totalPool,
-  }) {
-    return _TeamStatCard(
-      label: 'Total Assigned',
-      valueText: '$assignedCount Leads',
-      sub: '$totalPool total in pool',
-      color: const Color(0xFF4338CA),
-      svgAsset: 'assets/svgs/stat_total_leads.svg',
-      isSolidHero: true,
-    );
-  }
-
-  // Card 2: Contacted (Node 1363:2249)
-  Widget _buildContactedCard({
-    required int contactedCount,
-    required int contactedPct,
-  }) {
-    return _TeamStatCard(
-      label: 'Contacted',
-      valueText: '$contactedCount ($contactedPct%)',
-      sub: 'Goal: >80%',
-      color: const Color(0xFF3F3FB4),
-      svgAsset: 'assets/svgs/stat_phone.svg',
-    );
-  }
-
-  // Card 3: Pending follow-ups (Node 1363:2271)
-  Widget _buildPendingCard({required int pendingCount}) {
-    return _TeamStatCard(
-      label: 'Pending follow-ups',
-      valueText: '$pendingCount',
-      sub: pendingCount > 0 ? 'Requires attention' : 'All clear',
-      color: const Color(0xFF4C0CBF),
-      svgAsset: 'assets/svgs/stat_hourglass.svg',
-    );
-  }
-
-  // Card 4: Converted Leads (Node 1363:2282)
-  Widget _buildConvertedCard({
-    required int convertedCount,
-    required int conversionPct,
-  }) {
-    return _TeamStatCard(
-      label: 'Converted Leads',
-      valueText: '$convertedCount',
-      sub: '$conversionPct% conversion rate',
-      color: const Color(0xFF22C55E),
-      svgAsset: 'assets/svgs/stat_star.svg',
     );
   }
 
