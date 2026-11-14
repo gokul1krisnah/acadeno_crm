@@ -1,5 +1,6 @@
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:gap/gap.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:acadeno_crm/shared/theme/app_svgs.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:acadeno_crm/core/services/app_phone_call_service.dart';
@@ -218,7 +219,9 @@ class _LeadsTabViewState extends State<LeadsTabView> {
             ? state.pendingLeads
             : state.doneLeads;
 
-        final isShortScreen = MediaQuery.sizeOf(context).height < 560;
+        final screenSize = MediaQuery.sizeOf(context);
+        final screenWidth = screenSize.width;
+        final isShortScreen = screenSize.height < 560;
         final topHeaderSection = Container(
           width: double.infinity,
           decoration: BoxDecoration(
@@ -823,32 +826,57 @@ class _LeadsTabViewState extends State<LeadsTabView> {
 
                                   return Container(
                                     width: double.infinity,
+                                    constraints: const BoxConstraints(
+                                      minHeight: 58,
+                                    ),
                                     padding: const EdgeInsets.symmetric(
-                                      horizontal: 16,
-                                      vertical: 14,
+                                      horizontal: 17,
+                                      vertical: 17,
                                     ),
                                     decoration: BoxDecoration(
                                       color: Colors.white,
                                       borderRadius: BorderRadius.circular(16),
                                       border: Border.all(
-                                        color: const Color(0xFFEAECF0),
+                                        color: const Color(0xFFF3F4F6),
+                                        width: 1,
                                       ),
-                                    ),
-                                    child: const Row(
-                                      children: [
-                                        Icon(
-                                          CupertinoIcons.checkmark_circle,
-                                          color: Color(0xFF15803D),
-                                          size: 20,
+                                      boxShadow: const [
+                                        BoxShadow(
+                                          color: Color(0x0D000000),
+                                          blurRadius: 2,
+                                          offset: Offset(0, 1),
                                         ),
-                                        Gap(10),
+                                      ],
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        Container(
+                                          width: 24,
+                                          height: 24,
+                                          decoration: const BoxDecoration(
+                                            color: Color(0xFFDCFCE7),
+                                            shape: BoxShape.circle,
+                                          ),
+                                          alignment: Alignment.center,
+                                          child: SvgPicture.asset(
+                                            AppSvgs.tick,
+                                            width: 9,
+                                            height: 10,
+                                            colorFilter: const ColorFilter.mode(
+                                              Color(0xFF16A34A),
+                                              BlendMode.srcIn,
+                                            ),
+                                          ),
+                                        ),
+                                        const Gap(12),
                                         Expanded(
                                           child: Text(
                                             'No urgent pending calls right now',
-                                            style: TextStyle(
+                                            style: GoogleFonts.inter(
                                               fontSize: 13.5,
-                                              fontWeight: FontWeight.w600,
-                                              color: Color(0xFF475467),
+                                              fontWeight: FontWeight.w500,
+                                              color: const Color(0xFF4B5563),
+                                              height: 20 / 13.5,
                                             ),
                                           ),
                                         ),
@@ -1158,9 +1186,14 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                               else if (displayedLeads.isEmpty)
                                 Container(
                                   width: double.infinity,
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 20,
-                                    vertical: 32,
+                                  constraints: const BoxConstraints(
+                                    minHeight: 285,
+                                  ),
+                                  padding: EdgeInsets.fromLTRB(
+                                    screenWidth < 360 ? 18 : 32,
+                                    32,
+                                    screenWidth < 360 ? 18 : 32,
+                                    44,
                                   ),
                                   decoration: BoxDecoration(
                                     color: Colors.white,
@@ -1169,13 +1202,20 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                       color: const Color(0xFFF3F4F6),
                                       width: 1,
                                     ),
+                                    boxShadow: const [
+                                      BoxShadow(
+                                        color: Color(0x0D000000),
+                                        blurRadius: 2,
+                                        offset: Offset(0, 1),
+                                      ),
+                                    ],
                                   ),
                                   child: Column(
                                     mainAxisSize: MainAxisSize.min,
                                     crossAxisAlignment:
                                         CrossAxisAlignment.center,
                                     children: [
-                                      // Top Icon Container
+                                      // Top Icon Container (1467:386 Background+Border — 48x48, radius 12)
                                       Container(
                                         width: 48,
                                         height: 48,
@@ -1184,56 +1224,61 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                           borderRadius: BorderRadius.circular(
                                             12,
                                           ),
+                                          border: Border.all(
+                                            color: const Color(0xFFF3F4F6),
+                                            width: 1,
+                                          ),
                                         ),
                                         alignment: Alignment.center,
                                         child: SvgPicture.asset(
                                           AppSvgs.clipboardCheck,
-                                          width: 20,
-                                          height: 25,
+                                          width: 15,
+                                          height: 20,
                                           colorFilter: const ColorFilter.mode(
                                             Color(0xFF9CA3AF),
                                             BlendMode.srcIn,
                                           ),
                                         ),
                                       ),
-                                      const Gap(20),
+                                      const Gap(16),
 
-                                      // Title
+                                      // Title (1467:391 Heading 3)
                                       Text(
                                         state.showingPendingCalls
                                             ? 'No pending leads assigned to you for today'
                                             : 'No completed calls recorded yet today',
                                         textAlign: TextAlign.center,
-                                        style: const TextStyle(
-                                          fontSize: 16.5,
+                                        style: GoogleFonts.inter(
+                                          fontSize: 14.5,
                                           fontWeight: FontWeight.w700,
-                                          color: Color(0xFF0F172A),
+                                          color: const Color(0xFF111827),
                                           letterSpacing: -0.2,
-                                          height: 1.3,
+                                          height: 20 / 14.5,
                                         ),
                                       ),
                                       const Gap(8),
 
-                                      // Subtitle
-                                      const Text(
+                                      // Subtitle (1467:394)
+                                      Text(
                                         'New leads assigned by your Admin will\nappear here automatically.',
                                         textAlign: TextAlign.center,
-                                        style: TextStyle(
-                                          fontSize: 13,
+                                        style: GoogleFonts.inter(
+                                          fontSize: 12.5,
                                           fontWeight: FontWeight.w400,
-                                          color: Color(0xFF94A3B8),
-                                          height: 1.4,
+                                          color: const Color(0xFF9CA3AF),
+                                          height: 19.5 / 12.5,
                                         ),
                                       ),
-                                      const Gap(24),
+                                      const Gap(32),
 
-                                      // Action Buttons (Responsive flex row)
+                                      // Action Buttons (1467:396 — Back to Pending Calls 169x44 & Refresh 100x44, 12px gap)
                                       Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
                                         children: [
                                           if (!state.showingPendingCalls) ...[
-                                            // Back to Pending Calls Button (Figma: minWidth 157, expands with box, height 44, gap 14.23, padding [16, 12, 22.25, 12], radius 12, #D35501)
                                             Expanded(
-                                              flex: 8,
+                                              flex: 169,
                                               child: SizedBox(
                                                 height: 44,
                                                 child: DecoratedBox(
@@ -1248,9 +1293,9 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                                             const Color(
                                                               0xFFD35501,
                                                             ).withValues(
-                                                              alpha: 0.32,
+                                                              alpha: 0.28,
                                                             ),
-                                                        blurRadius: 16,
+                                                        blurRadius: 14,
                                                         offset: const Offset(
                                                           0,
                                                           6,
@@ -1273,19 +1318,16 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                                       elevation: 0,
                                                       shadowColor:
                                                           Colors.transparent,
-                                                      minimumSize: const Size(
-                                                        157,
-                                                        44,
-                                                      ),
+                                                      minimumSize: Size.zero,
                                                       tapTargetSize:
                                                           MaterialTapTargetSize
                                                               .shrinkWrap,
                                                       padding:
-                                                          const EdgeInsets.only(
-                                                            left: 16,
-                                                            top: 12,
-                                                            right: 22.25,
-                                                            bottom: 12,
+                                                          const EdgeInsets.fromLTRB(
+                                                            16,
+                                                            6,
+                                                            18,
+                                                            6,
                                                           ),
                                                       shape: RoundedRectangleBorder(
                                                         borderRadius:
@@ -1294,60 +1336,58 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                                             ),
                                                       ),
                                                     ),
-                                                    child: Row(
-                                                      mainAxisAlignment:
-                                                          MainAxisAlignment
-                                                              .center,
-                                                      mainAxisSize:
-                                                          MainAxisSize.min,
-                                                      children: [
-                                                        SvgPicture.asset(
-                                                          AppSvgs.arrowLeft,
-                                                          width: 14,
-                                                          height: 14,
-                                                          colorFilter:
-                                                              const ColorFilter.mode(
-                                                                Colors.white,
-                                                                BlendMode.srcIn,
-                                                              ),
-                                                        ),
-                                                        const Gap(14.23),
-                                                        const Flexible(
-                                                          child: FittedBox(
-                                                            fit: BoxFit
-                                                                .scaleDown,
-                                                            child: Text(
-                                                              'Back to Pending Calls',
-                                                              maxLines: 1,
-                                                              style: TextStyle(
-                                                                fontFamily:
-                                                                    'Inter',
-                                                                fontSize: 13,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .w700,
-                                                                color: Colors
-                                                                    .white,
-                                                                letterSpacing:
-                                                                    -0.2,
-                                                              ),
-                                                            ),
+                                                    child: FittedBox(
+                                                      fit: BoxFit.scaleDown,
+                                                      child: Row(
+                                                        mainAxisAlignment:
+                                                            MainAxisAlignment
+                                                                .center,
+                                                        mainAxisSize:
+                                                            MainAxisSize.min,
+                                                        children: [
+                                                          SvgPicture.asset(
+                                                            AppSvgs.arrowLeft,
+                                                            width: 14,
+                                                            height: 14,
+                                                            colorFilter:
+                                                                const ColorFilter.mode(
+                                                                  Colors.white,
+                                                                  BlendMode
+                                                                      .srcIn,
+                                                                ),
                                                           ),
-                                                        ),
-                                                      ],
+                                                          const Gap(14.23),
+                                                          Text(
+                                                            'Back to Pending\nCalls',
+                                                            textAlign: TextAlign
+                                                                .center,
+                                                            style:
+                                                                GoogleFonts.inter(
+                                                                  fontSize: 12,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .w700,
+                                                                  color: Colors
+                                                                      .white,
+                                                                  height:
+                                                                      15 / 12,
+                                                                ),
+                                                          ),
+                                                        ],
+                                                      ),
                                                     ),
                                                   ),
                                                 ),
                                               ),
                                             ),
-                                            const Gap(10),
+                                            Gap(screenWidth < 360 ? 8 : 12),
                                           ],
 
-                                          // Refresh Button (Figma: flex 5, height 44, radius 12, border 1px #E2E8F0, 3-sec loading indicator)
+                                          // Refresh Button (1467:403 — 100x44, radius 12, border 1px #E5E7EB)
                                           Expanded(
                                             flex: state.showingPendingCalls
                                                 ? 1
-                                                : 5,
+                                                : 100,
                                             child: SizedBox(
                                               height: 44,
                                               child: OutlinedButton(
@@ -1357,10 +1397,10 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                                 style: OutlinedButton.styleFrom(
                                                   backgroundColor: Colors.white,
                                                   foregroundColor: const Color(
-                                                    0xFF334155,
+                                                    0xFF4B5563,
                                                   ),
                                                   side: const BorderSide(
-                                                    color: Color(0xFFE2E8F0),
+                                                    color: Color(0xFFE5E7EB),
                                                     width: 1,
                                                   ),
                                                   minimumSize: Size.zero,
@@ -1369,8 +1409,8 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                                           .shrinkWrap,
                                                   padding:
                                                       const EdgeInsets.symmetric(
-                                                        horizontal: 10,
-                                                        vertical: 4,
+                                                        horizontal: 14,
+                                                        vertical: 10,
                                                       ),
                                                   shape: RoundedRectangleBorder(
                                                     borderRadius:
@@ -1390,42 +1430,52 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                                     children: [
                                                       if (_isRefreshing) ...[
                                                         const CupertinoActivityIndicator(
-                                                          radius: 7.5,
+                                                          radius: 7,
                                                         ),
-                                                        const Gap(7),
-                                                        const Text(
+                                                        const Gap(8),
+                                                        Text(
                                                           'Refreshing...',
-                                                          style: TextStyle(
-                                                            fontFamily: 'Inter',
-                                                            fontSize: 13,
-                                                            fontWeight:
-                                                                FontWeight.w700,
-                                                            color: Color(
-                                                              0xFF334155,
-                                                            ),
-                                                          ),
+                                                          style:
+                                                              GoogleFonts.inter(
+                                                                fontSize: 12,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w700,
+                                                                color:
+                                                                    const Color(
+                                                                      0xFF4B5563,
+                                                                    ),
+                                                                height: 16 / 12,
+                                                              ),
                                                         ),
                                                       ] else ...[
-                                                        const Icon(
-                                                          CupertinoIcons
-                                                              .refresh,
-                                                          size: 16,
-                                                          color: Color(
-                                                            0xFF475467,
-                                                          ),
+                                                        SvgPicture.asset(
+                                                          AppSvgs.refresh,
+                                                          width: 13,
+                                                          height: 13,
+                                                          colorFilter:
+                                                              const ColorFilter.mode(
+                                                                Color(
+                                                                  0xFF9CA3AF,
+                                                                ),
+                                                                BlendMode.srcIn,
+                                                              ),
                                                         ),
-                                                        const Gap(7),
-                                                        const Text(
+                                                        const Gap(8),
+                                                        Text(
                                                           'Refresh',
-                                                          style: TextStyle(
-                                                            fontFamily: 'Inter',
-                                                            fontSize: 13,
-                                                            fontWeight:
-                                                                FontWeight.w700,
-                                                            color: Color(
-                                                              0xFF334155,
-                                                            ),
-                                                          ),
+                                                          style:
+                                                              GoogleFonts.inter(
+                                                                fontSize: 12,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w700,
+                                                                color:
+                                                                    const Color(
+                                                                      0xFF4B5563,
+                                                                    ),
+                                                                height: 16 / 12,
+                                                              ),
                                                         ),
                                                       ],
                                                     ],
