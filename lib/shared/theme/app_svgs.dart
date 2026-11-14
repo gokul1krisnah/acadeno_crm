@@ -25,4 +25,5 @@ abstract class AppSvgs {
   static const String leadDetailChevronXs =
       'assets/svgs/lead_detail_chevron_xs.svg';
   static const String leadDetailLayers = 'assets/svgs/lead_detail_layers.svg';
+  static const String visitOutcome = 'assets/svgs/visit_outcome.svg';
 }

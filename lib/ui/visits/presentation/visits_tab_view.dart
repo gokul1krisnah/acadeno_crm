@@ -11,9 +11,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:acadeno_crm/shared/extensions/build_context_extension.dart';
+import 'package:acadeno_crm/shared/theme/app_svgs.dart';
 import 'package:acadeno_crm/ui/visits/application/visits_cubit.dart';
 import 'package:acadeno_crm/ui/visits/application/visits_state.dart';
 import 'package:acadeno_crm/ui/visits/data/model/visit_models.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class VisitsTabView extends StatefulWidget {
   const VisitsTabView({super.key});
@@ -2325,10 +2327,10 @@ class _RecentVisitCard extends StatelessWidget {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(
-                              Icons.description_outlined,
-                              size: 13,
-                              color: Color(0xFF6B7280),
+                            SvgPicture.asset(
+                              AppSvgs.visitOutcome,
+                              width: 12,
+                              height: 12,
                             ),
                             const Gap(6),
                             Text(
