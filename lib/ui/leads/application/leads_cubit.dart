@@ -1,9 +1,12 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
+import '../../../core/services/offline_queue_service.dart';
 import '../data/model/lead_models.dart';
 import '../data/repository/leads_repo.dart';
 import 'leads_state.dart';
@@ -106,6 +109,12 @@ class LeadsCubit extends Cubit<LeadsState> {
     String? courseEnrolled,
     int? discountAmount,
     String? followUpTime,
+    String? batch,
+    int? feeAmount,
+    int? amountPaid,
+    String? paymentMode,
+    String? receiptNumber,
+    String? expectedBalanceDate,
   }) async {
     final updatedLeads = List<ExecutiveLeadItem>.from(state.leads);
     final updatedRecords = List<CallHistoryRecord>.from(state.callRecords);
@@ -155,7 +164,7 @@ class LeadsCubit extends Cubit<LeadsState> {
         collegeInfo: collegeInfo,
         campaign: campaign,
         outcome: outcome,
-        duration: duration.isEmpty ? '2m 15s' : duration,
+        duration: duration.isEmpty ? '0s' : duration,
         timestamp: 'Today · Just now',
         notes: notes.isEmpty ? 'Logged $outcome outcome' : notes,
       ),
@@ -181,6 +190,12 @@ class LeadsCubit extends Cubit<LeadsState> {
           courseEnrolled: courseEnrolled,
           discountAmount: discountAmount,
           followUpTime: followUpTime,
+          batch: batch,
+          feeAmount: feeAmount,
+          amountPaid: amountPaid,
+          paymentMode: paymentMode,
+          receiptNumber: receiptNumber,
+          expectedBalanceDate: expectedBalanceDate,
         );
       } catch (e) {
         emit(
@@ -198,11 +213,32 @@ class LeadsCubit extends Cubit<LeadsState> {
     );
   }
 
-  // Log WhatsApp template sent
-  void logWhatsAppTemplateSent({
+  /// Atomically claims a 10-minute call lock on [leadId] (FR-3.1, RL-2).
+  Future<({bool granted, String? lockedBy})> claimLeadForCall(String leadId) {
+    return _repository.claimLeadForCall(leadId);
+  }
+
+  /// Marks a lead as "Do Not Contact" (`optedOut = true`) per DPDP (PR-9.2) and removes it from active list.
+  Future<void> markLeadOptedOut(String leadId, String leadName) async {
+    final updatedLeads = state.leads.where((l) => l.id != leadId).toList();
+    emit(
+      state.copyWith(
+        leads: updatedLeads,
+        toastMessage: '$leadName marked "Do Not Contact" (DPDP Opt-out)',
+        isToastError: false,
+      ),
+    );
+    try {
+      await _repository.markLeadOptedOut(leadId, optedOut: true);
+    } catch (_) {}
+  }
+
+  // Log WhatsApp template sent and persist to Firestore timeline & call_logs (FR-5.1, FR-5.2)
+  Future<void> logWhatsAppTemplateSent({
+    String? leadId,
     required String leadName,
     required String templateTitle,
-  }) {
+  }) async {
     final updatedRecords = List<CallHistoryRecord>.from(state.callRecords)
       ..insert(
         0,
@@ -226,9 +262,64 @@ class LeadsCubit extends Cubit<LeadsState> {
         isToastError: false,
       ),
     );
+
+    if (leadId != null && leadId.trim().isNotEmpty) {
+      await _repository.logWhatsAppSent(
+        leadId: leadId,
+        leadName: leadName,
+        templateTitle: templateTitle,
+      );
+    }
   }
 
-  // 10-digit phone lookup (rate-limited at 40/hour + backend check)
+  /// Persistent hourly rate-limiter for `phone_lookup` (40/hr) and `lead_open` (100/hr) (PR-2.5).
+  static int _recordAndCountHourlyEvent(String key) {
+    final nowMs = DateTime.now().millisecondsSinceEpoch;
+    final cutoffMs = nowMs - const Duration(hours: 1).inMilliseconds;
+    try {
+      if (Hive.isBoxOpen(OfflineQueueService.boxName)) {
+        final box = Hive.box<String>(OfflineQueueService.boxName);
+        final storageKey = '__rate_limit_$key';
+        final raw = box.get(storageKey);
+        List<int> timestamps = [];
+        if (raw != null && raw.isNotEmpty) {
+          final decoded = jsonDecode(raw) as List<dynamic>;
+          timestamps = decoded
+              .map((e) => (e as num).toInt())
+              .where((t) => t >= cutoffMs)
+              .toList();
+        }
+        timestamps.add(nowMs);
+        box.put(storageKey, jsonEncode(timestamps));
+        return timestamps.length;
+      }
+    } catch (_) {}
+    return 1;
+  }
+
+  /// Checks and records a lead detail open against the 100/hour limit (PR-2.5).
+  Future<bool> checkAndRecordLeadDetailOpen() async {
+    final count = _recordAndCountHourlyEvent('lead_open');
+    if (count > 100) {
+      if (count == 101) {
+        await _repository.reportRateLimitExceeded(
+          limitType: 'Lead Detail Open',
+          count: count,
+        );
+      }
+      emit(
+        state.copyWith(
+          toastMessage:
+              'Access paused: Exceeded 100 lead opens/hour. Super Admin alerted.',
+          isToastError: true,
+        ),
+      );
+      return false;
+    }
+    return true;
+  }
+
+  // 10-digit phone lookup (rate-limited at 40/hour + persistent backend alert — PR-2.5)
   Future<({bool found, String message, String? owner, String? status})>
   lookupByPhone(String rawPhone) async {
     final validationErr = LeadPhoneValidator.validate(rawPhone);
@@ -236,12 +327,21 @@ class LeadsCubit extends Cubit<LeadsState> {
       return (found: false, message: validationErr, owner: null, status: null);
     }
 
-    final nextLookupCount = state.phoneLookupsThisHour + 1;
+    final persistedCount = _recordAndCountHourlyEvent('phone_lookup');
+    final nextLookupCount = persistedCount > state.phoneLookupsThisHour
+        ? persistedCount
+        : state.phoneLookupsThisHour + 1;
     emit(
       state.copyWith(phoneLookupsThisHour: nextLookupCount, clearToast: true),
     );
 
     if (nextLookupCount > 40) {
+      if (nextLookupCount == 41) {
+        await _repository.reportRateLimitExceeded(
+          limitType: 'Phone Lookup',
+          count: nextLookupCount,
+        );
+      }
       return (
         found: false,
         message:

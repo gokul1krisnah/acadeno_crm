@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 
 import '../../ui/follow_ups/data/model/follow_up_models.dart';
 import '../../ui/leads/data/model/lead_models.dart';
+import '../../ui/leads/data/sources/leads_rds.dart';
 import '../../ui/leads/presentation/widgets/lead_call_sheets.dart';
 import '../utils/url_dialer_helper.dart';
 
@@ -76,11 +77,6 @@ class AppPhoneCallService with WidgetsBindingObserver {
 
   /// Launches the system phone dialer pad for [lead] and starts duration tracking.
   Future<void> dialLead(BuildContext context, ExecutiveLeadItem lead) async {
-    _activeLead = lead;
-    _activeContext = context;
-    _dialStartTimeMs = DateTime.now().millisecondsSinceEpoch;
-    _isWaitingForCallReturn = true;
-
     final rawPhone = lead.fullPhone.isNotEmpty
         ? lead.fullPhone
         : lead.maskedPhone;
@@ -94,6 +90,29 @@ class AppPhoneCallService with WidgetsBindingObserver {
       }
       return;
     }
+
+    // FR-3.1 & RL-2: Atomically claim 10-minute Call Lock before launching dialer
+    if (lead.id.isNotEmpty) {
+      final lockResult = await LeadsRds().claimLeadForCall(lead.id);
+      if (!lockResult.granted) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                '${lockResult.lockedBy ?? "Another executive"} is calling now (10-min lock active).',
+              ),
+              backgroundColor: const Color(0xFFDC2626),
+            ),
+          );
+        }
+        return;
+      }
+    }
+
+    _activeLead = lead;
+    _activeContext = context;
+    _dialStartTimeMs = DateTime.now().millisecondsSinceEpoch;
+    _isWaitingForCallReturn = true;
 
     if (kIsWeb) {
       // 1. Web browser: Trigger system dialer pad via tel: URI
@@ -147,9 +166,8 @@ class AppPhoneCallService with WidgetsBindingObserver {
             .replaceAll(RegExp(r'[^0-9+]'), '');
 
     int durationSeconds = 0;
-    bool callWasPlaced = false;
 
-    // Fast check on Android Telecom CallLog with quick retry
+    // Fast check on Android Telecom CallLog with quick retry (FR-3.2)
     if (!kIsWeb && Platform.isAndroid) {
       try {
         int? res = await _channel.invokeMethod<int>('getLastCallDuration', {
@@ -168,31 +186,15 @@ class AppPhoneCallService with WidgetsBindingObserver {
         }
 
         if (res != null && res >= 0) {
-          // Outgoing call was placed and verified from CallLog
-          callWasPlaced = true;
           durationSeconds = res;
-        } else {
-          // Explicitly verified: No call was placed by HR
-          callWasPlaced = false;
         }
       } catch (e) {
         debugPrint('[AppPhoneCallService] CallLog check error: $e');
-        callWasPlaced = false;
       }
-    } else {
-      // Non-Android platforms: strictly do not show without verified call
-      callWasPlaced = false;
     }
 
-    // Only show outcome sheet if the HR actually made the call!
-    if (!callWasPlaced) {
-      debugPrint(
-        '[AppPhoneCallService] No outgoing call placed for ${lead.name}. Skipping outcome sheet.',
-      );
-      return;
-    }
-
-    // Format duration: e.g. "2m 18s" or "45s" or "0s"
+    // FR-3.2 & FR-3.3: Always open the mandatory Call Outcome sheet on return to foreground.
+    // Duration is pre-filled from CallLog when Android permits, or editable manually.
     final formattedDuration = _formatDuration(durationSeconds);
 
     // Immediately open Call Outcome sheet with zero delay

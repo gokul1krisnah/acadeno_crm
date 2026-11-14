@@ -477,6 +477,92 @@ class AdminLeadsCubit extends Cubit<AdminLeadsState> {
     }
   }
 
+  /// Splits the selected leads evenly across [executiveUids] in one action (FR-2.2).
+  Future<int> splitSelectedLeadsEvenly({
+    required List<String> executiveUids,
+    bool allowReassign = true,
+  }) async {
+    final leadIds = state.selectedLeadIds.toList();
+    if (leadIds.isEmpty || executiveUids.isEmpty) return 0;
+
+    emit(state.copyWith(isSubmitting: true, clearToast: true));
+    try {
+      final buckets = <String, List<String>>{
+        for (final uid in executiveUids) uid: <String>[],
+      };
+      for (var i = 0; i < leadIds.length; i++) {
+        final targetUid = executiveUids[i % executiveUids.length];
+        buckets[targetUid]!.add(leadIds[i]);
+      }
+
+      int totalAssigned = 0;
+      for (final entry in buckets.entries) {
+        if (entry.value.isEmpty) continue;
+        final summary = await _repository.assignLeadsToExecutive(
+          leadIds: entry.value,
+          executiveUid: entry.key,
+          dateKey: state.selectedDateKey,
+          dateLabel: state.selectedDateLabel,
+          allowReassign: allowReassign,
+        );
+        totalAssigned += summary.totalCount;
+      }
+
+      emit(
+        state.copyWith(
+          isSubmitting: false,
+          selectedLeadIds: const {},
+          toastMessage:
+              'Split $totalAssigned leads evenly across ${executiveUids.length} executives for ${state.selectedDateLabel}',
+          isToastError: false,
+        ),
+      );
+      return totalAssigned;
+    } catch (e) {
+      emit(
+        state.copyWith(
+          isSubmitting: false,
+          toastMessage: _cleanError(e),
+          isToastError: true,
+        ),
+      );
+      return 0;
+    }
+  }
+
+  /// Marks a lead as "Do Not Contact" (`optedOut = true`) per DPDP (PR-9.2).
+  Future<void> markLeadOptedOut(String leadId, {bool optedOut = true}) async {
+    try {
+      await _repository.markLeadOptedOut(leadId, optedOut: optedOut);
+      emit(
+        state.copyWith(
+          toastMessage: optedOut
+              ? 'Lead marked "Do Not Contact" (DPDP Opt-out)'
+              : 'DPDP Opt-out cleared for lead',
+          isToastError: false,
+        ),
+      );
+    } catch (e) {
+      emit(state.copyWith(toastMessage: _cleanError(e), isToastError: true));
+    }
+  }
+
+  /// Erases personal data (PII) for a lead per DPDP Act 2023 while keeping call stats (PR-9.3).
+  Future<void> eraseLeadPersonalData(String leadId) async {
+    try {
+      await _repository.eraseLeadPersonalData(leadId);
+      emit(
+        state.copyWith(
+          toastMessage:
+              'Personal data erased per DPDP Act 2023 (call statistics preserved).',
+          isToastError: false,
+        ),
+      );
+    } catch (e) {
+      emit(state.copyWith(toastMessage: _cleanError(e), isToastError: true));
+    }
+  }
+
   static String _cleanError(Object error) {
     return error
         .toString()

@@ -4,6 +4,7 @@ import 'package:gap/gap.dart';
 import 'package:intl/intl.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:acadeno_crm/shared/theme/app_images.dart';
 import 'package:acadeno_crm/shared/theme/app_svgs.dart';
 import 'package:acadeno_crm/shared/widgets/college_selector_field.dart';
@@ -108,8 +109,28 @@ class LeadCallSheets {
         : DateFormat('EEE, d MMM').format(DateTime.now());
 
     String selectedOutcome = 'Follow-up';
-    const String selectedFollowUpSlot = 'Tomorrow 10:30';
+    String selectedFollowUpSlot = LeadDateHelper.formatFollowUp(
+      DateTime.now().add(const Duration(days: 1)).copyWith(hour: 10, minute: 30),
+    );
+    String selectedProgram = matchProgram(course);
+    String selectedPaymentMode = 'UPI';
+    String expectedBalanceDate = LeadDateHelper.formatFollowUp(
+      DateTime.now().add(const Duration(days: 7)).copyWith(hour: 11, minute: 0),
+    );
     final notesCtrl = TextEditingController();
+    final durationCtrl = TextEditingController(
+      text: initialDuration.trim().isNotEmpty ? initialDuration.trim() : '0s',
+    );
+    final batchCtrl = TextEditingController(text: 'Nov 2026 Weekend');
+    final rawFeeDigits = (fee ?? '').replaceAll(RegExp(r'\D'), '');
+    final feeCtrl = TextEditingController(
+      text: rawFeeDigits.isNotEmpty ? rawFeeDigits : '1499',
+    );
+    final discountCtrl = TextEditingController(text: '0');
+    final paidCtrl = TextEditingController(
+      text: rawFeeDigits.isNotEmpty ? rawFeeDigits : '1499',
+    );
+    final receiptCtrl = TextEditingController();
 
     const outcomeRows = [
       [('Interested', Color(0xFF22C55E)), ('Follow-up', Color(0xFFE8612D))],
@@ -121,21 +142,21 @@ class LeadCallSheets {
       ],
     ];
 
-    final displayDuration = initialDuration.trim().isNotEmpty
-        ? initialDuration.trim()
-        : '7s';
-
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      isDismissible: false,
+      enableDrag: false,
       backgroundColor: Colors.transparent,
       barrierColor: Colors.black.withValues(alpha: 0.75),
       elevation: 0,
       builder: (ctx) {
-        return SizedBox(
-          height: MediaQuery.sizeOf(ctx).height,
-          width: double.infinity,
-          child: Scaffold(
+        return PopScope(
+          canPop: false,
+          child: SizedBox(
+            height: MediaQuery.sizeOf(ctx).height,
+            width: double.infinity,
+            child: Scaffold(
             backgroundColor: Colors.black,
             body: Center(
               child: ConstrainedBox(
@@ -293,14 +314,62 @@ class LeadCallSheets {
                                         crossAxisAlignment:
                                             CrossAxisAlignment.start,
                                         children: [
-                                          Text(
-                                            'Call ended • $displayDuration',
-                                            style: GoogleFonts.inter(
-                                              fontSize: 14,
-                                              fontWeight: FontWeight.w500,
-                                              color: const Color(0xFF9CA3AF),
-                                              height: 20 / 14,
-                                            ),
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              Text(
+                                                'Call ended • ${durationCtrl.text.trim().isEmpty ? "0s" : durationCtrl.text.trim()}',
+                                                style: GoogleFonts.inter(
+                                                  fontSize: 14,
+                                                  fontWeight: FontWeight.w500,
+                                                  color: const Color(0xFF9CA3AF),
+                                                  height: 20 / 14,
+                                                ),
+                                              ),
+                                              SizedBox(
+                                                width: 96,
+                                                height: 28,
+                                                child: TextField(
+                                                  controller: durationCtrl,
+                                                  onChanged: (_) =>
+                                                      setSheetState(() {}),
+                                                  textAlign: TextAlign.center,
+                                                  style: GoogleFonts.inter(
+                                                    fontSize: 12,
+                                                    fontWeight: FontWeight.w600,
+                                                    color: Colors.white,
+                                                  ),
+                                                  decoration: InputDecoration(
+                                                    isDense: true,
+                                                    contentPadding:
+                                                        const EdgeInsets.symmetric(
+                                                          horizontal: 8,
+                                                          vertical: 5,
+                                                        ),
+                                                    hintText: 'e.g. 2m 15s',
+                                                    hintStyle: GoogleFonts.inter(
+                                                      fontSize: 11,
+                                                      color: const Color(
+                                                        0xFF6B7280,
+                                                      ),
+                                                    ),
+                                                    filled: true,
+                                                    fillColor: const Color(
+                                                      0xFF2D2D2D,
+                                                    ),
+                                                    border: OutlineInputBorder(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                            8,
+                                                          ),
+                                                      borderSide:
+                                                          BorderSide.none,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
                                           ),
                                           const Gap(4),
                                           Text(
@@ -442,7 +511,478 @@ class LeadCallSheets {
                                           },
                                         ),
 
-                                        const Gap(32),
+                                        const Gap(24),
+
+                                        // Conditional fields per FR-3.4, FR-5.3, FR-5.4, FR-5.5
+                                        if (selectedOutcome == 'Follow-up' ||
+                                            selectedOutcome ==
+                                                'Interested') ...[
+                                          if (selectedOutcome ==
+                                              'Interested') ...[
+                                            Text(
+                                              'Interested Program / Workshop',
+                                              style: GoogleFonts.inter(
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.w700,
+                                                color: const Color(0xFF374151),
+                                              ),
+                                            ),
+                                            const Gap(8),
+                                            Container(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    horizontal: 14,
+                                                  ),
+                                              decoration: BoxDecoration(
+                                                color: Colors.white,
+                                                borderRadius:
+                                                    BorderRadius.circular(12),
+                                                border: Border.all(
+                                                  color: const Color(
+                                                    0xFFE5E7EB,
+                                                  ),
+                                                ),
+                                              ),
+                                              child:
+                                                  DropdownButtonHideUnderline(
+                                                    child:
+                                                        DropdownButton<String>(
+                                                          isExpanded: true,
+                                                          value:
+                                                              selectedProgram,
+                                                          items: acadenoPrograms
+                                                              .map(
+                                                                (
+                                                                  p,
+                                                                ) => DropdownMenuItem(
+                                                                  value: p,
+                                                                  child: Text(
+                                                                    p,
+                                                                    style: GoogleFonts.inter(
+                                                                      fontSize:
+                                                                          14,
+                                                                      fontWeight:
+                                                                          FontWeight.w500,
+                                                                    ),
+                                                                  ),
+                                                                ),
+                                                              )
+                                                              .toList(),
+                                                          onChanged: (v) {
+                                                            if (v != null) {
+                                                              setSheetState(
+                                                                () =>
+                                                                    selectedProgram =
+                                                                        v,
+                                                              );
+                                                            }
+                                                          },
+                                                        ),
+                                                  ),
+                                            ),
+                                            const Gap(16),
+                                          ],
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              Text(
+                                                'Follow-up Date & Time',
+                                                style: GoogleFonts.inter(
+                                                  fontSize: 14,
+                                                  fontWeight: FontWeight.w700,
+                                                  color: const Color(
+                                                    0xFF374151,
+                                                  ),
+                                                ),
+                                              ),
+                                              TextButton.icon(
+                                                onPressed: () async {
+                                                  final now = DateTime.now();
+                                                  final d = await showDatePicker(
+                                                    context: ctx,
+                                                    initialDate: now.add(
+                                                      const Duration(days: 1),
+                                                    ),
+                                                    firstDate: now,
+                                                    lastDate: now.add(
+                                                      const Duration(days: 90),
+                                                    ),
+                                                  );
+                                                  if (d != null &&
+                                                      ctx.mounted) {
+                                                    final t =
+                                                        await showTimePicker(
+                                                          context: ctx,
+                                                          initialTime:
+                                                              const TimeOfDay(
+                                                                hour: 10,
+                                                                minute: 30,
+                                                              ),
+                                                        );
+                                                    if (t != null) {
+                                                      final dt = DateTime(
+                                                        d.year,
+                                                        d.month,
+                                                        d.day,
+                                                        t.hour,
+                                                        t.minute,
+                                                      );
+                                                      setSheetState(() {
+                                                        selectedFollowUpSlot =
+                                                            LeadDateHelper.formatFollowUp(
+                                                              dt,
+                                                            );
+                                                      });
+                                                    }
+                                                  }
+                                                },
+                                                icon: const Icon(
+                                                  Icons.calendar_today_rounded,
+                                                  size: 14,
+                                                  color: Color(0xFFE8612D),
+                                                ),
+                                                label: Text(
+                                                  selectedFollowUpSlot,
+                                                  style: GoogleFonts.inter(
+                                                    fontSize: 13,
+                                                    fontWeight: FontWeight.w600,
+                                                    color: const Color(
+                                                      0xFFE8612D,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          const Gap(16),
+                                        ],
+
+                                        if (selectedOutcome == 'Converted') ...[
+                                          Container(
+                                            width: double.infinity,
+                                            padding: const EdgeInsets.all(16),
+                                            decoration: BoxDecoration(
+                                              color: Colors.white,
+                                              borderRadius:
+                                                  BorderRadius.circular(16),
+                                              border: Border.all(
+                                                color: const Color(0xFFE5E7EB),
+                                              ),
+                                            ),
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  'Enrolment & Payment Details',
+                                                  style: GoogleFonts.inter(
+                                                    fontSize: 15,
+                                                    fontWeight: FontWeight.w700,
+                                                    color: const Color(
+                                                      0xFF111827,
+                                                    ),
+                                                  ),
+                                                ),
+                                                const Gap(12),
+                                                DropdownButtonFormField<String>(
+                                                  initialValue: selectedProgram,
+                                                  decoration:
+                                                      const InputDecoration(
+                                                        labelText:
+                                                            'Course / Workshop',
+                                                        isDense: true,
+                                                        border:
+                                                            OutlineInputBorder(),
+                                                      ),
+                                                  items: acadenoPrograms
+                                                      .map(
+                                                        (p) => DropdownMenuItem(
+                                                          value: p,
+                                                          child: Text(
+                                                            p,
+                                                            style:
+                                                                const TextStyle(
+                                                                  fontSize: 13,
+                                                                ),
+                                                          ),
+                                                        ),
+                                                      )
+                                                      .toList(),
+                                                  onChanged: (v) {
+                                                    if (v != null) {
+                                                      setSheetState(
+                                                        () => selectedProgram =
+                                                            v,
+                                                      );
+                                                    }
+                                                  },
+                                                ),
+                                                const Gap(10),
+                                                Row(
+                                                  children: [
+                                                    Expanded(
+                                                      child: TextField(
+                                                        controller: batchCtrl,
+                                                        decoration:
+                                                            const InputDecoration(
+                                                              labelText:
+                                                                  'Batch',
+                                                              isDense: true,
+                                                              border:
+                                                                  OutlineInputBorder(),
+                                                            ),
+                                                      ),
+                                                    ),
+                                                    const Gap(10),
+                                                    Expanded(
+                                                      child: DropdownButtonFormField<String>(
+                                                        initialValue:
+                                                            selectedPaymentMode,
+                                                        decoration:
+                                                            const InputDecoration(
+                                                              labelText:
+                                                                  'Payment Mode',
+                                                              isDense: true,
+                                                              border:
+                                                                  OutlineInputBorder(),
+                                                            ),
+                                                        items: const [
+                                                          DropdownMenuItem(
+                                                            value: 'UPI',
+                                                            child: Text('UPI'),
+                                                          ),
+                                                          DropdownMenuItem(
+                                                            value: 'Cash',
+                                                            child: Text('Cash'),
+                                                          ),
+                                                          DropdownMenuItem(
+                                                            value:
+                                                                'Bank Transfer',
+                                                            child: Text(
+                                                              'Bank Transfer',
+                                                            ),
+                                                          ),
+                                                          DropdownMenuItem(
+                                                            value: 'Card',
+                                                            child: Text('Card'),
+                                                          ),
+                                                        ],
+                                                        onChanged: (v) {
+                                                          if (v != null) {
+                                                            setSheetState(
+                                                              () =>
+                                                                  selectedPaymentMode =
+                                                                      v,
+                                                            );
+                                                          }
+                                                        },
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                                const Gap(10),
+                                                Row(
+                                                  children: [
+                                                    Expanded(
+                                                      child: TextField(
+                                                        controller: feeCtrl,
+                                                        keyboardType:
+                                                            TextInputType
+                                                                .number,
+                                                        onChanged: (_) =>
+                                                            setSheetState(
+                                                              () {},
+                                                            ),
+                                                        decoration:
+                                                            const InputDecoration(
+                                                              labelText:
+                                                                  'Total Fee (₹)',
+                                                              isDense: true,
+                                                              border:
+                                                                  OutlineInputBorder(),
+                                                            ),
+                                                      ),
+                                                    ),
+                                                    const Gap(10),
+                                                    Expanded(
+                                                      child: TextField(
+                                                        controller:
+                                                            discountCtrl,
+                                                        keyboardType:
+                                                            TextInputType
+                                                                .number,
+                                                        onChanged: (_) =>
+                                                            setSheetState(
+                                                              () {},
+                                                            ),
+                                                        decoration:
+                                                            const InputDecoration(
+                                                              labelText:
+                                                                  'Discount (₹)',
+                                                              isDense: true,
+                                                              border:
+                                                                  OutlineInputBorder(),
+                                                            ),
+                                                      ),
+                                                    ),
+                                                    const Gap(10),
+                                                    Expanded(
+                                                      child: TextField(
+                                                        controller: paidCtrl,
+                                                        keyboardType:
+                                                            TextInputType
+                                                                .number,
+                                                        onChanged: (_) =>
+                                                            setSheetState(
+                                                              () {},
+                                                            ),
+                                                        decoration:
+                                                            const InputDecoration(
+                                                              labelText:
+                                                                  'Paid (₹)',
+                                                              isDense: true,
+                                                              border:
+                                                                  OutlineInputBorder(),
+                                                            ),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                                if ((int.tryParse(
+                                                          discountCtrl.text
+                                                              .trim(),
+                                                        ) ??
+                                                        0) >
+                                                    500) ...[
+                                                  const Gap(8),
+                                                  Container(
+                                                    padding:
+                                                        const EdgeInsets.all(8),
+                                                    decoration: BoxDecoration(
+                                                      color: const Color(
+                                                        0xFFFEF3C7,
+                                                      ),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                            8,
+                                                          ),
+                                                    ),
+                                                    child: const Text(
+                                                      'Discounts > ₹500 automatically send an approval alert to Manager & Super Admin.',
+                                                      style: TextStyle(
+                                                        fontSize: 11.5,
+                                                        color: Color(
+                                                          0xFF92400E,
+                                                        ),
+                                                        fontWeight:
+                                                            FontWeight.w600,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                                const Gap(10),
+                                                TextField(
+                                                  controller: receiptCtrl,
+                                                  decoration:
+                                                      const InputDecoration(
+                                                        labelText:
+                                                            'Receipt / UTR Number',
+                                                        isDense: true,
+                                                        border:
+                                                            OutlineInputBorder(),
+                                                      ),
+                                                ),
+                                                if (((int.tryParse(
+                                                              feeCtrl.text
+                                                                  .trim(),
+                                                            ) ??
+                                                            0) -
+                                                        (int.tryParse(
+                                                              discountCtrl.text
+                                                                  .trim(),
+                                                            ) ??
+                                                            0) -
+                                                        (int.tryParse(
+                                                              paidCtrl.text
+                                                                  .trim(),
+                                                            ) ??
+                                                            0)) >
+                                                    0) ...[
+                                                  const Gap(10),
+                                                  Row(
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .spaceBetween,
+                                                    children: [
+                                                      const Text(
+                                                        'Expected Balance Date:',
+                                                        style: TextStyle(
+                                                          fontSize: 12.5,
+                                                          fontWeight:
+                                                              FontWeight.w600,
+                                                          color: Color(
+                                                            0xFF374151,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      TextButton(
+                                                        onPressed: () async {
+                                                          final now =
+                                                              DateTime.now();
+                                                          final d =
+                                                              await showDatePicker(
+                                                                context: ctx,
+                                                                initialDate: now
+                                                                    .add(
+                                                                      const Duration(
+                                                                        days: 7,
+                                                                      ),
+                                                                    ),
+                                                                firstDate: now,
+                                                                lastDate: now.add(
+                                                                  const Duration(
+                                                                    days: 120,
+                                                                  ),
+                                                                ),
+                                                              );
+                                                          if (d != null) {
+                                                            setSheetState(() {
+                                                              expectedBalanceDate =
+                                                                  LeadDateHelper.formatFollowUp(
+                                                                    DateTime(
+                                                                      d.year,
+                                                                      d.month,
+                                                                      d.day,
+                                                                      11,
+                                                                      0,
+                                                                    ),
+                                                                  );
+                                                            });
+                                                          }
+                                                        },
+                                                        child: Text(
+                                                          expectedBalanceDate,
+                                                          style:
+                                                              const TextStyle(
+                                                                fontSize: 12.5,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w700,
+                                                                color: Color(
+                                                                  0xFFE8612D,
+                                                                ),
+                                                              ),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ],
+                                              ],
+                                            ),
+                                          ),
+                                          const Gap(20),
+                                        ],
 
                                         // Notes (optional) (Figma node 1606:1677)
                                         Text(
@@ -519,6 +1059,26 @@ class LeadCallSheets {
                                           height: 60,
                                           child: ElevatedButton(
                                             onPressed: () async {
+                                              final resolvedDuration =
+                                                  durationCtrl.text
+                                                      .trim()
+                                                      .isEmpty
+                                                  ? '0s'
+                                                  : durationCtrl.text.trim();
+                                              final feeVal = int.tryParse(
+                                                feeCtrl.text.trim(),
+                                              );
+                                              final discVal = int.tryParse(
+                                                discountCtrl.text.trim(),
+                                              );
+                                              final paidVal = int.tryParse(
+                                                paidCtrl.text.trim(),
+                                              );
+                                              final balanceVal =
+                                                  (feeVal ?? 0) -
+                                                  (discVal ?? 0) -
+                                                  (paidVal ?? 0);
+
                                               if (ctx.mounted) {
                                                 Navigator.pop(ctx);
                                               }
@@ -528,9 +1088,55 @@ class LeadCallSheets {
                                                       leadId: leadId,
                                                       leadName: leadName,
                                                       outcome: selectedOutcome,
-                                                      duration: displayDuration,
+                                                      duration:
+                                                          resolvedDuration,
                                                       notes: notesCtrl.text
                                                           .trim(),
+                                                      courseEnrolled:
+                                                          (selectedOutcome ==
+                                                                  'Converted' ||
+                                                              selectedOutcome ==
+                                                                  'Interested')
+                                                          ? selectedProgram
+                                                          : null,
+                                                      discountAmount:
+                                                          selectedOutcome ==
+                                                              'Converted'
+                                                          ? discVal
+                                                          : null,
+                                                      batch:
+                                                          selectedOutcome ==
+                                                              'Converted'
+                                                          ? batchCtrl.text
+                                                                .trim()
+                                                          : null,
+                                                      feeAmount:
+                                                          selectedOutcome ==
+                                                              'Converted'
+                                                          ? feeVal
+                                                          : null,
+                                                      amountPaid:
+                                                          selectedOutcome ==
+                                                              'Converted'
+                                                          ? paidVal
+                                                          : null,
+                                                      paymentMode:
+                                                          selectedOutcome ==
+                                                              'Converted'
+                                                          ? selectedPaymentMode
+                                                          : null,
+                                                      receiptNumber:
+                                                          selectedOutcome ==
+                                                              'Converted'
+                                                          ? receiptCtrl.text
+                                                                .trim()
+                                                          : null,
+                                                      expectedBalanceDate:
+                                                          (selectedOutcome ==
+                                                                  'Converted' &&
+                                                              balanceVal > 0)
+                                                          ? expectedBalanceDate
+                                                          : null,
                                                       followUpTime:
                                                           selectedFollowUpSlot,
                                                     );
@@ -539,11 +1145,25 @@ class LeadCallSheets {
                                                       leadName: leadName,
                                                       collegeInfo:
                                                           result.collegeInfo,
-                                                      outcome: selectedOutcome,
-                                                      notes: notesCtrl.text
-                                                          .trim(),
+                                                      outcome:
+                                                          (selectedOutcome ==
+                                                                  'Converted' &&
+                                                              balanceVal > 0)
+                                                          ? 'Follow-up'
+                                                          : selectedOutcome,
+                                                      notes:
+                                                          (selectedOutcome ==
+                                                                  'Converted' &&
+                                                              balanceVal > 0)
+                                                          ? 'Balance collection (₹$balanceVal due)'
+                                                          : notesCtrl.text
+                                                                .trim(),
                                                       followUpTimeLabel:
-                                                          selectedFollowUpSlot,
+                                                          (selectedOutcome ==
+                                                                  'Converted' &&
+                                                              balanceVal > 0)
+                                                          ? expectedBalanceDate
+                                                          : selectedFollowUpSlot,
                                                     );
                                                 if (context.mounted) {
                                                   SnackBarAlert.showToast(
@@ -597,6 +1217,7 @@ class LeadCallSheets {
               ),
             ),
           ),
+        ),
         );
       },
     );
@@ -678,12 +1299,18 @@ class LeadCallSheets {
   }
 
   // ---------------------------------------------------------------------------
-  // 2. Lead Detail Page Navigation (Matches Exact First Image UI)
+  // 2. Lead Detail Page Navigation (Matches Exact First Image UI + PR-2.5 100/hr Rate Limit)
   // ---------------------------------------------------------------------------
-  static void showLeadDetailSheet(
+  static Future<void> showLeadDetailSheet(
     BuildContext context, {
     required ExecutiveLeadItem lead,
-  }) {
+  }) async {
+    try {
+      final cubit = context.read<LeadsCubit>();
+      final allowed = await cubit.checkAndRecordLeadDetailOpen();
+      if (!allowed) return;
+    } catch (_) {}
+    if (!context.mounted) return;
     Navigator.of(
       context,
     ).push(MaterialPageRoute(builder: (ctx) => LeadDetailPage(lead: lead)));
@@ -771,12 +1398,35 @@ class LeadCallSheets {
                       return Padding(
                         padding: const EdgeInsets.only(bottom: 10),
                         child: InkWell(
-                          onTap: () {
+                          onTap: () async {
                             Navigator.pop(ctx);
-                            cubit.logWhatsAppTemplateSent(
+                            await cubit.logWhatsAppTemplateSent(
+                              leadId: lead.id,
                               leadName: lead.name,
                               templateTitle: tpl.$1,
                             );
+                            final rawPhone = lead.fullPhone.isNotEmpty
+                                ? lead.fullPhone
+                                : lead.maskedPhone;
+                            final digits = rawPhone.replaceAll(
+                              RegExp(r'\D'),
+                              '',
+                            );
+                            final cleanPhone = digits.length == 10
+                                ? '91$digits'
+                                : digits;
+                            final encodedText = Uri.encodeComponent(tpl.$2);
+                            final uri = Uri.parse(
+                              cleanPhone.isNotEmpty
+                                  ? 'https://wa.me/$cleanPhone?text=$encodedText'
+                                  : 'https://wa.me/?text=$encodedText',
+                            );
+                            try {
+                              await launchUrl(
+                                uri,
+                                mode: LaunchMode.externalApplication,
+                              );
+                            } catch (_) {}
                           },
                           borderRadius: BorderRadius.circular(12),
                           child: Container(

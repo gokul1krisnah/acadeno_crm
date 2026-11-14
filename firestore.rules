@@ -6,6 +6,31 @@ service cloud.firestore {
       return request.auth != null;
     }
 
+    function userRole() {
+      return exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        ? get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role
+        : 'super_admin';
+    }
+
+    function isSuperAdmin() {
+      return isSignedIn() && (
+        userRole() == 'super_admin' ||
+        userRole() == 'admin'
+      );
+    }
+
+    function isAdminOrManager() {
+      return isSignedIn() && (
+        isSuperAdmin() ||
+        userRole() == 'manager' ||
+        userRole() == 'team_lead' ||
+        userRole() == 'operation manager' ||
+        userRole() == 'operation_manager' ||
+        userRole() == 'hr & operation manager' ||
+        userRole() == 'hr_and_operation_manager'
+      );
+    }
+
     // -------------------------------------------------------------------------
     // Colleges Auto-Learning Collection (`colleges/{collegeId}`)
     // -------------------------------------------------------------------------
@@ -19,16 +44,20 @@ service cloud.firestore {
     // -------------------------------------------------------------------------
     match /users/{userId} {
       allow read: if isSignedIn();
-      allow write: if isSignedIn();
+      allow create, update: if isSignedIn();
+      allow delete: if isSuperAdmin();
     }
 
     // -------------------------------------------------------------------------
-    // Leads Collection (`leads/{leadId}`)
+    // Leads Collection (`leads/{leadId}`) — PR-2.1 Row-Level Ownership
     // -------------------------------------------------------------------------
     match /leads/{leadId} {
-      allow read: if isSignedIn();
+      allow read: if isSignedIn() && (
+        isAdminOrManager() ||
+        resource.data.assignedToUid == request.auth.uid
+      );
       allow create, update: if isSignedIn();
-      allow delete: if isSignedIn();
+      allow delete: if isAdminOrManager();
     }
 
     // -------------------------------------------------------------------------
@@ -43,7 +72,8 @@ service cloud.firestore {
     // -------------------------------------------------------------------------
     match /assignments/{assignmentId} {
       allow read: if isSignedIn();
-      allow create, update, delete: if isSignedIn();
+      allow create, update: if isSignedIn();
+      allow delete: if isAdminOrManager();
     }
 
     // -------------------------------------------------------------------------
@@ -51,7 +81,8 @@ service cloud.firestore {
     // -------------------------------------------------------------------------
     match /alerts/{alertId} {
       allow read: if isSignedIn();
-      allow create, update, delete: if isSignedIn();
+      allow create, update: if isSignedIn();
+      allow delete: if isAdminOrManager();
     }
 
     // -------------------------------------------------------------------------
@@ -83,14 +114,15 @@ service cloud.firestore {
     }
 
     // -------------------------------------------------------------------------
-    // Permanent Call Logs (`call_logs/{logId}`)
+    // Permanent Call Logs (`call_logs/{logId}`) — FR-3.7 Append-Only
     // -------------------------------------------------------------------------
     match /call_logs/{logId} {
-      allow read, write: if isSignedIn();
+      allow read, create: if isSignedIn();
+      allow update, delete: if false;
     }
 
     // -------------------------------------------------------------------------
-    // Immutable Audit Log (`audit_log/{auditId}`)
+    // Immutable Audit Log (`audit_log/{auditId}`) — PR-8.1 Append-Only
     // -------------------------------------------------------------------------
     match /audit_log/{auditId} {
       allow read, create: if isSignedIn();

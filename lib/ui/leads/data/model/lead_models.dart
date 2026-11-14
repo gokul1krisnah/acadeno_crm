@@ -365,11 +365,7 @@ abstract final class LeadDateHelper {
         case 'Callback':
           return formatFollowUp(at(1, 10, 30), now: ref);
         case 'No answer':
-          final slot = at(0, 16, 0);
-          return formatFollowUp(
-            slot.isAfter(ref) ? slot : at(1, 10, 30),
-            now: ref,
-          );
+          return nextWorkingHoursRetrySlot(ref);
         case 'Interested':
           final slot = at(0, 17, 30);
           return formatFollowUp(
@@ -417,6 +413,27 @@ abstract final class LeadDateHelper {
       }
     }
     return formatFollowUp(at(offset, hour, minute), now: ref);
+  }
+
+  /// Schedules the next automatic retry slot strictly within working hours (9 AM – 8 PM IST) (FR-3.6, RL-7).
+  static String nextWorkingHoursRetrySlot([DateTime? now]) {
+    final ref = now ?? DateTime.now();
+    final candidate = ref.add(const Duration(hours: 3));
+    if (candidate.day == ref.day &&
+        candidate.hour >= 9 &&
+        candidate.hour < 20) {
+      return formatFollowUp(candidate, now: ref);
+    }
+    if (ref.hour < 9) {
+      return formatFollowUp(
+        DateTime(ref.year, ref.month, ref.day, 10, 30),
+        now: ref,
+      );
+    }
+    return formatFollowUp(
+      DateTime(ref.year, ref.month, ref.day + 1, 10, 30),
+      now: ref,
+    );
   }
 
   /// Evaluates and formats the actual Last Contact for a lead based on real call logs,
@@ -588,7 +605,11 @@ class LeadRecord {
   final bool isDone;
   final bool isLocked;
   final String? lockedByUid;
+  final String? lockedByName;
+  final DateTime? lockedAt;
   final String? lockedMessage;
+  final int noAnswerCount;
+  final bool optedOut;
   final List<String> talkingPoints;
   final List<String> timeline;
   final String? createdByUid;
@@ -624,7 +645,11 @@ class LeadRecord {
     this.isDone = false,
     this.isLocked = false,
     this.lockedByUid,
+    this.lockedByName,
+    this.lockedAt,
     this.lockedMessage,
+    this.noAnswerCount = 0,
+    this.optedOut = false,
     this.talkingPoints = const [
       '2-day hands-on AI & Python certificate workshop (14–15 Nov)',
       'Standard fee ₹1,499 · Early-bird / group of 3+ ₹999 (Discounts > ₹500 require Manager approval)',
@@ -636,6 +661,13 @@ class LeadRecord {
     this.createdAt,
     this.updatedAt,
   });
+
+  /// True if the 10-minute call lock (FR-3.1, RL-2) is currently active.
+  bool get isActivelyLocked {
+    if (!isLocked) return false;
+    if (lockedAt == null) return isLocked;
+    return DateTime.now().difference(lockedAt!).inMinutes < 10;
+  }
 
   String get maskedPhone => LeadPhoneValidator.maskPhone(
     phoneNormalized.isNotEmpty ? phoneNormalized : phone,
@@ -846,7 +878,13 @@ class LeadRecord {
       isDone: data['isDone'] == true,
       isLocked: data['isLocked'] == true,
       lockedByUid: data['lockedByUid']?.toString(),
+      lockedByName: data['lockedByName']?.toString(),
+      lockedAt: data['lockedAt'] is Timestamp
+          ? (data['lockedAt'] as Timestamp).toDate()
+          : (data['lockedAt'] is DateTime ? data['lockedAt'] as DateTime : null),
       lockedMessage: data['lockedMessage']?.toString(),
+      noAnswerCount: (data['noAnswerCount'] as num?)?.toInt() ?? 0,
+      optedOut: data['optedOut'] == true || status.toLowerCase() == 'opted out',
       talkingPoints: talkingPointsList,
       timeline: timelineList,
       createdByUid: data['createdByUid']?.toString(),
@@ -889,7 +927,11 @@ class LeadRecord {
       'isDone': isDone,
       'isLocked': isLocked,
       'lockedByUid': lockedByUid,
+      'lockedByName': lockedByName,
+      if (lockedAt != null) 'lockedAt': Timestamp.fromDate(lockedAt!),
       'lockedMessage': lockedMessage,
+      'noAnswerCount': noAnswerCount,
+      'optedOut': optedOut,
       'talkingPoints': talkingPoints,
       'timeline': timeline,
       'createdByUid': createdByUid,
@@ -925,7 +967,11 @@ class LeadRecord {
     bool? isDone,
     bool? isLocked,
     String? lockedByUid,
+    String? lockedByName,
+    DateTime? lockedAt,
     String? lockedMessage,
+    int? noAnswerCount,
+    bool? optedOut,
     List<String>? talkingPoints,
     List<String>? timeline,
     String? createdByUid,
@@ -961,7 +1007,11 @@ class LeadRecord {
       isDone: isDone ?? this.isDone,
       isLocked: isLocked ?? this.isLocked,
       lockedByUid: lockedByUid ?? this.lockedByUid,
+      lockedByName: lockedByName ?? this.lockedByName,
+      lockedAt: lockedAt ?? this.lockedAt,
       lockedMessage: lockedMessage ?? this.lockedMessage,
+      noAnswerCount: noAnswerCount ?? this.noAnswerCount,
+      optedOut: optedOut ?? this.optedOut,
       talkingPoints: talkingPoints ?? this.talkingPoints,
       timeline: timeline ?? this.timeline,
       createdByUid: createdByUid ?? this.createdByUid,
@@ -989,8 +1039,8 @@ class LeadRecord {
       statusColor: colors.$1,
       statusBg: colors.$2,
       campaignTag: source,
-      isLocked: isLocked,
-      lockedMessage: lockedMessage,
+      isLocked: isActivelyLocked,
+      lockedMessage: isActivelyLocked ? lockedMessage : null,
       isDone: done,
       talkingPoints: talkingPoints,
       followUpTime: followUpTime,

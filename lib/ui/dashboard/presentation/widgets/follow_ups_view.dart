@@ -48,6 +48,7 @@ class _FollowUpsViewState extends State<FollowUpsView> {
 
   final Set<String> _localCompletedIds = {};
   final Map<String, String> _localReassignedMap = {};
+  final Map<String, String> _execNameToUid = {};
 
   void _markCompleted(String leadId, String name) async {
     setState(() => _localCompletedIds.add(leadId));
@@ -106,10 +107,13 @@ class _FollowUpsViewState extends State<FollowUpsView> {
                 onTap: () async {
                   setState(() => _localReassignedMap[row.id] = exec);
                   Navigator.pop(ctx);
+                  final targetUid = _execNameToUid[exec];
                   try {
                     await FirebaseFirestore.instance.collection('leads').doc(row.id).update({
                       'assignedTo': exec,
                       'assignedToName': exec,
+                      if (targetUid != null && targetUid.isNotEmpty)
+                        'assignedToUid': targetUid,
                       'updatedAt': FieldValue.serverTimestamp(),
                     });
                   } catch (_) {}
@@ -133,6 +137,7 @@ class _FollowUpsViewState extends State<FollowUpsView> {
     int moved = 0;
     final batch = FirebaseFirestore.instance.batch();
 
+    final targetUid = _execNameToUid[_toExec];
     for (final item in followUps) {
       if (!item.completed && item.assignedExec == _fromExec) {
         _localReassignedMap[item.id] = _toExec;
@@ -141,6 +146,8 @@ class _FollowUpsViewState extends State<FollowUpsView> {
         batch.update(docRef, {
           'assignedTo': _toExec,
           'assignedToName': _toExec,
+          if (targetUid != null && targetUid.isNotEmpty)
+            'assignedToUid': targetUid,
           'updatedAt': FieldValue.serverTimestamp(),
         });
       }
@@ -169,13 +176,20 @@ class _FollowUpsViewState extends State<FollowUpsView> {
         return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
           stream: FirestoreStreamCache.instance.watchCollection('leads'),
           builder: (context, leadsSnap) {
-            // Extract active executives
-            final execs = (usersSnap.data?.docs ?? [])
-                .where((d) => d.data()['isActive'] != false)
-                .map((d) => (d.data()['name'] ?? 'Team Member').toString().trim())
-                .where((n) => n.isNotEmpty)
-                .toSet()
-                .toList();
+            // Extract active executives & map name -> uid
+            _execNameToUid.clear();
+            final execSet = <String>{};
+            for (final d in (usersSnap.data?.docs ?? [])) {
+              final uData = d.data();
+              if (uData['isActive'] == false) continue;
+              final n = (uData['name'] ?? 'Team Member').toString().trim();
+              final uid = (uData['uid'] ?? d.id).toString().trim();
+              if (n.isNotEmpty) {
+                execSet.add(n);
+                _execNameToUid[n] = uid;
+              }
+            }
+            final execs = execSet.toList();
 
             final executives = execs.isNotEmpty
                 ? execs
@@ -196,6 +210,7 @@ class _FollowUpsViewState extends State<FollowUpsView> {
               final d = doc.data();
               final isDone = (d['isDone'] as bool?) ?? false;
               final status = (d['status'] ?? '').toString().toLowerCase();
+              if (d['optedOut'] == true || status == 'opted out') continue;
 
               final hasFollowUpTime =
                   (d['followUpTime'] != null && d['followUpTime'].toString().trim().isNotEmpty);

@@ -104,7 +104,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
       return;
     }
 
-    final confirmed = await showDialog<bool>(
+    final action = await showDialog<String>(
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(
@@ -119,7 +119,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
             ),
             Gap(10),
             Text(
-              'Delete Selected Leads?',
+              'Delete or Erase Personal Data?',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w700,
@@ -129,7 +129,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
           ],
         ),
         content: Text(
-          'Are you sure you want to permanently delete $count selected lead(s)? This action cannot be undone.',
+          'For $count selected lead(s), you can either Erase Personal Data (DPDP Act 2023 — anonymizes name/phone/notes while preserving call statistics) or Permanently Delete.',
           style: const TextStyle(
             fontSize: 14,
             color: Color(0xFF4B5563),
@@ -138,13 +138,27 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(ctx).pop(false),
+            onPressed: () => Navigator.of(ctx).pop('cancel'),
             child: const Text(
               'Cancel',
               style: TextStyle(
                 color: Color(0xFF6B7280),
                 fontWeight: FontWeight.w600,
               ),
+            ),
+          ),
+          OutlinedButton(
+            style: OutlinedButton.styleFrom(
+              foregroundColor: const Color(0xFF1E293B),
+              side: const BorderSide(color: Color(0xFFCBD5E1)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            onPressed: () => Navigator.of(ctx).pop('erase_dpdp'),
+            child: const Text(
+              'Erase PII (DPDP)',
+              style: TextStyle(fontWeight: FontWeight.w600),
             ),
           ),
           ElevatedButton(
@@ -156,7 +170,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                 borderRadius: BorderRadius.circular(8),
               ),
             ),
-            onPressed: () => Navigator.of(ctx).pop(true),
+            onPressed: () => Navigator.of(ctx).pop('delete'),
             child: Text(
               'Delete $count Leads',
               style: const TextStyle(fontWeight: FontWeight.w600),
@@ -166,8 +180,16 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
       ),
     );
 
-    if (confirmed == true && context.mounted) {
-      await context.read<AdminLeadsCubit>().deleteSelectedLeads();
+    if (!context.mounted) return;
+    final cubit = context.read<AdminLeadsCubit>();
+    if (action == 'erase_dpdp') {
+      final ids = cubit.state.selectedLeadIds.toList();
+      for (final id in ids) {
+        await cubit.eraseLeadPersonalData(id);
+      }
+      cubit.clearSelection();
+    } else if (action == 'delete') {
+      await cubit.deleteSelectedLeads();
     }
   }
 
@@ -182,6 +204,10 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
 
     final conflicts = state.conflictingSelectedLeads;
     bool confirmReassign = conflicts.isNotEmpty;
+    bool splitEvenlyMode = false;
+    final selectedSplitExecUids = <String>{
+      for (final e in state.activeExecutives) e.uid,
+    };
 
     showDialog(
       context: context,
@@ -219,7 +245,9 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'HR: ${exec.name}',
+                          splitEvenlyMode
+                              ? 'Mode: Split evenly across ${selectedSplitExecUids.length} Executives'
+                              : 'HR: ${exec.name}',
                           style: const TextStyle(
                             fontWeight: FontWeight.w700,
                             fontSize: 14,
@@ -236,6 +264,53 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                           'Leads Selected: ${selectedLeads.length}',
                           style: const TextStyle(fontSize: 13, color: _muted),
                         ),
+                        if (state.activeExecutives.length > 1) ...[
+                          const Gap(8),
+                          SwitchListTile.adaptive(
+                            value: splitEvenlyMode,
+                            onChanged: (v) => setD(() => splitEvenlyMode = v),
+                            dense: true,
+                            contentPadding: EdgeInsets.zero,
+                            activeThumbColor: _primary,
+                            title: const Text(
+                              'Split evenly across multiple executives (FR-2.2)',
+                              style: TextStyle(
+                                fontSize: 12.5,
+                                fontWeight: FontWeight.w600,
+                                color: _text,
+                              ),
+                            ),
+                          ),
+                          if (splitEvenlyMode)
+                            Wrap(
+                              spacing: 6,
+                              runSpacing: 6,
+                              children: state.activeExecutives.map((e) {
+                                final checked = selectedSplitExecUids.contains(
+                                  e.uid,
+                                );
+                                return FilterChip(
+                                  label: Text(
+                                    e.name,
+                                    style: const TextStyle(fontSize: 12),
+                                  ),
+                                  selected: checked,
+                                  selectedColor: const Color(0xFFFFEDE2),
+                                  checkmarkColor: _primary,
+                                  onSelected: (v) {
+                                    setD(() {
+                                      if (v) {
+                                        selectedSplitExecUids.add(e.uid);
+                                      } else if (selectedSplitExecUids.length >
+                                          1) {
+                                        selectedSplitExecUids.remove(e.uid);
+                                      }
+                                    });
+                                  },
+                                );
+                              }).toList(),
+                            ),
+                        ],
                       ],
                     ),
                   ),
@@ -354,6 +429,21 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
               ),
               onPressed: () async {
                 Navigator.pop(dCtx);
+                if (splitEvenlyMode && selectedSplitExecUids.isNotEmpty) {
+                  final count = await cubit.splitSelectedLeadsEvenly(
+                    executiveUids: selectedSplitExecUids.toList(),
+                    allowReassign: confirmReassign,
+                  );
+                  if (count > 0) {
+                    _tryDashboardCubit()?.recordAudit(
+                      action:
+                          'Split $count leads evenly across ${selectedSplitExecUids.length} executives for ${state.selectedDateLabel}',
+                      target: '$count leads',
+                      category: 'assignment',
+                    );
+                  }
+                  return;
+                }
                 final summary = await cubit.assignSelectedLeads(
                   allowReassign: confirmReassign,
                 );
@@ -785,6 +875,8 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
       'Interested',
       'Not interested',
       'Converted',
+      'Unreachable',
+      'Opted out',
       lead.status,
     }.toList();
     final sourceOptions = <String>{
@@ -1776,6 +1868,12 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                                         status: selectedStatus,
                                         notes: notesC.text.trim(),
                                       );
+                                      if (selectedStatus == 'Opted out') {
+                                        await cubit.markLeadOptedOut(
+                                          lead.id,
+                                          optedOut: true,
+                                        );
+                                      }
                                       if (!dCtx.mounted) return;
                                       Navigator.pop(dCtx);
                                     } catch (e) {

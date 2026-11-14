@@ -99,11 +99,39 @@ abstract class LeadsBackend {
     String? courseEnrolled,
     int? discountAmount,
     String? followUpTime,
+    String? batch,
+    int? feeAmount,
+    int? amountPaid,
+    String? paymentMode,
+    String? receiptNumber,
+    String? expectedBalanceDate,
   });
 
   /// Performs a backend 10-digit phone duplicate lookup via `lead_phones/{phone10}`.
   Future<({bool found, String message, String? owner, String? status})>
   lookupByPhone(String rawPhone);
+
+  /// Atomically claims a 10-minute call lock on [leadId] (FR-3.1, RL-2).
+  Future<({bool granted, String? lockedBy})> claimLeadForCall(String leadId);
+
+  /// Logs a WhatsApp approved template send to the lead's timeline and call_logs (FR-5.1, FR-5.2).
+  Future<void> logWhatsAppSent({
+    required String leadId,
+    required String leadName,
+    required String templateTitle,
+  });
+
+  /// Marks a lead as "Do Not Contact" (`optedOut = true`) per DPDP (PR-9.2).
+  Future<void> markLeadOptedOut(String leadId, {bool optedOut = true});
+
+  /// Anonymizes a lead's personal data per DPDP erasure request while keeping call stats (PR-9.3).
+  Future<void> eraseLeadPersonalData(String leadId);
+
+  /// Alerts Super Admin when an executive exceeds hourly rate limits (PR-2.5).
+  Future<void> reportRateLimitExceeded({
+    required String limitType,
+    required int count,
+  });
 }
 
 /// Remote Data Source delegating to [LeadsBackend] (defaults to [FirestoreLeadsBackend]).
@@ -229,6 +257,12 @@ class LeadsRds {
     String? courseEnrolled,
     int? discountAmount,
     String? followUpTime,
+    String? batch,
+    int? feeAmount,
+    int? amountPaid,
+    String? paymentMode,
+    String? receiptNumber,
+    String? expectedBalanceDate,
   }) => _backend.recordExecutiveCallOutcome(
     leadId: leadId,
     leadName: leadName,
@@ -238,10 +272,40 @@ class LeadsRds {
     courseEnrolled: courseEnrolled,
     discountAmount: discountAmount,
     followUpTime: followUpTime,
+    batch: batch,
+    feeAmount: feeAmount,
+    amountPaid: amountPaid,
+    paymentMode: paymentMode,
+    receiptNumber: receiptNumber,
+    expectedBalanceDate: expectedBalanceDate,
   );
 
   Future<({bool found, String message, String? owner, String? status})>
   lookupByPhone(String rawPhone) => _backend.lookupByPhone(rawPhone);
+
+  Future<({bool granted, String? lockedBy})> claimLeadForCall(String leadId) =>
+      _backend.claimLeadForCall(leadId);
+
+  Future<void> logWhatsAppSent({
+    required String leadId,
+    required String leadName,
+    required String templateTitle,
+  }) => _backend.logWhatsAppSent(
+    leadId: leadId,
+    leadName: leadName,
+    templateTitle: templateTitle,
+  );
+
+  Future<void> markLeadOptedOut(String leadId, {bool optedOut = true}) =>
+      _backend.markLeadOptedOut(leadId, optedOut: optedOut);
+
+  Future<void> eraseLeadPersonalData(String leadId) =>
+      _backend.eraseLeadPersonalData(leadId);
+
+  Future<void> reportRateLimitExceeded({
+    required String limitType,
+    required int count,
+  }) => _backend.reportRateLimitExceeded(limitType: limitType, count: count);
 }
 
 // =============================================================================
@@ -293,12 +357,11 @@ class FirestoreLeadsBackend implements LeadsBackend {
     'admin',
     'super_admin',
     'manager',
-    'hr',
+    'team_lead',
     'operation manager',
     'operation_manager',
     'hr & operation manager',
     'hr_and_operation_manager',
-    'executive',
   };
 
   static bool _isAdminOrManagerRole(String role) {
@@ -306,8 +369,7 @@ class FirestoreLeadsBackend implements LeadsBackend {
     return _adminAndManagerRoles.contains(lower) ||
         lower.contains('admin') ||
         lower.contains('manager') ||
-        lower.contains('lead') ||
-        lower.contains('hr');
+        lower.contains('lead');
   }
 
   /// Verifies the currently authenticated user's profile and active status from `users/{uid}`.
@@ -384,7 +446,7 @@ class FirestoreLeadsBackend implements LeadsBackend {
 
     final rawRole = (data['role'] ?? 'executive').toString().trim();
     final effectiveRole =
-        isAdminSession && !_adminAndManagerRoles.contains(rawRole)
+        isAdminSession && !_isAdminOrManagerRole(rawRole)
         ? 'super_admin'
         : rawRole;
     final rawName = (data['name'] ?? currentUserDisplayName).toString().trim();
@@ -701,7 +763,7 @@ class FirestoreLeadsBackend implements LeadsBackend {
     final formattedPhone = LeadPhoneValidator.formatDisplayPhone(newPhone10);
 
     final actor = await _verifyCurrentActor();
-    final isAdminOrManager = _adminAndManagerRoles.contains(actor.role);
+    final isAdminOrManager = _isAdminOrManagerRole(actor.role);
 
     final leadRef = _leads.doc(leadId);
     late LeadRecord updatedRecord;
@@ -1186,6 +1248,11 @@ class FirestoreLeadsBackend implements LeadsBackend {
           final items = <ExecutiveLeadItem>[];
           for (final doc in snap.docs) {
             final data = doc.data();
+            final isOptedOut =
+                data['optedOut'] == true ||
+                (data['status'] ?? '').toString().toLowerCase() == 'opted out';
+            if (isOptedOut) continue;
+
             final aDateKey = (data['assignedDateKey'] ?? '').toString().trim();
             final aDateLabel =
                 (data['assignedDateLabel'] ?? '').toString().toLowerCase();
@@ -1268,7 +1335,7 @@ class FirestoreLeadsBackend implements LeadsBackend {
   @override
   Future<LeadRecord> getLeadById(String leadId) async {
     final actor = await _verifyCurrentActor();
-    final isAdminOrManager = _adminAndManagerRoles.contains(actor.role);
+    final isAdminOrManager = _isAdminOrManagerRole(actor.role);
     final doc = await _leads.doc(leadId).get();
     if (!doc.exists || doc.data() == null) {
       throw StateError('Lead $leadId not found.');
@@ -1292,6 +1359,12 @@ class FirestoreLeadsBackend implements LeadsBackend {
     String? courseEnrolled,
     int? discountAmount,
     String? followUpTime,
+    String? batch,
+    int? feeAmount,
+    int? amountPaid,
+    String? paymentMode,
+    String? receiptNumber,
+    String? expectedBalanceDate,
   }) async {
     final actor = await _verifyCurrentActor();
     final todayKey = LeadDateHelper.todayDateKey();
@@ -1302,16 +1375,34 @@ class FirestoreLeadsBackend implements LeadsBackend {
     final assignId = LeadAssignmentModel.docId(leadId, todayKey);
     final assignRef = _assignments.doc(assignId);
 
+    final remainingBalance = math.max(
+      0,
+      (feeAmount ?? 0) - (discountAmount ?? 0) - (amountPaid ?? 0),
+    );
+    final hasBalanceFollowUp =
+        outcome == 'Converted' &&
+        remainingBalance > 0 &&
+        expectedBalanceDate != null &&
+        expectedBalanceDate.trim().isNotEmpty;
+
     final isFollowUpPending =
         outcome == 'Follow-up' ||
         outcome == 'Callback' ||
         outcome == 'Interested' ||
-        outcome == 'No answer';
+        outcome == 'No answer' ||
+        hasBalanceFollowUp;
+
+    final effectiveFollowUpInput = hasBalanceFollowUp
+        ? expectedBalanceDate
+        : followUpTime;
 
     // Persist a concrete date/time (never "Today"/"Tomorrow") so follow-ups
     // can't drift as days pass. Only outcomes that need a follow-up get one.
-    final resolvedFollowUp = isFollowUpPending
-        ? LeadDateHelper.resolveFollowUpLabel(followUpTime, outcome: outcome)
+    String? resolvedFollowUp = isFollowUpPending
+        ? LeadDateHelper.resolveFollowUpLabel(
+            effectiveFollowUpInput,
+            outcome: hasBalanceFollowUp ? 'Follow-up' : outcome,
+          )
         : null;
 
     final clientId =
@@ -1341,8 +1432,13 @@ class FirestoreLeadsBackend implements LeadsBackend {
           'isDone': !isFollowUpPending,
           'isLocked': false,
           'lockedByUid': null,
+          'lockedByName': null,
+          'lockedAt': null,
           'lockedMessage': null,
           'followUpTime': ?resolvedFollowUp,
+          if (courseEnrolled != null && courseEnrolled.trim().isNotEmpty)
+            'course': courseEnrolled.trim(),
+          if (feeAmount != null && feeAmount > 0) 'fee': '₹$feeAmount',
           if (notes.trim().isNotEmpty) 'notes': notes.trim(),
           'updatedAt': FieldValue.serverTimestamp(),
         }, SetOptions(merge: true));
@@ -1373,16 +1469,35 @@ class FirestoreLeadsBackend implements LeadsBackend {
         collegeInfo = lead.collegeBranch;
         campaign = lead.source;
 
+        final int nextNoAnswerCount = outcome == 'No answer'
+            ? (lead.noAnswerCount + 1)
+            : 0;
+        final bool reachedMaxNoAnswer =
+            outcome == 'No answer' && nextNoAnswerCount >= 3;
+
         String nextStatus = lead.status;
         if (lead.status != 'Converted') {
           if (outcome == 'No answer' && lead.status == 'Interested') {
             nextStatus = 'Interested';
+          } else if (reachedMaxNoAnswer) {
+            // FR-3.6: After 3 unanswered retries within working hours, mark Unreachable
+            nextStatus = 'Unreachable';
           } else {
             nextStatus = outcome;
           }
         }
 
+        bool effectiveIsDone = !isFollowUpPending;
+        if (reachedMaxNoAnswer) {
+          effectiveIsDone = true;
+          resolvedFollowUp = null;
+        }
+
         final nextTimeline = <String>[
+          if (reachedMaxNoAnswer)
+            '${LeadDateHelper.timelineStamp()} · Marked Unreachable after 3 No-answer attempts',
+          if (hasBalanceFollowUp)
+            '${LeadDateHelper.timelineStamp()} · Pending balance ₹$remainingBalance follow-up scheduled for $resolvedFollowUp',
           '${LeadDateHelper.timelineStamp()} · $outcome logged by ${actor.name}${notes.trim().isNotEmpty ? " ($notes)" : ""}',
           ...lead.timeline,
         ];
@@ -1393,11 +1508,28 @@ class FirestoreLeadsBackend implements LeadsBackend {
               'lastContact': 'Today',
               'lastContactAt': FieldValue.serverTimestamp(),
               'lastCalledAt': FieldValue.serverTimestamp(),
-              'isDone': !isFollowUpPending,
+              'isDone': effectiveIsDone,
               'isLocked': false,
               'lockedByUid': null,
+              'lockedByName': null,
+              'lockedAt': null,
               'lockedMessage': null,
-              'followUpTime': ?resolvedFollowUp,
+              'noAnswerCount': nextNoAnswerCount,
+              'followUpTime': resolvedFollowUp ?? '',
+              if (courseEnrolled != null && courseEnrolled.trim().isNotEmpty)
+                'course': courseEnrolled.trim(),
+              if (feeAmount != null && feeAmount > 0) 'fee': '₹$feeAmount',
+              if (batch != null && batch.trim().isNotEmpty)
+                'batch': batch.trim(),
+              'discountAmount': ?discountAmount,
+              'amountPaid': ?amountPaid,
+              if (paymentMode != null && paymentMode.trim().isNotEmpty)
+                'paymentMode': paymentMode.trim(),
+              if (receiptNumber != null && receiptNumber.trim().isNotEmpty)
+                'receiptNumber': receiptNumber.trim(),
+              if (expectedBalanceDate != null &&
+                  expectedBalanceDate.trim().isNotEmpty)
+                'expectedBalanceDate': expectedBalanceDate.trim(),
               if (notes.trim().isNotEmpty) 'notes': notes.trim(),
               'timeline': nextTimeline,
               'updatedAt': FieldValue.serverTimestamp(),
@@ -1422,6 +1554,28 @@ class FirestoreLeadsBackend implements LeadsBackend {
       // Partial failure or timeout: queue locally
     }
 
+    // FR-5.4: Discount > ₹500 triggers immediate approval alert to Manager & Super Admin
+    final needsApproval = outcome == 'Converted' && (discountAmount ?? 0) > 500;
+    if (needsApproval) {
+      try {
+        await _firestore.collection('alerts').add({
+          'title': 'Discount Approval Required',
+          'message':
+              '${actor.name} logged a ₹$discountAmount discount for $leadName (${courseEnrolled ?? "Program"}). Approval needed.',
+          'type': 'discount_approval',
+          'category': 'discount',
+          'leadId': leadId,
+          'leadName': leadName,
+          'executiveUid': actor.uid,
+          'executiveName': actor.name,
+          'discountAmount': discountAmount,
+          'status': 'pending',
+          'isRead': false,
+          'createdAt': FieldValue.serverTimestamp(),
+        });
+      } catch (_) {}
+    }
+
     try {
       await _callLogs
           .doc(clientId)
@@ -1433,12 +1587,18 @@ class FirestoreLeadsBackend implements LeadsBackend {
             'collegeInfo': collegeInfo,
             'campaign': campaign,
             'outcome': outcome,
-            'duration': duration.trim().isEmpty ? '2m 15s' : duration.trim(),
+            'duration': duration.trim().isEmpty ? '0s' : duration.trim(),
             'notes': notes.trim().isEmpty
                 ? 'Logged $outcome outcome'
                 : notes.trim(),
             'courseEnrolled': ?courseEnrolled,
             'discountAmount': ?discountAmount,
+            'batch': ?batch,
+            'feeAmount': ?feeAmount,
+            'amountPaid': ?amountPaid,
+            'paymentMode': ?paymentMode,
+            'receiptNumber': ?receiptNumber,
+            'expectedBalanceDate': ?expectedBalanceDate,
             'createdAt': FieldValue.serverTimestamp(),
           }, SetOptions(merge: true))
           .timeout(const Duration(milliseconds: 1500));
@@ -1456,11 +1616,180 @@ class FirestoreLeadsBackend implements LeadsBackend {
       );
     }
 
-    final needsApproval = outcome == 'Converted' && (discountAmount ?? 0) > 500;
     return CallOutcomeResult(
       collegeInfo: collegeInfo,
       needsDiscountApproval: needsApproval,
     );
+  }
+
+  @override
+  Future<({bool granted, String? lockedBy})> claimLeadForCall(
+    String leadId,
+  ) async {
+    if (leadId.trim().isEmpty || !OfflineQueueService.instance.isOnline) {
+      return (granted: true, lockedBy: null);
+    }
+    try {
+      final actor = await _verifyCurrentActor();
+      final leadRef = _leads.doc(leadId);
+      return await _firestore
+          .runTransaction<({bool granted, String? lockedBy})>((tx) async {
+            final snap = await tx.get(leadRef);
+            if (!snap.exists || snap.data() == null) {
+              return (granted: true, lockedBy: null);
+            }
+            final lead = LeadRecord.fromFirestore(snap);
+            if (lead.isActivelyLocked &&
+                lead.lockedByUid != null &&
+                lead.lockedByUid != actor.uid) {
+              final locker = (lead.lockedByName ?? '').trim().isNotEmpty
+                  ? lead.lockedByName!.trim()
+                  : 'Another executive';
+              return (granted: false, lockedBy: locker);
+            }
+            tx.update(leadRef, {
+              'isLocked': true,
+              'lockedByUid': actor.uid,
+              'lockedByName': actor.name,
+              'lockedMessage': '${actor.name} is calling now',
+              'lockedAt': FieldValue.serverTimestamp(),
+            });
+            return (granted: true, lockedBy: null);
+          })
+          .timeout(const Duration(milliseconds: 1500));
+    } catch (_) {
+      return (granted: true, lockedBy: null);
+    }
+  }
+
+  @override
+  Future<void> logWhatsAppSent({
+    required String leadId,
+    required String leadName,
+    required String templateTitle,
+  }) async {
+    final actor = await _verifyCurrentActor();
+    final stamp = LeadDateHelper.timelineStamp();
+    final entry =
+        '$stamp · WhatsApp sent ("$templateTitle") by ${actor.name}';
+    if (leadId.trim().isNotEmpty) {
+      try {
+        await _leads.doc(leadId).update({
+          'lastContact': 'Today',
+          'lastContactAt': FieldValue.serverTimestamp(),
+          'timeline': FieldValue.arrayUnion([entry]),
+          'updatedAt': FieldValue.serverTimestamp(),
+        });
+      } catch (_) {}
+    }
+    try {
+      final docId =
+          'wa_${leadId}_${DateTime.now().millisecondsSinceEpoch}';
+      await _callLogs.doc(docId).set({
+        'leadId': leadId,
+        'leadName': leadName,
+        'executiveUid': actor.uid,
+        'executiveName': actor.name,
+        'outcome': 'WhatsApp sent',
+        'duration': '—',
+        'notes': 'Sent approved template: $templateTitle',
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+    } catch (_) {}
+  }
+
+  @override
+  Future<void> markLeadOptedOut(String leadId, {bool optedOut = true}) async {
+    final actor = await _verifyCurrentActor();
+    final stamp = LeadDateHelper.timelineStamp();
+    final entry = optedOut
+        ? '$stamp · Marked "Do Not Contact" (DPDP Opt-out) by ${actor.name}'
+        : '$stamp · Re-enabled contact consent by ${actor.name}';
+    await _leads.doc(leadId).update({
+      'optedOut': optedOut,
+      if (optedOut) 'status': 'Opted out',
+      if (optedOut) 'isDone': true,
+      if (optedOut) 'followUpTime': '',
+      'timeline': FieldValue.arrayUnion([entry]),
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
+    await _appendAudit(
+      actorUid: actor.uid,
+      actorName: actor.name,
+      action: optedOut
+          ? 'Marked lead Do Not Contact (DPDP Opt-out)'
+          : 'Cleared DPDP Opt-out',
+      target: 'Lead ID: $leadId',
+      category: 'dpdp_privacy',
+    );
+  }
+
+  @override
+  Future<void> eraseLeadPersonalData(String leadId) async {
+    final actor = await _verifyCurrentActor(requireAdminOrManager: true);
+    final leadRef = _leads.doc(leadId);
+    final snap = await leadRef.get();
+    if (!snap.exists) return;
+    final data = snap.data() ?? const {};
+    final oldPhone10 = (data['phoneNormalized'] ?? '').toString().trim();
+    final stamp = LeadDateHelper.timelineStamp();
+
+    final batch = _firestore.batch();
+    batch.update(leadRef, {
+      'name': 'Redacted Student (DPDP)',
+      'phone': '00000 00000',
+      'phoneNormalized': '',
+      'email': '',
+      'notes': 'Personal data erased per DPDP Act 2023 request.',
+      'optedOut': true,
+      'status': 'Opted out',
+      'isDone': true,
+      'followUpTime': '',
+      'timeline': [
+        '$stamp · Personal data erased per DPDP Act 2023 by ${actor.name}',
+      ],
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
+    if (oldPhone10.isNotEmpty) {
+      batch.delete(_leadPhones.doc(oldPhone10));
+    }
+    await batch.commit();
+
+    await _appendAudit(
+      actorUid: actor.uid,
+      actorName: actor.name,
+      action: 'Erased personal data (DPDP Act 2023)',
+      target: 'Lead ID: $leadId',
+      category: 'dpdp_erasure',
+    );
+  }
+
+  @override
+  Future<void> reportRateLimitExceeded({
+    required String limitType,
+    required int count,
+  }) async {
+    try {
+      final actor = await _verifyCurrentActor();
+      await _firestore.collection('alerts').add({
+        'title': 'Security Alert: Rate Limit Exceeded',
+        'message':
+            '${actor.name} exceeded the hourly $limitType limit ($count attempts/hour). Access temporarily paused.',
+        'type': 'security_rate_limit',
+        'category': 'security',
+        'executiveUid': actor.uid,
+        'executiveName': actor.name,
+        'isRead': false,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+      await _appendAudit(
+        actorUid: actor.uid,
+        actorName: actor.name,
+        action: 'Rate limit exceeded ($limitType: $count/hr)',
+        target: actor.name,
+        category: 'security_alert',
+      );
+    } catch (_) {}
   }
 
   @override

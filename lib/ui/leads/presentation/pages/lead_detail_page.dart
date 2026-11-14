@@ -7,9 +7,11 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/services/app_phone_call_service.dart';
 import '../../../../core/services/firestore_stream_cache.dart';
+import '../../../../shared/widgets/staff_watermark_overlay.dart';
 import '../../../follow_ups/application/follow_ups_cubit.dart';
 import '../../../follow_ups/data/model/follow_up_time_helper.dart';
 import '../../data/model/lead_models.dart';
+import '../../data/sources/leads_rds.dart';
 import '../widgets/lead_call_sheets.dart';
 
 class LeadDetailPage extends StatefulWidget {
@@ -304,12 +306,61 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
                 letterSpacing: -0.2,
               ),
             ),
+            actions: [
+              PopupMenuButton<String>(
+                icon: const Icon(
+                  Icons.more_vert_rounded,
+                  color: Color(0xFF475569),
+                  size: 20,
+                ),
+                onSelected: (val) async {
+                  if (val == 'opt_out') {
+                    await LeadsRds().markLeadOptedOut(lead.id, optedOut: true);
+                    if (!context.mounted) return;
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          '${lead.name} marked "Do Not Contact" (DPDP Opt-out).',
+                        ),
+                        backgroundColor: const Color(0xFF0F172A),
+                      ),
+                    );
+                    Navigator.of(context).pop();
+                  }
+                },
+                itemBuilder: (ctx) => const [
+                  PopupMenuItem<String>(
+                    value: 'opt_out',
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.person_off_outlined,
+                          size: 18,
+                          color: Color(0xFFDC2626),
+                        ),
+                        Gap(10),
+                        Text(
+                          'Do Not Contact (DPDP Opt-out)',
+                          style: TextStyle(
+                            fontSize: 13.5,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFFDC2626),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ],
             bottom: PreferredSize(
               preferredSize: const Size.fromHeight(1),
               child: Container(height: 1, color: const Color(0xFFF1F5F9)),
             ),
           ),
-          body: Align(
+          body: SelectionContainer.disabled(
+            child: StaffWatermarkOverlay(
+              child: Align(
             alignment: Alignment.topCenter,
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 520),
@@ -851,6 +902,8 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
                   ],
                 ),
               ),
+            ),
+          ),
             ),
           ),
         );

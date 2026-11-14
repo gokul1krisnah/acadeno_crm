@@ -271,6 +271,10 @@ class _CampaignsViewState extends State<CampaignsView> {
     for (var i = 0; i < _liveLeadDocs.length; i++) {
       final doc = _liveLeadDocs[i];
       final d = doc.data();
+      final status = (d['status'] ?? 'New').toString();
+      if (d['optedOut'] == true || status.toLowerCase() == 'opted out') {
+        continue;
+      }
       final name = (d['name'] ?? 'Lead ${i + 1}').toString();
       final college = (d['college'] ?? d['collegeBranch'] ?? 'College')
           .toString();
@@ -279,7 +283,6 @@ class _CampaignsViewState extends State<CampaignsView> {
       final course = (d['course'] ?? d['source'] ?? '')
           .toString()
           .toLowerCase();
-      final status = (d['status'] ?? 'New').toString();
       final assignedTo = (d['assignedToName'] ?? d['assignedTo'])
           ?.toString()
           .trim();
@@ -378,16 +381,29 @@ class _CampaignsViewState extends State<CampaignsView> {
     }
   }
 
+  final Map<String, String> _execNameToUid = {};
+
   void _fetchLiveExecutives() async {
     try {
       final snap = await FirestoreStreamCache.instance.getCollection('users');
       if (snap.docs.isNotEmpty) {
-        final names = snap.docs
-            .map((d) => (d.data()['name'] ?? '').toString().trim())
-            .where((n) => n.isNotEmpty)
-            .toList();
+        final names = <String>[];
+        final uidMap = <String, String>{};
+        for (final d in snap.docs) {
+          final data = d.data();
+          if (data['isActive'] == false) continue;
+          final n = (data['name'] ?? '').toString().trim();
+          final uid = (data['uid'] ?? d.id).toString().trim();
+          if (n.isNotEmpty) {
+            names.add(n);
+            uidMap[n] = uid;
+          }
+        }
         if (names.isNotEmpty && mounted) {
           setState(() {
+            _execNameToUid
+              ..clear()
+              ..addAll(uidMap);
             _allExecutives.clear();
             _allExecutives.addAll(names);
             _selectedExecutives.clear();
@@ -430,6 +446,7 @@ class _CampaignsViewState extends State<CampaignsView> {
       for (var i = 0; i < targetLeads.length; i++) {
         final lead = targetLeads[i];
         final targetExecName = execs[i % execs.length];
+        final targetExecUid = _execNameToUid[targetExecName];
 
         if (lead.id.isNotEmpty && !lead.id.startsWith('fblead_')) {
           final docRef = FirebaseFirestore.instance
@@ -438,6 +455,8 @@ class _CampaignsViewState extends State<CampaignsView> {
           batch.update(docRef, {
             'assignedTo': targetExecName,
             'assignedToName': targetExecName,
+            if (targetExecUid != null && targetExecUid.isNotEmpty)
+              'assignedToUid': targetExecUid,
             'assignedDateKey': dateKey,
             'assignedDateLabel': dateLabel,
             'status': 'Assigned',
@@ -454,6 +473,8 @@ class _CampaignsViewState extends State<CampaignsView> {
             'leadId': lead.id,
             'leadName': lead.name,
             'executiveName': targetExecName,
+            if (targetExecUid != null && targetExecUid.isNotEmpty)
+              'executiveUid': targetExecUid,
             'dateKey': dateKey,
             'dateLabel': dateLabel,
             'isDone': false,

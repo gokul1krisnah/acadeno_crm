@@ -76,6 +76,11 @@ class AuthSessionLocalDs {
         await box.delete(_key);
         return null;
       }
+      // PR-5.2: Sessions expire after 12 hours
+      if (DateTime.now().difference(savedAt).inHours >= 12) {
+        await box.delete(_key);
+        return null;
+      }
       final role = raw['role'] as String?;
       final isAdmin = (raw['isAdmin'] as bool?) ?? false;
       return AuthSession(

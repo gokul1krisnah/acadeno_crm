@@ -11,6 +11,7 @@ import 'package:acadeno_crm/shared/extensions/build_context_extension.dart';
 import 'package:acadeno_crm/shared/snackbar_alerts/snack_alert.dart';
 import 'package:acadeno_crm/shared/theme/app_images.dart';
 import 'package:acadeno_crm/shared/theme/app_typography.dart';
+import 'package:acadeno_crm/shared/widgets/staff_watermark_overlay.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
@@ -61,7 +62,7 @@ class DashboardPage extends StatelessWidget {
           create: (_) => AdminLeadsCubit(LeadsRepository(LeadsRds())),
         ),
       ],
-      child: const _DashboardView(),
+      child: const StaffWatermarkOverlay(child: _DashboardView()),
     );
   }
 }

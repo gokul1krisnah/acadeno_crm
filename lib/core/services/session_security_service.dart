@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import '../../ui/auth/data/sources/auth_session_local_ds.dart';
 import '../router/app_router.dart';
 import 'firestore_stream_cache.dart';
+import 'offline_queue_service.dart';
 
 /// Central Real-Time Session Security & Remote Deactivation Listener.
 ///
@@ -131,6 +132,8 @@ class SessionSecurityService {
       await stopListening();
       await FirebaseAuth.instance.signOut();
       await AuthSessionLocalDs().clear();
+      await OfflineQueueService.instance.clearAll();
+      FirestoreStreamCache.instance.clearAll();
       isAdminSession = false;
 
       // Show high-priority red alert snackbar

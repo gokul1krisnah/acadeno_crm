@@ -101,6 +101,12 @@ class LeadsRepository {
     String? courseEnrolled,
     int? discountAmount,
     String? followUpTime,
+    String? batch,
+    int? feeAmount,
+    int? amountPaid,
+    String? paymentMode,
+    String? receiptNumber,
+    String? expectedBalanceDate,
   }) => _rds.recordExecutiveCallOutcome(
     leadId: leadId,
     leadName: leadName,
@@ -110,10 +116,40 @@ class LeadsRepository {
     courseEnrolled: courseEnrolled,
     discountAmount: discountAmount,
     followUpTime: followUpTime,
+    batch: batch,
+    feeAmount: feeAmount,
+    amountPaid: amountPaid,
+    paymentMode: paymentMode,
+    receiptNumber: receiptNumber,
+    expectedBalanceDate: expectedBalanceDate,
   );
 
   Future<({bool found, String message, String? owner, String? status})>
   lookupByPhone(String rawPhone) => _rds.lookupByPhone(rawPhone);
+
+  Future<({bool granted, String? lockedBy})> claimLeadForCall(String leadId) =>
+      _rds.claimLeadForCall(leadId);
+
+  Future<void> logWhatsAppSent({
+    required String leadId,
+    required String leadName,
+    required String templateTitle,
+  }) => _rds.logWhatsAppSent(
+    leadId: leadId,
+    leadName: leadName,
+    templateTitle: templateTitle,
+  );
+
+  Future<void> markLeadOptedOut(String leadId, {bool optedOut = true}) =>
+      _rds.markLeadOptedOut(leadId, optedOut: optedOut);
+
+  Future<void> eraseLeadPersonalData(String leadId) =>
+      _rds.eraseLeadPersonalData(leadId);
+
+  Future<void> reportRateLimitExceeded({
+    required String limitType,
+    required int count,
+  }) => _rds.reportRateLimitExceeded(limitType: limitType, count: count);
 
   // ---------------------------------------------------------------------------
   // Bulk Lead Import Operations

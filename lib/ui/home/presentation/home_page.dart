@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:acadeno_crm/core/router/app_router.dart';
 import 'package:acadeno_crm/shared/extensions/build_context_extension.dart';
 import 'package:acadeno_crm/shared/snackbar_alerts/snack_alert.dart';
+import 'package:acadeno_crm/shared/widgets/staff_watermark_overlay.dart';
 import 'package:acadeno_crm/ui/auth/data/repository/firebase_auth_repo.dart';
 import 'package:acadeno_crm/ui/auth/data/sources/firebase_auth_rds.dart';
 import 'package:auto_route/auto_route.dart';
@@ -141,39 +142,46 @@ class _HomeScaffoldViewState extends State<_HomeScaffoldView> {
             return Scaffold(
               backgroundColor: const Color(0xFFF5F6FA),
               body: SafeArea(
-                child: Center(
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(
-                      maxWidth: isWideScreen ? 460 : double.infinity,
-                    ),
-                    child: Container(
-                      decoration: isWideScreen
-                          ? const BoxDecoration(
-                              color: Color(0xFFF5F6FA),
-                              border: Border.symmetric(
-                                vertical: BorderSide(color: Color(0xFFE4E7EC)),
+                child: SelectionContainer.disabled(
+                  child: StaffWatermarkOverlay(
+                    staffNameOverride: state.user.name,
+                    child: Center(
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(
+                          maxWidth: isWideScreen ? 460 : double.infinity,
+                        ),
+                        child: Container(
+                          decoration: isWideScreen
+                              ? const BoxDecoration(
+                                  color: Color(0xFFF5F6FA),
+                                  border: Border.symmetric(
+                                    vertical: BorderSide(
+                                      color: Color(0xFFE4E7EC),
+                                    ),
+                                  ),
+                                )
+                              : null,
+                          child: Column(
+                            children: [
+                              // Active Tab Screen
+                              Expanded(
+                                child: switch (state.bottomNavIndex) {
+                                  0 => LeadsTabView(onLogout: _performLogout),
+                                  1 => const FollowUpsTabView(),
+                                  2 => const VisitsTabView(),
+                                  3 => const AlertsTabView(),
+                                  _ => LeadsTabView(onLogout: _performLogout),
+                                },
                               ),
-                            )
-                          : null,
-                      child: Column(
-                        children: [
-                          // Active Tab Screen
-                          Expanded(
-                            child: switch (state.bottomNavIndex) {
-                              0 => LeadsTabView(onLogout: _performLogout),
-                              1 => const FollowUpsTabView(),
-                              2 => const VisitsTabView(),
-                              3 => const AlertsTabView(),
-                              _ => LeadsTabView(onLogout: _performLogout),
-                            },
-                          ),
 
-                          // Bottom Navigation Bar (Exact match to all 4 screenshots)
-                          _ExecutiveBottomNavBar(
-                            currentIndex: state.bottomNavIndex,
-                            onSelect: cubit.selectBottomNav,
+                              // Bottom Navigation Bar (Exact match to all 4 screenshots)
+                              _ExecutiveBottomNavBar(
+                                currentIndex: state.bottomNavIndex,
+                                onSelect: cubit.selectBottomNav,
+                              ),
+                            ],
                           ),
-                        ],
+                        ),
                       ),
                     ),
                   ),
