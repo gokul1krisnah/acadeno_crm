@@ -555,9 +555,11 @@ class _SettingsViewState extends State<SettingsView>
     double? width,
     double? height,
   }) {
+    final effectiveHeight = height ?? 43.0;
+    final horizontalPad = (width != null && width < 160) ? 14.0 : 24.0;
     return Container(
       width: width,
-      height: height,
+      height: effectiveHeight,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
         boxShadow: const [
@@ -574,8 +576,9 @@ class _SettingsViewState extends State<SettingsView>
           backgroundColor: const Color(0xFFEB6625),
           foregroundColor: Colors.white,
           elevation: 0,
-          minimumSize: Size(width ?? 0, height ?? 42.5),
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+          minimumSize: Size(width ?? 0, effectiveHeight),
+          padding: EdgeInsets.symmetric(horizontal: horizontalPad),
+          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
@@ -589,7 +592,16 @@ class _SettingsViewState extends State<SettingsView>
                   color: Colors.white,
                 ),
               )
-            : Text(label, textAlign: TextAlign.center, style: textStyle),
+            : FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  softWrap: false,
+                  textAlign: TextAlign.center,
+                  style: textStyle.copyWith(height: 1.2),
+                ),
+              ),
       ),
     );
   }
@@ -713,13 +725,13 @@ class _SettingsViewState extends State<SettingsView>
                   label: 'Save Name',
                   isLoading: _isSavingName,
                   onPressed: _updateDisplayName,
-                  width: 129,
-                  height: 43,
+                  width: 132,
+                  height: 46,
                   textStyle: GoogleFonts.inter(
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
                     color: Colors.white,
-                    height: 22.5 / 15,
+                    height: 1.2,
                   ),
                 ),
               ],
