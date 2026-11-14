@@ -584,6 +584,7 @@ class LeadRecord {
   final String phoneNormalized;
   final String email;
   final String course;
+  final String batch;
   final String fee;
   final String consent;
   final String collegeBranch;
@@ -624,6 +625,7 @@ class LeadRecord {
     required this.phoneNormalized,
     this.email = '',
     this.course = '',
+    this.batch = '',
     this.fee = '',
     this.consent = '',
     required this.collegeBranch,
@@ -821,6 +823,8 @@ class LeadRecord {
         (data['course'] ?? data['workshop'] ?? data['program'] ?? '')
             .toString()
             .trim();
+    final rawBatch =
+        (data['batch'] ?? data['batchName'] ?? '').toString().trim();
     final rawFee = (data['fee'] ?? data['courseFee'] ?? data['amount'] ?? '')
         .toString()
         .trim();
@@ -845,6 +849,7 @@ class LeadRecord {
       phoneNormalized: normPhone,
       email: rawEmail,
       course: rawCourse,
+      batch: rawBatch,
       fee: rawFee,
       consent: rawConsent,
       collegeBranch: collegeBranch,
@@ -906,6 +911,7 @@ class LeadRecord {
       'phoneNormalized': phoneNormalized,
       if (email.isNotEmpty) 'email': email.trim(),
       if (course.isNotEmpty) 'course': course.trim(),
+      if (batch.isNotEmpty) 'batch': batch.trim(),
       if (fee.isNotEmpty) 'fee': fee.trim(),
       if (consent.isNotEmpty) 'consent': consent.trim(),
       'collegeBranch': collegeBranch.trim(),
@@ -946,6 +952,7 @@ class LeadRecord {
     String? phoneNormalized,
     String? email,
     String? course,
+    String? batch,
     String? fee,
     String? consent,
     String? collegeBranch,
@@ -986,6 +993,7 @@ class LeadRecord {
       phoneNormalized: phoneNormalized ?? this.phoneNormalized,
       email: email ?? this.email,
       course: course ?? this.course,
+      batch: batch ?? this.batch,
       fee: fee ?? this.fee,
       consent: consent ?? this.consent,
       collegeBranch: collegeBranch ?? this.collegeBranch,
@@ -1039,12 +1047,14 @@ class LeadRecord {
       statusColor: colors.$1,
       statusBg: colors.$2,
       campaignTag: source,
-      isLocked: isActivelyLocked,
-      lockedMessage: isActivelyLocked ? lockedMessage : null,
+      isLocked: isActivelyLocked && !done,
+      lockedByUid: lockedByUid,
+      lockedMessage: (isActivelyLocked && !done) ? lockedMessage : null,
       isDone: done,
       talkingPoints: talkingPoints,
       followUpTime: followUpTime,
       course: course.isNotEmpty ? course : (assignment?.course ?? ''),
+      batch: batch.isNotEmpty ? batch : (assignment?.batch ?? ''),
       fee: fee.isNotEmpty ? fee : (assignment?.fee ?? ''),
       timeline: timeline.isNotEmpty
           ? timeline
@@ -1081,6 +1091,7 @@ class LeadAssignmentModel {
   final String source;
   final String leadStatus;
   final String course;
+  final String batch;
   final String fee;
 
   const LeadAssignmentModel({
@@ -1106,6 +1117,7 @@ class LeadAssignmentModel {
     this.source = '',
     this.leadStatus = 'Assigned',
     this.course = '',
+    this.batch = '',
     this.fee = '',
   });
 
@@ -1218,12 +1230,14 @@ class ExecutiveLeadItem {
   Color statusBg;
   final String campaignTag;
   bool isLocked;
+  final String? lockedByUid;
   String? lockedMessage;
   bool isDone;
   final List<String> talkingPoints;
   final List<String> timeline;
   final String followUpTime;
   final String course;
+  final String batch;
   final String fee;
 
   ExecutiveLeadItem({
@@ -1239,6 +1253,7 @@ class ExecutiveLeadItem {
     required this.statusBg,
     required this.campaignTag,
     this.isLocked = false,
+    this.lockedByUid,
     this.lockedMessage,
     this.isDone = false,
     this.talkingPoints = const [
@@ -1252,6 +1267,7 @@ class ExecutiveLeadItem {
     ],
     this.followUpTime = '',
     this.course = '',
+    this.batch = '',
     this.fee = '',
   });
 

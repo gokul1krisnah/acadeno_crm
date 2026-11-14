@@ -187,6 +187,10 @@ class AppPhoneCallService with WidgetsBindingObserver {
 
         if (res != null && res >= 0) {
           durationSeconds = res;
+        } else if (res == -1 && lead.id.isNotEmpty) {
+          // User opened dialer pad and returned without placing a call:
+          // release the active "is calling now" lock immediately.
+          unawaited(LeadsRds().releaseLeadLock(lead.id));
         }
       } catch (e) {
         debugPrint('[AppPhoneCallService] CallLog check error: $e');
@@ -199,7 +203,7 @@ class AppPhoneCallService with WidgetsBindingObserver {
 
     // Immediately open Call Outcome sheet with zero delay
     if (targetContext.mounted) {
-      LeadCallSheets.showCallAndOutcomeSheet(
+      final saved = await LeadCallSheets.showCallAndOutcomeSheet(
         targetContext,
         leadId: lead.id,
         leadName: lead.name,
@@ -210,6 +214,11 @@ class AppPhoneCallService with WidgetsBindingObserver {
         course: lead.course,
         fee: lead.fee,
       );
+      if (!saved && lead.id.isNotEmpty) {
+        unawaited(LeadsRds().releaseLeadLock(lead.id));
+      }
+    } else if (lead.id.isNotEmpty) {
+      unawaited(LeadsRds().releaseLeadLock(lead.id));
     }
   }
 

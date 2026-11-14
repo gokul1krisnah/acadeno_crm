@@ -8,6 +8,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../shared/snackbar_alerts/snack_alert.dart';
+import '../../../../shared/widgets/acadeno_dropdown.dart';
 import '../../application/dashboard_cubit.dart';
 import '../../data/model/dashboard_user_model.dart';
 
@@ -1090,7 +1091,7 @@ class _UserManagementViewState extends State<UserManagementView> {
                     DropdownButtonFormField<String>(
                       initialValue: selectedRole,
                       isExpanded: true,
-                      dropdownColor: Colors.white,
+                      dropdownColor: const Color(0xFFE2E2E2),
                       borderRadius: BorderRadius.circular(12),
                       decoration: inputDeco(
                         'Role & Access *',
@@ -1252,7 +1253,7 @@ class _UserManagementViewState extends State<UserManagementView> {
                   DropdownButtonFormField<String>(
                     initialValue: reassignTarget,
                     isExpanded: true,
-                    dropdownColor: Colors.white,
+                    dropdownColor: const Color(0xFFE2E2E2),
                     borderRadius: BorderRadius.circular(12),
                     decoration: InputDecoration(
                       border: OutlineInputBorder(
@@ -1935,186 +1936,54 @@ class _UserManagementViewState extends State<UserManagementView> {
   }
 
   Widget _buildRoleFilterDropdown() {
-    final roleOptions = [
-      {'value': 'all', 'label': 'All Roles'},
-      {'value': 'admin', 'label': 'Admin'},
-      {'value': 'hr', 'label': 'HR & Operations'},
-    ];
-
-    return Container(
-      height: 46,
-      alignment: Alignment.center,
-      padding: const EdgeInsets.symmetric(horizontal: 10),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
-      ),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<String>(
-          value: _roleFilter,
-          isExpanded: true,
-          isDense: true,
-          dropdownColor: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          icon: const Icon(
-            Icons.keyboard_arrow_down_rounded,
-            size: 18,
-            color: Color(0xFF64748B),
-          ),
-          style: GoogleFonts.inter(
-            fontSize: 13.5,
-            fontWeight: FontWeight.w500,
-            color: const Color(0xFF334155),
-          ),
-          onChanged: (v) => setState(() => _roleFilter = v ?? 'all'),
-          selectedItemBuilder: (BuildContext context) {
-            return roleOptions.map((opt) {
-              return Row(
-                children: [
-                  const Icon(
-                    Icons.work_outline_rounded,
-                    size: 14,
-                    color: Color(0xFF64748B),
-                  ),
-                  const Gap(6),
-                  Expanded(
-                    child: Text(
-                      opt['label']!,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.inter(
-                        fontSize: 13.5,
-                        fontWeight: FontWeight.w500,
-                        color: const Color(0xFF334155),
-                      ),
-                    ),
-                  ),
-                ],
-              );
-            }).toList();
-          },
-          items: roleOptions.map((opt) {
-            return DropdownMenuItem<String>(
-              value: opt['value']!,
-              child: Row(
-                children: [
-                  const Icon(
-                    Icons.work_outline_rounded,
-                    size: 14,
-                    color: Color(0xFF64748B),
-                  ),
-                  const Gap(8),
-                  Expanded(
-                    child: Text(
-                      opt['label']!,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.inter(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        color: const Color(0xFF334155),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            );
-          }).toList(),
+    return AcadenoDropdown<String>(
+      value: _roleFilter,
+      borderRadius: 16.0,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      items: const [
+        AcadenoDropdownItem<String>(
+          value: 'all',
+          label: 'All Roles',
+          icon: Icon(Icons.work_outline_rounded, size: 14),
         ),
-      ),
+        AcadenoDropdownItem<String>(
+          value: 'admin',
+          label: 'Admin',
+          icon: Icon(Icons.work_outline_rounded, size: 14),
+        ),
+        AcadenoDropdownItem<String>(
+          value: 'hr',
+          label: 'HR & Operations',
+          icon: Icon(Icons.work_outline_rounded, size: 14),
+        ),
+      ],
+      onChanged: (v) => setState(() => _roleFilter = v ?? 'all'),
     );
   }
 
   Widget _buildStatusFilterDropdown() {
-    final statusOptions = [
-      {'value': 'all', 'label': 'All Statuses'},
-      {'value': 'active', 'label': 'Active Only'},
-      {'value': 'inactive', 'label': 'Inactive Only'},
-    ];
-
-    return Container(
-      height: 46,
-      alignment: Alignment.center,
-      padding: const EdgeInsets.symmetric(horizontal: 10),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
-      ),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<String>(
-          value: _statusFilter,
-          isExpanded: true,
-          isDense: true,
-          dropdownColor: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          icon: const Icon(
-            Icons.keyboard_arrow_down_rounded,
-            size: 18,
-            color: Color(0xFF64748B),
-          ),
-          style: GoogleFonts.inter(
-            fontSize: 13.5,
-            fontWeight: FontWeight.w500,
-            color: const Color(0xFF334155),
-          ),
-          onChanged: (v) => setState(() => _statusFilter = v ?? 'all'),
-          selectedItemBuilder: (BuildContext context) {
-            return statusOptions.map((opt) {
-              return Row(
-                children: [
-                  const Icon(
-                    Icons.tune_rounded,
-                    size: 14,
-                    color: Color(0xFF64748B),
-                  ),
-                  const Gap(6),
-                  Expanded(
-                    child: Text(
-                      opt['label']!,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.inter(
-                        fontSize: 13.5,
-                        fontWeight: FontWeight.w500,
-                        color: const Color(0xFF334155),
-                      ),
-                    ),
-                  ),
-                ],
-              );
-            }).toList();
-          },
-          items: statusOptions.map((opt) {
-            return DropdownMenuItem<String>(
-              value: opt['value']!,
-              child: Row(
-                children: [
-                  const Icon(
-                    Icons.tune_rounded,
-                    size: 14,
-                    color: Color(0xFF64748B),
-                  ),
-                  const Gap(8),
-                  Expanded(
-                    child: Text(
-                      opt['label']!,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.inter(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        color: const Color(0xFF334155),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            );
-          }).toList(),
+    return AcadenoDropdown<String>(
+      value: _statusFilter,
+      borderRadius: 16.0,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      items: const [
+        AcadenoDropdownItem<String>(
+          value: 'all',
+          label: 'All Statuses',
+          icon: Icon(Icons.tune_rounded, size: 14),
         ),
-      ),
+        AcadenoDropdownItem<String>(
+          value: 'active',
+          label: 'Active Only',
+          icon: Icon(Icons.check_circle_outline, size: 14),
+        ),
+        AcadenoDropdownItem<String>(
+          value: 'inactive',
+          label: 'Inactive Only',
+          icon: Icon(Icons.cancel_outlined, size: 14),
+        ),
+      ],
+      onChanged: (v) => setState(() => _statusFilter = v ?? 'all'),
     );
   }
 
@@ -2409,67 +2278,14 @@ class _UserManagementViewState extends State<UserManagementView> {
                       flex: 2,
                       child: Padding(
                         padding: const EdgeInsets.only(right: 14),
-                        child: Container(
-                          height: 34,
-                          constraints: const BoxConstraints(minWidth: 140),
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                          decoration: BoxDecoration(
-                            color: isMe
-                                ? const Color(0xFFF8FAFC)
-                                : const Color(0xFFF1F5F9),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: DropdownButtonHideUnderline(
-                            child: DropdownButton<String>(
-                              dropdownColor: Colors.white,
-                              borderRadius: BorderRadius.circular(8),
-                              value: DashboardUserModel.normalizeRole(
-                                user.role,
-                              ),
-                              isDense: true,
-                              isExpanded: true,
-                              icon: const Icon(
-                                Icons.keyboard_arrow_down_rounded,
-                                size: 16,
-                                color: Color(0xFF64748B),
-                              ),
-                              style: GoogleFonts.inter(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w500,
-                                color: const Color(0xFF334155),
-                                height: 20 / 14,
-                              ),
-                              items: const [
-                                DropdownMenuItem(
-                                  value: 'admin',
-                                  child: Text(
-                                    'Admin',
-                                    overflow: TextOverflow.ellipsis,
-                                    maxLines: 1,
-                                  ),
-                                ),
-                                DropdownMenuItem(
-                                  value: 'hr',
-                                  child: Text(
-                                    'HR & Operations',
-                                    overflow: TextOverflow.ellipsis,
-                                    maxLines: 1,
-                                  ),
-                                ),
-                              ],
-                              onChanged: isMe
-                                  ? null
-                                  : (newRole) {
-                                      if (newRole != null &&
-                                          newRole != user.role) {
-                                        cubit.updateUserRole(
-                                          user.uid,
-                                          newRole,
-                                          userName: user.name,
-                                        );
-                                      }
-                                    },
-                            ),
+                        child: Text(
+                          user.roleLabel,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.inter(
+                            fontSize: 13.5,
+                            fontWeight: FontWeight.w500,
+                            color: const Color(0xFF1E293B),
                           ),
                         ),
                       ),
@@ -2543,7 +2359,6 @@ class _UserManagementViewState extends State<UserManagementView> {
                               ),
                             ),
                             IconButton(
-                              padding: EdgeInsets.zero,
                               constraints: const BoxConstraints(
                                 minWidth: 28,
                                 minHeight: 28,
@@ -2610,7 +2425,6 @@ class _UserManagementViewState extends State<UserManagementView> {
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: IconButton(
-                              padding: EdgeInsets.zero,
                               icon: const Icon(
                                 Icons.logout_rounded,
                                 size: 16,
@@ -2630,7 +2444,6 @@ class _UserManagementViewState extends State<UserManagementView> {
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: IconButton(
-                                padding: EdgeInsets.zero,
                                 icon: const Icon(
                                   Icons.tune_rounded,
                                   size: 16,
@@ -2648,7 +2461,6 @@ class _UserManagementViewState extends State<UserManagementView> {
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: IconButton(
-                                padding: EdgeInsets.zero,
                                 icon: const Icon(
                                   Icons.delete_outline_rounded,
                                   size: 16,
@@ -2675,7 +2487,6 @@ class _UserManagementViewState extends State<UserManagementView> {
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: IconButton(
-                            padding: EdgeInsets.zero,
                             icon: const Icon(
                               Icons.lock_reset_rounded,
                               size: 20,
@@ -2920,63 +2731,14 @@ class _UserManagementViewState extends State<UserManagementView> {
                         ),
                         const Gap(10),
                         Expanded(
-                          child: Container(
-                            height: 34,
-                            padding: const EdgeInsets.symmetric(horizontal: 10),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFF1F5F9),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: DropdownButtonHideUnderline(
-                              child: DropdownButton<String>(
-                                dropdownColor: Colors.white,
-                                borderRadius: BorderRadius.circular(8),
-                                value: DashboardUserModel.normalizeRole(
-                                  user.role,
-                                ),
-                                isDense: true,
-                                isExpanded: true,
-                                icon: const Icon(
-                                  Icons.keyboard_arrow_down_rounded,
-                                  size: 16,
-                                  color: Color(0xFF64748B),
-                                ),
-                                style: GoogleFonts.inter(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w500,
-                                  color: const Color(0xFF334155),
-                                ),
-                                items: const [
-                                  DropdownMenuItem(
-                                    value: 'admin',
-                                    child: Text(
-                                      'Admin',
-                                      overflow: TextOverflow.ellipsis,
-                                      maxLines: 1,
-                                    ),
-                                  ),
-                                  DropdownMenuItem(
-                                    value: 'hr',
-                                    child: Text(
-                                      'HR & Operations',
-                                      overflow: TextOverflow.ellipsis,
-                                      maxLines: 1,
-                                    ),
-                                  ),
-                                ],
-                                onChanged: isMe
-                                    ? null
-                                    : (newRole) {
-                                        if (newRole != null &&
-                                            newRole != user.role) {
-                                          cubit.updateUserRole(
-                                            user.uid,
-                                            newRole,
-                                            userName: user.name,
-                                          );
-                                        }
-                                      },
-                              ),
+                          child: Text(
+                            user.roleLabel,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: GoogleFonts.inter(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w500,
+                              color: const Color(0xFF1E293B),
                             ),
                           ),
                         ),

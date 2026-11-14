@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../../../shared/widgets/acadeno_dropdown.dart';
+
 import '../../../../core/utils/url_dialer_helper.dart';
 import '../../../../shared/snackbar_alerts/snack_alert.dart';
 import '../../../follow_ups/data/model/follow_up_time_helper.dart';
@@ -85,16 +87,23 @@ class _FollowUpsViewState extends State<FollowUpsView> {
           child: ListView.separated(
             shrinkWrap: true,
             itemCount: executives.length,
-            separatorBuilder: (_, _) => const Divider(height: 1, color: Color(0xFFF3F4F6)),
+            separatorBuilder: (_, _) =>
+                const Divider(height: 1, color: Color(0xFFF3F4F6)),
             itemBuilder: (ctx, i) {
               final exec = executives[i];
               final isSelected = row.assignedExec == exec;
               return ListTile(
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
                 leading: Icon(
-                  isSelected ? Icons.radio_button_checked : Icons.radio_button_off,
+                  isSelected
+                      ? Icons.radio_button_checked
+                      : Icons.radio_button_off,
                   size: 20,
-                  color: isSelected ? const Color(0xFF3B3FB1) : const Color(0xFF9CA3AF),
+                  color: isSelected
+                      ? const Color(0xFF3B3FB1)
+                      : const Color(0xFF9CA3AF),
                 ),
                 title: Text(
                   exec,
@@ -109,13 +118,16 @@ class _FollowUpsViewState extends State<FollowUpsView> {
                   Navigator.pop(ctx);
                   final targetUid = _execNameToUid[exec];
                   try {
-                    await FirebaseFirestore.instance.collection('leads').doc(row.id).update({
-                      'assignedTo': exec,
-                      'assignedToName': exec,
-                      if (targetUid != null && targetUid.isNotEmpty)
-                        'assignedToUid': targetUid,
-                      'updatedAt': FieldValue.serverTimestamp(),
-                    });
+                    await FirebaseFirestore.instance
+                        .collection('leads')
+                        .doc(row.id)
+                        .update({
+                          'assignedTo': exec,
+                          'assignedToName': exec,
+                          if (targetUid != null && targetUid.isNotEmpty)
+                            'assignedToUid': targetUid,
+                          'updatedAt': FieldValue.serverTimestamp(),
+                        });
                   } catch (_) {}
                   if (mounted) {
                     SnackBarAlert.showToast(
@@ -142,7 +154,9 @@ class _FollowUpsViewState extends State<FollowUpsView> {
       if (!item.completed && item.assignedExec == _fromExec) {
         _localReassignedMap[item.id] = _toExec;
         moved++;
-        final docRef = FirebaseFirestore.instance.collection('leads').doc(item.id);
+        final docRef = FirebaseFirestore.instance
+            .collection('leads')
+            .doc(item.id);
         batch.update(docRef, {
           'assignedTo': _toExec,
           'assignedToName': _toExec,
@@ -199,7 +213,9 @@ class _FollowUpsViewState extends State<FollowUpsView> {
               _fromExec = executives.first;
             }
             if (_toExec.isEmpty || !executives.contains(_toExec)) {
-              _toExec = executives.length > 1 ? executives[1] : executives.first;
+              _toExec = executives.length > 1
+                  ? executives[1]
+                  : executives.first;
             }
 
             // Extract follow-ups from Firestore leads
@@ -213,7 +229,8 @@ class _FollowUpsViewState extends State<FollowUpsView> {
               if (d['optedOut'] == true || status == 'opted out') continue;
 
               final hasFollowUpTime =
-                  (d['followUpTime'] != null && d['followUpTime'].toString().trim().isNotEmpty);
+                  (d['followUpTime'] != null &&
+                  d['followUpTime'].toString().trim().isNotEmpty);
               final isCandidate =
                   hasFollowUpTime ||
                   d['isOverdue'] == true ||
@@ -228,9 +245,12 @@ class _FollowUpsViewState extends State<FollowUpsView> {
               if (isCandidate) {
                 final currentExec =
                     _localReassignedMap[doc.id] ??
-                    (d['assignedToName'] ?? d['assignedTo'] ?? 'Unassigned').toString();
+                    (d['assignedToName'] ?? d['assignedTo'] ?? 'Unassigned')
+                        .toString();
                 final isCompleted =
-                    isDone || _localCompletedIds.contains(doc.id) || status == 'converted';
+                    isDone ||
+                    _localCompletedIds.contains(doc.id) ||
+                    status == 'converted';
                 final eval = FollowUpTimeHelper.evaluate(
                   rawFollowUpTime: d['followUpTime'],
                   assignedDateKey: d['assignedDateKey'],
@@ -248,8 +268,14 @@ class _FollowUpsViewState extends State<FollowUpsView> {
                     studentName: (d['name'] ?? 'Student Inquiry').toString(),
                     phone: (d['phone'] ?? '').toString(),
                     collegeBranch:
-                        (d['collegeBranch'] ?? d['college'] ?? 'College Inquiry').toString(),
-                    note: (d['notes'] ?? 'Follow up on admission & workshop details').toString(),
+                        (d['collegeBranch'] ??
+                                d['college'] ??
+                                'College Inquiry')
+                            .toString(),
+                    note:
+                        (d['notes'] ??
+                                'Follow up on admission & workshop details')
+                            .toString(),
                     dueLabel: eval.displayLabel,
                     isOverdue: isOverdue,
                     assignedExec: currentExec,
@@ -271,10 +297,14 @@ class _FollowUpsViewState extends State<FollowUpsView> {
 
             final openCount = execFollowUps.length;
             final overdueCount = execFollowUps.where((f) => f.isOverdue).length;
-            final dueTodayCount = execFollowUps.where((f) => !f.isOverdue).length;
+            final dueTodayCount = execFollowUps
+                .where((f) => !f.isOverdue)
+                .length;
 
             final totalOpenAll = followUps.where((f) => !f.completed).length;
-            final totalOverdueAll = followUps.where((f) => !f.completed && f.isOverdue).length;
+            final totalOverdueAll = followUps
+                .where((f) => !f.completed && f.isOverdue)
+                .length;
 
             // Filter items based on active pill
             final filteredItems = execFollowUps.where((item) {
@@ -316,7 +346,11 @@ class _FollowUpsViewState extends State<FollowUpsView> {
                     const Gap(32),
 
                     // Bulk Move Action Bar (Figma Node 1363:1601)
-                    _buildBulkReassignBar(constraints.maxWidth, followUps, executives),
+                    _buildBulkReassignBar(
+                      constraints.maxWidth,
+                      followUps,
+                      executives,
+                    ),
                     const Gap(32),
 
                     // Filter Row (Figma Node 1363:1631)
@@ -354,7 +388,11 @@ class _FollowUpsViewState extends State<FollowUpsView> {
                       ...filteredItems.map(
                         (item) => Padding(
                           padding: const EdgeInsets.only(bottom: 16),
-                          child: _buildFollowUpCard(item, constraints.maxWidth, executives),
+                          child: _buildFollowUpCard(
+                            item,
+                            constraints.maxWidth,
+                            executives,
+                          ),
                         ),
                       ),
                   ],
@@ -593,19 +631,13 @@ class _FollowUpsViewState extends State<FollowUpsView> {
         runSpacing: 12,
         alignment: WrapAlignment.spaceBetween,
         crossAxisAlignment: WrapCrossAlignment.center,
-        children: [
-          filterTabs,
-          execDropdown,
-        ],
+        children: [filterTabs, execDropdown],
       );
     }
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        filterTabs,
-        execDropdown,
-      ],
+      children: [filterTabs, execDropdown],
     );
   }
 
@@ -628,7 +660,9 @@ class _FollowUpsViewState extends State<FollowUpsView> {
           color: isSelected ? const Color(0xFF3B3FB1) : Colors.white,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
-            color: isSelected ? const Color(0xFF3B3FB1) : const Color(0xFFE5E7EB),
+            color: isSelected
+                ? const Color(0xFF3B3FB1)
+                : const Color(0xFFE5E7EB),
             width: 1,
           ),
         ),
@@ -651,41 +685,65 @@ class _FollowUpsViewState extends State<FollowUpsView> {
     required ValueChanged<String> onChanged,
   }) {
     final allItems = ['All executives', ...items];
+    final selectedVal = allItems.contains(value) ? value : allItems.first;
     return Container(
-      height: 40,
+      height: 47,
       constraints: const BoxConstraints(minWidth: 180),
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 21),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
+        color: const Color(0xFFF5F5F5),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(color: const Color(0xFFE5E7EB)),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x0D764BA2),
+            blurRadius: 5,
+            offset: Offset(0, 2),
+          ),
+        ],
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
-          value: allItems.contains(value) ? value : allItems.first,
-          dropdownColor: Colors.white,
-          borderRadius: BorderRadius.circular(8),
+          value: selectedVal,
+          focusColor: Colors.transparent,
+          dropdownColor: const Color(0xFFE2E2E2),
+          borderRadius: BorderRadius.circular(12),
+          elevation: 6,
           icon: const Icon(
-            CupertinoIcons.chevron_down,
-            size: 12,
-            color: Color(0xFF6B7280),
+            Icons.keyboard_arrow_down_rounded,
+            size: 20,
+            color: Color(0xFF2E1D44),
           ),
           isDense: true,
-          style: GoogleFonts.plusJakartaSans(
+          style: GoogleFonts.inter(
             fontSize: 14,
-            fontWeight: FontWeight.w500,
-            color: const Color(0xFF4B5563),
+            fontWeight: FontWeight.w400,
+            color: const Color(0xFF2E1D44),
           ),
+          selectedItemBuilder: (context) {
+            return allItems.map((name) {
+              return Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.inter(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w400,
+                    color: const Color(0xFF2E1D44),
+                  ),
+                ),
+              );
+            }).toList();
+          },
           items: allItems.map((name) {
+            final isSelected = selectedVal == name;
             return DropdownMenuItem<String>(
               value: name,
-              child: Text(
-                name,
-                style: GoogleFonts.plusJakartaSans(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                  color: const Color(0xFF4B5563),
-                ),
+              child: AcadenoDropdown.buildMenuItemChild(
+                label: name,
+                isSelected: isSelected,
               ),
             );
           }).toList(),
@@ -703,41 +761,67 @@ class _FollowUpsViewState extends State<FollowUpsView> {
     required ValueChanged<String> onChanged,
     Color textColor = const Color(0xFF111827),
   }) {
+    final selectedVal = items.contains(value)
+        ? value
+        : (items.isNotEmpty ? items.first : null);
     return Container(
-      height: 40,
+      height: 47,
       constraints: const BoxConstraints(minWidth: 180),
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 21),
       decoration: BoxDecoration(
-        color: const Color(0x80F9FAFB),
-        borderRadius: BorderRadius.circular(8),
+        color: const Color(0xFFF5F5F5),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(color: const Color(0xFFE5E7EB)),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x0D764BA2),
+            blurRadius: 5,
+            offset: Offset(0, 2),
+          ),
+        ],
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
-          value: items.contains(value) ? value : (items.isNotEmpty ? items.first : null),
-          dropdownColor: Colors.white,
-          borderRadius: BorderRadius.circular(8),
+          value: selectedVal,
+          focusColor: Colors.transparent,
+          dropdownColor: const Color(0xFFE2E2E2),
+          borderRadius: BorderRadius.circular(12),
+          elevation: 6,
           icon: const Icon(
-            CupertinoIcons.chevron_down,
-            size: 12,
-            color: Color(0xFF6B7280),
+            Icons.keyboard_arrow_down_rounded,
+            size: 20,
+            color: Color(0xFF2E1D44),
           ),
           isDense: true,
-          style: GoogleFonts.plusJakartaSans(
-            fontSize: 15,
+          style: GoogleFonts.inter(
+            fontSize: 14,
             fontWeight: FontWeight.w400,
-            color: textColor,
+            color: const Color(0xFF2E1D44),
           ),
+          selectedItemBuilder: (context) {
+            return items.map((name) {
+              return Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.inter(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w400,
+                    color: const Color(0xFF2E1D44),
+                  ),
+                ),
+              );
+            }).toList();
+          },
           items: items.map((name) {
+            final isSelected = selectedVal == name;
             return DropdownMenuItem<String>(
               value: name,
-              child: Text(
-                name,
-                style: GoogleFonts.plusJakartaSans(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w400,
-                  color: const Color(0xFF111827),
-                ),
+              child: AcadenoDropdown.buildMenuItemChild(
+                label: name,
+                isSelected: isSelected,
               ),
             );
           }).toList(),
@@ -770,7 +854,9 @@ class _FollowUpsViewState extends State<FollowUpsView> {
       ),
       alignment: Alignment.center,
       child: Icon(
-        isOverdue ? CupertinoIcons.exclamationmark_triangle_fill : CupertinoIcons.clock,
+        isOverdue
+            ? CupertinoIcons.exclamationmark_triangle_fill
+            : CupertinoIcons.clock,
         color: isOverdue ? const Color(0xFFE9522C) : const Color(0xFF3B3FB1),
         size: 18,
       ),
@@ -779,11 +865,11 @@ class _FollowUpsViewState extends State<FollowUpsView> {
     // Status Badge text: TODAY · 6:00 PM or OVERDUE · MISSED (...)
     final badgeText = isOverdue
         ? (item.dueLabel.toLowerCase().contains('overdue')
-            ? item.dueLabel.toUpperCase()
-            : 'OVERDUE · ${item.dueLabel.toUpperCase()}')
+              ? item.dueLabel.toUpperCase()
+              : 'OVERDUE · ${item.dueLabel.toUpperCase()}')
         : (item.dueLabel.toLowerCase().contains('today')
-            ? item.dueLabel.toUpperCase()
-            : 'TODAY · ${item.dueLabel.toUpperCase()}');
+              ? item.dueLabel.toUpperCase()
+              : 'TODAY · ${item.dueLabel.toUpperCase()}');
 
     // Details Column (Name, Badge, Phone, College/Branch, Note)
     final detailsWidget = Column(
@@ -806,7 +892,9 @@ class _FollowUpsViewState extends State<FollowUpsView> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
               decoration: BoxDecoration(
-                color: isOverdue ? const Color(0xFFFFEBE5) : const Color(0xFFEEF2FF),
+                color: isOverdue
+                    ? const Color(0xFFFFEBE5)
+                    : const Color(0xFFEEF2FF),
                 borderRadius: BorderRadius.circular(9999),
               ),
               child: Text(
@@ -814,7 +902,9 @@ class _FollowUpsViewState extends State<FollowUpsView> {
                 style: GoogleFonts.plusJakartaSans(
                   fontSize: 10,
                   fontWeight: FontWeight.w700,
-                  color: isOverdue ? const Color(0xFFE9522C) : const Color(0xFF3B3FB1),
+                  color: isOverdue
+                      ? const Color(0xFFE9522C)
+                      : const Color(0xFF3B3FB1),
                   letterSpacing: 0.3,
                   height: 15 / 10,
                 ),
@@ -974,11 +1064,7 @@ class _FollowUpsViewState extends State<FollowUpsView> {
       spacing: 12,
       runSpacing: 10,
       crossAxisAlignment: WrapCrossAlignment.center,
-      children: [
-        assignedPill,
-        reassignBtn,
-        markDoneBtn,
-      ],
+      children: [assignedPill, reassignBtn, markDoneBtn],
     );
 
     return Container(

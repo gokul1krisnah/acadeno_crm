@@ -48,7 +48,7 @@
             android:resource="@drawable/ic_notification" />
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_color"
-            android:resource="@color/acadeno_primary" />
+            android:resource="@color/acadeno_notification_accent" />
 
         <!-- Firebase Cloud Messaging Installation ID & Auto-Init -->
         <meta-data

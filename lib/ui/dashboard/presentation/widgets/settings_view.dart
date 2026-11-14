@@ -3,11 +3,11 @@ import 'package:gap/gap.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:hive/hive.dart';
 
 import 'package:acadeno_crm/shared/snackbar_alerts/snack_alert.dart';
 import 'package:acadeno_crm/shared/widgets/acadeno_dropdown.dart';
 
-const _primary = Color(0xFFEF8144);
 const _border = Color(0xFFE5E7EB);
 const _muted = Color(0xFF6B7280);
 const _text = Color(0xFF111827);
@@ -41,6 +41,8 @@ class _SettingsViewState extends State<SettingsView>
   bool _isResettingData = false;
   String _resetProgressStatus = '';
 
+  static const String _orgSettingsBox = 'acadeno_org_settings';
+
   // Organization settings
   String _defaultCallsTarget = '50';
   String _overdueEscalationHours = '24';
@@ -66,6 +68,54 @@ class _SettingsViewState extends State<SettingsView>
       text: initialName.isNotEmpty ? initialName : 'Admin',
     );
     _emailController.text = currentUser?.email ?? '';
+
+    _loadOrgSettings();
+  }
+
+  Future<Box<dynamic>> _getOrgSettingsBox() async {
+    if (Hive.isBoxOpen(_orgSettingsBox)) {
+      return Hive.box<dynamic>(_orgSettingsBox);
+    }
+    return Hive.openBox<dynamic>(_orgSettingsBox);
+  }
+
+  Future<void> _loadOrgSettings() async {
+    try {
+      final box = await _getOrgSettingsBox();
+      final savedCallsTarget = box.get('defaultCallsTarget')?.toString();
+      final savedEscalation = box.get('overdueEscalationHours')?.toString();
+      final savedAutoAssign = box.get('autoAssignWalkIns');
+      final savedBiometric = box.get('enableBiometricLock');
+
+      if (!mounted) return;
+      setState(() {
+        if (savedCallsTarget != null &&
+            const ['25', '40', '50', '75', '100'].contains(savedCallsTarget)) {
+          _defaultCallsTarget = savedCallsTarget;
+        }
+        if (savedEscalation != null &&
+            const ['12', '24', '48', '72'].contains(savedEscalation)) {
+          _overdueEscalationHours = savedEscalation;
+        }
+        if (savedAutoAssign is bool) {
+          _autoAssignWalkIns = savedAutoAssign;
+        }
+        if (savedBiometric is bool) {
+          _enableBiometricLock = savedBiometric;
+        }
+      });
+    } catch (_) {
+      // Keep default values if local storage is unavailable
+    }
+  }
+
+  Future<void> _saveOrgSetting(String key, dynamic value) async {
+    try {
+      final box = await _getOrgSettingsBox();
+      await box.put(key, value);
+    } catch (_) {
+      // Ignore storage errors silently
+    }
   }
 
   @override
@@ -323,7 +373,10 @@ class _SettingsViewState extends State<SettingsView>
               ),
             ],
           ),
-          actionsPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          actionsPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 12,
+          ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(ctx).pop(false),
@@ -407,7 +460,8 @@ class _SettingsViewState extends State<SettingsView>
       if (mounted) {
         SnackBarAlert.showToast(
           context: context,
-          message: 'CRM Database successfully reset ($totalDeleted records removed). Fresh CRM ready!',
+          message:
+              'CRM Database successfully reset ($totalDeleted records removed). Fresh CRM ready!',
         );
       }
     } catch (e) {
@@ -440,25 +494,30 @@ class _SettingsViewState extends State<SettingsView>
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
+              Text(
                 'Settings',
-                style: TextStyle(
-                  fontSize: 22,
+                style: GoogleFonts.inter(
+                  fontSize: 24,
                   fontWeight: FontWeight.w700,
-                  color: _text,
+                  letterSpacing: -0.6,
+                  color: const Color(0xFF0F172A),
                 ),
               ),
               const Gap(4),
-              const Text(
+              Text(
                 'Manage administrator credentials, security policies, and organizational configurations.',
-                style: TextStyle(fontSize: 13, color: _muted),
+                style: GoogleFonts.inter(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w400,
+                  color: const Color(0xFF64748B),
+                ),
               ),
               const Gap(18),
 
               // Tab Selector
               Container(
                 decoration: const BoxDecoration(
-                  border: Border(bottom: BorderSide(color: _border)),
+                  border: Border(bottom: BorderSide(color: Color(0xFFE2E8F0))),
                 ),
                 child: TabBar(
                   controller: _tabController,
@@ -471,30 +530,52 @@ class _SettingsViewState extends State<SettingsView>
                   splashFactory: NoSplash.splashFactory,
                   mouseCursor: SystemMouseCursors.click,
                   onTap: (_) => setState(() {}),
-                  labelColor: _primary,
-                  unselectedLabelColor: _muted,
-                  indicatorColor: _primary,
-                  indicatorWeight: 2.5,
-                  labelStyle: const TextStyle(
-                    fontSize: 13.5,
-                    fontWeight: FontWeight.w600,
+                  labelColor: const Color(0xFFEA580C),
+                  unselectedLabelColor: const Color(0xFF94A3B8),
+                  indicatorColor: const Color(0xFFEA580C),
+                  indicatorWeight: 2,
+                  labelStyle: GoogleFonts.inter(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.3,
                   ),
-                  unselectedLabelStyle: const TextStyle(
-                    fontSize: 13.5,
+                  unselectedLabelStyle: GoogleFonts.inter(
+                    fontSize: 12,
                     fontWeight: FontWeight.w500,
                   ),
                   tabs: const [
                     Tab(
-                      icon: Icon(Icons.shield_outlined, size: 18),
-                      text: 'Account & Security',
+                      height: 42,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.shield_outlined, size: 15),
+                          Gap(8),
+                          Text('Account & Security'),
+                        ],
+                      ),
                     ),
                     Tab(
-                      icon: Icon(Icons.business_outlined, size: 18),
-                      text: 'Organization & CRM',
+                      height: 42,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.business_outlined, size: 15),
+                          Gap(8),
+                          Text('Organization & CRM'),
+                        ],
+                      ),
                     ),
                     Tab(
-                      icon: Icon(Icons.info_outline_rounded, size: 18),
-                      text: 'System & Notifications',
+                      height: 42,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.notifications_none_outlined, size: 15),
+                          Gap(8),
+                          Text('System & Notifications'),
+                        ],
+                      ),
                     ),
                   ],
                 ),
@@ -1043,44 +1124,53 @@ class _SettingsViewState extends State<SettingsView>
   }
 
   // ---------------------------------------------------------------------------
-  // Tab 2: Organization & CRM
+  // Tab 2: Organization & CRM (Figma Node 1805:1241)
   // ---------------------------------------------------------------------------
   Widget _buildOrganizationTab() {
     return Padding(
       padding: const EdgeInsets.only(bottom: 40),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildCard(
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final isWide = constraints.maxWidth >= 820;
+          final isMobile = constraints.maxWidth < 600;
+
+          final orgProfileCard = _buildFigmaOrgCard(
+            isMobile: isMobile,
             title: 'Organization Profile',
             subtitle:
                 'Company details displayed on exported sheets and student communication.',
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildInfoRow(
+                _buildFigmaOrgInfoRow(
                   'Organization Name',
                   'Acadeno Research & Innovation Centre',
+                  isMobile: isMobile,
                 ),
-                const Divider(height: 24),
-                _buildInfoRow('Branch / Center Code', 'ACADENO_KL_CENTRE'),
-                const Divider(height: 24),
-                _buildInfoRow(
+                const Divider(height: 28, color: Color(0xFFF3F4F6)),
+                _buildFigmaOrgInfoRow(
+                  'Branch / Center Code',
+                  'ACADENO_KL_CENTRE',
+                  isMobile: isMobile,
+                ),
+                const Divider(height: 28, color: Color(0xFFF3F4F6)),
+                _buildFigmaOrgInfoRow(
                   'Operating Region',
                   'Kerala, India (IST UTC+05:30)',
+                  isMobile: isMobile,
                 ),
-                const Divider(height: 24),
-                _buildInfoRow(
+                const Divider(height: 28, color: Color(0xFFF3F4F6)),
+                _buildFigmaOrgInfoRow(
                   'Standard Working Hours',
                   '09:00 AM – 06:00 PM (Mon – Sat)',
+                  isMobile: isMobile,
                 ),
               ],
             ),
-          ),
+          );
 
-          const Gap(16),
-
-          _buildCard(
+          final leadMgmtCard = _buildFigmaOrgCard(
+            isMobile: isMobile,
             title: 'Lead Management & Escalations',
             subtitle:
                 'Configure daily workload capacities and automatic escalation triggers.',
@@ -1091,162 +1181,493 @@ class _SettingsViewState extends State<SettingsView>
                   label: 'Daily Target Calls per Sales Executive',
                   value: _defaultCallsTarget,
                   items: const ['25', '40', '50', '75', '100'],
+                  borderRadius: 10.4,
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 8,
+                  ),
                   onChanged: (val) {
-                    if (val != null) setState(() => _defaultCallsTarget = val);
+                    if (val != null) {
+                      setState(() => _defaultCallsTarget = val);
+                      _saveOrgSetting('defaultCallsTarget', val);
+                    }
                   },
                 ),
-                const Gap(16),
+                const Gap(20),
                 AcadenoDropdown.strings(
                   label: 'Overdue Follow-up Escalation Threshold',
                   value: _overdueEscalationHours,
                   items: const ['12', '24', '48', '72'],
+                  borderRadius: 10.4,
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 8,
+                  ),
                   onChanged: (val) {
                     if (val != null) {
                       setState(() => _overdueEscalationHours = val);
+                      _saveOrgSetting('overdueEscalationHours', val);
                     }
                   },
                 ),
-                const Gap(16),
-                SwitchListTile(
-                  contentPadding: EdgeInsets.zero,
-                  activeTrackColor: const Color(0xFF4F46E5),
-                  inactiveTrackColor: const Color(0xFFE2E8F0),
-                  thumbColor: WidgetStateProperty.all(Colors.white),
-                  trackOutlineColor: WidgetStateProperty.all(
-                    Colors.transparent,
-                  ),
-                  title: const Text(
-                    'Auto-assign Walk-in Leads to Creator',
-                    style: TextStyle(
-                      fontSize: 13.5,
-                      fontWeight: FontWeight.w600,
-                      color: _text,
-                    ),
-                  ),
-                  subtitle: const Text(
-                    'When an executive logs a walk-in student, automatically assign them for immediate follow-up.',
-                    style: TextStyle(fontSize: 12, color: _muted),
-                  ),
+                const Gap(20),
+                _buildFigmaOrgToggleRow(
+                  label: 'Auto-assign Walk-in Leads to Creator',
                   value: _autoAssignWalkIns,
-                  onChanged: (v) => setState(() => _autoAssignWalkIns = v),
+                  onChanged: (v) {
+                    setState(() => _autoAssignWalkIns = v);
+                    _saveOrgSetting('autoAssignWalkIns', v);
+                  },
                 ),
-                const Gap(8),
-                SwitchListTile(
-                  contentPadding: EdgeInsets.zero,
-                  activeTrackColor: const Color(0xFF4F46E5),
-                  inactiveTrackColor: const Color(0xFFE2E8F0),
-                  thumbColor: WidgetStateProperty.all(Colors.white),
-                  trackOutlineColor: WidgetStateProperty.all(
-                    Colors.transparent,
-                  ),
-                  title: const Text(
-                    'Biometric / PIN Screen Lock',
-                    style: TextStyle(
-                      fontSize: 13.5,
-                      fontWeight: FontWeight.w600,
-                      color: _text,
-                    ),
-                  ),
-                  subtitle: const Text(
-                    'Require device authentication when app is backgrounded for more than 5 minutes.',
-                    style: TextStyle(fontSize: 12, color: _muted),
-                  ),
+                const Divider(height: 24, color: Color(0xFFF1F5F9)),
+                _buildFigmaOrgToggleRow(
+                  label: 'Biometric / PIN Screen Lock',
                   value: _enableBiometricLock,
-                  onChanged: (v) => setState(() => _enableBiometricLock = v),
+                  onChanged: (v) {
+                    setState(() => _enableBiometricLock = v);
+                    _saveOrgSetting('enableBiometricLock', v);
+                  },
                 ),
               ],
             ),
+          );
+
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              if (isWide)
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(flex: 55, child: orgProfileCard),
+                    const Gap(20),
+                    Expanded(flex: 45, child: leadMgmtCard),
+                  ],
+                )
+              else ...[
+                orgProfileCard,
+                const Gap(16),
+                leadMgmtCard,
+              ],
+              const Gap(20),
+              _buildDangerZoneCard(),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildFigmaOrgCard({
+    required bool isMobile,
+    required String title,
+    required String subtitle,
+    required Widget child,
+  }) {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(isMobile ? 18 : 28),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFF1F5F9)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
           ),
-
-          const Gap(16),
-
-          _buildDangerZoneCard(),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              letterSpacing: -0.4,
+              color: Color(0xFF0F172A),
+            ),
+          ),
+          const Gap(4),
+          Text(
+            subtitle,
+            style: const TextStyle(
+              fontSize: 11.5,
+              height: 1.5,
+              color: Color(0xFF64748B),
+            ),
+          ),
+          const Gap(24),
+          child,
         ],
       ),
     );
   }
 
+  Widget _buildFigmaOrgInfoRow(
+    String label,
+    String value, {
+    required bool isMobile,
+  }) {
+    if (isMobile) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w400,
+              color: Color(0xFF64748B),
+            ),
+          ),
+          const Gap(4),
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 12.5,
+              fontWeight: FontWeight.w700,
+              color: Color(0xFF0F172A),
+            ),
+          ),
+        ],
+      );
+    }
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        SizedBox(
+          width: 210,
+          child: Text(
+            label,
+            style: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w400,
+              color: Color(0xFF64748B),
+            ),
+          ),
+        ),
+        Expanded(
+          child: Text(
+            value,
+            style: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+              color: Color(0xFF0F172A),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildFigmaOrgToggleRow({
+    required String label,
+    required bool value,
+    required ValueChanged<bool> onChanged,
+  }) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Expanded(
+          child: Text(
+            label,
+            style: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+              color: Color(0xFF0F172A),
+            ),
+          ),
+        ),
+        const Gap(12),
+        GestureDetector(
+          onTap: () => onChanged(!value),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 180),
+            width: 44,
+            height: 24,
+            padding: const EdgeInsets.all(2),
+            decoration: BoxDecoration(
+              color: value ? const Color(0xFFEA580C) : const Color(0xFFE2E8F0),
+              borderRadius: BorderRadius.circular(9999),
+            ),
+            child: AnimatedAlign(
+              duration: const Duration(milliseconds: 180),
+              alignment: value ? Alignment.centerRight : Alignment.centerLeft,
+              child: Container(
+                width: 20,
+                height: 20,
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  shape: BoxShape.circle,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   // ---------------------------------------------------------------------------
-  // Tab 3: System & Notifications
+  // Tab 3: System & Notifications (Figma Node 1805:1437)
   // ---------------------------------------------------------------------------
   Widget _buildSystemInfoTab() {
     return Padding(
       padding: const EdgeInsets.only(bottom: 40),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildCard(
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final isWide = constraints.maxWidth >= 820;
+          final isMobile = constraints.maxWidth < 600;
+
+          final pushCard = _buildFigmaSystemCard(
+            isMobile: isMobile,
             title: 'Push Notifications & Web Workers',
             subtitle:
-                'Live delivery channels for background and out-of-app notifications.',
+                'Enable live delivery channels for background and external notifications.',
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildStatusRow(
+                _buildFigmaStatusRow(
                   'Web Service Worker',
                   'firebase-messaging-sw.js active',
                   Icons.check_circle_outline,
-                  const Color(0xFF16A34A),
+                  const Color(0xFF059669),
                 ),
-                const Divider(height: 24),
-                _buildStatusRow(
+                const Divider(height: 32, color: Color(0xFFF1F5F9)),
+                _buildFigmaStatusRow(
                   'FCM Push Integration',
                   'FCM V1 Cloud Engine Configured',
                   Icons.check_circle_outline,
-                  const Color(0xFF16A34A),
+                  const Color(0xFF059669),
                 ),
-                const Divider(height: 24),
-                _buildStatusRow(
+                const Divider(height: 32, color: Color(0xFFF1F5F9)),
+                _buildFigmaStatusRow(
                   'Screen Privacy & Capture Protection',
-                  'Screenshots Enabled',
+                  'FLAG_SECURE Active',
                   Icons.verified_user_outlined,
-                  _primary,
+                  const Color(0xFFEA580C),
                 ),
-                const Divider(height: 24),
-                _buildStatusRow(
+                const Divider(height: 32, color: Color(0xFFF1F5F9)),
+                _buildFigmaStatusRow(
                   'Offline Storage Engine',
                   'Hive Local Box & Queue',
                   Icons.storage_outlined,
-                  _primary,
+                  const Color(0xFFEA580C),
                 ),
               ],
             ),
-          ),
+          );
 
-          const Gap(16),
-
-          _buildCard(
+          final versionCard = _buildFigmaSystemCard(
+            isMobile: isMobile,
             title: 'Application Version & Environment',
             subtitle:
                 'Build provenance and connected Google Cloud deployment details.',
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildInfoRow(
+                _buildFigmaSystemInfoRow(
                   'Application Version',
                   '1.0.4+5 (Production Release)',
+                  isMobile: isMobile,
                 ),
-                const Divider(height: 24),
-                _buildInfoRow('Firebase Project ID', 'acadenocrm-b727a'),
-                const Divider(height: 24),
-                _buildInfoRow(
+                const Divider(height: 30, color: Color(0xFFF1F5F9)),
+                _buildFigmaSystemInfoRow(
+                  'Firebase Project ID',
+                  'acadenocrm-b727a',
+                  isMobile: isMobile,
+                ),
+                const Divider(height: 30, color: Color(0xFFF1F5F9)),
+                _buildFigmaSystemInfoRow(
                   'Database Engine',
                   'Google Cloud Firestore (Native Multi-region)',
+                  isMobile: isMobile,
                 ),
-                const Divider(height: 24),
-                _buildInfoRow(
+                const Divider(height: 30, color: Color(0xFFF1F5F9)),
+                _buildFigmaSystemInfoRow(
                   'Hosting Destination',
                   'Vercel Static Edge & SPA',
+                  isMobile: isMobile,
                 ),
               ],
             ),
+          );
+
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              if (isWide)
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(flex: 42, child: pushCard),
+                    const Gap(20),
+                    Expanded(flex: 58, child: versionCard),
+                  ],
+                )
+              else ...[
+                pushCard,
+                const Gap(16),
+                versionCard,
+              ],
+              const Gap(20),
+              _buildDangerZoneCard(),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildFigmaSystemCard({
+    required bool isMobile,
+    required String title,
+    required String subtitle,
+    required Widget child,
+  }) {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(isMobile ? 18 : 24),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 2,
+            offset: const Offset(0, 1),
           ),
-
-          const Gap(16),
-
-          _buildDangerZoneCard(),
         ],
       ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: GoogleFonts.inter(
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              color: const Color(0xFF0F172A),
+            ),
+          ),
+          const Gap(6),
+          Text(
+            subtitle,
+            style: GoogleFonts.inter(
+              fontSize: 12,
+              fontWeight: FontWeight.w400,
+              color: const Color(0xFF64748B),
+            ),
+          ),
+          const Gap(22),
+          child,
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFigmaStatusRow(
+    String label,
+    String status,
+    IconData icon,
+    Color color,
+  ) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(top: 2),
+          child: Icon(icon, size: 20, color: color),
+        ),
+        const Gap(14),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: GoogleFonts.inter(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: const Color(0xFF0F172A),
+                ),
+              ),
+              const Gap(2),
+              Text(
+                status,
+                style: GoogleFonts.jetBrainsMono(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: -0.3,
+                  color: color,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildFigmaSystemInfoRow(
+    String label,
+    String value, {
+    required bool isMobile,
+  }) {
+    if (isMobile) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: GoogleFonts.inter(
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+              color: const Color(0xFF64748B),
+            ),
+          ),
+          const Gap(4),
+          Text(
+            value,
+            style: GoogleFonts.inter(
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+              color: const Color(0xFF0F172A),
+            ),
+          ),
+        ],
+      );
+    }
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        SizedBox(
+          width: 196,
+          child: Text(
+            label,
+            style: GoogleFonts.inter(
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+              color: const Color(0xFF64748B),
+            ),
+          ),
+        ),
+        Expanded(
+          child: Text(
+            value,
+            style: GoogleFonts.inter(
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+              color: const Color(0xFF0F172A),
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -1328,10 +1749,7 @@ class _SettingsViewState extends State<SettingsView>
                   icon: const Icon(Icons.delete_sweep_rounded, size: 18),
                   label: const Text(
                     'Clear All CRM Data (Keep Users)',
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                    ),
+                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
                   ),
                 ),
         ],
@@ -1371,103 +1789,15 @@ class _SettingsViewState extends State<SettingsView>
               ),
             ),
             const Gap(3),
-            Text(subtitle, style: const TextStyle(fontSize: 12.5, color: _muted)),
+            Text(
+              subtitle,
+              style: const TextStyle(fontSize: 12.5, color: _muted),
+            ),
             const Gap(16),
             child,
           ],
         ),
       ),
-    );
-  }
-
-  Widget _buildInfoRow(String label, String value) {
-    final isMobile = MediaQuery.of(context).size.width < 640;
-    if (isMobile) {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            label,
-            style: const TextStyle(
-              fontSize: 12.5,
-              fontWeight: FontWeight.w500,
-              color: _muted,
-            ),
-          ),
-          const Gap(4),
-          Text(
-            value,
-            style: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              color: _text,
-            ),
-          ),
-        ],
-      );
-    }
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        SizedBox(
-          width: 220,
-          child: Text(
-            label,
-            style: const TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w500,
-              color: _muted,
-            ),
-          ),
-        ),
-        Expanded(
-          child: Text(
-            value,
-            style: const TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              color: _text,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildStatusRow(
-    String label,
-    String status,
-    IconData icon,
-    Color color,
-  ) {
-    return Row(
-      children: [
-        Icon(icon, size: 18, color: color),
-        const Gap(10),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                label,
-                style: const TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: _text,
-                ),
-              ),
-              Text(
-                status,
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                  color: color,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
     );
   }
 }

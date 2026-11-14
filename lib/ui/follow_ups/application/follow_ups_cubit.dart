@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/services/app_notification_service.dart';
 import '../../leads/data/model/lead_models.dart';
 import '../data/model/follow_up_models.dart';
+import '../data/model/follow_up_time_helper.dart';
 import '../data/repository/follow_ups_repo.dart';
 import 'follow_ups_state.dart';
 
@@ -112,16 +113,13 @@ class FollowUpsCubit extends Cubit<FollowUpsState> {
             followUpTimeLabel,
             outcome: outcome,
           ) ??
-          followUpTimeLabel;
-      final scheduled = concreteLabel == null
-          ? null
-          : LeadDateHelper.parseStamp(concreteLabel, preferPast: false);
-      final nowRef = DateTime.now();
-      final isDueToday =
-          scheduled != null &&
-          scheduled.dt.year == nowRef.year &&
-          scheduled.dt.month == nowRef.month &&
-          scheduled.dt.day == nowRef.day;
+          followUpTimeLabel ??
+          LeadDateHelper.resolveFollowUpLabel(null, outcome: 'Follow-up')!;
+      final eval = FollowUpTimeHelper.evaluate(
+        rawFollowUpTime: concreteLabel,
+        status: outcome,
+        updatedAt: DateTime.now(),
+      );
       updated.insert(
         0,
         ExecutiveFollowUpItem(
@@ -129,14 +127,13 @@ class FollowUpsCubit extends Cubit<FollowUpsState> {
           leadName: leadName,
           maskedPhone: maskedPhone ?? '—',
           collegeInfo: collegeInfo,
-          timeLabel:
-              concreteLabel ??
-              LeadDateHelper.resolveFollowUpLabel(null, outcome: 'Follow-up')!,
+          timeLabel: eval.displayLabel,
           channelLabel: 'Call',
           note: notes.isEmpty
               ? 'Scheduled follow-up after $outcome call'
               : notes,
-          bucket: isDueToday ? FollowUpBucket.today : FollowUpBucket.upcoming,
+          bucket: eval.bucket,
+          scheduledTime: eval.scheduledTime,
         ),
       );
     } else if (outcome == 'No answer') {
@@ -172,9 +169,19 @@ class FollowUpsCubit extends Cubit<FollowUpsState> {
     if (idx != -1) {
       final item = updated[idx];
       name = item.leadName;
-      item.timeLabel = newTimeLabel;
+      final concreteLabel =
+          LeadDateHelper.resolveFollowUpLabel(newTimeLabel) ?? newTimeLabel;
+      item.timeLabel = concreteLabel;
+      final eval = FollowUpTimeHelper.evaluate(
+        rawFollowUpTime: concreteLabel,
+        status: 'Follow-up',
+        updatedAt: DateTime.now(),
+      );
+      item.timeLabel = eval.displayLabel;
       if (moveToUpcoming) {
         item.bucket = FollowUpBucket.upcoming;
+      } else {
+        item.bucket = eval.bucket;
       }
     }
 

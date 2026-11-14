@@ -26,20 +26,21 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
       final localNotifications = FlutterLocalNotificationsPlugin();
       const androidDetails = AndroidNotificationDetails(
         'acadeno_crm_high_importance',
-        'Acadeno Lead Notifications',
-        channelDescription: 'High priority alerts for assigned student leads',
+        'Acadeno Reminders & Leads',
+        channelDescription: 'High priority alerts for assigned student leads and reminders',
         importance: Importance.max,
         priority: Priority.high,
         playSound: true,
         enableVibration: true,
         tag: 'lead_assigned',
         icon: '@drawable/ic_notification',
-        largeIcon: DrawableResourceAndroidBitmap('@mipmap/ic_launcher'),
-        color: Color(0xFF4338CA),
+        largeIcon: DrawableResourceAndroidBitmap('@drawable/ic_notification_large'),
+        color: Color(0xFFEA580C),
+        styleInformation: BigTextStyleInformation(''),
       );
       const notificationDetails = NotificationDetails(android: androidDetails);
 
-      final title = message.data['title'] ?? '📞 Acadeno CRM';
+      final title = message.data['title'] ?? 'Reminder';
       final body = message.data['body'] ?? 'You have a new update';
 
       await localNotifications.show(
@@ -119,12 +120,17 @@ class AppNotificationService {
           '@drawable/ic_notification',
         );
         const initSettings = InitializationSettings(android: androidInit);
-        await _localNotifications.initialize(settings: initSettings);
+        await _localNotifications.initialize(
+          settings: initSettings,
+          onDidReceiveNotificationResponse: (response) {
+            debugPrint('User opened local notification: ${response.payload}');
+          },
+        );
 
         const androidChannel = AndroidNotificationChannel(
           'acadeno_crm_high_importance',
-          'Acadeno Lead Notifications',
-          description: 'High priority alerts for assigned student leads',
+          'Acadeno Reminders & Leads',
+          description: 'High priority alerts for assigned student leads and reminders',
           importance: Importance.max,
           playSound: true,
           enableVibration: true,
@@ -194,12 +200,18 @@ class AppNotificationService {
       // 6. Listen to incoming foreground messages
       FirebaseMessaging.onMessage.listen((RemoteMessage message) {
         _foregroundMessageController.add(message);
-        // Only trigger local notification in foreground if no system notification is attached
-        if (!kIsWeb && message.notification == null) {
-          showNativeNotification(
-            title: message.data['title'] ?? '📞 Acadeno CRM',
-            body: message.data['body'] ?? 'New lead assigned',
-          );
+        // Show native Android system notification in notification shade & heads-up
+        if (!kIsWeb) {
+          final notif = message.notification;
+          final title = (notif?.title ?? message.data['title'] ?? 'Reminder').toString().trim();
+          final body = (notif?.body ?? message.data['body'] ?? 'You have a new update').toString().trim();
+          if (title.isNotEmpty || body.isNotEmpty) {
+            showNativeNotification(
+              title: title.isNotEmpty ? title : 'Reminder',
+              body: body,
+              payload: message.data['leadId'] ?? message.data['target'] ?? '',
+            );
+          }
         }
       });
 
@@ -227,27 +239,36 @@ class AppNotificationService {
     }
   }
 
-  /// Displays an Android system tray heads-up banner with Acadeno official logo and sound
+  /// Displays an Android system tray notification matching Figma 1824:1634
+  /// with the peach/orange bell badge, #EA580C accent color, and expandable body text.
   Future<void> showNativeNotification({
     required String title,
     required String body,
     String? tag,
+    String? payload,
     int id = 1001,
   }) async {
     if (kIsWeb) return;
     try {
       final androidDetails = AndroidNotificationDetails(
         'acadeno_crm_high_importance',
-        'Acadeno Lead Notifications',
-        channelDescription: 'High priority alerts for assigned student leads',
+        'Acadeno Reminders & Leads',
+        channelDescription: 'High priority alerts for assigned student leads and reminders',
         importance: Importance.max,
         priority: Priority.high,
         playSound: true,
         enableVibration: true,
         tag: tag ?? 'lead_assigned',
         icon: '@drawable/ic_notification',
-        largeIcon: const DrawableResourceAndroidBitmap('@mipmap/ic_launcher'),
-        color: const Color(0xFF4338CA),
+        largeIcon: const DrawableResourceAndroidBitmap('@drawable/ic_notification_large'),
+        color: const Color(0xFFEA580C),
+        styleInformation: BigTextStyleInformation(
+          body,
+          htmlFormatBigText: true,
+          contentTitle: title,
+          htmlFormatContentTitle: true,
+          summaryText: 'Acadeno CRM',
+        ),
       );
       final details = NotificationDetails(android: androidDetails);
       await _localNotifications.show(
@@ -255,6 +276,7 @@ class AppNotificationService {
         title: title,
         body: body,
         notificationDetails: details,
+        payload: payload,
       );
     } catch (e) {
       debugPrint('Error showing local notification: $e');

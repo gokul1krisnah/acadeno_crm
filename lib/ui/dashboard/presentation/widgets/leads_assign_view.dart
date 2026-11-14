@@ -16,6 +16,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:acadeno_crm/shared/theme/app_svgs.dart';
+import 'package:acadeno_crm/shared/widgets/acadeno_dropdown.dart';
 
 import '../../application/dashboard_cubit.dart';
 import 'figma_calendar_dialog.dart';
@@ -107,9 +108,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
     final action = await showDialog<String>(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Row(
           children: [
             const Icon(
@@ -484,354 +483,318 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
             child: Padding(
               padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
               child: ScrollConfiguration(
-                behavior: ScrollConfiguration.of(dCtx).copyWith(
-                  scrollbars: false,
-                ),
+                behavior: ScrollConfiguration.of(
+                  dCtx,
+                ).copyWith(scrollbars: false),
                 child: SingleChildScrollView(
                   child: Form(
-                  key: formKey,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Phone Lookup & Add Walk-in Lead',
-                        style: GoogleFonts.inter(
-                          fontWeight: FontWeight.w700,
-                          fontSize: 20,
-                          height: 27.5 / 20,
-                          letterSpacing: 0,
-                          color: const Color(0xFF0F172A),
-                        ),
-                      ),
-                      const Gap(6),
-                      Text(
-                        'Type a 10-digit phone number to check duplicates before saving.',
-                        style: GoogleFonts.inter(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w400,
-                          height: 21.13 / 13,
-                          letterSpacing: 0,
-                          color: const Color(0xFF64748B),
-                        ),
-                      ),
-                      const Gap(18),
-                      if (backendError != null) ...[
-                        Container(
-                          width: double.infinity,
-                          margin: const EdgeInsets.only(bottom: 14),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 14,
-                            vertical: 11,
-                          ),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFFEE2E2),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Row(
-                            children: [
-                              const Icon(
-                                Icons.error_outline_rounded,
-                                size: 18,
-                                color: Color(0xFFDC2626),
-                              ),
-                              const Gap(8),
-                              Expanded(
-                                child: Text(
-                                  backendError!,
-                                  style: GoogleFonts.inter(
-                                    color: const Color(0xFF991B1B),
-                                    fontSize: 12.5,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ),
-                            ],
+                    key: formKey,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Phone Lookup & Add Walk-in Lead',
+                          style: GoogleFonts.inter(
+                            fontWeight: FontWeight.w700,
+                            fontSize: 20,
+                            height: 27.5 / 20,
+                            letterSpacing: 0,
+                            color: const Color(0xFF0F172A),
                           ),
                         ),
-                      ],
-                      TextFormField(
-                        controller: phoneC,
-                        keyboardType: TextInputType.phone,
-                        textAlignVertical: TextAlignVertical.center,
-                        style: GoogleFonts.inter(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w400,
-                          height: 21.13 / 13,
-                          color: const Color(0xFF0F172A),
-                        ),
-                        decoration: InputDecoration(
-                          hintText: '10-digit mobile nu...',
-                          hintStyle: GoogleFonts.inter(
-                            color: const Color(0xFF94A3B8),
+                        const Gap(6),
+                        Text(
+                          'Type a 10-digit phone number to check duplicates before saving.',
+                          style: GoogleFonts.inter(
                             fontSize: 13,
+                            fontWeight: FontWeight.w400,
                             height: 21.13 / 13,
-                          ),
-                          filled: true,
-                          fillColor: const Color(0xFFF8FAFC),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(
-                              color: Color(0xFFE2E8F0),
-                              width: 1,
-                            ),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(
-                              color: Color(0xFFE2E8F0),
-                              width: 1,
-                            ),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(
-                              color: Color(0xFFD45107),
-                              width: 1.5,
-                            ),
-                          ),
-                          isDense: true,
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 16,
+                            letterSpacing: 0,
+                            color: const Color(0xFF64748B),
                           ),
                         ),
-                        validator: LeadPhoneValidator.validate,
-                      ),
-                      const Gap(14),
-                      TextFormField(
-                        controller: nameC,
-                        textAlignVertical: TextAlignVertical.center,
-                        style: GoogleFonts.inter(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w400,
-                          color: const Color(0xFF0F172A),
-                        ),
-                        decoration: InputDecoration(
-                          hintText: 'Student Name *',
-                          hintStyle: GoogleFonts.inter(
-                            color: const Color(0xFF94A3B8),
-                            fontSize: 13,
-                          ),
-                          filled: true,
-                          fillColor: const Color(0xFFF8FAFC),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(
-                              color: Color(0xFFE2E8F0),
-                              width: 1,
+                        const Gap(18),
+                        if (backendError != null) ...[
+                          Container(
+                            width: double.infinity,
+                            margin: const EdgeInsets.only(bottom: 14),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 11,
                             ),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(
-                              color: Color(0xFFE2E8F0),
-                              width: 1,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFFEE2E2),
+                              borderRadius: BorderRadius.circular(12),
                             ),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(
-                              color: Color(0xFFD45107),
-                              width: 1.5,
-                            ),
-                          ),
-                          isDense: true,
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 16,
-                          ),
-                        ),
-                        validator: (v) =>
-                            (v == null || v.trim().isEmpty) ? 'Required' : null,
-                      ),
-                      const Gap(14),
-                      CollegeSelectorField(
-                        controller: collegeC,
-                        additionalColleges: state.allLeads
-                            .map(
-                              (l) => l.collegeBranch
-                                  .split(RegExp(r'[·\-]'))
-                                  .first
-                                  .trim(),
-                            )
-                            .where((s) => s.isNotEmpty)
-                            .toList(),
-                      ),
-                      const Gap(14),
-                      Text(
-                        'Source Event / Consent',
-                        style: GoogleFonts.inter(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          color: const Color(0xFF334155),
-                        ),
-                      ),
-                      const Gap(6),
-                      Container(
-                        height: 54,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFF8FAFC),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: const Color(0xFFE2E8F0),
-                            width: 1,
-                          ),
-                        ),
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        child: DropdownButtonHideUnderline(
-                          child: DropdownButton<String>(
-                            value: source,
-                            isExpanded: true,
-                            dropdownColor: Colors.white,
-                            borderRadius: BorderRadius.circular(12),
-                            icon: const Icon(
-                              Icons.keyboard_arrow_down_rounded,
-                              color: Color(0xFF64748B),
-                              size: 22,
-                            ),
-                            style: GoogleFonts.inter(
-                              fontSize: 13.5,
-                              fontWeight: FontWeight.w400,
-                              color: const Color(0xFF0F172A),
-                            ),
-                            items: const [
-                              DropdownMenuItem(
-                                value: 'Direct visit',
-                                child: Text('Direct visit'),
-                              ),
-                              DropdownMenuItem(
-                                value: 'AI Webinar',
-                                child: Text('AI Webinar'),
-                              ),
-                              DropdownMenuItem(
-                                value: 'Python workshop',
-                                child: Text('Python workshop'),
-                              ),
-                              DropdownMenuItem(
-                                value: 'College visit',
-                                child: Text('College visit'),
-                              ),
-                              DropdownMenuItem(
-                                value: 'Add-on course',
-                                child: Text('Add-on course'),
-                              ),
-                            ],
-                            onChanged: (v) {
-                              if (v != null) {
-                                setD(() => source = v);
-                              }
-                            },
-                          ),
-                        ),
-                      ),
-                      const Gap(20),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: SizedBox(
-                              height: 48,
-                              child: OutlinedButton(
-                                onPressed: saving
-                                    ? null
-                                    : () => Navigator.pop(dCtx),
-                                style: OutlinedButton.styleFrom(
-                                  side: const BorderSide(
-                                    color: Color(0xFFE2E8F0),
-                                  ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(16),
+                            child: Row(
+                              children: [
+                                const Icon(
+                                  Icons.error_outline_rounded,
+                                  size: 18,
+                                  color: Color(0xFFDC2626),
+                                ),
+                                const Gap(8),
+                                Expanded(
+                                  child: Text(
+                                    backendError!,
+                                    style: GoogleFonts.inter(
+                                      color: const Color(0xFF991B1B),
+                                      fontSize: 12.5,
+                                      fontWeight: FontWeight.w600,
+                                    ),
                                   ),
                                 ),
-                                child: Text(
-                                  'Cancel',
-                                  style: GoogleFonts.inter(
-                                    color: const Color(0xFF475467),
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                          const Gap(12),
-                          Expanded(
-                            child: SizedBox(
-                              height: 48,
-                              child: ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFFD45107),
-                                  foregroundColor: Colors.white,
-                                  elevation: 0,
-                                  padding: const EdgeInsets.only(
-                                    top: 14.5,
-                                    bottom: 15.5,
-                                  ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(16),
-                                  ),
-                                ),
-                                onPressed: saving
-                                    ? null
-                                    : () async {
-                                        setD(() => backendError = null);
-                                        if (!formKey.currentState!.validate()) {
-                                          return;
-                                        }
-                                        setD(() => saving = true);
-                                        try {
-                                          await CollegeSelectorField.saveCollegeIfNew(
-                                            collegeC.text,
-                                          );
-                                          final created = await cubit
-                                              .createLead(
-                                                name: nameC.text.trim(),
-                                                phone: phoneC.text.trim(),
-                                                collegeBranch: collegeC.text
-                                                    .trim(),
-                                                source: source,
-                                                notes: notesC.text.trim(),
-                                              );
-                                          if (!dCtx.mounted) return;
-                                          Navigator.pop(dCtx);
-                                          if (created != null) {
-                                            _tryDashboardCubit()?.recordAudit(
-                                              action:
-                                                  'Added walk-in lead ($source)',
-                                              target:
-                                                  '${created.name} · ${created.phone}',
-                                              category: 'lead_create',
-                                            );
-                                          }
-                                        } catch (e) {
-                                          if (!dCtx.mounted) return;
-                                          setD(() {
-                                            saving = false;
-                                            backendError = e
-                                                .toString()
-                                                .replaceFirst('Exception: ', '')
-                                                .replaceFirst(
-                                                  'Invalid argument(s): ',
-                                                  '',
-                                                );
-                                          });
-                                        }
-                                      },
-                                child: Text(
-                                  'Save Walk-in Lead',
-                                  style: GoogleFonts.inter(
-                                    fontSize: 14.5,
-                                    fontWeight: FontWeight.w700,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ),
+                              ],
                             ),
                           ),
                         ],
-                      ),
-                    ],
+                        TextFormField(
+                          controller: phoneC,
+                          keyboardType: TextInputType.phone,
+                          textAlignVertical: TextAlignVertical.center,
+                          style: GoogleFonts.inter(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w400,
+                            height: 21.13 / 13,
+                            color: const Color(0xFF0F172A),
+                          ),
+                          decoration: InputDecoration(
+                            hintText: '10-digit mobile nu...',
+                            hintStyle: GoogleFonts.inter(
+                              color: const Color(0xFF94A3B8),
+                              fontSize: 13,
+                              height: 21.13 / 13,
+                            ),
+                            filled: true,
+                            fillColor: const Color(0xFFF8FAFC),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(
+                                color: Color(0xFFE2E8F0),
+                                width: 1,
+                              ),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(
+                                color: Color(0xFFE2E8F0),
+                                width: 1,
+                              ),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(
+                                color: Color(0xFFD45107),
+                                width: 1.5,
+                              ),
+                            ),
+                            isDense: true,
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 16,
+                            ),
+                          ),
+                          validator: LeadPhoneValidator.validate,
+                        ),
+                        const Gap(14),
+                        TextFormField(
+                          controller: nameC,
+                          textAlignVertical: TextAlignVertical.center,
+                          style: GoogleFonts.inter(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w400,
+                            color: const Color(0xFF0F172A),
+                          ),
+                          decoration: InputDecoration(
+                            hintText: 'Student Name *',
+                            hintStyle: GoogleFonts.inter(
+                              color: const Color(0xFF94A3B8),
+                              fontSize: 13,
+                            ),
+                            filled: true,
+                            fillColor: const Color(0xFFF8FAFC),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(
+                                color: Color(0xFFE2E8F0),
+                                width: 1,
+                              ),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(
+                                color: Color(0xFFE2E8F0),
+                                width: 1,
+                              ),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(
+                                color: Color(0xFFD45107),
+                                width: 1.5,
+                              ),
+                            ),
+                            isDense: true,
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 16,
+                            ),
+                          ),
+                          validator: (v) => (v == null || v.trim().isEmpty)
+                              ? 'Required'
+                              : null,
+                        ),
+                        const Gap(14),
+                        CollegeSelectorField(
+                          controller: collegeC,
+                          additionalColleges: state.allLeads
+                              .map(
+                                (l) => l.collegeBranch
+                                    .split(RegExp(r'[·\-]'))
+                                    .first
+                                    .trim(),
+                              )
+                              .where((s) => s.isNotEmpty)
+                              .toList(),
+                        ),
+                        const Gap(14),
+                        Text(
+                          'Source Event / Consent',
+                          style: GoogleFonts.inter(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: const Color(0xFF334155),
+                          ),
+                        ),
+                        const Gap(6),
+                        AcadenoDropdown.strings(
+                          value: source,
+                          borderRadius: 16.0,
+                          items: const [
+                            'Direct visit',
+                            'AI Webinar',
+                            'Python workshop',
+                            'College visit',
+                            'Add-on course',
+                          ],
+                          onChanged: (v) {
+                            if (v != null) {
+                              setD(() => source = v);
+                            }
+                          },
+                        ),
+                        const Gap(20),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: SizedBox(
+                                height: 48,
+                                child: OutlinedButton(
+                                  onPressed: saving
+                                      ? null
+                                      : () => Navigator.pop(dCtx),
+                                  style: OutlinedButton.styleFrom(
+                                    side: const BorderSide(
+                                      color: Color(0xFFE2E8F0),
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
+                                  ),
+                                  child: Text(
+                                    'Cancel',
+                                    style: GoogleFonts.inter(
+                                      color: const Color(0xFF475467),
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const Gap(12),
+                            Expanded(
+                              child: SizedBox(
+                                height: 48,
+                                child: ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: const Color(0xFFD45107),
+                                    foregroundColor: Colors.white,
+                                    elevation: 0,
+                                    padding: const EdgeInsets.only(
+                                      top: 14.5,
+                                      bottom: 15.5,
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
+                                  ),
+                                  onPressed: saving
+                                      ? null
+                                      : () async {
+                                          setD(() => backendError = null);
+                                          if (!formKey.currentState!
+                                              .validate()) {
+                                            return;
+                                          }
+                                          setD(() => saving = true);
+                                          try {
+                                            await CollegeSelectorField.saveCollegeIfNew(
+                                              collegeC.text,
+                                            );
+                                            final created = await cubit
+                                                .createLead(
+                                                  name: nameC.text.trim(),
+                                                  phone: phoneC.text.trim(),
+                                                  collegeBranch: collegeC.text
+                                                      .trim(),
+                                                  source: source,
+                                                  notes: notesC.text.trim(),
+                                                );
+                                            if (!dCtx.mounted) return;
+                                            Navigator.pop(dCtx);
+                                            if (created != null) {
+                                              _tryDashboardCubit()?.recordAudit(
+                                                action:
+                                                    'Added walk-in lead ($source)',
+                                                target:
+                                                    '${created.name} · ${created.phone}',
+                                                category: 'lead_create',
+                                              );
+                                            }
+                                          } catch (e) {
+                                            if (!dCtx.mounted) return;
+                                            setD(() {
+                                              saving = false;
+                                              backendError = e
+                                                  .toString()
+                                                  .replaceFirst(
+                                                    'Exception: ',
+                                                    '',
+                                                  )
+                                                  .replaceFirst(
+                                                    'Invalid argument(s): ',
+                                                    '',
+                                                  );
+                                            });
+                                          }
+                                        },
+                                  child: Text(
+                                    'Save Walk-in Lead',
+                                    style: GoogleFonts.inter(
+                                      fontSize: 14.5,
+                                      fontWeight: FontWeight.w700,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
-                ),
                 ),
               ),
             ),
@@ -856,6 +819,8 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
     );
     final collegeC = TextEditingController(text: lead.collegeBranch);
     final notesC = TextEditingController(text: lead.notes);
+    final courseC = TextEditingController(text: lead.course);
+    final batchC = TextEditingController(text: lead.batch);
 
     final statusOptions = <String>{
       'New',
@@ -879,6 +844,28 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
       'Workshop',
       lead.source,
     }.toList();
+    final courseOptions = <String>[
+      'AI & Python Workshop',
+      'Full Stack Development',
+      'Data Science & Analytics',
+      'Flutter & Mobile App Development',
+      'Cyber Security',
+      'Cloud Computing (AWS/GCP)',
+      'Digital Marketing',
+      'Embedded Systems & IoT',
+      if (lead.course.isNotEmpty &&
+          ![
+            'AI & Python Workshop',
+            'Full Stack Development',
+            'Data Science & Analytics',
+            'Flutter & Mobile App Development',
+            'Cyber Security',
+            'Cloud Computing (AWS/GCP)',
+            'Digital Marketing',
+            'Embedded Systems & IoT',
+          ].contains(lead.course))
+        lead.course,
+    ];
 
     String selectedStatus = lead.status;
     String selectedSource = lead.source;
@@ -896,7 +883,9 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
               : lead.name;
           final initials = LeadPhoneValidator.initialsFromName(displayName);
           final academicSubtitle = lead.course.trim().isNotEmpty
-              ? lead.course.trim()
+              ? (lead.batch.trim().isNotEmpty
+                    ? '${lead.course.trim()} · ${lead.batch.trim()}'
+                    : lead.course.trim())
               : 'B.Tech Engineering · 2025 Grad';
           final headerBadgeLabel =
               (selectedStatus.trim().toLowerCase() == 'new' && lead.isAssigned)
@@ -1466,120 +1455,87 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                                             ),
                                           ),
                                           const Gap(4),
-                                          SizedBox(
-                                            height: 40,
-                                            child: Stack(
-                                              alignment: Alignment.centerLeft,
-                                              children: [
-                                                Container(
-                                                  height: 40,
-                                                  decoration: BoxDecoration(
-                                                    color: const Color(
-                                                      0x80F8FAFC,
-                                                    ),
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                          12,
-                                                        ),
-                                                    border: Border.all(
-                                                      color: const Color(
-                                                        0xFFE2E8F0,
-                                                      ),
-                                                      width: 1,
-                                                    ),
-                                                  ),
-                                                  padding:
-                                                      const EdgeInsets.only(
-                                                        left: 13,
-                                                        right: 29,
-                                                      ),
-                                                  alignment:
-                                                      Alignment.centerLeft,
-                                                  child: DropdownButtonHideUnderline(
-                                                    child: DropdownButton<String>(
-                                                      value: selectedSource,
-                                                      isExpanded: true,
-                                                      isDense: true,
-                                                      dropdownColor:
-                                                          Colors.white,
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                            12,
-                                                          ),
-                                                      icon:
-                                                          const SizedBox.shrink(),
-                                                      style: GoogleFonts.inter(
-                                                        fontSize: 12.5,
-                                                        fontWeight:
-                                                            FontWeight.w500,
-                                                        color: const Color(
-                                                          0xFF0F172A,
-                                                        ),
-                                                        height: 24 / 12.5,
-                                                      ),
-                                                      items: sourceOptions
-                                                          .map(
-                                                            (
-                                                              s,
-                                                            ) => DropdownMenuItem(
-                                                              value: s,
-                                                              child: Text(
-                                                                s,
-                                                                overflow:
-                                                                    TextOverflow
-                                                                        .ellipsis,
-                                                                style: GoogleFonts.inter(
-                                                                  fontSize:
-                                                                      12.5,
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .w500,
-                                                                  color:
-                                                                      const Color(
-                                                                        0xFF0F172A,
-                                                                      ),
-                                                                ),
-                                                              ),
-                                                            ),
-                                                          )
-                                                          .toList(),
-                                                      onChanged: (v) {
-                                                        if (v != null) {
-                                                          setD(
-                                                            () =>
-                                                                selectedSource =
-                                                                    v,
-                                                          );
-                                                        }
-                                                      },
-                                                    ),
-                                                  ),
-                                                ),
-                                                Positioned(
-                                                  right: 28,
-                                                  child: IgnorePointer(
-                                                    child: SvgPicture.asset(
-                                                      AppSvgs
-                                                          .leadDetailChevronMd,
-                                                      width: 18.75,
-                                                      height: 18.75,
-                                                    ),
-                                                  ),
-                                                ),
-                                                Positioned(
-                                                  right: 10,
-                                                  child: IgnorePointer(
-                                                    child: SvgPicture.asset(
-                                                      AppSvgs
-                                                          .leadDetailChevronXs,
-                                                      width: 8,
-                                                      height: 4.85,
-                                                    ),
-                                                  ),
+                                          Container(
+                                            height: 47,
+                                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                                            alignment: Alignment.center,
+                                            decoration: BoxDecoration(
+                                              color: const Color(0xFFF5F5F5),
+                                              borderRadius: BorderRadius.circular(16),
+                                              border: Border.all(
+                                                color: const Color(0xFFE5E7EB),
+                                                width: 1,
+                                              ),
+                                              boxShadow: const [
+                                                BoxShadow(
+                                                  color: Color(0x0D764BA2),
+                                                  blurRadius: 5,
+                                                  offset: Offset(0, 2),
                                                 ),
                                               ],
                                             ),
-                                          ),
+                                            child: DropdownButtonHideUnderline(
+                                              child: Theme(
+                                                data: Theme.of(dCtx).copyWith(
+                                                  hoverColor: Colors.transparent,
+                                                  focusColor: Colors.transparent,
+                                                  splashColor: Colors.transparent,
+                                                  highlightColor: Colors.transparent,
+                                                ),
+                                                child: DropdownButton<String>(
+                                                  value: selectedSource,
+                                                  focusColor: Colors.transparent,
+                                                  isExpanded: true,
+                                                  isDense: true,
+                                                  dropdownColor: const Color(0xFFE2E2E2),
+                                                  borderRadius: BorderRadius.circular(12),
+                                                  icon: const Icon(
+                                                    Icons.keyboard_arrow_down_rounded,
+                                                    size: 20,
+                                                    color: Color(0xFF2E1D44),
+                                                  ),
+                                                  style: GoogleFonts.inter(
+                                                    fontSize: 13.5,
+                                                    fontWeight: FontWeight.w500,
+                                                    color: const Color(0xFF2E1D44),
+                                                  ),
+                                                  selectedItemBuilder: (context) => sourceOptions
+                                                      .map(
+                                                        (s) => Align(
+                                                          alignment: Alignment.centerLeft,
+                                                          child: Text(
+                                                            s,
+                                                            maxLines: 1,
+                                                            overflow: TextOverflow.ellipsis,
+                                                            style: GoogleFonts.inter(
+                                                              fontSize: 13.5,
+                                                              fontWeight: FontWeight.w500,
+                                                              color: const Color(0xFF2E1D44),
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      )
+                                                      .toList(),
+                                                  items: sourceOptions
+                                                      .map(
+                                                        (s) => DropdownMenuItem(
+                                                          value: s,
+                                                          child: AcadenoDropdown.buildMenuItemChild(
+                                                            label: s,
+                                                            isSelected: s == selectedSource,
+                                                          ),
+                                                        ),
+                                                      )
+                                                      .toList(),
+                                                  onChanged: (v) {
+                                                    if (v != null) {
+                                                      setD(() => selectedSource = v);
+                                                    }
+                                                  },
+                                                ),
+                                              ),
+                                            ),
+                                          )
                                         ],
                                       ),
                                     ),
@@ -1600,120 +1556,87 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                                             ),
                                           ),
                                           const Gap(4),
-                                          SizedBox(
-                                            height: 40,
-                                            child: Stack(
-                                              alignment: Alignment.centerLeft,
-                                              children: [
-                                                Container(
-                                                  height: 40,
-                                                  decoration: BoxDecoration(
-                                                    color: const Color(
-                                                      0x80F8FAFC,
-                                                    ),
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                          12,
-                                                        ),
-                                                    border: Border.all(
-                                                      color: const Color(
-                                                        0xFFE2E8F0,
-                                                      ),
-                                                      width: 1,
-                                                    ),
-                                                  ),
-                                                  padding:
-                                                      const EdgeInsets.only(
-                                                        left: 13,
-                                                        right: 29,
-                                                      ),
-                                                  alignment:
-                                                      Alignment.centerLeft,
-                                                  child: DropdownButtonHideUnderline(
-                                                    child: DropdownButton<String>(
-                                                      value: selectedStatus,
-                                                      isExpanded: true,
-                                                      isDense: true,
-                                                      dropdownColor:
-                                                          Colors.white,
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                            12,
-                                                          ),
-                                                      icon:
-                                                          const SizedBox.shrink(),
-                                                      style: GoogleFonts.inter(
-                                                        fontSize: 12.5,
-                                                        fontWeight:
-                                                            FontWeight.w500,
-                                                        color: const Color(
-                                                          0xFF0F172A,
-                                                        ),
-                                                        height: 24 / 12.5,
-                                                      ),
-                                                      items: statusOptions
-                                                          .map(
-                                                            (
-                                                              s,
-                                                            ) => DropdownMenuItem(
-                                                              value: s,
-                                                              child: Text(
-                                                                s,
-                                                                overflow:
-                                                                    TextOverflow
-                                                                        .ellipsis,
-                                                                style: GoogleFonts.inter(
-                                                                  fontSize:
-                                                                      12.5,
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .w500,
-                                                                  color:
-                                                                      const Color(
-                                                                        0xFF0F172A,
-                                                                      ),
-                                                                ),
-                                                              ),
-                                                            ),
-                                                          )
-                                                          .toList(),
-                                                      onChanged: (v) {
-                                                        if (v != null) {
-                                                          setD(
-                                                            () =>
-                                                                selectedStatus =
-                                                                    v,
-                                                          );
-                                                        }
-                                                      },
-                                                    ),
-                                                  ),
-                                                ),
-                                                Positioned(
-                                                  right: 28,
-                                                  child: IgnorePointer(
-                                                    child: SvgPicture.asset(
-                                                      AppSvgs
-                                                          .leadDetailChevronMd,
-                                                      width: 18.75,
-                                                      height: 18.75,
-                                                    ),
-                                                  ),
-                                                ),
-                                                Positioned(
-                                                  right: 10,
-                                                  child: IgnorePointer(
-                                                    child: SvgPicture.asset(
-                                                      AppSvgs
-                                                          .leadDetailChevronXs,
-                                                      width: 8,
-                                                      height: 4.85,
-                                                    ),
-                                                  ),
+                                          Container(
+                                            height: 47,
+                                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                                            alignment: Alignment.center,
+                                            decoration: BoxDecoration(
+                                              color: const Color(0xFFF5F5F5),
+                                              borderRadius: BorderRadius.circular(16),
+                                              border: Border.all(
+                                                color: const Color(0xFFE5E7EB),
+                                                width: 1,
+                                              ),
+                                              boxShadow: const [
+                                                BoxShadow(
+                                                  color: Color(0x0D764BA2),
+                                                  blurRadius: 5,
+                                                  offset: Offset(0, 2),
                                                 ),
                                               ],
                                             ),
-                                          ),
+                                            child: DropdownButtonHideUnderline(
+                                              child: Theme(
+                                                data: Theme.of(dCtx).copyWith(
+                                                  hoverColor: Colors.transparent,
+                                                  focusColor: Colors.transparent,
+                                                  splashColor: Colors.transparent,
+                                                  highlightColor: Colors.transparent,
+                                                ),
+                                                child: DropdownButton<String>(
+                                                  value: selectedStatus,
+                                                  focusColor: Colors.transparent,
+                                                  isExpanded: true,
+                                                  isDense: true,
+                                                  dropdownColor: const Color(0xFFE2E2E2),
+                                                  borderRadius: BorderRadius.circular(12),
+                                                  icon: const Icon(
+                                                    Icons.keyboard_arrow_down_rounded,
+                                                    size: 20,
+                                                    color: Color(0xFF2E1D44),
+                                                  ),
+                                                  style: GoogleFonts.inter(
+                                                    fontSize: 13.5,
+                                                    fontWeight: FontWeight.w500,
+                                                    color: const Color(0xFF2E1D44),
+                                                  ),
+                                                  selectedItemBuilder: (context) => statusOptions
+                                                      .map(
+                                                        (s) => Align(
+                                                          alignment: Alignment.centerLeft,
+                                                          child: Text(
+                                                            s,
+                                                            maxLines: 1,
+                                                            overflow: TextOverflow.ellipsis,
+                                                            style: GoogleFonts.inter(
+                                                              fontSize: 13.5,
+                                                              fontWeight: FontWeight.w500,
+                                                              color: const Color(0xFF2E1D44),
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      )
+                                                      .toList(),
+                                                  items: statusOptions
+                                                      .map(
+                                                        (s) => DropdownMenuItem(
+                                                          value: s,
+                                                          child: AcadenoDropdown.buildMenuItemChild(
+                                                            label: s,
+                                                            isSelected: s == selectedStatus,
+                                                          ),
+                                                        ),
+                                                      )
+                                                      .toList(),
+                                                  onChanged: (v) {
+                                                    if (v != null) {
+                                                      setD(() => selectedStatus = v);
+                                                    }
+                                                  },
+                                                ),
+                                              ),
+                                            ),
+                                          )
                                         ],
                                       ),
                                     ),
@@ -1724,6 +1647,133 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                           ),
                         ),
                         const Gap(12),
+
+                        // Converted Enrolment Details (when Converted or Course/Batch present)
+                        if (selectedStatus == 'Converted' ||
+                            lead.status == 'Converted' ||
+                            courseC.text.isNotEmpty ||
+                            batchC.text.isNotEmpty) ...[
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(15),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF0FDF4),
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
+                                color: const Color(0xFFBBF7D0),
+                                width: 1,
+                              ),
+                              boxShadow: const [
+                                BoxShadow(
+                                  color: Color(0x0A000000),
+                                  blurRadius: 1,
+                                  offset: Offset(0, 1),
+                                ),
+                              ],
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    const Icon(
+                                      Icons.school_rounded,
+                                      size: 16,
+                                      color: Color(0xFF16A34A),
+                                    ),
+                                    const Gap(6),
+                                    Text(
+                                      'ENROLMENT DETAILS (CONVERTED)',
+                                      style: GoogleFonts.inter(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w700,
+                                        color: const Color(0xFF166534),
+                                        letterSpacing: 0.55,
+                                        height: 16.5 / 11,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const Gap(11),
+                                Text(
+                                  'Course / Workshop',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 11.5,
+                                    fontWeight: FontWeight.w700,
+                                    color: const Color(0xFF334155),
+                                    height: 17.25 / 11.5,
+                                  ),
+                                ),
+                                const Gap(4),
+                                AcadenoDropdown.strings(
+                                  value: courseOptions.contains(courseC.text)
+                                      ? courseC.text
+                                      : (courseC.text.isNotEmpty
+                                            ? courseC.text
+                                            : courseOptions.first),
+                                  items: courseOptions,
+                                  onChanged: (v) {
+                                    if (v != null) {
+                                      setD(() => courseC.text = v);
+                                    }
+                                  },
+                                ),
+                                const Gap(11),
+                                Text(
+                                  'Batch',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 11.5,
+                                    fontWeight: FontWeight.w700,
+                                    color: const Color(0xFF334155),
+                                    height: 17.25 / 11.5,
+                                  ),
+                                ),
+                                const Gap(4),
+                                Container(
+                                  height: 47,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFF5F5F5),
+                                    borderRadius: BorderRadius.circular(16),
+                                    border: Border.all(
+                                      color: const Color(0xFFE5E7EB),
+                                      width: 1,
+                                    ),
+                                    boxShadow: const [
+                                      BoxShadow(
+                                        color: Color(0x0D764BA2),
+                                        blurRadius: 5,
+                                        offset: Offset(0, 2),
+                                      ),
+                                    ],
+                                  ),
+                                  alignment: Alignment.centerLeft,
+                                  child: TextFormField(
+                                    controller: batchC,
+                                    style: GoogleFonts.inter(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w500,
+                                      color: const Color(0xFF0F172A),
+                                    ),
+                                    decoration: const InputDecoration(
+                                      isDense: true,
+                                      border: InputBorder.none,
+                                      hintText: 'e.g. Batch A / Morning',
+                                      hintStyle: TextStyle(
+                                        color: Color(0xFF94A3B8),
+                                        fontSize: 13,
+                                      ),
+                                      contentPadding: EdgeInsets.zero,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const Gap(12),
+                        ],
 
                         // 1749:563 - Section - Quick Notes Bento Box
                         Container(
@@ -1857,6 +1907,16 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                                         source: selectedSource,
                                         status: selectedStatus,
                                         notes: notesC.text.trim(),
+                                        course:
+                                            (selectedStatus == 'Converted' ||
+                                                courseC.text.isNotEmpty)
+                                            ? courseC.text.trim()
+                                            : null,
+                                        batch:
+                                            (selectedStatus == 'Converted' ||
+                                                batchC.text.isNotEmpty)
+                                            ? batchC.text.trim()
+                                            : null,
                                       );
                                       if (selectedStatus == 'Opted out') {
                                         await cubit.markLeadOptedOut(
@@ -1942,11 +2002,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
         const Color(0xFF166534),
         Border.all(color: const Color(0xFFDCFCE7), width: 1),
       ),
-      'assigned' => (
-        const Color(0xFFEEF2FF),
-        const Color(0xFF4F46E5),
-        null,
-      ),
+      'assigned' => (const Color(0xFFEEF2FF), const Color(0xFF4F46E5), null),
       'follow-up' || 'followup' => (
         const Color(0xFFFFF7ED),
         const Color(0xFFEA580C),
@@ -1967,16 +2023,8 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
         const Color(0xFF166534),
         Border.all(color: const Color(0xFFDCFCE7), width: 1),
       ),
-      'new' => (
-        const Color(0xFFF3F4F6),
-        const Color(0xFF4B5563),
-        null,
-      ),
-      _ => (
-        const Color(0xFFF3F4F6),
-        const Color(0xFF4B5563),
-        null,
-      ),
+      'new' => (const Color(0xFFF3F4F6), const Color(0xFF4B5563), null),
+      _ => (const Color(0xFFF3F4F6), const Color(0xFF4B5563), null),
     };
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 3.5),
@@ -2019,52 +2067,77 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
         ),
         const Gap(8),
         Container(
-          height: 42,
+          height: 47,
           padding: const EdgeInsets.symmetric(horizontal: 16),
           decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(8),
+            color: const Color(0xFFF5F5F5),
+            borderRadius: BorderRadius.circular(16),
             border: Border.all(color: const Color(0xFFE5E7EB), width: 1),
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x0D764BA2),
+                blurRadius: 5,
+                offset: Offset(0, 2),
+              ),
+            ],
           ),
           alignment: Alignment.center,
           child: DropdownButtonHideUnderline(
-            child: DropdownButton<String>(
-              value: value,
-              isExpanded: true,
-              isDense: true,
-              dropdownColor: Colors.white,
-              borderRadius: BorderRadius.circular(8),
-              icon: const Icon(
-                Icons.keyboard_arrow_down_rounded,
-                size: 20,
-                color: Color(0xFF9CA3AF),
+            child: Theme(
+              data: Theme.of(context).copyWith(
+                hoverColor: Colors.transparent,
+                focusColor: Colors.transparent,
+                splashColor: Colors.transparent,
+                highlightColor: Colors.transparent,
               ),
-              style: GoogleFonts.poppins(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-                color: const Color(0xFF1A1A1A),
-                height: 20 / 14,
-              ),
-              items: safeItems
-                  .map(
-                    (e) => DropdownMenuItem(
-                      value: e,
-                      child: Text(
-                        e,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.poppins(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                          color: const Color(0xFF1A1A1A),
+              child: DropdownButton<String>(
+                value: value,
+                focusColor: Colors.transparent,
+                isExpanded: true,
+                isDense: true,
+                dropdownColor: const Color(0xFFE2E2E2),
+                borderRadius: BorderRadius.circular(12),
+                icon: const Icon(
+                  Icons.keyboard_arrow_down_rounded,
+                  size: 20,
+                  color: Color(0xFF2E1D44),
+                ),
+                style: GoogleFonts.inter(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: const Color(0xFF2E1D44),
+                ),
+                selectedItemBuilder: (context) => safeItems
+                    .map(
+                      (e) => Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          e,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.inter(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                            color: const Color(0xFF2E1D44),
+                          ),
                         ),
                       ),
-                    ),
-                  )
-                  .toList(),
-              onChanged: (v) {
-                if (v != null) onChanged(v);
-              },
+                    )
+                    .toList(),
+                items: safeItems
+                    .map(
+                      (e) => DropdownMenuItem(
+                        value: e,
+                        child: AcadenoDropdown.buildMenuItemChild(
+                          label: e,
+                          isSelected: e == value,
+                        ),
+                      ),
+                    )
+                    .toList(),
+                onChanged: (v) {
+                  if (v != null) onChanged(v);
+                },
+              ),
             ),
           ),
         ),
@@ -2291,7 +2364,11 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                           ),
                         ),
                         onPressed: () => _openAddLeadDialog(context, state),
-                        icon: const Icon(Icons.add, size: 14, color: Colors.white),
+                        icon: const Icon(
+                          Icons.add,
+                          size: 14,
+                          color: Colors.white,
+                        ),
                         label: Text(
                           'Add lead',
                           textAlign: TextAlign.center,
@@ -2519,8 +2596,8 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                   final colW = availableW >= 560
                       ? math.max(100.0, (availableW - 20) / 3)
                       : (availableW >= 360
-                          ? math.max(100.0, (availableW - 10) / 2)
-                          : availableW);
+                            ? math.max(100.0, (availableW - 10) / 2)
+                            : availableW);
                   return Wrap(
                     spacing: 10,
                     runSpacing: 10,
@@ -2550,9 +2627,14 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                     barC.maxWidth < 820;
 
                 final safeExecutives = state.activeExecutives;
-                final safeSelectedExecUid = safeExecutives.any((e) => e.uid == state.selectedExecutive?.uid)
+                final safeSelectedExecUid =
+                    safeExecutives.any(
+                      (e) => e.uid == state.selectedExecutive?.uid,
+                    )
                     ? state.selectedExecutive?.uid
-                    : (safeExecutives.isNotEmpty ? safeExecutives.first.uid : null);
+                    : (safeExecutives.isNotEmpty
+                          ? safeExecutives.first.uid
+                          : null);
 
                 final execDropdown = Container(
                   height: 38,
@@ -2562,7 +2644,10 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                   decoration: BoxDecoration(
                     color: const Color(0xFF1F2937),
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: const Color(0xFF374151), width: 1),
+                    border: Border.all(
+                      color: const Color(0xFF374151),
+                      width: 1,
+                    ),
                   ),
                   child: DropdownButtonHideUnderline(
                     child: safeExecutives.isEmpty
@@ -2613,83 +2698,70 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                   ),
                 );
 
-                final safeDateOptions = state.dateOptions.any((d) => d.dateKey == state.selectedDateKey)
-                    ? state.dateOptions
-                    : [(dateKey: state.selectedDateKey, label: state.selectedDateLabel), ...state.dateOptions];
+                final selectedDateDisplayLabel =
+                    state.dateOptions
+                        .where((d) => d.dateKey == state.selectedDateKey)
+                        .map((d) => d.label)
+                        .firstOrNull ??
+                    state.selectedDateLabel;
 
-                final dateDropdown = Container(
-                  height: 38,
-                  width: isMobileBar ? null : 147.75,
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF1F2937),
+                final dateDropdown = Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: () async {
+                      final now = DateTime.now();
+                      final parsed =
+                          DateTime.tryParse(state.selectedDateKey) ?? now;
+                      final picked = await showFigmaCalendarDialog(
+                        context: context,
+                        initialDate: parsed,
+                        firstDate: DateTime(2024),
+                        lastDate: DateTime(2030),
+                      );
+                      if (picked != null) {
+                        cubit.selectCustomAssignmentDate(picked);
+                      }
+                    },
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: const Color(0xFF374151), width: 1),
-                  ),
-                  child: Row(
-                    mainAxisSize: isMobileBar
-                        ? MainAxisSize.max
-                        : MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Expanded(
-                        child: DropdownButtonHideUnderline(
-                          child: DropdownButton<String>(
-                            dropdownColor: const Color(0xFF1F2937),
-                            borderRadius: BorderRadius.circular(8),
-                            value: state.selectedDateKey,
-                            isDense: true,
-                            isExpanded: true,
-                            icon: const SizedBox.shrink(),
-                            style: GoogleFonts.poppins(
-                              color: Colors.white,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w500,
+                    child: Container(
+                      height: 38,
+                      width: isMobileBar ? null : 147.75,
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF1F2937),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: const Color(0xFF374151),
+                          width: 1,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: isMobileBar
+                            ? MainAxisSize.max
+                            : MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Expanded(
+                            child: Text(
+                              selectedDateDisplayLabel,
+                              overflow: TextOverflow.ellipsis,
+                              style: GoogleFonts.poppins(
+                                color: Colors.white,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                              ),
                             ),
-                            items: safeDateOptions
-                                .map(
-                                  (d) => DropdownMenuItem<String>(
-                                    value: d.dateKey,
-                                    child: Text(
-                                      d.label,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ),
-                                )
-                                .toList(),
-                            onChanged: (key) {
-                              if (key != null) {
-                                cubit.selectAssignmentDate(key);
-                              }
-                            },
                           ),
-                        ),
+                          const Gap(8),
+                          const Icon(
+                            Icons.calendar_month_rounded,
+                            size: 16,
+                            color: Color(0xFF818CF8),
+                          ),
+                        ],
                       ),
-                      const Gap(8),
-                      InkWell(
-                        onTap: () async {
-                          final now = DateTime.now();
-                          final parsed =
-                              DateTime.tryParse(state.selectedDateKey) ?? now;
-                          final picked = await showFigmaCalendarDialog(
-                            context: context,
-                            initialDate: parsed,
-                            firstDate: DateTime(2024),
-                            lastDate: DateTime(2030),
-                          );
-                          if (picked != null) {
-                            cubit.selectCustomAssignmentDate(picked);
-                          }
-                        },
-                        borderRadius: BorderRadius.circular(4),
-                        child: const Icon(
-                          Icons.calendar_month_rounded,
-                          size: 16,
-                          color: Color(0xFF818CF8),
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
                 );
 
@@ -2710,7 +2782,10 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                       disabledBackgroundColor: const Color(0xFF1F2937),
                       disabledForegroundColor: const Color(0xFF9CA3AF),
                       elevation: 0,
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                         side: BorderSide(
@@ -3024,11 +3099,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                 if (isNarrow) {
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      textWidget,
-                      const Gap(12),
-                      buttons,
-                    ],
+                    children: [textWidget, const Gap(12), buttons],
                   );
                 }
 
@@ -3037,10 +3108,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      textWidget,
-                      buttons,
-                    ],
+                    children: [textWidget, buttons],
                   ),
                 );
               },
@@ -3071,7 +3139,9 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
             border: Border.all(
               color: value
                   ? activeColor
-                  : (isRowHovered ? const Color(0xFF334155) : const Color(0xFF767676)),
+                  : (isRowHovered
+                        ? const Color(0xFF334155)
+                        : const Color(0xFF767676)),
               width: 1.0,
             ),
           ),
@@ -3255,16 +3325,10 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                       ],
                     ),
                   ),
-                  Expanded(
-                    flex: 7,
-                    child: Text('COLLEGE - BRANCH', style: h),
-                  ),
+                  Expanded(flex: 7, child: Text('COLLEGE - BRANCH', style: h)),
                   Expanded(flex: 5, child: Text('SOURCE', style: h)),
                   Expanded(flex: 4, child: Text('STATUS', style: h)),
-                  Expanded(
-                    flex: 5,
-                    child: Text('LAST CONTACT', style: h),
-                  ),
+                  Expanded(flex: 5, child: Text('LAST CONTACT', style: h)),
                   Expanded(flex: 5, child: Text('ASSIGNED TO', style: h)),
                 ],
               ),
@@ -3322,11 +3386,7 @@ class _FigmaRightBorderPainter extends CustomPainter {
     path.moveTo(w - r, 0);
 
     // Outer top-right arc (circular radius r)
-    path.arcToPoint(
-      Offset(w, r),
-      radius: Radius.circular(r),
-      clockwise: true,
-    );
+    path.arcToPoint(Offset(w, r), radius: Radius.circular(r), clockwise: true);
 
     // Outer straight right vertical line
     path.lineTo(w, h - r);
@@ -3378,7 +3438,8 @@ class _DesktopLeadTableRow extends StatefulWidget {
     required ValueChanged<bool?> onChanged,
     Color activeColor,
     bool isRowHovered,
-  }) checkboxBuilder;
+  })
+  checkboxBuilder;
 
   const _DesktopLeadTableRow({
     required this.lead,
@@ -3542,7 +3603,31 @@ class _DesktopLeadTableRowState extends State<_DesktopLeadTableRow> {
                         flex: 4,
                         child: Align(
                           alignment: Alignment.centerLeft,
-                          child: widget.statusBadge,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              widget.statusBadge,
+                              if (r.status.toLowerCase() == 'converted' &&
+                                  (r.course.isNotEmpty ||
+                                      r.batch.isNotEmpty)) ...[
+                                const Gap(4),
+                                Text(
+                                  [
+                                    if (r.course.isNotEmpty) r.course,
+                                    if (r.batch.isNotEmpty) r.batch,
+                                  ].join(' · '),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: GoogleFonts.inter(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                    color: const Color(0xFF166534),
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
                         ),
                       ),
                       Expanded(
@@ -3601,7 +3686,8 @@ class _MobileLeadCardRow extends StatefulWidget {
     required ValueChanged<bool?> onChanged,
     Color activeColor,
     bool isRowHovered,
-  }) checkboxBuilder;
+  })
+  checkboxBuilder;
 
   const _MobileLeadCardRow({
     required this.lead,

@@ -1,9 +1,9 @@
-import 'package:flutter/cupertino.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:gap/gap.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:acadeno_crm/core/router/app_router.dart';
-import 'package:acadeno_crm/shared/extensions/build_context_extension.dart';
 import 'package:acadeno_crm/shared/snackbar_alerts/snack_alert.dart';
+import 'package:acadeno_crm/shared/theme/app_svgs.dart';
 import 'package:acadeno_crm/shared/widgets/staff_watermark_overlay.dart';
 import 'package:acadeno_crm/ui/auth/data/repository/firebase_auth_repo.dart';
 import 'package:acadeno_crm/ui/auth/data/sources/firebase_auth_rds.dart';
@@ -27,6 +27,7 @@ import 'package:acadeno_crm/ui/leads/application/leads_state.dart';
 import 'package:acadeno_crm/ui/leads/data/repository/leads_repo.dart';
 import 'package:acadeno_crm/ui/leads/data/sources/leads_rds.dart';
 import 'package:acadeno_crm/ui/leads/presentation/leads_tab_view.dart';
+import 'package:acadeno_crm/ui/leads/presentation/my_records_tab_view.dart';
 import 'package:acadeno_crm/ui/visits/application/visits_cubit.dart';
 import 'package:acadeno_crm/ui/visits/application/visits_state.dart';
 import 'package:acadeno_crm/ui/visits/data/repository/visits_repo.dart';
@@ -170,12 +171,13 @@ class _HomeScaffoldViewState extends State<_HomeScaffoldView> {
                                   0 => LeadsTabView(onLogout: _performLogout),
                                   1 => const FollowUpsTabView(),
                                   2 => const VisitsTabView(),
-                                  3 => const AlertsTabView(),
+                                  3 => const MyRecordsTabView(),
+                                  4 => const AlertsTabView(),
                                   _ => LeadsTabView(onLogout: _performLogout),
                                 },
                               ),
 
-                              // Bottom Navigation Bar (Exact match to Figma 1350:1670)
+                              // Bottom Navigation Bar (Exact match to Figma 1824:1808)
                               _ExecutiveBottomNavBar(
                                 currentIndex: state.bottomNavIndex,
                                 onSelect: cubit.selectBottomNav,
@@ -196,6 +198,20 @@ class _HomeScaffoldViewState extends State<_HomeScaffoldView> {
   }
 }
 
+class _BottomNavItem {
+  final String label;
+  final String svgAsset;
+  final double iconWidth;
+  final double iconHeight;
+
+  const _BottomNavItem({
+    required this.label,
+    required this.svgAsset,
+    this.iconWidth = 18,
+    this.iconHeight = 18,
+  });
+}
+
 class _ExecutiveBottomNavBar extends StatelessWidget {
   final int currentIndex;
   final ValueChanged<int> onSelect;
@@ -206,79 +222,119 @@ class _ExecutiveBottomNavBar extends StatelessWidget {
   });
 
   static const _items = [
-    (CupertinoIcons.phone_fill, 'Today'),
-    (CupertinoIcons.clock, 'Follow-ups'),
-    (Icons.location_on_rounded, 'Visits'),
-    (CupertinoIcons.bell, 'Alerts'),
+    _BottomNavItem(
+      label: 'Today',
+      svgAsset: AppSvgs.navToday,
+      iconWidth: 16,
+      iconHeight: 16,
+    ),
+    _BottomNavItem(
+      label: 'Follow-ups',
+      svgAsset: AppSvgs.navFollowups,
+      iconWidth: 18,
+      iconHeight: 18,
+    ),
+    _BottomNavItem(
+      label: 'Visits',
+      svgAsset: AppSvgs.navVisits,
+      iconWidth: 13.5,
+      iconHeight: 18,
+    ),
+    _BottomNavItem(
+      label: 'My Records',
+      svgAsset: AppSvgs.navRecords,
+      iconWidth: 20,
+      iconHeight: 18,
+    ),
+    _BottomNavItem(
+      label: 'Alerts',
+      svgAsset: AppSvgs.navAlerts,
+      iconWidth: 15.75,
+      iconHeight: 18,
+    ),
   ];
 
   @override
   Widget build(BuildContext context) {
-    final hPad = context.devicePadding.clamp(16.0, 24.0);
+    final bottomInset = MediaQuery.paddingOf(context).bottom;
     final isShortScreen = MediaQuery.sizeOf(context).height < 500;
-    final vPad = isShortScreen ? 8.0 : 16.0;
+    final topPad = isShortScreen ? 8.0 : 12.0;
+    final bottomPad = bottomInset > 0 ? bottomInset + 4.0 : (isShortScreen ? 8.0 : 12.0);
 
     return Container(
       decoration: const BoxDecoration(
         color: Colors.white,
-        border: Border(top: BorderSide(color: Color(0xFFF3F4F6))),
+        border: Border(
+          top: BorderSide(
+            color: Color(0xFFF3F4F6),
+            width: 1,
+          ),
+        ),
       ),
-      padding: EdgeInsets.fromLTRB(
-        hPad,
-        vPad,
-        hPad,
-        MediaQuery.paddingOf(context).bottom > 0
-            ? MediaQuery.paddingOf(context).bottom + (isShortScreen ? 4 : 8)
-            : vPad,
-      ),
+      padding: EdgeInsets.fromLTRB(6, topPad, 6, bottomPad),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: List.generate(_items.length, (index) {
           final isSelected = index == currentIndex;
           final item = _items[index];
 
-          return GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onTap: () => onSelect(index),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 4),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    width: isSelected ? 56 : 28,
-                    height: isSelected ? 36 : 28,
-                    decoration: BoxDecoration(
-                      color: isSelected
-                          ? const Color(0xFFEEF2FF)
-                          : Colors.transparent,
-                      borderRadius: BorderRadius.circular(9999),
+          return Expanded(
+            child: Semantics(
+              button: true,
+              selected: isSelected,
+              label: item.label,
+              child: InkWell(
+                onTap: () => onSelect(index),
+                splashColor: Colors.transparent,
+                highlightColor: Colors.transparent,
+                hoverColor: Colors.transparent,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    // Icon container (Active: 56x36 pill #EEF2FF; Inactive: 56x36 transparent)
+                    Container(
+                      width: 56,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: isSelected
+                            ? const Color(0xFFEEF2FF)
+                            : Colors.transparent,
+                        borderRadius: BorderRadius.circular(9999),
+                      ),
+                      alignment: Alignment.center,
+                      child: SvgPicture.asset(
+                        item.svgAsset,
+                        width: item.iconWidth,
+                        height: item.iconHeight,
+                        colorFilter: ColorFilter.mode(
+                          isSelected
+                              ? const Color(0xFF6366F1)
+                              : const Color(0xFF9CA3AF),
+                          BlendMode.srcIn,
+                        ),
+                      ),
                     ),
-                    alignment: Alignment.center,
-                    child: Icon(
-                      item.$1,
-                      size: isSelected ? 16 : 18,
-                      color: isSelected
-                          ? const Color(0xFF6366F1)
-                          : const Color(0xFF9CA3AF),
+                    const Gap(4),
+                    Text(
+                      item.label,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.inter(
+                        fontSize: 10,
+                        fontWeight: isSelected
+                            ? FontWeight.w700
+                            : FontWeight.w500,
+                        color: isSelected
+                            ? const Color(0xFF6366F1)
+                            : const Color(0xFF9CA3AF),
+                        height: 15 / 10,
+                        letterSpacing: isSelected ? 0.2832 : 0.1,
+                      ),
                     ),
-                  ),
-                  const Gap(4),
-                  Text(
-                    item.$2,
-                    style: GoogleFonts.inter(
-                      fontSize: 10,
-                      fontWeight: isSelected
-                          ? FontWeight.w700
-                          : FontWeight.w500,
-                      color: isSelected
-                          ? const Color(0xFF6366F1)
-                          : const Color(0xFF9CA3AF),
-                      height: 15 / 10,
-                      letterSpacing: isSelected ? 0.2832 : 0.13,
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           );

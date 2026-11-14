@@ -12,6 +12,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:acadeno_crm/shared/extensions/build_context_extension.dart';
 import 'package:acadeno_crm/shared/theme/app_svgs.dart';
+import 'package:acadeno_crm/ui/dashboard/presentation/widgets/figma_calendar_dialog.dart';
 import 'package:acadeno_crm/ui/visits/application/visits_cubit.dart';
 import 'package:acadeno_crm/ui/visits/application/visits_state.dart';
 import 'package:acadeno_crm/ui/visits/data/model/visit_models.dart';
@@ -1488,7 +1489,7 @@ class _VisitsTabViewState extends State<VisitsTabView> {
                       const Gap(14),
                       InkWell(
                         onTap: () async {
-                          final picked = await showDatePicker(
+                          final picked = await showFigmaCalendarDialog(
                             context: ctx,
                             initialDate: selectedDate,
                             firstDate: DateTime(2024),

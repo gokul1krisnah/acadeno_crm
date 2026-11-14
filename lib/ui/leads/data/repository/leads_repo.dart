@@ -51,6 +51,8 @@ class LeadsRepository {
     required String source,
     required String status,
     String? notes,
+    String? course,
+    String? batch,
   }) => _rds.updateLead(
     leadId: leadId,
     name: name,
@@ -59,6 +61,8 @@ class LeadsRepository {
     source: source,
     status: status,
     notes: notes,
+    course: course,
+    batch: batch,
   );
 
   Future<AssignmentBatchSummary> assignLeadsToExecutive({

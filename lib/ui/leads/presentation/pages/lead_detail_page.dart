@@ -8,6 +8,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/services/app_phone_call_service.dart';
 import '../../../../core/services/firestore_stream_cache.dart';
 import '../../../../shared/widgets/staff_watermark_overlay.dart';
+import '../../../dashboard/presentation/widgets/figma_calendar_dialog.dart';
 import '../../../follow_ups/application/follow_ups_cubit.dart';
 import '../../../follow_ups/data/model/follow_up_time_helper.dart';
 import '../../data/model/lead_models.dart';
@@ -28,7 +29,7 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
 
   void _onReschedule(String leadId, String currentSlot) async {
     final now = DateTime.now();
-    final pickedDate = await showDatePicker(
+    final pickedDate = await showFigmaCalendarDialog(
       context: context,
       initialDate: now.add(const Duration(days: 1)),
       firstDate: now,
@@ -60,6 +61,10 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
               .doc(leadId)
               .update({
                 'followUpTime': formatted,
+                'status': 'Follow-up',
+                'isDone': false,
+                'followUpDone': false,
+                'isOverdue': false,
                 'timeline': FieldValue.arrayUnion([entry]),
                 'updatedAt': FieldValue.serverTimestamp(),
               });
@@ -154,6 +159,10 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
             .trim();
         final liveCourse =
             (snapData != null ? (snapData['course'] ?? '') : lead.course)
+                .toString()
+                .trim();
+        final liveBatch =
+            (snapData != null ? (snapData['batch'] ?? '') : lead.batch)
                 .toString()
                 .trim();
         final liveCollegeInfo =
@@ -564,7 +573,139 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
 
                     const Gap(12),
 
-                    // 2. Next Follow-Up Banner Card
+                    // 2. Converted Enrolment Banner Card (when Converted or Course/Batch present)
+                    if (effectiveStatus == 'Converted' || liveCourse.isNotEmpty || liveBatch.isNotEmpty) ...[
+                      Container(
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF0FDF4),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: const Color(0xFFBBF7D0),
+                          ),
+                          boxShadow: const [
+                            BoxShadow(
+                              color: Color(0x0616A34A),
+                              blurRadius: 6,
+                              offset: Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        padding: const EdgeInsets.all(14),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Container(
+                                  width: 36,
+                                  height: 36,
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(10),
+                                    border: Border.all(
+                                      color: const Color(0xFF86EFAC),
+                                    ),
+                                  ),
+                                  child: const Icon(
+                                    Icons.school_rounded,
+                                    color: Color(0xFF16A34A),
+                                    size: 18,
+                                  ),
+                                ),
+                                const Gap(10),
+                                const Expanded(
+                                  child: Text(
+                                    'CONVERTED ENROLMENT',
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w700,
+                                      color: Color(0xFF166534),
+                                      letterSpacing: 0.6,
+                                    ),
+                                  ),
+                                ),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 9,
+                                    vertical: 3.5,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFDCFCE7),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: const Text(
+                                    'Enrolled',
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w700,
+                                      color: Color(0xFF15803D),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const Gap(12),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      const Text(
+                                        'Course / Workshop',
+                                        style: TextStyle(
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w500,
+                                          color: Color(0xFF64748B),
+                                        ),
+                                      ),
+                                      const Gap(2),
+                                      Text(
+                                        liveCourse.isNotEmpty ? liveCourse : '—',
+                                        style: const TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w700,
+                                          color: Color(0xFF0F172A),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      const Text(
+                                        'Batch',
+                                        style: TextStyle(
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w500,
+                                          color: Color(0xFF64748B),
+                                        ),
+                                      ),
+                                      const Gap(2),
+                                      Text(
+                                        liveBatch.isNotEmpty ? liveBatch : '—',
+                                        style: const TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w700,
+                                          color: Color(0xFF0F172A),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      const Gap(12),
+                    ],
+
+                    // 2b. Next Follow-Up Banner Card
+                    if (effectiveStatus != 'Converted' || effectiveFollowUp != 'Not scheduled') ...[
                     Container(
                       width: double.infinity,
                       decoration: BoxDecoration(
@@ -675,8 +816,8 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
                         ],
                       ),
                     ),
-
                     const Gap(12),
+                    ],
 
                     // 3. Details Card
                     Container(
@@ -811,6 +952,59 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
                               ),
                             ],
                           ),
+                          if (liveCourse.isNotEmpty || liveBatch.isNotEmpty || effectiveStatus == 'Converted') ...[
+                            const Gap(14),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      const Text(
+                                        'Course / Workshop',
+                                        style: TextStyle(
+                                          fontSize: 11.5,
+                                          color: Color(0xFF64748B),
+                                        ),
+                                      ),
+                                      const Gap(3),
+                                      Text(
+                                        liveCourse.isNotEmpty ? liveCourse : '—',
+                                        style: const TextStyle(
+                                          fontSize: 13.5,
+                                          fontWeight: FontWeight.w600,
+                                          color: Color(0xFF0F172A),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      const Text(
+                                        'Batch',
+                                        style: TextStyle(
+                                          fontSize: 11.5,
+                                          color: Color(0xFF64748B),
+                                        ),
+                                      ),
+                                      const Gap(3),
+                                      Text(
+                                        liveBatch.isNotEmpty ? liveBatch : '—',
+                                        style: const TextStyle(
+                                          fontSize: 13.5,
+                                          fontWeight: FontWeight.w600,
+                                          color: Color(0xFF0F172A),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
                           const Gap(14),
                           const Text(
                             'Interests',

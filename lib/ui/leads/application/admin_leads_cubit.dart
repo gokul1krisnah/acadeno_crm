@@ -352,6 +352,8 @@ class AdminLeadsCubit extends Cubit<AdminLeadsState> {
     required String source,
     required String status,
     String? notes,
+    String? course,
+    String? batch,
   }) async {
     emit(state.copyWith(isSubmitting: true, clearToast: true));
     try {
@@ -363,6 +365,8 @@ class AdminLeadsCubit extends Cubit<AdminLeadsState> {
         source: source,
         status: status,
         notes: notes,
+        course: course,
+        batch: batch,
       );
       emit(
         state.copyWith(

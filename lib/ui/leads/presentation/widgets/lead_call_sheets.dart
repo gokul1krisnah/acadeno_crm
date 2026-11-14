@@ -1,3 +1,4 @@
+import 'package:acadeno_crm/shared/widgets/acadeno_dropdown.dart';
 import 'dart:ui' show ImageFilter;
 import '../pages/lead_detail_page.dart';
 import 'package:gap/gap.dart';
@@ -12,6 +13,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:acadeno_crm/shared/snackbar_alerts/snack_alert.dart';
 
+import 'package:acadeno_crm/ui/dashboard/presentation/widgets/figma_calendar_dialog.dart';
 import 'package:acadeno_crm/ui/follow_ups/application/follow_ups_cubit.dart';
 import 'package:acadeno_crm/ui/home/application/home_cubit.dart';
 import 'package:acadeno_crm/ui/leads/application/leads_cubit.dart';
@@ -80,7 +82,7 @@ class LeadCallSheets {
 
   // 1. Mandatory Call & Outcome Sheet (Matches Exact Figma UI node-id=1643-2)
   // ---------------------------------------------------------------------------
-  static void showCallAndOutcomeSheet(
+  static Future<bool> showCallAndOutcomeSheet(
     BuildContext context, {
     String? leadId,
     required String leadName,
@@ -90,7 +92,7 @@ class LeadCallSheets {
     String initialDuration = '0s',
     String? course,
     String? fee,
-  }) {
+  }) async {
     final cubit = context.read<LeadsCubit>();
     final followUpsCubit = context.read<FollowUpsCubit>();
     HomeCubit? homeCubit;
@@ -142,7 +144,7 @@ class LeadCallSheets {
       ],
     ];
 
-    showModalBottomSheet(
+    final saved = await showModalBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
       isDismissible: false,
@@ -278,23 +280,6 @@ class LeadCallSheets {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  // "Follow-ups" Title (Figma node 1606:1625)
-                                  Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 24,
-                                      vertical: 16,
-                                    ),
-                                    child: Text(
-                                      'Follow-ups',
-                                      style: GoogleFonts.inter(
-                                        fontSize: 30,
-                                        fontWeight: FontWeight.w700,
-                                        color: Colors.white,
-                                        height: 36 / 30,
-                                      ),
-                                    ),
-                                  ),
-
                                   // Call ended card (Figma node 1606:1628 -> 1606:1629)
                                   Padding(
                                     padding: const EdgeInsets.fromLTRB(
@@ -398,7 +383,7 @@ class LeadCallSheets {
                                       28,
                                     ),
                                     decoration: const BoxDecoration(
-                                      color: Color(0xFFF8F9FA),
+                                      color: Colors.white,
                                       borderRadius: BorderRadius.vertical(
                                         top: Radius.circular(32),
                                       ),
@@ -513,75 +498,95 @@ class LeadCallSheets {
 
                                         const Gap(24),
 
-                                        // Conditional fields per FR-3.4, FR-5.3, FR-5.4, FR-5.5
-                                        if (selectedOutcome == 'Follow-up' ||
-                                            selectedOutcome ==
-                                                'Interested') ...[
-                                          if (selectedOutcome ==
-                                              'Interested') ...[
-                                            Text(
-                                              'Interested Program / Workshop',
+                                        // Converted: Show ONLY Course / Workshop dropdown and Batch input (Figma node 1821:1590)
+                                        if (selectedOutcome == 'Converted') ...[
+                                          const Gap(24),
+                                          Text(
+                                            'Course / Workshop',
+                                            style: GoogleFonts.inter(
+                                              fontSize: 11.5,
+                                              fontWeight: FontWeight.w700,
+                                              color: const Color(0xFF334155),
+                                              height: 17.25 / 11.5,
+                                            ),
+                                          ),
+                                          const Gap(6),
+                                          AcadenoDropdown<String>(
+                                            value: selectedProgram,
+                                            items: acadenoPrograms
+                                                .map(
+                                                  (p) => AcadenoDropdownItem<String>(
+                                                    value: p,
+                                                    label: p,
+                                                  ),
+                                                )
+                                                .toList(),
+                                            fillColor: const Color(0xFFF5F5F5),
+                                            borderColor: const Color(0xFFE5E7EB),
+                                            borderRadius: 16.0,
+                                            dropdownColor: const Color(0xFFE2E2E2),
+                                            activeItemColor: const Color(0xFFD35401),
+                                            onChanged: (v) {
+                                              if (v != null) {
+                                                setSheetState(
+                                                  () => selectedProgram = v,
+                                                );
+                                              }
+                                            },
+                                          ),
+                                          const Gap(14),
+                                          Text(
+                                            'Batch',
+                                            style: GoogleFonts.inter(
+                                              fontSize: 11.5,
+                                              fontWeight: FontWeight.w700,
+                                              color: const Color(0xFF334155),
+                                              height: 17.25 / 11.5,
+                                            ),
+                                          ),
+                                          const Gap(6),
+                                          Container(
+                                            height: 47,
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 21,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color: const Color(0xFFF5F5F5),
+                                              borderRadius: BorderRadius.circular(16),
+                                              border: Border.all(
+                                                color: const Color(0xFFE5E7EB),
+                                              ),
+                                              boxShadow: const [
+                                                BoxShadow(
+                                                  color: Color(0x0D764BA2),
+                                                  blurRadius: 5,
+                                                  offset: Offset(0, 2),
+                                                ),
+                                              ],
+                                            ),
+                                            alignment: Alignment.centerLeft,
+                                            child: TextField(
+                                              controller: batchCtrl,
                                               style: GoogleFonts.inter(
                                                 fontSize: 14,
-                                                fontWeight: FontWeight.w700,
-                                                color: const Color(0xFF374151),
+                                                fontWeight: FontWeight.w500,
+                                                color: const Color(0xFF1E293B),
                                               ),
-                                            ),
-                                            const Gap(8),
-                                            Container(
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                    horizontal: 14,
-                                                  ),
-                                              decoration: BoxDecoration(
-                                                color: Colors.white,
-                                                borderRadius:
-                                                    BorderRadius.circular(12),
-                                                border: Border.all(
-                                                  color: const Color(
-                                                    0xFFE5E7EB,
-                                                  ),
+                                              decoration: InputDecoration(
+                                                isDense: true,
+                                                border: InputBorder.none,
+                                                hintText: 'Enter batch name...',
+                                                hintStyle: GoogleFonts.inter(
+                                                  fontSize: 14,
+                                                  color: const Color(0xFF9CA3AF),
                                                 ),
+                                                contentPadding: EdgeInsets.zero,
                                               ),
-                                              child:
-                                                  DropdownButtonHideUnderline(
-                                                    child:
-                                                        DropdownButton<String>(
-                                                          isExpanded: true,
-                                                          value:
-                                                              selectedProgram,
-                                                          items: acadenoPrograms
-                                                              .map(
-                                                                (
-                                                                  p,
-                                                                ) => DropdownMenuItem(
-                                                                  value: p,
-                                                                  child: Text(
-                                                                    p,
-                                                                    style: GoogleFonts.inter(
-                                                                      fontSize:
-                                                                          14,
-                                                                      fontWeight:
-                                                                          FontWeight.w500,
-                                                                    ),
-                                                                  ),
-                                                                ),
-                                                              )
-                                                              .toList(),
-                                                          onChanged: (v) {
-                                                            if (v != null) {
-                                                              setSheetState(
-                                                                () =>
-                                                                    selectedProgram =
-                                                                        v,
-                                                              );
-                                                            }
-                                                          },
-                                                        ),
-                                                  ),
                                             ),
-                                            const Gap(16),
-                                          ],
+                                          ),
+                                          const Gap(24),
+                                        ] else if (selectedOutcome == 'Follow-up') ...[
+                                          const Gap(20),
                                           Row(
                                             mainAxisAlignment:
                                                 MainAxisAlignment.spaceBetween,
@@ -591,26 +596,24 @@ class LeadCallSheets {
                                                 style: GoogleFonts.inter(
                                                   fontSize: 14,
                                                   fontWeight: FontWeight.w700,
-                                                  color: const Color(
-                                                    0xFF374151,
-                                                  ),
+                                                  color: const Color(0xFF374151),
                                                 ),
                                               ),
                                               TextButton.icon(
                                                 onPressed: () async {
                                                   final now = DateTime.now();
-                                                  final d = await showDatePicker(
-                                                    context: ctx,
-                                                    initialDate: now.add(
-                                                      const Duration(days: 1),
-                                                    ),
-                                                    firstDate: now,
-                                                    lastDate: now.add(
-                                                      const Duration(days: 90),
-                                                    ),
-                                                  );
-                                                  if (d != null &&
-                                                      ctx.mounted) {
+                                                  final d =
+                                                      await showFigmaCalendarDialog(
+                                                        context: ctx,
+                                                        initialDate: now.add(
+                                                          const Duration(days: 1),
+                                                        ),
+                                                        firstDate: now,
+                                                        lastDate: now.add(
+                                                          const Duration(days: 90),
+                                                        ),
+                                                      );
+                                                  if (d != null && ctx.mounted) {
                                                     final t =
                                                         await showTimePicker(
                                                           context: ctx,
@@ -630,9 +633,8 @@ class LeadCallSheets {
                                                       );
                                                       setSheetState(() {
                                                         selectedFollowUpSlot =
-                                                            LeadDateHelper.formatFollowUp(
-                                                              dt,
-                                                            );
+                                                            LeadDateHelper
+                                                                .formatFollowUp(dt);
                                                       });
                                                     }
                                                   }
@@ -647,343 +649,14 @@ class LeadCallSheets {
                                                   style: GoogleFonts.inter(
                                                     fontSize: 13,
                                                     fontWeight: FontWeight.w600,
-                                                    color: const Color(
-                                                      0xFFE8612D,
-                                                    ),
+                                                    color: const Color(0xFFE8612D),
                                                   ),
                                                 ),
                                               ),
                                             ],
                                           ),
-                                          const Gap(16),
-                                        ],
-
-                                        if (selectedOutcome == 'Converted') ...[
-                                          Container(
-                                            width: double.infinity,
-                                            padding: const EdgeInsets.all(16),
-                                            decoration: BoxDecoration(
-                                              color: Colors.white,
-                                              borderRadius:
-                                                  BorderRadius.circular(16),
-                                              border: Border.all(
-                                                color: const Color(0xFFE5E7EB),
-                                              ),
-                                            ),
-                                            child: Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                Text(
-                                                  'Enrolment & Payment Details',
-                                                  style: GoogleFonts.inter(
-                                                    fontSize: 15,
-                                                    fontWeight: FontWeight.w700,
-                                                    color: const Color(
-                                                      0xFF111827,
-                                                    ),
-                                                  ),
-                                                ),
-                                                const Gap(12),
-                                                DropdownButtonFormField<String>(
-                                                  initialValue: selectedProgram,
-                                                  decoration:
-                                                      const InputDecoration(
-                                                        labelText:
-                                                            'Course / Workshop',
-                                                        isDense: true,
-                                                        border:
-                                                            OutlineInputBorder(),
-                                                      ),
-                                                  items: acadenoPrograms
-                                                      .map(
-                                                        (p) => DropdownMenuItem(
-                                                          value: p,
-                                                          child: Text(
-                                                            p,
-                                                            style:
-                                                                const TextStyle(
-                                                                  fontSize: 13,
-                                                                ),
-                                                          ),
-                                                        ),
-                                                      )
-                                                      .toList(),
-                                                  onChanged: (v) {
-                                                    if (v != null) {
-                                                      setSheetState(
-                                                        () => selectedProgram =
-                                                            v,
-                                                      );
-                                                    }
-                                                  },
-                                                ),
-                                                const Gap(10),
-                                                Row(
-                                                  children: [
-                                                    Expanded(
-                                                      child: TextField(
-                                                        controller: batchCtrl,
-                                                        decoration:
-                                                            const InputDecoration(
-                                                              labelText:
-                                                                  'Batch',
-                                                              isDense: true,
-                                                              border:
-                                                                  OutlineInputBorder(),
-                                                            ),
-                                                      ),
-                                                    ),
-                                                    const Gap(10),
-                                                    Expanded(
-                                                      child: DropdownButtonFormField<String>(
-                                                        initialValue:
-                                                            selectedPaymentMode,
-                                                        decoration:
-                                                            const InputDecoration(
-                                                              labelText:
-                                                                  'Payment Mode',
-                                                              isDense: true,
-                                                              border:
-                                                                  OutlineInputBorder(),
-                                                            ),
-                                                        items: const [
-                                                          DropdownMenuItem(
-                                                            value: 'UPI',
-                                                            child: Text('UPI'),
-                                                          ),
-                                                          DropdownMenuItem(
-                                                            value: 'Cash',
-                                                            child: Text('Cash'),
-                                                          ),
-                                                          DropdownMenuItem(
-                                                            value:
-                                                                'Bank Transfer',
-                                                            child: Text(
-                                                              'Bank Transfer',
-                                                            ),
-                                                          ),
-                                                          DropdownMenuItem(
-                                                            value: 'Card',
-                                                            child: Text('Card'),
-                                                          ),
-                                                        ],
-                                                        onChanged: (v) {
-                                                          if (v != null) {
-                                                            setSheetState(
-                                                              () =>
-                                                                  selectedPaymentMode =
-                                                                      v,
-                                                            );
-                                                          }
-                                                        },
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                                const Gap(10),
-                                                Row(
-                                                  children: [
-                                                    Expanded(
-                                                      child: TextField(
-                                                        controller: feeCtrl,
-                                                        keyboardType:
-                                                            TextInputType
-                                                                .number,
-                                                        onChanged: (_) =>
-                                                            setSheetState(
-                                                              () {},
-                                                            ),
-                                                        decoration:
-                                                            const InputDecoration(
-                                                              labelText:
-                                                                  'Total Fee (₹)',
-                                                              isDense: true,
-                                                              border:
-                                                                  OutlineInputBorder(),
-                                                            ),
-                                                      ),
-                                                    ),
-                                                    const Gap(10),
-                                                    Expanded(
-                                                      child: TextField(
-                                                        controller:
-                                                            discountCtrl,
-                                                        keyboardType:
-                                                            TextInputType
-                                                                .number,
-                                                        onChanged: (_) =>
-                                                            setSheetState(
-                                                              () {},
-                                                            ),
-                                                        decoration:
-                                                            const InputDecoration(
-                                                              labelText:
-                                                                  'Discount (₹)',
-                                                              isDense: true,
-                                                              border:
-                                                                  OutlineInputBorder(),
-                                                            ),
-                                                      ),
-                                                    ),
-                                                    const Gap(10),
-                                                    Expanded(
-                                                      child: TextField(
-                                                        controller: paidCtrl,
-                                                        keyboardType:
-                                                            TextInputType
-                                                                .number,
-                                                        onChanged: (_) =>
-                                                            setSheetState(
-                                                              () {},
-                                                            ),
-                                                        decoration:
-                                                            const InputDecoration(
-                                                              labelText:
-                                                                  'Paid (₹)',
-                                                              isDense: true,
-                                                              border:
-                                                                  OutlineInputBorder(),
-                                                            ),
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                                if ((int.tryParse(
-                                                          discountCtrl.text
-                                                              .trim(),
-                                                        ) ??
-                                                        0) >
-                                                    500) ...[
-                                                  const Gap(8),
-                                                  Container(
-                                                    padding:
-                                                        const EdgeInsets.all(8),
-                                                    decoration: BoxDecoration(
-                                                      color: const Color(
-                                                        0xFFFEF3C7,
-                                                      ),
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                            8,
-                                                          ),
-                                                    ),
-                                                    child: const Text(
-                                                      'Discounts > ₹500 automatically send an approval alert to Manager & Super Admin.',
-                                                      style: TextStyle(
-                                                        fontSize: 11.5,
-                                                        color: Color(
-                                                          0xFF92400E,
-                                                        ),
-                                                        fontWeight:
-                                                            FontWeight.w600,
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ],
-                                                const Gap(10),
-                                                TextField(
-                                                  controller: receiptCtrl,
-                                                  decoration:
-                                                      const InputDecoration(
-                                                        labelText:
-                                                            'Receipt / UTR Number',
-                                                        isDense: true,
-                                                        border:
-                                                            OutlineInputBorder(),
-                                                      ),
-                                                ),
-                                                if (((int.tryParse(
-                                                              feeCtrl.text
-                                                                  .trim(),
-                                                            ) ??
-                                                            0) -
-                                                        (int.tryParse(
-                                                              discountCtrl.text
-                                                                  .trim(),
-                                                            ) ??
-                                                            0) -
-                                                        (int.tryParse(
-                                                              paidCtrl.text
-                                                                  .trim(),
-                                                            ) ??
-                                                            0)) >
-                                                    0) ...[
-                                                  const Gap(10),
-                                                  Row(
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment
-                                                            .spaceBetween,
-                                                    children: [
-                                                      const Text(
-                                                        'Expected Balance Date:',
-                                                        style: TextStyle(
-                                                          fontSize: 12.5,
-                                                          fontWeight:
-                                                              FontWeight.w600,
-                                                          color: Color(
-                                                            0xFF374151,
-                                                          ),
-                                                        ),
-                                                      ),
-                                                      TextButton(
-                                                        onPressed: () async {
-                                                          final now =
-                                                              DateTime.now();
-                                                          final d =
-                                                              await showDatePicker(
-                                                                context: ctx,
-                                                                initialDate: now
-                                                                    .add(
-                                                                      const Duration(
-                                                                        days: 7,
-                                                                      ),
-                                                                    ),
-                                                                firstDate: now,
-                                                                lastDate: now.add(
-                                                                  const Duration(
-                                                                    days: 120,
-                                                                  ),
-                                                                ),
-                                                              );
-                                                          if (d != null) {
-                                                            setSheetState(() {
-                                                              expectedBalanceDate =
-                                                                  LeadDateHelper.formatFollowUp(
-                                                                    DateTime(
-                                                                      d.year,
-                                                                      d.month,
-                                                                      d.day,
-                                                                      11,
-                                                                      0,
-                                                                    ),
-                                                                  );
-                                                            });
-                                                          }
-                                                        },
-                                                        child: Text(
-                                                          expectedBalanceDate,
-                                                          style:
-                                                              const TextStyle(
-                                                                fontSize: 12.5,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .w700,
-                                                                color: Color(
-                                                                  0xFFE8612D,
-                                                                ),
-                                                              ),
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ],
-                                              ],
-                                            ),
-                                          ),
                                           const Gap(20),
                                         ],
-
                                         // Notes (optional) (Figma node 1606:1677)
                                         Text(
                                           'Notes (optional)',
@@ -1080,7 +753,7 @@ class LeadCallSheets {
                                                   (paidVal ?? 0);
 
                                               if (ctx.mounted) {
-                                                Navigator.pop(ctx);
+                                                Navigator.pop(ctx, true);
                                               }
                                               try {
                                                 final result = await cubit
@@ -1221,6 +894,7 @@ class LeadCallSheets {
         );
       },
     );
+    return saved == true;
   }
 
   static Widget _buildOutcomeButton({
@@ -1780,50 +1454,85 @@ class LeadCallSheets {
                         ),
                       ),
                       const Gap(6),
-                      // Source Event Dropdown (height 54, borderRadius 12, padding 16)
+                      // Source Event Dropdown (Figma 1809:1570)
                       Container(
-                        height: 54,
+                        height: 47,
                         decoration: BoxDecoration(
-                          color: const Color(0xFFF8FAFC),
-                          borderRadius: BorderRadius.circular(12),
+                          color: const Color(0xFFF5F5F5),
+                          borderRadius: BorderRadius.circular(16),
                           border: Border.all(
-                            color: const Color(0xFFE2E8F0),
+                            color: const Color(0xFFE5E7EB),
                             width: 1,
                           ),
+                          boxShadow: const [
+                            BoxShadow(
+                              color: Color(0x0D764BA2),
+                              blurRadius: 5,
+                              offset: Offset(0, 2),
+                            ),
+                          ],
                         ),
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        padding: const EdgeInsets.symmetric(horizontal: 21),
                         child: DropdownButtonHideUnderline(
                           child: DropdownButton<String>(
                             value: selectedCampaign,
                             isExpanded: true,
-                            dropdownColor: Colors.white,
+                            dropdownColor: const Color(0xFFE2E2E2),
                             borderRadius: BorderRadius.circular(12),
                             icon: const Icon(
                               Icons.keyboard_arrow_down_rounded,
-                              color: Color(0xFF64748B),
-                              size: 22,
+                              color: Color(0xFF2E1D44),
+                              size: 20,
                             ),
                             style: GoogleFonts.inter(
                               fontSize: 13.5,
-                              fontWeight: FontWeight.w400,
-                              color: const Color(0xFF0F172A),
+                              fontWeight: FontWeight.w500,
+                              color: const Color(0xFF2E1D44),
                             ),
-                            items: const [
+                            selectedItemBuilder: (context) => [
+                              'Direct Walk-in',
+                              'AI Webinar',
+                              'College visit',
+                              'Campus Drive',
+                            ].map((c) => Align(
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                c,
+                                style: GoogleFonts.inter(
+                                  fontSize: 13.5,
+                                  fontWeight: FontWeight.w500,
+                                  color: const Color(0xFF2E1D44),
+                                ),
+                              ),
+                            )).toList(),
+                            items: [
                               DropdownMenuItem(
                                 value: 'Direct Walk-in',
-                                child: Text('Direct Walk-in'),
+                                child: AcadenoDropdown.buildMenuItemChild(
+                                  label: 'Direct Walk-in',
+                                  isSelected: selectedCampaign == 'Direct Walk-in',
+                                ),
                               ),
                               DropdownMenuItem(
                                 value: 'AI Webinar',
-                                child: Text('AI Webinar'),
+                                child: AcadenoDropdown.buildMenuItemChild(
+                                  label: 'AI Webinar',
+                                  isSelected: selectedCampaign == 'AI Webinar',
+                                ),
                               ),
                               DropdownMenuItem(
                                 value: 'College visit',
-                                child: Text('College visit'),
+                                child: AcadenoDropdown.buildMenuItemChild(
+                                  label: 'College visit',
+                                  isSelected: selectedCampaign == 'College visit',
+                                ),
                               ),
                               DropdownMenuItem(
                                 value: 'Campus Drive',
-                                child: Text('Campus Drive'),
+                                child: AcadenoDropdown.buildMenuItemChild(
+                                  label: 'Campus Drive',
+                                  isSelected: selectedCampaign == 'Campus Drive',
+                                ),
                               ),
                             ],
                             onChanged: (v) {

@@ -89,14 +89,14 @@ void main() {
     });
 
     test('default follow-up slot never lands in the past', () {
-      // 3:15 PM → "No answer" retry slot (4 PM) is still ahead today.
+      // 3:15 PM → "No answer" 3-hour retry slot (6:15 PM) is within working hours (9 AM - 8 PM).
       expect(
         LeadDateHelper.resolveFollowUpLabel(
           null,
           outcome: 'No answer',
           now: now,
         ),
-        'Tue, 10 Nov · 4:00 PM',
+        'Tue, 10 Nov · 6:15 PM',
       );
       // 6 PM → 4 PM / 5:30 PM already passed, roll to tomorrow 10:30.
       final evening = DateTime(2026, 11, 10, 18, 0);

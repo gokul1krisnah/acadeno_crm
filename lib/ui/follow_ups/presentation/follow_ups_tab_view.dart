@@ -9,6 +9,7 @@ import 'package:intl/intl.dart';
 
 import 'package:acadeno_crm/shared/extensions/build_context_extension.dart';
 import 'package:acadeno_crm/core/services/app_phone_call_service.dart';
+import 'package:acadeno_crm/ui/dashboard/presentation/widgets/figma_calendar_dialog.dart';
 import 'package:acadeno_crm/ui/follow_ups/application/follow_ups_cubit.dart';
 import 'package:acadeno_crm/ui/follow_ups/application/follow_ups_state.dart';
 import 'package:acadeno_crm/ui/follow_ups/data/model/follow_up_models.dart';
@@ -440,6 +441,65 @@ class _FollowUpsTabViewState extends State<FollowUpsTabView> {
                       message:
                           'Follow-up for ${item.leadName} snoozed ($tomorrowLabel)',
                     );
+                  },
+                ),
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: const Icon(
+                    Icons.calendar_month_rounded,
+                    color: Color(0xFFE86938),
+                  ),
+                  title: const Text(
+                    'Pick custom date & time',
+                    style: TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                  onTap: () async {
+                    Navigator.pop(ctx);
+                    final pickedDate = await showFigmaCalendarDialog(
+                      context: context,
+                      initialDate: now.add(const Duration(days: 1)),
+                      firstDate: now,
+                      lastDate: now.add(const Duration(days: 90)),
+                    );
+                    if (pickedDate != null && context.mounted) {
+                      final pickedTime = await showTimePicker(
+                        context: context,
+                        initialTime: const TimeOfDay(hour: 10, minute: 0),
+                      );
+                      if (pickedTime != null && context.mounted) {
+                        final customDt = DateTime(
+                          pickedDate.year,
+                          pickedDate.month,
+                          pickedDate.day,
+                          pickedTime.hour,
+                          pickedTime.minute,
+                        );
+                        final isTodayPicked =
+                            pickedDate.year == now.year &&
+                            pickedDate.month == now.month &&
+                            pickedDate.day == now.day;
+                        final tomorrow = now.add(const Duration(days: 1));
+                        final dayPart = isTodayPicked
+                            ? 'Today'
+                            : (pickedDate.year == tomorrow.year &&
+                                      pickedDate.month == tomorrow.month &&
+                                      pickedDate.day == tomorrow.day
+                                  ? 'Tomorrow'
+                                  : DateFormat('d MMM').format(pickedDate));
+                        final timePart = DateFormat('h:mm a').format(customDt);
+                        final customLabel = '$dayPart · $timePart';
+                        cubit.snoozeFollowUp(
+                          item.id,
+                          customLabel,
+                          moveToUpcoming: !isTodayPicked,
+                        );
+                        SnackBarAlert.showToast(
+                          context: context,
+                          message:
+                              'Follow-up for ${item.leadName} snoozed ($customLabel)',
+                        );
+                      }
+                    }
                   },
                 ),
               ],

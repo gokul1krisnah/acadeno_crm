@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="acadeno_primary">#4338CA</color>
+    <color name="acadeno_notification_accent">#EA580C</color>
 </resources>
 

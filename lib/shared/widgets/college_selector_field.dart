@@ -278,92 +278,91 @@ class _CollegeSelectorFieldState extends State<CollegeSelectorField> {
               ),
             ),
             const Gap(4),
-            SizedBox(
-              height: 40,
-              child: Stack(
-                alignment: Alignment.centerLeft,
-                children: [
-                  Container(
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: const Color(0x80F8FAFC),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: const Color(0xFFE2E8F0),
-                        width: 1,
-                      ),
-                    ),
-                    padding: const EdgeInsets.only(left: 13, right: 33),
-                    alignment: Alignment.centerLeft,
-                    child: DropdownButtonHideUnderline(
-                      child: DropdownButton<String>(
-                        value: currentVal,
-                        isExpanded: true,
-                        isDense: true,
-                        dropdownColor: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
-                        icon: const SizedBox.shrink(),
-                        style: GoogleFonts.inter(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w500,
-                          color: const Color(0xFF0F172A),
-                          height: 24 / 13,
-                        ),
-                        items: [
-                          ...sortedColleges.map(
-                            (c) => DropdownMenuItem<String>(
-                              value: c,
-                              child: Text(
-                                c,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: GoogleFonts.inter(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w500,
-                                  color: const Color(0xFF0F172A),
-                                ),
-                              ),
-                            ),
-                          ),
-                          DropdownMenuItem<String>(
-                            value: _otherValue,
-                            child: Text(
-                              '+ Add New College...',
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: GoogleFonts.inter(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
-                                color: const Color(0xFFE8612D),
-                              ),
-                            ),
-                          ),
-                        ],
-                        onChanged: _onDropdownChanged,
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    right: 34,
-                    child: IgnorePointer(
-                      child: SvgPicture.asset(
-                        AppSvgs.leadDetailChevronLg,
-                        width: 19.5,
-                        height: 19.5,
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    right: 12,
-                    child: IgnorePointer(
-                      child: SvgPicture.asset(
-                        AppSvgs.leadDetailChevronSm,
-                        width: 9,
-                        height: 5.45625,
-                      ),
-                    ),
+            Container(
+              height: 47,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: const Color(0xFFF5F5F5),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: const Color(0xFFE5E7EB),
+                  width: 1,
+                ),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Color(0x0D764BA2),
+                    blurRadius: 5,
+                    offset: Offset(0, 2),
                   ),
                 ],
+              ),
+              child: DropdownButtonHideUnderline(
+                child: DropdownButton<String>(
+                  value: currentVal,
+                  isExpanded: true,
+                  isDense: true,
+                  dropdownColor: const Color(0xFFE2E2E2),
+                  borderRadius: BorderRadius.circular(12),
+                  icon: const Icon(
+                    Icons.keyboard_arrow_down_rounded,
+                    size: 20,
+                    color: Color(0xFF2E1D44),
+                  ),
+                  style: GoogleFonts.inter(
+                    fontSize: 13.5,
+                    fontWeight: FontWeight.w500,
+                    color: const Color(0xFF2E1D44),
+                  ),
+                  selectedItemBuilder: (context) => [
+                    ...sortedColleges.map((c) => Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        c,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.inter(
+                          fontSize: 13.5,
+                          fontWeight: FontWeight.w500,
+                          color: const Color(0xFF2E1D44),
+                        ),
+                      ),
+                    )),
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        '+ Add New College...',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.inter(
+                          fontSize: 13.5,
+                          fontWeight: FontWeight.w600,
+                          color: const Color(0xFFD35401),
+                        ),
+                      ),
+                    ),
+                  ],
+                  items: [
+                    ...sortedColleges.map(
+                      (c) => DropdownMenuItem<String>(
+                        value: c,
+                        child: AcadenoDropdown.buildMenuItemChild(
+                          label: c,
+                          isSelected: c == currentVal,
+                        ),
+                      ),
+                    ),
+                    DropdownMenuItem<String>(
+                      value: _otherValue,
+                      child: AcadenoDropdown.buildMenuItemChild(
+                        label: '+ Add New College...',
+                        isSelected: false,
+                        textColor: const Color(0xFFD35401),
+                      ),
+                    ),
+                  ],
+                  onChanged: _onDropdownChanged,
+                ),
               ),
             ),
             if (_isOther) ...[

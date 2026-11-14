@@ -62,6 +62,8 @@ abstract class LeadsBackend {
     required String source,
     required String status,
     String? notes,
+    String? course,
+    String? batch,
   });
 
   /// Assigns (or reassigns) one or more leads to an active Sales Executive for [dateKey].
@@ -113,6 +115,8 @@ abstract class LeadsBackend {
 
   /// Atomically claims a 10-minute call lock on [leadId] (FR-3.1, RL-2).
   Future<({bool granted, String? lockedBy})> claimLeadForCall(String leadId);
+
+  Future<void> releaseLeadLock(String leadId);
 
   /// Logs a WhatsApp approved template send to the lead's timeline and call_logs (FR-5.1, FR-5.2).
   Future<void> logWhatsAppSent({
@@ -189,6 +193,8 @@ class LeadsRds {
     required String source,
     required String status,
     String? notes,
+    String? course,
+    String? batch,
   }) => _backend.updateLead(
     leadId: leadId,
     name: name,
@@ -197,6 +203,8 @@ class LeadsRds {
     source: source,
     status: status,
     notes: notes,
+    course: course,
+    batch: batch,
   );
 
   Future<void> deleteLead(String leadId) => _backend.deleteLead(leadId);
@@ -285,6 +293,9 @@ class LeadsRds {
 
   Future<({bool granted, String? lockedBy})> claimLeadForCall(String leadId) =>
       _backend.claimLeadForCall(leadId);
+
+  Future<void> releaseLeadLock(String leadId) =>
+      _backend.releaseLeadLock(leadId);
 
   Future<void> logWhatsAppSent({
     required String leadId,
@@ -758,6 +769,8 @@ class FirestoreLeadsBackend implements LeadsBackend {
     required String source,
     required String status,
     String? notes,
+    String? course,
+    String? batch,
   }) async {
     final trimmedName = name.trim();
     if (trimmedName.isEmpty) {
@@ -854,6 +867,8 @@ class FirestoreLeadsBackend implements LeadsBackend {
         source: isAdminOrManager ? source.trim() : current.source,
         status: status.trim(),
         notes: notes ?? current.notes,
+        course: course ?? current.course,
+        batch: batch ?? current.batch,
         updatedAt: DateTime.now(),
       );
 
@@ -1585,6 +1600,7 @@ class FirestoreLeadsBackend implements LeadsBackend {
               'lastContactAt': FieldValue.serverTimestamp(),
               'lastCalledAt': FieldValue.serverTimestamp(),
               'isDone': effectiveIsDone,
+              'followUpDone': effectiveIsDone,
               'isLocked': false,
               'lockedByUid': null,
               'lockedByName': null,
@@ -1592,6 +1608,7 @@ class FirestoreLeadsBackend implements LeadsBackend {
               'lockedMessage': null,
               'noAnswerCount': nextNoAnswerCount,
               'followUpTime': resolvedFollowUp ?? '',
+              'isOverdue': false,
               if (courseEnrolled != null && courseEnrolled.trim().isNotEmpty)
                 'course': courseEnrolled.trim(),
               if (feeAmount != null && feeAmount > 0) 'fee': '₹$feeAmount',
@@ -1736,6 +1753,35 @@ class FirestoreLeadsBackend implements LeadsBackend {
     } catch (_) {
       return (granted: true, lockedBy: null);
     }
+  }
+
+  /// Releases the active call lock for [leadId] if held by the current user.
+  @override
+  Future<void> releaseLeadLock(String leadId) async {
+    if (leadId.trim().isEmpty || !OfflineQueueService.instance.isOnline) {
+      return;
+    }
+    try {
+      final actor = await _verifyCurrentActor();
+      final leadRef = _leads.doc(leadId);
+      await _firestore
+          .runTransaction((tx) async {
+            final snap = await tx.get(leadRef);
+            if (!snap.exists || snap.data() == null) return;
+            final data = snap.data()!;
+            if (data['isLocked'] == true &&
+                data['lockedByUid']?.toString() == actor.uid) {
+              tx.update(leadRef, {
+                'isLocked': false,
+                'lockedByUid': null,
+                'lockedByName': null,
+                'lockedAt': null,
+                'lockedMessage': null,
+              });
+            }
+          })
+          .timeout(const Duration(milliseconds: 1500));
+    } catch (_) {}
   }
 
   @override

@@ -273,8 +273,12 @@ class OfflineQueueService {
     }
   }
 
+  bool _isInternalMetadataKey(dynamic key) =>
+      key is String && key.startsWith('__');
+
   void _updateCounts() {
-    final count = _box?.length ?? 0;
+    final count =
+        _box?.keys.where((k) => !_isInternalMetadataKey(k)).length ?? 0;
     pendingCountNotifier.value = count;
     _pendingCountController.add(count);
   }
@@ -285,12 +289,14 @@ class OfflineQueueService {
     if (box == null) return const [];
     final list = <QueuedCallOutcome>[];
     for (final key in box.keys) {
+      if (_isInternalMetadataKey(key)) continue;
       final raw = box.get(key);
       if (raw != null) {
         try {
-          final data = jsonDecode(raw) as Map<String, dynamic>;
-          if (data['type'] == 'call_outcome') {
-            list.add(QueuedCallOutcome.fromMap(data));
+          final decoded = jsonDecode(raw);
+          if (decoded is Map<String, dynamic> &&
+              decoded['type'] == 'call_outcome') {
+            list.add(QueuedCallOutcome.fromMap(decoded));
           }
         } catch (_) {}
       }
@@ -407,12 +413,14 @@ class OfflineQueueService {
       final firestore = FirebaseFirestore.instance;
 
       for (final key in keys) {
+        if (_isInternalMetadataKey(key)) continue;
         final raw = _box!.get(key);
         if (raw == null) continue;
 
         try {
-          final Map<String, dynamic> data =
-              jsonDecode(raw) as Map<String, dynamic>;
+          final decoded = jsonDecode(raw);
+          if (decoded is! Map<String, dynamic>) continue;
+          final data = decoded;
           final type = data['type'] as String? ?? 'call_outcome';
 
           bool success = false;
@@ -486,6 +494,8 @@ class OfflineQueueService {
         'lastContactAt': callTs,
         'lastCalledAt': callTs,
         'isDone': !isFollowUpPending,
+        'followUpDone': !isFollowUpPending,
+        'isOverdue': false,
         'isLocked': false,
         'lockedByUid': null,
         'lockedMessage': null,

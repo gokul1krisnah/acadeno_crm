@@ -62,6 +62,14 @@ class FollowUpTimeHelper {
       } catch (_) {}
     }
 
+    DateTime? updatedDate;
+    if (updatedAt is Timestamp) {
+      final dt = updatedAt.toDate();
+      updatedDate = DateTime(dt.year, dt.month, dt.day);
+    } else if (updatedAt is DateTime) {
+      updatedDate = DateTime(updatedAt.year, updatedAt.month, updatedAt.day);
+    }
+
     if (baseDate == null) {
       final ts = assignedAt ?? createdAt ?? updatedAt;
       if (ts is Timestamp) {
@@ -72,17 +80,28 @@ class FollowUpTimeHelper {
       }
     }
 
+    // For relative words ("Today", "Tomorrow"), prefer the most recent update date
+    // over an older original assignment date so rescheduling/snoozing today works.
+    DateTime? relativeRefDate = baseDate;
+    if (updatedDate != null &&
+        (relativeRefDate == null || updatedDate.isAfter(relativeRefDate))) {
+      relativeRefDate = updatedDate;
+    }
+
     // 2. Parse time string
     final rawStr = (rawFollowUpTime ?? '').toString().trim();
     final rawLower = rawStr.toLowerCase();
 
     DateTime? resolvedDateTime;
+    bool hasExplicitConcreteDate = false;
 
     // Check if rawFollowUpTime is a Timestamp or DateTime directly
     if (rawFollowUpTime is Timestamp) {
       resolvedDateTime = rawFollowUpTime.toDate();
+      hasExplicitConcreteDate = true;
     } else if (rawFollowUpTime is DateTime) {
       resolvedDateTime = rawFollowUpTime;
+      hasExplicitConcreteDate = true;
     } else if (rawStr.isNotEmpty) {
       // Extract time part like '10:30 AM' or '4:30 PM' or '16:00'
       final timeRegex = RegExp(r'(\d{1,2}):(\d{2})\s*(AM|PM|am|pm)?');
@@ -103,93 +122,91 @@ class FollowUpTimeHelper {
         hour = parsedHour;
       }
 
-      if (rawLower.contains('yesterday')) {
-        final yesterday = todayMidnight.subtract(const Duration(days: 1));
-        resolvedDateTime = DateTime(
-          yesterday.year,
-          yesterday.month,
-          yesterday.day,
-          hour,
-          minute,
-        );
-      } else if (rawLower.contains('tomorrow')) {
-        // Caution: If 'Tomorrow' was stored yesterday (baseDate is yesterday),
-        // then yesterday's 'Tomorrow' is actually TODAY!
-        DateTime targetDay = todayMidnight.add(const Duration(days: 1));
-        if (baseDate != null && baseDate.isBefore(todayMidnight)) {
-          // If stored on yesterday or earlier, advance from baseDate
-          final diff = todayMidnight.difference(baseDate).inDays;
-          if (diff == 1) {
-            targetDay = todayMidnight; // yesterday's tomorrow is today
-          } else {
-            targetDay = baseDate.add(
-              const Duration(days: 1),
-            ); // earlier past day
-          }
-        }
-        resolvedDateTime = DateTime(
-          targetDay.year,
-          targetDay.month,
-          targetDay.day,
-          hour,
-          minute,
-        );
-      } else if (rawLower.contains('today')) {
-        // If 'Today' was stored yesterday, it is now YESTERDAY!
-        DateTime targetDay = todayMidnight;
-        if (baseDate != null && baseDate.isBefore(todayMidnight)) {
-          targetDay = baseDate;
-        }
-        resolvedDateTime = DateTime(
-          targetDay.year,
-          targetDay.month,
-          targetDay.day,
-          hour,
-          minute,
-        );
-      } else {
-        // Attempt to parse date from string (e.g. 'Mon, 2 Nov · 10:30 AM' or '2026-11-02')
-        DateTime? parsedDay;
+      // 2a. First check for an explicit concrete date (e.g. 'Sun, 15 Nov · 10:30 AM',
+      // 'Today, 14 Nov · 10:00 AM', '2026-11-15') before relative words.
+      DateTime? parsedDay;
+      try {
+        final dt = DateTime.parse(rawStr);
+        resolvedDateTime = dt;
+        hasExplicitConcreteDate = true;
+      } catch (_) {}
 
-        // Try standard ISO formats
-        try {
-          final dt = DateTime.parse(rawStr);
-          resolvedDateTime = dt;
-        } catch (_) {}
-
-        if (resolvedDateTime == null) {
-          // Check for day and month name (e.g. '2 Nov', '02 Nov')
-          for (int m = 0; m < _months.length; m++) {
-            final monthName = _months[m].toLowerCase();
-            if (rawLower.contains(monthName)) {
-              final dayRegex = RegExp(
-                r'\b(\d{1,2})\s+' + monthName,
-                caseSensitive: false,
-              );
-              final match = dayRegex.firstMatch(rawStr);
-              if (match != null) {
-                final d = int.parse(match.group(1)!);
-                int y = now.year;
-                // Year regex if present (e.g. 2026)
-                final yearMatch = RegExp(r'\b(20\d{2})\b').firstMatch(rawStr);
-                if (yearMatch != null) {
-                  y = int.parse(yearMatch.group(1)!);
-                }
-                parsedDay = DateTime(y, m + 1, d);
-                break;
+      if (resolvedDateTime == null) {
+        for (int m = 0; m < _months.length; m++) {
+          final monthName = _months[m].toLowerCase();
+          if (rawLower.contains(monthName)) {
+            final dayRegex = RegExp(
+              r'\b(\d{1,2})\s+' + monthName,
+              caseSensitive: false,
+            );
+            final match = dayRegex.firstMatch(rawStr);
+            if (match != null) {
+              final d = int.parse(match.group(1)!);
+              int y = now.year;
+              final yearMatch = RegExp(r'\b(20\d{2})\b').firstMatch(rawStr);
+              if (yearMatch != null) {
+                y = int.parse(yearMatch.group(1)!);
               }
+              parsedDay = DateTime(y, m + 1, d);
+              break;
             }
           }
+        }
 
-          if (parsedDay != null) {
-            resolvedDateTime = DateTime(
-              parsedDay.year,
-              parsedDay.month,
-              parsedDay.day,
-              hour,
-              minute,
-            );
+        if (parsedDay != null) {
+          resolvedDateTime = DateTime(
+            parsedDay.year,
+            parsedDay.month,
+            parsedDay.day,
+            hour,
+            minute,
+          );
+          hasExplicitConcreteDate = true;
+        }
+      }
+
+      // 2b. If no concrete day/month was present, evaluate relative words
+      if (resolvedDateTime == null) {
+        if (rawLower.contains('yesterday')) {
+          final yesterday = todayMidnight.subtract(const Duration(days: 1));
+          resolvedDateTime = DateTime(
+            yesterday.year,
+            yesterday.month,
+            yesterday.day,
+            hour,
+            minute,
+          );
+        } else if (rawLower.contains('tomorrow')) {
+          DateTime targetDay = todayMidnight.add(const Duration(days: 1));
+          if (relativeRefDate != null &&
+              relativeRefDate.isBefore(todayMidnight)) {
+            final diff = todayMidnight.difference(relativeRefDate).inDays;
+            if (diff == 1) {
+              targetDay = todayMidnight;
+            } else {
+              targetDay = relativeRefDate.add(const Duration(days: 1));
+            }
           }
+          resolvedDateTime = DateTime(
+            targetDay.year,
+            targetDay.month,
+            targetDay.day,
+            hour,
+            minute,
+          );
+        } else if (rawLower.contains('today')) {
+          DateTime targetDay = todayMidnight;
+          if (relativeRefDate != null &&
+              relativeRefDate.isBefore(todayMidnight)) {
+            targetDay = relativeRefDate;
+          }
+          resolvedDateTime = DateTime(
+            targetDay.year,
+            targetDay.month,
+            targetDay.day,
+            hour,
+            minute,
+          );
         }
       }
     }
@@ -213,9 +230,11 @@ class FollowUpTimeHelper {
           0,
         );
       }
-    } else if (baseDate != null && !baseDate.isBefore(todayMidnight)) {
+    } else if (baseDate != null &&
+        !baseDate.isBefore(todayMidnight) &&
+        !hasExplicitConcreteDate) {
       // If the lead was assigned to today or a future date via assignedDateKey,
-      // but resolvedDateTime ended up in the past (e.g. from an old stale follow-up text),
+      // but resolvedDateTime ended up in the past from an old relative follow-up text,
       // the explicit current/future assignment date takes precedence!
       if (resolvedDateTime.isBefore(todayMidnight)) {
         resolvedDateTime = DateTime(
@@ -236,10 +255,32 @@ class FollowUpTimeHelper {
 
     // CRITICAL: A follow-up scheduled for tomorrow or a future date can NEVER be overdue!
     final isFuture = itemDay.isAfter(todayMidnight);
+    final isPastDay = itemDay.isBefore(todayMidnight);
+    final isAssignedOnlyStatus =
+        statusLower == 'assigned' ||
+        statusLower == 'reassigned' ||
+        statusLower == 'new';
 
-    // Determine overdue status
+    // Determine overdue status:
+    // - Future days (Tomorrow+) are NEVER overdue.
+    // - Past days (Yesterday or earlier) are ALWAYS overdue.
+    // - Today:
+    //   * If the lead is merely 'assigned'/'new' for today and not yet called, keep it in Today for the day.
+    //   * If it has an explicit follow-up time today, it is overdue only if that time has already passed (isPast).
+    //   * If it has no explicit follow-up time today, it is overdue if statusLower == 'overdue' or isPast.
     final isPast = resolvedDateTime.isBefore(now);
-    final isOverdue = !isFuture && (statusLower == 'overdue' || isPast);
+    final bool isOverdue;
+    if (isFuture) {
+      isOverdue = false;
+    } else if (isPastDay) {
+      isOverdue = true;
+    } else if (isAssignedOnlyStatus) {
+      isOverdue = false;
+    } else if (rawStr.isNotEmpty) {
+      isOverdue = isPast;
+    } else {
+      isOverdue = statusLower == 'overdue' || isPast;
+    }
 
     FollowUpBucket bucket;
     String displayLabel;

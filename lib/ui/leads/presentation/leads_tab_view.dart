@@ -6,6 +6,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:acadeno_crm/core/services/app_phone_call_service.dart';
 import 'package:acadeno_crm/core/services/offline_queue_service.dart';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -887,128 +888,64 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                               ),
                               const Gap(16),
 
-                              // Quick Actions: Add Walk-in Lead & My Record (Figma: 141x34 & 113x34 pills, 11px gap)
+                              // Quick Action: Add Walk-in Lead
                               Row(
                                 children: [
-                                  Flexible(
-                                    child: InkWell(
-                                      onTap: () =>
-                                          LeadCallSheets.showPhoneLookupAndWalkInSheet(
-                                            context,
-                                          ),
-                                      borderRadius: BorderRadius.circular(16),
-                                      child: Container(
-                                        width: 141,
-                                        height: 34,
-                                        alignment: Alignment.center,
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 9,
+                                  InkWell(
+                                    onTap: () =>
+                                        LeadCallSheets.showPhoneLookupAndWalkInSheet(
+                                          context,
                                         ),
-                                        decoration: BoxDecoration(
-                                          color: Colors.white,
-                                          borderRadius: BorderRadius.circular(
-                                            16,
-                                          ),
-                                          border: Border.all(
-                                            color: const Color(0xFFF3F4F6),
-                                            width: 1,
-                                          ),
-                                          boxShadow: const [
-                                            BoxShadow(
-                                              color: Color(0x0D000000),
-                                              blurRadius: 1,
-                                              offset: Offset(0, 1),
-                                            ),
-                                          ],
-                                        ),
-                                        child: FittedBox(
-                                          fit: BoxFit.scaleDown,
-                                          child: Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
-                                            children: [
-                                              SvgPicture.asset(
-                                                AppSvgs.addWalkInLead,
-                                                width: 17,
-                                                height: 17,
-                                              ),
-                                              const Gap(8),
-                                              const Text(
-                                                'Add Walk-in Lead',
-                                                maxLines: 1,
-                                                softWrap: false,
-                                                style: TextStyle(
-                                                  fontFamily: 'Inter',
-                                                  fontSize: 12,
-                                                  fontWeight: FontWeight.w400,
-                                                  height: 16 / 12,
-                                                  color: Color(0xFF6B7280),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
+                                    borderRadius: BorderRadius.circular(16),
+                                    child: Container(
+                                      width: 141,
+                                      height: 34,
+                                      alignment: Alignment.center,
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 9,
                                       ),
-                                    ),
-                                  ),
-                                  const Gap(11),
-                                  Flexible(
-                                    child: InkWell(
-                                      onTap: () =>
-                                          LeadCallSheets.showMyRecordSheet(
-                                            context,
-                                          ),
-                                      borderRadius: BorderRadius.circular(16),
-                                      child: Container(
-                                        width: 113,
-                                        height: 34,
-                                        alignment: Alignment.center,
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 12,
+                                      decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        borderRadius: BorderRadius.circular(
+                                          16,
                                         ),
-                                        decoration: BoxDecoration(
-                                          color: Colors.white,
-                                          borderRadius: BorderRadius.circular(
-                                            16,
+                                        border: Border.all(
+                                          color: const Color(0xFFF3F4F6),
+                                          width: 1,
+                                        ),
+                                        boxShadow: const [
+                                          BoxShadow(
+                                            color: Color(0x0D000000),
+                                            blurRadius: 1,
+                                            offset: Offset(0, 1),
                                           ),
-                                          border: Border.all(
-                                            color: const Color(0xFFF3F4F6),
-                                            width: 1,
-                                          ),
-                                          boxShadow: const [
-                                            BoxShadow(
-                                              color: Color(0x0D000000),
-                                              blurRadius: 1,
-                                              offset: Offset(0, 1),
+                                        ],
+                                      ),
+                                      child: FittedBox(
+                                        fit: BoxFit.scaleDown,
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            SvgPicture.asset(
+                                              AppSvgs.addWalkInLead,
+                                              width: 17,
+                                              height: 17,
+                                            ),
+                                            const Gap(8),
+                                            const Text(
+                                              'Add Walk-in Lead',
+                                              maxLines: 1,
+                                              softWrap: false,
+                                              style: TextStyle(
+                                                fontFamily: 'Inter',
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.w400,
+                                                height: 16 / 12,
+                                                color: Color(0xFF6B7280),
+                                              ),
                                             ),
                                           ],
-                                        ),
-                                        child: FittedBox(
-                                          fit: BoxFit.scaleDown,
-                                          child: Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
-                                            children: [
-                                              SvgPicture.asset(
-                                                AppSvgs.myRecord,
-                                                width: 15,
-                                                height: 15,
-                                              ),
-                                              const Gap(8),
-                                              const Text(
-                                                'My Record',
-                                                maxLines: 1,
-                                                softWrap: false,
-                                                style: TextStyle(
-                                                  fontFamily: 'Inter',
-                                                  fontSize: 12,
-                                                  fontWeight: FontWeight.w400,
-                                                  height: 16 / 12,
-                                                  color: Color(0xFF6B7280),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
                                         ),
                                       ),
                                     ),
@@ -1803,7 +1740,11 @@ class _TodayLeadCard extends StatelessWidget {
                       ),
                     ],
                   ),
-                  if (item.isLocked && item.lockedMessage != null) ...[
+                  if (item.isLocked &&
+                      !item.isDone &&
+                      item.lockedMessage != null &&
+                      item.lockedByUid !=
+                          FirebaseAuth.instance.currentUser?.uid) ...[
                     const Gap(6),
                     Row(
                       children: [

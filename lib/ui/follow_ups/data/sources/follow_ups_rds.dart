@@ -47,19 +47,7 @@ class FollowUpsRds {
         }
         if (_isLeadDone(data)) return false;
 
-        final status = (data['status'] ?? '').toString().toLowerCase();
-        final hasFollowUpTime = data['followUpTime'] != null;
-
-        // Matches any active follow-up, assigned call, or open lead candidate
-        return hasFollowUpTime ||
-            status == 'follow-up' ||
-            status == 'callback' ||
-            status == 'interested' ||
-            status == 'no answer' ||
-            status == 'claimed' ||
-            status == 'assigned' ||
-            status == 'overdue' ||
-            status == 'new';
+        return _isFollowUpCandidate(data);
       }).toList();
 
       final items = <ExecutiveFollowUpItem>[];
@@ -112,6 +100,7 @@ class FollowUpsRds {
         continue;
       }
       if (_isLeadDone(data)) continue;
+      if (!_isFollowUpCandidate(data)) continue;
 
       final item = _itemFromDoc(doc);
       if (item != null) items.add(item);
@@ -119,6 +108,23 @@ class FollowUpsRds {
 
     _sortFollowUps(items);
     return items;
+  }
+
+  bool _isFollowUpCandidate(Map<String, dynamic> data) {
+    final status = (data['status'] ?? '').toString().toLowerCase();
+    final hasFollowUpTime =
+        (data['followUpTime'] ?? '').toString().trim().isNotEmpty;
+
+    // Matches any active follow-up, assigned call, or open lead candidate
+    return hasFollowUpTime ||
+        status == 'follow-up' ||
+        status == 'callback' ||
+        status == 'interested' ||
+        status == 'no answer' ||
+        status == 'claimed' ||
+        status == 'assigned' ||
+        status == 'overdue' ||
+        status == 'new';
   }
 
   ExecutiveFollowUpItem? _itemFromDoc(
@@ -259,6 +265,7 @@ class FollowUpsRds {
           'followUpTime': concreteLabel,
           'status': 'Follow-up',
           'isDone': false,
+          'followUpDone': false,
           'isOverdue': false,
           'updatedAt': FieldValue.serverTimestamp(),
         });

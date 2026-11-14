@@ -1,6 +1,5 @@
 import 'dart:io' as io show Platform;
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:gap/gap.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -96,7 +95,6 @@ class _AcadenoAppState extends State<AcadenoApp> with WidgetsBindingObserver {
   final GlobalKey<ScaffoldMessengerState> _scaffoldMessengerKey =
       GlobalKey<ScaffoldMessengerState>();
   DateTime? _pausedAt;
-  bool _isAppLocked = false;
 
   @override
   void initState() {
@@ -113,71 +111,6 @@ class _AcadenoAppState extends State<AcadenoApp> with WidgetsBindingObserver {
         SessionSecurityService.instance.stopListening();
         FirestoreStreamCache.instance.clearAll();
       }
-    });
-    // Listen for incoming foreground push notifications from Firebase
-    AppNotificationService.instance.onForegroundMessage.listen((message) {
-      final notif = message.notification;
-      if (notif == null) return;
-      final title = (notif.title ?? '').trim();
-      final body = (notif.body ?? '').trim();
-      if (title.isEmpty && body.isEmpty) return;
-      _scaffoldMessengerKey.currentState?.showSnackBar(
-        SnackBar(
-          content: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                width: 36,
-                height: 36,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFEEF2FF),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Icon(
-                  Icons.notifications_active_rounded,
-                  color: Color(0xFF4F46E5),
-                  size: 20,
-                ),
-              ),
-              const Gap(12),
-              Expanded(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w700,
-                        fontSize: 14,
-                        color: Color(0xFF0F172A),
-                      ),
-                    ),
-                    if (body.isNotEmpty) ...[
-                      const Gap(3),
-                      Text(
-                        body,
-                        style: const TextStyle(
-                          fontSize: 12.5,
-                          color: Color(0xFF475467),
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-            ],
-          ),
-          duration: const Duration(seconds: 5),
-          behavior: SnackBarBehavior.floating,
-          backgroundColor: const Color(0xFFFFFFFF),
-          elevation: 6,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-            side: const BorderSide(color: Color(0xFFE2E8F0), width: 1),
-          ),
-        ),
-      );
     });
   }
 
@@ -206,9 +139,6 @@ class _AcadenoAppState extends State<AcadenoApp> with WidgetsBindingObserver {
           SessionSecurityService.instance.terminateSession(
             'Your 12-hour session has expired. Please sign in again.',
           );
-        } else if (elapsed >= const Duration(minutes: 5)) {
-          // PR-5.2: Lock app after 5 minutes in background
-          setState(() => _isAppLocked = true);
         }
       }
     }
@@ -228,6 +158,10 @@ class _AcadenoAppState extends State<AcadenoApp> with WidgetsBindingObserver {
         colorScheme: ColorScheme.fromSeed(seedColor: AppColors.primary),
         scaffoldBackgroundColor: AppColors.white,
         useMaterial3: true,
+        hoverColor: Colors.transparent,
+        splashColor: Colors.transparent,
+        highlightColor: Colors.transparent,
+        focusColor: Colors.transparent,
         snackBarTheme: SnackBarThemeData(
           behavior: SnackBarBehavior.floating,
           backgroundColor: AppColors.primary,
@@ -246,16 +180,16 @@ class _AcadenoAppState extends State<AcadenoApp> with WidgetsBindingObserver {
           ),
         ),
         popupMenuTheme: PopupMenuThemeData(
-          color: Colors.white,
-          elevation: 4,
+          color: const Color(0xFFE2E2E2),
+          elevation: 6,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
         ),
         dropdownMenuTheme: DropdownMenuThemeData(
           menuStyle: MenuStyle(
-            backgroundColor: WidgetStateProperty.all(Colors.white),
-            elevation: WidgetStateProperty.all(4),
+            backgroundColor: WidgetStateProperty.all(const Color(0xFFE2E2E2)),
+            elevation: WidgetStateProperty.all(6),
             shape: WidgetStateProperty.all(
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             ),
@@ -263,7 +197,7 @@ class _AcadenoAppState extends State<AcadenoApp> with WidgetsBindingObserver {
         ),
         menuTheme: MenuThemeData(
           style: MenuStyle(
-            backgroundColor: WidgetStateProperty.all(Colors.white),
+            backgroundColor: WidgetStateProperty.all(const Color(0xFFE2E2E2)),
             elevation: WidgetStateProperty.all(4),
             shape: WidgetStateProperty.all(
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -338,18 +272,6 @@ class _AcadenoAppState extends State<AcadenoApp> with WidgetsBindingObserver {
                   right: 0,
                   child: OfflineStatusBar(),
                 ),
-                if (_isAppLocked)
-                  Positioned.fill(
-                    child: _AppPinLockOverlay(
-                      onUnlocked: () => setState(() => _isAppLocked = false),
-                      onSignOut: () {
-                        setState(() => _isAppLocked = false);
-                        SessionSecurityService.instance.terminateSession(
-                          'Signed out from lock screen.',
-                        );
-                      },
-                    ),
-                  ),
               ],
             ),
           ),
@@ -357,154 +279,6 @@ class _AcadenoAppState extends State<AcadenoApp> with WidgetsBindingObserver {
       },
       routerConfig: _appRouter.config(
         deepLinkBuilder: (_) => DeepLink([const SplashRoute()]),
-      ),
-    );
-  }
-}
-
-/// 5-Minute Inactivity PIN / Lock Screen Overlay (PR-5.2, Screen #2).
-class _AppPinLockOverlay extends StatefulWidget {
-  final VoidCallback onUnlocked;
-  final VoidCallback onSignOut;
-
-  const _AppPinLockOverlay({
-    required this.onUnlocked,
-    required this.onSignOut,
-  });
-
-  @override
-  State<_AppPinLockOverlay> createState() => _AppPinLockOverlayState();
-}
-
-class _AppPinLockOverlayState extends State<_AppPinLockOverlay> {
-  final TextEditingController _pinCtrl = TextEditingController();
-  String? _error;
-
-  @override
-  void dispose() {
-    _pinCtrl.dispose();
-    super.dispose();
-  }
-
-  void _verifyPin() {
-    final pin = _pinCtrl.text.trim();
-    if (pin.length == 4 && RegExp(r'^\d{4}$').hasMatch(pin)) {
-      widget.onUnlocked();
-    } else {
-      setState(() => _error = 'Enter your 4-digit staff PIN to unlock');
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: const Color(0xFF0F172A).withValues(alpha: 0.96),
-      child: SafeArea(
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 360),
-            child: Container(
-              margin: const EdgeInsets.all(24),
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(24),
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    width: 56,
-                    height: 56,
-                    decoration: const BoxDecoration(
-                      color: Color(0xFFEEF2FF),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.lock_outline_rounded,
-                      color: Color(0xFF3F37C9),
-                      size: 28,
-                    ),
-                  ),
-                  const Gap(16),
-                  const Text(
-                    'Session Locked',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w700,
-                      color: Color(0xFF0F172A),
-                    ),
-                  ),
-                  const Gap(6),
-                  const Text(
-                    'Locked after 5 minutes in background.\nEnter your 4-digit PIN to resume.',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: Color(0xFF64748B),
-                      height: 1.4,
-                    ),
-                  ),
-                  const Gap(20),
-                  TextField(
-                    controller: _pinCtrl,
-                    keyboardType: TextInputType.number,
-                    obscureText: true,
-                    maxLength: 4,
-                    textAlign: TextAlign.center,
-                    onSubmitted: (_) => _verifyPin(),
-                    style: const TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 12,
-                    ),
-                    decoration: InputDecoration(
-                      counterText: '',
-                      hintText: '••••',
-                      errorText: _error,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                  ),
-                  const Gap(16),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 46,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFEF8144),
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      onPressed: _verifyPin,
-                      child: const Text(
-                        'Unlock App',
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const Gap(8),
-                  TextButton(
-                    onPressed: widget.onSignOut,
-                    child: const Text(
-                      'Sign in with password instead',
-                      style: TextStyle(
-                        fontSize: 12.5,
-                        color: Color(0xFF64748B),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
       ),
     );
   }

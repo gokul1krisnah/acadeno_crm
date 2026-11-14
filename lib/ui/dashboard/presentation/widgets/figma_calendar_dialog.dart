@@ -19,11 +19,15 @@ Future<DateTime?> showFigmaCalendarDialog({
       surfaceTintColor: Colors.transparent,
       elevation: 0,
       insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
-      child: FigmaCalendarCard(
-        initialDate: initialDate,
-        firstDate: firstDate ?? DateTime(2020),
-        lastDate: lastDate ?? DateTime(2035, 12, 31),
-        onDateSelected: (picked) => Navigator.of(ctx).pop(picked),
+      child: SingleChildScrollView(
+        child: Center(
+          child: FigmaCalendarCard(
+            initialDate: initialDate,
+            firstDate: firstDate ?? DateTime(2020),
+            lastDate: lastDate ?? DateTime(2035, 12, 31),
+            onDateSelected: (picked) => Navigator.of(ctx).pop(picked),
+          ),
+        ),
       ),
     ),
   );
@@ -157,8 +161,19 @@ class _FigmaCalendarCardState extends State<FigmaCalendarCard> {
             ? math.min(504.0, constraints.maxWidth)
             : 504.0;
         final isCompact = maxW < 440;
-        final cardPadding = isCompact ? 28.0 : 48.0;
+        final cardPadding = isCompact ? 24.0 : 48.0;
         final cardRadius = isCompact ? 32.0 : 48.0;
+        final rowHeight = isCompact ? 48.0 : 64.0;
+        final minDate = DateTime(
+          widget.firstDate.year,
+          widget.firstDate.month,
+          widget.firstDate.day,
+        );
+        final maxDate = DateTime(
+          widget.lastDate.year,
+          widget.lastDate.month,
+          widget.lastDate.day,
+        );
 
         return Container(
           width: maxW,
@@ -319,15 +334,23 @@ class _FigmaCalendarCardState extends State<FigmaCalendarCard> {
 
                 // Dates Grid (node 1713:369)
                 SizedBox(
-                  height: rowCount * 64.0,
+                  height: rowCount * rowHeight,
                   width: double.infinity,
                   child: Column(
                     children: List.generate(rowCount, (rowIndex) {
                       return SizedBox(
-                        height: 64,
+                        height: rowHeight,
                         child: Row(
                           children: List.generate(7, (colIndex) {
                             final item = dayItems[rowIndex * 7 + colIndex];
+                            final normalizedItemDate = DateTime(
+                              item.date.year,
+                              item.date.month,
+                              item.date.day,
+                            );
+                            final isDisabled =
+                                normalizedItemDate.isBefore(minDate) ||
+                                normalizedItemDate.isAfter(maxDate);
                             final isSelected =
                                 item.date.year == _selectedDate.year &&
                                 item.date.month == _selectedDate.month &&
@@ -336,19 +359,23 @@ class _FigmaCalendarCardState extends State<FigmaCalendarCard> {
                             return Expanded(
                               child: GestureDetector(
                                 behavior: HitTestBehavior.opaque,
-                                onTap: () {
-                                  setState(() {
-                                    _selectedDate = item.date;
-                                  });
-                                  widget.onDateSelected(item.date);
-                                },
+                                onTap: isDisabled
+                                    ? null
+                                    : () {
+                                        setState(() {
+                                          _selectedDate = item.date;
+                                        });
+                                        widget.onDateSelected(item.date);
+                                      },
                                 child: MouseRegion(
-                                  cursor: SystemMouseCursors.click,
+                                  cursor: isDisabled
+                                      ? SystemMouseCursors.basic
+                                      : SystemMouseCursors.click,
                                   child: Center(
                                     child: isSelected
                                         ? Container(
-                                            width: 40,
-                                            height: 40,
+                                            width: isCompact ? 36 : 40,
+                                            height: isCompact ? 36 : 40,
                                             alignment: Alignment.center,
                                             decoration: const BoxDecoration(
                                               color: Color(0xFF3B82F6),
@@ -372,7 +399,7 @@ class _FigmaCalendarCardState extends State<FigmaCalendarCard> {
                                               '${item.date.day}',
                                               textAlign: TextAlign.center,
                                               style: GoogleFonts.inter(
-                                                fontSize: 18,
+                                                fontSize: isCompact ? 16 : 18,
                                                 fontWeight: FontWeight.w500,
                                                 color: Colors.white,
                                                 height: 28 / 18,
@@ -383,9 +410,11 @@ class _FigmaCalendarCardState extends State<FigmaCalendarCard> {
                                             '${item.date.day}',
                                             textAlign: TextAlign.center,
                                             style: GoogleFonts.inter(
-                                              fontSize: 18,
+                                              fontSize: isCompact ? 16 : 18,
                                               fontWeight: FontWeight.w500,
-                                              color: item.isCurrentMonth
+                                              color:
+                                                  (item.isCurrentMonth &&
+                                                      !isDisabled)
                                                   ? const Color(0xFF1A1A1A)
                                                   : const Color(0xFFD1D5DB),
                                               height: 28 / 18,

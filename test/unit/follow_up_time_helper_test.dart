@@ -98,6 +98,38 @@ void main() {
         expect(eval.isOverdue, isFalse);
       },
     );
+
+    test(
+      'TC-FU-007: Concrete tomorrow date (e.g. Wed, 4 Nov · 10:30 AM) lands in Upcoming even with stale assignedDateKey and overdue status',
+      () {
+        final eval = FollowUpTimeHelper.evaluate(
+          rawFollowUpTime: 'Wed, 4 Nov · 10:30 AM',
+          assignedDateKey: '2026-11-01',
+          updatedAt: fixedNow,
+          status: 'overdue',
+          currentTime: fixedNow,
+        );
+
+        expect(eval.bucket, equals(FollowUpBucket.upcoming));
+        expect(eval.isOverdue, isFalse);
+      },
+    );
+
+    test(
+      'TC-FU-008: Concrete today later time (e.g. Tue, 3 Nov · 4:00 PM) lands in Today even with stale assignedDateKey',
+      () {
+        final eval = FollowUpTimeHelper.evaluate(
+          rawFollowUpTime: 'Tue, 3 Nov · 4:00 PM',
+          assignedDateKey: '2026-11-01',
+          updatedAt: fixedNow,
+          status: 'follow-up',
+          currentTime: fixedNow,
+        );
+
+        expect(eval.bucket, equals(FollowUpBucket.today));
+        expect(eval.isOverdue, isFalse);
+      },
+    );
   });
 
   group(
