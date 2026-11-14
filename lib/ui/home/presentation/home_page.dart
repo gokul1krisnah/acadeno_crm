@@ -137,10 +137,11 @@ class _HomeScaffoldViewState extends State<_HomeScaffoldView> {
 
         return LayoutBuilder(
           builder: (context, constraints) {
-            final isWideScreen = constraints.maxWidth > 540;
+            final isDesktopTablet =
+                constraints.maxWidth > 540 && constraints.maxHeight > 540;
 
             return Scaffold(
-              backgroundColor: const Color(0xFFF5F6FA),
+              backgroundColor: const Color(0xFFF9FAFB),
               body: SafeArea(
                 child: SelectionContainer.disabled(
                   child: StaffWatermarkOverlay(
@@ -148,12 +149,12 @@ class _HomeScaffoldViewState extends State<_HomeScaffoldView> {
                     child: Center(
                       child: ConstrainedBox(
                         constraints: BoxConstraints(
-                          maxWidth: isWideScreen ? 460 : double.infinity,
+                          maxWidth: isDesktopTablet ? 460 : double.infinity,
                         ),
                         child: Container(
-                          decoration: isWideScreen
+                          decoration: isDesktopTablet
                               ? const BoxDecoration(
-                                  color: Color(0xFFF5F6FA),
+                                  color: Color(0xFFF9FAFB),
                                   border: Border.symmetric(
                                     vertical: BorderSide(
                                       color: Color(0xFFE4E7EC),
@@ -174,7 +175,7 @@ class _HomeScaffoldViewState extends State<_HomeScaffoldView> {
                                 },
                               ),
 
-                              // Bottom Navigation Bar (Exact match to all 4 screenshots)
+                              // Bottom Navigation Bar (Exact match to Figma 1350:1670)
                               _ExecutiveBottomNavBar(
                                 currentIndex: state.bottomNavIndex,
                                 onSelect: cubit.selectBottomNav,
@@ -213,7 +214,9 @@ class _ExecutiveBottomNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final hPad = context.devicePadding.clamp(12.0, 20.0);
+    final hPad = context.devicePadding.clamp(16.0, 24.0);
+    final isShortScreen = MediaQuery.sizeOf(context).height < 500;
+    final vPad = isShortScreen ? 8.0 : 16.0;
 
     return Container(
       decoration: const BoxDecoration(
@@ -222,14 +225,14 @@ class _ExecutiveBottomNavBar extends StatelessWidget {
       ),
       padding: EdgeInsets.fromLTRB(
         hPad,
-        12,
+        vPad,
         hPad,
         MediaQuery.paddingOf(context).bottom > 0
-            ? MediaQuery.paddingOf(context).bottom + 8
-            : 20,
+            ? MediaQuery.paddingOf(context).bottom + (isShortScreen ? 4 : 8)
+            : vPad,
       ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: List.generate(_items.length, (index) {
           final isSelected = index == currentIndex;
           final item = _items[index];
@@ -238,25 +241,25 @@ class _ExecutiveBottomNavBar extends StatelessWidget {
             behavior: HitTestBehavior.opaque,
             onTap: () => onSelect(index),
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              padding: const EdgeInsets.symmetric(horizontal: 4),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Container(
-                    width: 48,
-                    height: 32,
+                    width: isSelected ? 56 : 28,
+                    height: isSelected ? 36 : 28,
                     decoration: BoxDecoration(
                       color: isSelected
-                          ? const Color(0xFFEEEBF6)
+                          ? const Color(0xFFEEF2FF)
                           : Colors.transparent,
                       borderRadius: BorderRadius.circular(9999),
                     ),
                     alignment: Alignment.center,
                     child: Icon(
                       item.$1,
-                      size: 20,
+                      size: isSelected ? 16 : 18,
                       color: isSelected
-                          ? const Color(0xFF1A119B)
+                          ? const Color(0xFF6366F1)
                           : const Color(0xFF9CA3AF),
                     ),
                   ),
@@ -264,14 +267,15 @@ class _ExecutiveBottomNavBar extends StatelessWidget {
                   Text(
                     item.$2,
                     style: GoogleFonts.inter(
-                      fontSize: 11,
+                      fontSize: 10,
                       fontWeight: isSelected
                           ? FontWeight.w700
                           : FontWeight.w500,
                       color: isSelected
-                          ? const Color(0xFF1A119B)
+                          ? const Color(0xFF6366F1)
                           : const Color(0xFF9CA3AF),
-                      height: 16.5 / 11,
+                      height: 15 / 10,
+                      letterSpacing: isSelected ? 0.2832 : 0.13,
                     ),
                   ),
                 ],
