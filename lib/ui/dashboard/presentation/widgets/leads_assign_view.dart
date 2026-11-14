@@ -769,7 +769,11 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
     final cubit = context.read<AdminLeadsCubit>();
     final formKey = GlobalKey<FormState>();
     final nameC = TextEditingController(text: lead.name);
-    final phoneC = TextEditingController(text: lead.phone);
+    final phoneC = TextEditingController(
+      text: LeadPhoneValidator.formatDisplayPhone(lead.phone) == '—'
+          ? lead.phone
+          : LeadPhoneValidator.formatDisplayPhone(lead.phone),
+    );
     final collegeC = TextEditingController(text: lead.collegeBranch);
     final notesC = TextEditingController(text: lead.notes);
 
@@ -802,379 +806,207 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
     showDialog(
       context: context,
       builder: (dCtx) => StatefulBuilder(
-        builder: (dCtx, setD) => Dialog(
-          backgroundColor: Colors.white,
-          insetPadding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 24,
-          ),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(28),
-          ),
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 440),
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
+        builder: (dCtx, setD) {
+          final screenWidth = MediaQuery.sizeOf(dCtx).width;
+          final isMobile = screenWidth < 600;
+          final displayName = nameC.text.trim().isNotEmpty
+              ? nameC.text.trim()
+              : lead.name;
+          final initials = LeadPhoneValidator.initialsFromName(displayName);
+          final academicSubtitle = lead.course.trim().isNotEmpty
+              ? lead.course.trim()
+              : 'B.Tech Engineering · 2025 Grad';
+          final headerBadgeLabel =
+              (selectedStatus.trim().toLowerCase() == 'new' && lead.isAssigned)
+              ? 'Assigned'
+              : selectedStatus;
+          final assignedToDisplay =
+              (lead.assignedToName.trim().isNotEmpty &&
+                  lead.assignedToName.trim() != '—')
+              ? lead.assignedToName.trim()
+              : 'Unassigned';
+          final assignedByDisplay =
+              (lead.assignedByName != null &&
+                  lead.assignedByName!.trim().isNotEmpty)
+              ? 'by ${lead.assignedByName!.trim()}'
+              : 'by AcadenoAdmin';
+          final assignedDateDisplay =
+              lead.dynamicAssignedDateLabel ??
+              LeadDateHelper.dateLabel(lead.createdAt ?? DateTime.now());
+
+          return Dialog(
+            backgroundColor: const Color(0xFFF8FAFC),
+            surfaceTintColor: Colors.transparent,
+            insetPadding: EdgeInsets.symmetric(
+              horizontal: isMobile ? 12 : 24,
+              vertical: isMobile ? 16 : 24,
+            ),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(24),
+            ),
+            clipBehavior: Clip.antiAlias,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 420),
               child: ScrollConfiguration(
-                behavior: ScrollConfiguration.of(dCtx).copyWith(
-                  scrollbars: false,
-                ),
+                behavior: ScrollConfiguration.of(
+                  dCtx,
+                ).copyWith(scrollbars: false),
                 child: SingleChildScrollView(
+                  padding: const EdgeInsets.fromLTRB(16, 28, 16, 24),
                   child: Form(
-                  key: formKey,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              'Lead Details · ${lead.name}',
-                              style: GoogleFonts.inter(
-                                fontWeight: FontWeight.w600,
-                                fontSize: 18.5,
-                                height: 26 / 18.5,
-                                color: const Color(0xFF0F172A),
-                              ),
-                            ),
-                          ),
-                          const Gap(8),
-                          _statusBadge(selectedStatus),
-                        ],
-                      ),
-                      const Gap(4),
-                      Text(
-                        'View and update lead contact details, stage, and history.',
-                        style: GoogleFonts.inter(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w400,
-                          color: const Color(0xFF64748B),
-                        ),
-                      ),
-                      const Gap(16),
-                      if (errorText != null) ...[
-                        Container(
-                          width: double.infinity,
-                          margin: const EdgeInsets.only(bottom: 14),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 14,
-                            vertical: 11,
-                          ),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFFEE2E2),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
+                    key: formKey,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // 1749:401 - Lead Identity & Status Badges
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 4),
                           child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Icon(
-                                Icons.error_outline_rounded,
-                                size: 18,
-                                color: Color(0xFFDC2626),
+                              Expanded(
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    // 1749:403 - Avatar
+                                    Container(
+                                      width: 44,
+                                      height: 44,
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(16),
+                                        gradient: const LinearGradient(
+                                          begin: Alignment.topLeft,
+                                          end: Alignment.bottomRight,
+                                          colors: [
+                                            Color(0xFFF97316),
+                                            Color(0xFFD97706),
+                                          ],
+                                        ),
+                                        boxShadow: const [
+                                          BoxShadow(
+                                            color: Color(0xFFFFEDD5),
+                                            spreadRadius: 2,
+                                            blurRadius: 0,
+                                          ),
+                                          BoxShadow(
+                                            color: Color(0x0D000000),
+                                            blurRadius: 2,
+                                            offset: Offset(0, 1),
+                                          ),
+                                        ],
+                                      ),
+                                      alignment: Alignment.center,
+                                      child: Text(
+                                        initials,
+                                        style: GoogleFonts.inter(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w700,
+                                          color: Colors.white,
+                                          height: 24 / 16,
+                                        ),
+                                      ),
+                                    ),
+                                    const Gap(12),
+                                    // 1749:406 - Name & Academic Subtitle
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            displayName,
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: GoogleFonts.inter(
+                                              fontSize: 20,
+                                              fontWeight: FontWeight.w700,
+                                              color: const Color(0xFF0F172A),
+                                              letterSpacing: -0.5,
+                                              height: 27.5 / 20,
+                                            ),
+                                          ),
+                                          Text(
+                                            academicSubtitle,
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: GoogleFonts.inter(
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w500,
+                                              color: const Color(0xFF64748B),
+                                              height: 16 / 12,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
                               const Gap(8),
-                              Expanded(
+                              // 1749:415 - Assigned Status Pill
+                              Container(
+                                constraints: const BoxConstraints(
+                                  minWidth: 85.06,
+                                  minHeight: 27.25,
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 15,
+                                  vertical: 4.5,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFFFFBEB),
+                                  borderRadius: BorderRadius.circular(9999),
+                                  border: Border.all(
+                                    color: const Color(0xCC00AB09),
+                                    width: 1,
+                                  ),
+                                ),
+                                alignment: Alignment.center,
                                 child: Text(
-                                  errorText!,
+                                  headerBadgeLabel,
                                   style: GoogleFonts.inter(
-                                    color: const Color(0xFF991B1B),
-                                    fontSize: 12.5,
-                                    fontWeight: FontWeight.w600,
+                                    fontSize: 11.5,
+                                    fontWeight: FontWeight.w700,
+                                    color: const Color(0xFF00A241),
+                                    letterSpacing: -0.287,
+                                    height: 17.25 / 11.5,
                                   ),
                                 ),
                               ),
                             ],
                           ),
                         ),
-                      ],
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFF8FAFC),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: const Color(0xFFE2E8F0)),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Assigned To: ${lead.assignedToName}${lead.dynamicAssignedDateLabel != null ? " (${lead.dynamicAssignedDateLabel})" : ""}',
-                              style: GoogleFonts.inter(
-                                fontSize: 12.5,
-                                fontWeight: FontWeight.w600,
-                                color: const Color(0xFF0F172A),
-                              ),
+                        const Gap(24),
+
+                        if (errorText != null) ...[
+                          Container(
+                            width: double.infinity,
+                            margin: const EdgeInsets.only(bottom: 12),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 11,
                             ),
-                            if (lead.assignedByName != null &&
-                                lead.assignedByName!.isNotEmpty) ...[
-                              const Gap(1),
-                              Text(
-                                'Assigned By: ${lead.assignedByName}',
-                                style: GoogleFonts.inter(
-                                  fontSize: 12,
-                                  color: const Color(0xFF64748B),
-                                ),
-                              ),
-                            ],
-                          ],
-                        ),
-                      ),
-                      const Gap(14),
-                      Text(
-                        'Student Name *',
-                        style: GoogleFonts.inter(
-                          fontSize: 12.5,
-                          fontWeight: FontWeight.w600,
-                          color: const Color(0xFF334155),
-                        ),
-                      ),
-                      const Gap(6),
-                      TextFormField(
-                        controller: nameC,
-                        textAlignVertical: TextAlignVertical.center,
-                        style: GoogleFonts.inter(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w400,
-                          color: const Color(0xFF0F172A),
-                        ),
-                        decoration: InputDecoration(
-                          hintText: 'Student Name *',
-                          hintStyle: GoogleFonts.inter(
-                            color: const Color(0xFF94A3B8),
-                            fontSize: 13,
-                          ),
-                          filled: true,
-                          fillColor: const Color(0xFFF8FAFC),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(
-                              color: Color(0xFFE2E8F0),
-                              width: 1,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFFEE2E2),
+                              borderRadius: BorderRadius.circular(12),
                             ),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(
-                              color: Color(0xFFE2E8F0),
-                              width: 1,
-                            ),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(
-                              color: Color(0xFFD45107),
-                              width: 1.5,
-                            ),
-                          ),
-                          isDense: true,
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 16,
-                          ),
-                        ),
-                        validator: (v) =>
-                            (v == null || v.trim().isEmpty) ? 'Required' : null,
-                      ),
-                      const Gap(14),
-                      Text(
-                        '10-digit Phone Number *',
-                        style: GoogleFonts.inter(
-                          fontSize: 12.5,
-                          fontWeight: FontWeight.w600,
-                          color: const Color(0xFF334155),
-                        ),
-                      ),
-                      const Gap(6),
-                      TextFormField(
-                        controller: phoneC,
-                        keyboardType: TextInputType.phone,
-                        textAlignVertical: TextAlignVertical.center,
-                        style: GoogleFonts.inter(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w400,
-                          color: const Color(0xFF0F172A),
-                        ),
-                        decoration: InputDecoration(
-                          hintText: '10-digit mobile number...',
-                          hintStyle: GoogleFonts.inter(
-                            color: const Color(0xFF94A3B8),
-                            fontSize: 13,
-                          ),
-                          filled: true,
-                          fillColor: const Color(0xFFF8FAFC),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(
-                              color: Color(0xFFE2E8F0),
-                              width: 1,
-                            ),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(
-                              color: Color(0xFFE2E8F0),
-                              width: 1,
-                            ),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(
-                              color: Color(0xFFD45107),
-                              width: 1.5,
-                            ),
-                          ),
-                          isDense: true,
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 16,
-                          ),
-                        ),
-                        validator: LeadPhoneValidator.validate,
-                      ),
-                      const Gap(14),
-                      CollegeSelectorField(
-                        controller: collegeC,
-                        additionalColleges: state.allLeads
-                            .map(
-                              (l) => l.collegeBranch
-                                  .split(RegExp(r'[·\-]'))
-                                  .first
-                                  .trim(),
-                            )
-                            .where((s) => s.isNotEmpty)
-                            .toList(),
-                      ),
-                      const Gap(14),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                            child: Row(
                               children: [
-                                Text(
-                                  'Source',
-                                  style: GoogleFonts.inter(
-                                    fontSize: 12.5,
-                                    fontWeight: FontWeight.w600,
-                                    color: const Color(0xFF334155),
-                                  ),
+                                const Icon(
+                                  Icons.error_outline_rounded,
+                                  size: 18,
+                                  color: Color(0xFFDC2626),
                                 ),
-                                const Gap(6),
-                                Container(
-                                  height: 52,
-                                  alignment: Alignment.center,
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFFF8FAFC),
-                                    borderRadius: BorderRadius.circular(12),
-                                    border: Border.all(
-                                      color: const Color(0xFFE2E8F0),
-                                      width: 1,
-                                    ),
-                                  ),
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 16,
-                                  ),
-                                  child: DropdownButtonHideUnderline(
-                                    child: DropdownButton<String>(
-                                      value: selectedSource,
-                                      isExpanded: true,
-                                      isDense: true,
-                                      dropdownColor: Colors.white,
-                                      borderRadius: BorderRadius.circular(12),
-                                      icon: const Icon(
-                                        Icons.keyboard_arrow_down_rounded,
-                                        color: Color(0xFF64748B),
-                                        size: 22,
-                                      ),
-                                      style: GoogleFonts.inter(
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.w400,
-                                        color: const Color(0xFF0F172A),
-                                      ),
-                                      items: sourceOptions
-                                          .map(
-                                            (s) => DropdownMenuItem(
-                                              value: s,
-                                              child: Text(
-                                                s,
-                                                overflow: TextOverflow.ellipsis,
-                                              ),
-                                            ),
-                                          )
-                                          .toList(),
-                                      onChanged: (v) {
-                                        if (v != null) {
-                                          setD(() => selectedSource = v);
-                                        }
-                                      },
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const Gap(12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Status',
-                                  style: GoogleFonts.inter(
-                                    fontSize: 12.5,
-                                    fontWeight: FontWeight.w600,
-                                    color: const Color(0xFF334155),
-                                  ),
-                                ),
-                                const Gap(6),
-                                Container(
-                                  height: 52,
-                                  alignment: Alignment.center,
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFFF8FAFC),
-                                    borderRadius: BorderRadius.circular(12),
-                                    border: Border.all(
-                                      color: const Color(0xFFE2E8F0),
-                                      width: 1,
-                                    ),
-                                  ),
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 16,
-                                  ),
-                                  child: DropdownButtonHideUnderline(
-                                    child: DropdownButton<String>(
-                                      value: selectedStatus,
-                                      isExpanded: true,
-                                      isDense: true,
-                                      dropdownColor: Colors.white,
-                                      borderRadius: BorderRadius.circular(12),
-                                      icon: const Icon(
-                                        Icons.keyboard_arrow_down_rounded,
-                                        color: Color(0xFF64748B),
-                                        size: 22,
-                                      ),
-                                      style: GoogleFonts.inter(
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.w400,
-                                        color: const Color(0xFF0F172A),
-                                      ),
-                                      items: statusOptions
-                                          .map(
-                                            (s) => DropdownMenuItem(
-                                              value: s,
-                                              child: Text(
-                                                s,
-                                                overflow: TextOverflow.ellipsis,
-                                              ),
-                                            ),
-                                          )
-                                          .toList(),
-                                      onChanged: (v) {
-                                        if (v != null) {
-                                          setD(() => selectedStatus = v);
-                                        }
-                                      },
+                                const Gap(8),
+                                Expanded(
+                                  child: Text(
+                                    errorText!,
+                                    style: GoogleFonts.inter(
+                                      color: const Color(0xFF991B1B),
+                                      fontSize: 12.5,
+                                      fontWeight: FontWeight.w600,
                                     ),
                                   ),
                                 ),
@@ -1182,226 +1014,834 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                             ),
                           ),
                         ],
-                      ),
-                      const Gap(14),
-                      Text(
-                        'Notes',
-                        style: GoogleFonts.inter(
-                          fontSize: 12.5,
-                          fontWeight: FontWeight.w600,
-                          color: const Color(0xFF334155),
-                        ),
-                      ),
-                      const Gap(6),
-                      TextFormField(
-                        controller: notesC,
-                        maxLines: 2,
-                        style: GoogleFonts.inter(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w400,
-                          color: const Color(0xFF0F172A),
-                        ),
-                        decoration: InputDecoration(
-                          hintText: 'Add internal notes or context...',
-                          hintStyle: GoogleFonts.inter(
-                            color: const Color(0xFF94A3B8),
-                            fontSize: 13,
-                          ),
-                          filled: true,
-                          fillColor: const Color(0xFFF8FAFC),
-                          isDense: true,
-                          contentPadding: const EdgeInsets.all(14),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(
-                              color: Color(0xFFE2E8F0),
-                              width: 1,
-                            ),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(
-                              color: Color(0xFFE2E8F0),
-                              width: 1,
-                            ),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(
-                              color: Color(0xFFD45107),
-                              width: 1.5,
-                            ),
-                          ),
-                        ),
-                      ),
-                      if (lead.timeline.isNotEmpty) ...[
-                        const Gap(14),
-                        Text(
-                          'TIMELINE',
-                          style: GoogleFonts.inter(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: 0.5,
-                            color: const Color(0xFF64748B),
-                          ),
-                        ),
-                        const Gap(6),
+
+                        // 1749:439 - Card B: Ownership & Routing
                         Container(
                           width: double.infinity,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 14,
-                            vertical: 10,
-                          ),
+                          padding: const EdgeInsets.all(15),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFF8FAFC),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: const Color(0xFFE2E8F0)),
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: const Color(0xCCE2E8F0),
+                              width: 1,
+                            ),
+                            boxShadow: const [
+                              BoxShadow(
+                                color: Color(0x0D000000),
+                                blurRadius: 2,
+                                offset: Offset(0, 1),
+                              ),
+                            ],
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
-                            children: lead.timeline
-                                .take(4)
-                                .map(
-                                  (t) => Padding(
-                                    padding: const EdgeInsets.only(bottom: 4),
-                                    child: Row(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        const Text(
-                                          '• ',
-                                          style: TextStyle(
-                                            color: Color(0xFF94A3B8),
-                                            fontSize: 13,
-                                          ),
-                                        ),
-                                        Expanded(
-                                          child: Text(
-                                            LeadDateHelper.formatTimelineEntry(
-                                              t,
-                                            ),
-                                            style: GoogleFonts.inter(
-                                              fontSize: 12,
-                                              color: const Color(0xFF475467),
-                                              height: 1.4,
-                                            ),
-                                          ),
-                                        ),
-                                      ],
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.only(bottom: 8),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Container(
+                                      width: 28,
+                                      height: 28,
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFEFF6FF),
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      alignment: Alignment.center,
+                                      child: SvgPicture.asset(
+                                        AppSvgs.leadDetailBadge,
+                                        width: 13.6,
+                                        height: 13.6,
+                                      ),
+                                    ),
+                                    Text(
+                                      'ASSIGNED',
+                                      style: GoogleFonts.inter(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.w600,
+                                        color: const Color(0xFF94A3B8),
+                                        letterSpacing: 0.5,
+                                        height: 15 / 10,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Text(
+                                assignedToDisplay,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: GoogleFonts.inter(
+                                  fontSize: 13.5,
+                                  fontWeight: FontWeight.w700,
+                                  color: const Color(0xFF0F172A),
+                                  height: 16.88 / 13.5,
+                                ),
+                              ),
+                              const Gap(2),
+                              Text(
+                                assignedByDisplay,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: GoogleFonts.inter(
+                                  fontSize: 11.5,
+                                  fontWeight: FontWeight.w500,
+                                  color: const Color(0xFF64748B),
+                                  height: 17.25 / 11.5,
+                                ),
+                              ),
+                              const Gap(10),
+                              Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.only(top: 9),
+                                decoration: const BoxDecoration(
+                                  border: Border(
+                                    top: BorderSide(
+                                      color: Color(0xFFF1F5F9),
+                                      width: 1,
                                     ),
                                   ),
-                                )
-                                .toList(),
+                                ),
+                                child: Row(
+                                  children: [
+                                    SvgPicture.asset(
+                                      AppSvgs.leadDetailClock,
+                                      width: 9.6,
+                                      height: 9.6,
+                                    ),
+                                    const Gap(4),
+                                    Text(
+                                      assignedDateDisplay,
+                                      style: GoogleFonts.inter(
+                                        fontSize: 10.5,
+                                        fontWeight: FontWeight.w500,
+                                        color: const Color(0xFF64748B),
+                                        height: 15.75 / 10.5,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                      ],
-                      const Gap(20),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: SizedBox(
-                              height: 48,
-                              child: OutlinedButton(
-                                onPressed: saving
-                                    ? null
-                                    : () => Navigator.pop(dCtx),
-                                style: OutlinedButton.styleFrom(
-                                  side: const BorderSide(
-                                    color: Color(0xFFE2E8F0),
-                                  ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(16),
+                        const Gap(14),
+
+                        // 1749:493 - LEAD DETAILS Card
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(15),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: const Color(0xCCE2E8F0),
+                              width: 1,
+                            ),
+                            boxShadow: const [
+                              BoxShadow(
+                                color: Color(0x0D000000),
+                                blurRadius: 1,
+                                offset: Offset(0, 1),
+                              ),
+                            ],
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // 1749:494 - LEAD DETAILS Header
+                              Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.only(bottom: 5),
+                                decoration: const BoxDecoration(
+                                  border: Border(
+                                    bottom: BorderSide(
+                                      color: Color(0xFFF1F5F9),
+                                      width: 1,
+                                    ),
                                   ),
                                 ),
                                 child: Text(
-                                  'Cancel',
+                                  'LEAD DETAILS',
                                   style: GoogleFonts.inter(
-                                    color: const Color(0xFF475467),
-                                    fontWeight: FontWeight.w600,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w700,
+                                    color: const Color(0xFF94A3B8),
+                                    letterSpacing: 0.55,
+                                    height: 16.5 / 11,
                                   ),
                                 ),
                               ),
-                            ),
-                          ),
-                          const Gap(12),
-                          Expanded(
-                            child: SizedBox(
-                              height: 48,
-                              child: ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFFD45107),
-                                  foregroundColor: Colors.white,
-                                  elevation: 0,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(16),
+                              const Gap(11),
+
+                              // 1749:500 - Student Full Name *
+                              RichText(
+                                text: TextSpan(
+                                  style: GoogleFonts.inter(
+                                    fontSize: 11.5,
+                                    fontWeight: FontWeight.w700,
+                                    color: const Color(0xFF334155),
+                                    height: 17.25 / 11.5,
+                                  ),
+                                  children: const [
+                                    TextSpan(text: 'Student Full Name '),
+                                    TextSpan(
+                                      text: '*',
+                                      style: TextStyle(
+                                        color: Color(0xFFF43F5E),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const Gap(4),
+                              TextFormField(
+                                controller: nameC,
+                                textAlignVertical: TextAlignVertical.center,
+                                onChanged: (_) => setD(() {}),
+                                style: GoogleFonts.inter(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w500,
+                                  color: const Color(0xFF0F172A),
+                                ),
+                                decoration: InputDecoration(
+                                  hintText: 'Student Full Name',
+                                  hintStyle: GoogleFonts.inter(
+                                    color: const Color(0xFF94A3B8),
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                  filled: true,
+                                  fillColor: const Color(0x80F8FAFC),
+                                  isDense: true,
+                                  constraints: const BoxConstraints(
+                                    minHeight: 40,
+                                  ),
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 13,
+                                    vertical: 10,
+                                  ),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: const BorderSide(
+                                      color: Color(0xFFE2E8F0),
+                                      width: 1,
+                                    ),
+                                  ),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: const BorderSide(
+                                      color: Color(0xFFE2E8F0),
+                                      width: 1,
+                                    ),
+                                  ),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: const BorderSide(
+                                      color: Color(0xFFE8612D),
+                                      width: 1.2,
+                                    ),
                                   ),
                                 ),
-                                onPressed: saving
-                                    ? null
-                                    : () async {
-                                        setD(() => errorText = null);
-                                        if (!formKey.currentState!.validate()) {
-                                          return;
-                                        }
-                                        setD(() => saving = true);
-                                        try {
-                                          await CollegeSelectorField.saveCollegeIfNew(
-                                            collegeC.text,
-                                          );
-                                          await cubit.updateLead(
-                                            leadId: lead.id,
-                                            name: nameC.text.trim(),
-                                            phone: phoneC.text.trim(),
-                                            collegeBranch: collegeC.text.trim(),
-                                            source: selectedSource,
-                                            status: selectedStatus,
-                                            notes: notesC.text.trim(),
-                                          );
-                                          if (!dCtx.mounted) return;
-                                          Navigator.pop(dCtx);
-                                        } catch (e) {
-                                          if (!dCtx.mounted) return;
-                                          setD(() {
-                                            saving = false;
-                                            errorText = e
-                                                .toString()
-                                                .replaceFirst(
-                                                  'Exception: ',
-                                                  '',
-                                                );
-                                          });
-                                        }
-                                      },
-                                child: saving
-                                    ? const SizedBox(
-                                        width: 20,
-                                        height: 20,
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2,
-                                          color: Colors.white,
-                                        ),
-                                      )
-                                    : Text(
-                                        'Save changes',
-                                        style: GoogleFonts.inter(
-                                          fontSize: 14.5,
-                                          fontWeight: FontWeight.w700,
-                                          color: Colors.white,
+                                validator: (v) =>
+                                    (v == null || v.trim().isEmpty)
+                                    ? 'Required'
+                                    : null,
+                              ),
+                              const Gap(9),
+
+                              // 1749:506 - 10-digit Phone Number *
+                              RichText(
+                                text: TextSpan(
+                                  style: GoogleFonts.inter(
+                                    fontSize: 11.5,
+                                    fontWeight: FontWeight.w700,
+                                    color: const Color(0xFF334155),
+                                    height: 17.25 / 11.5,
+                                  ),
+                                  children: const [
+                                    TextSpan(text: '10-digit Phone Number '),
+                                    TextSpan(
+                                      text: '*',
+                                      style: TextStyle(
+                                        color: Color(0xFFF43F5E),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const Gap(4),
+                              Stack(
+                                children: [
+                                  TextFormField(
+                                    controller: phoneC,
+                                    keyboardType: TextInputType.phone,
+                                    textAlignVertical: TextAlignVertical.center,
+                                    style: GoogleFonts.robotoMono(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w400,
+                                      color: const Color(0xFF0F172A),
+                                    ),
+                                    decoration: InputDecoration(
+                                      hintText: '96333 21454',
+                                      hintStyle: GoogleFonts.robotoMono(
+                                        color: const Color(0xFF94A3B8),
+                                        fontSize: 13,
+                                      ),
+                                      filled: true,
+                                      fillColor: const Color(0x80F8FAFC),
+                                      isDense: true,
+                                      constraints: const BoxConstraints(
+                                        minHeight: 40,
+                                      ),
+                                      contentPadding: const EdgeInsets.only(
+                                        left: 45,
+                                        right: 13,
+                                        top: 10,
+                                        bottom: 10,
+                                      ),
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                        borderSide: const BorderSide(
+                                          color: Color(0xFFE2E8F0),
+                                          width: 1,
                                         ),
                                       ),
+                                      enabledBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                        borderSide: const BorderSide(
+                                          color: Color(0xFFE2E8F0),
+                                          width: 1,
+                                        ),
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                        borderSide: const BorderSide(
+                                          color: Color(0xFFE8612D),
+                                          width: 1.2,
+                                        ),
+                                      ),
+                                    ),
+                                    validator: LeadPhoneValidator.validate,
+                                  ),
+                                  Positioned(
+                                    left: 12,
+                                    top: 12,
+                                    child: IgnorePointer(
+                                      child: Text(
+                                        '+91',
+                                        style: GoogleFonts.inter(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w600,
+                                          color: const Color(0xFF94A3B8),
+                                          height: 16 / 12,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const Gap(11),
+
+                              // 1749:514 - College & Branch Specifics
+                              CollegeSelectorField(
+                                controller: collegeC,
+                                useBentoLeadDetailsStyle: true,
+                                additionalColleges: state.allLeads
+                                    .map(
+                                      (l) => l.collegeBranch
+                                          .split(RegExp(r'[·\-]'))
+                                          .first
+                                          .trim(),
+                                    )
+                                    .where((s) => s.isNotEmpty)
+                                    .toList(),
+                              ),
+                              const Gap(11),
+
+                              // 1749:536 - Dual Dropdown: Source & Stage / Status
+                              Padding(
+                                padding: const EdgeInsets.only(top: 4),
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    // 1749:537 - Source
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            'Source',
+                                            style: GoogleFonts.inter(
+                                              fontSize: 11.5,
+                                              fontWeight: FontWeight.w700,
+                                              color: const Color(0xFF334155),
+                                              height: 17.25 / 11.5,
+                                            ),
+                                          ),
+                                          const Gap(4),
+                                          SizedBox(
+                                            height: 40,
+                                            child: Stack(
+                                              alignment: Alignment.centerLeft,
+                                              children: [
+                                                Container(
+                                                  height: 40,
+                                                  decoration: BoxDecoration(
+                                                    color: const Color(
+                                                      0x80F8FAFC,
+                                                    ),
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                          12,
+                                                        ),
+                                                    border: Border.all(
+                                                      color: const Color(
+                                                        0xFFE2E8F0,
+                                                      ),
+                                                      width: 1,
+                                                    ),
+                                                  ),
+                                                  padding:
+                                                      const EdgeInsets.only(
+                                                        left: 13,
+                                                        right: 29,
+                                                      ),
+                                                  alignment:
+                                                      Alignment.centerLeft,
+                                                  child: DropdownButtonHideUnderline(
+                                                    child: DropdownButton<String>(
+                                                      value: selectedSource,
+                                                      isExpanded: true,
+                                                      isDense: true,
+                                                      dropdownColor:
+                                                          Colors.white,
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                            12,
+                                                          ),
+                                                      icon:
+                                                          const SizedBox.shrink(),
+                                                      style: GoogleFonts.inter(
+                                                        fontSize: 12.5,
+                                                        fontWeight:
+                                                            FontWeight.w500,
+                                                        color: const Color(
+                                                          0xFF0F172A,
+                                                        ),
+                                                        height: 24 / 12.5,
+                                                      ),
+                                                      items: sourceOptions
+                                                          .map(
+                                                            (
+                                                              s,
+                                                            ) => DropdownMenuItem(
+                                                              value: s,
+                                                              child: Text(
+                                                                s,
+                                                                overflow:
+                                                                    TextOverflow
+                                                                        .ellipsis,
+                                                                style: GoogleFonts.inter(
+                                                                  fontSize:
+                                                                      12.5,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .w500,
+                                                                  color:
+                                                                      const Color(
+                                                                        0xFF0F172A,
+                                                                      ),
+                                                                ),
+                                                              ),
+                                                            ),
+                                                          )
+                                                          .toList(),
+                                                      onChanged: (v) {
+                                                        if (v != null) {
+                                                          setD(
+                                                            () =>
+                                                                selectedSource =
+                                                                    v,
+                                                          );
+                                                        }
+                                                      },
+                                                    ),
+                                                  ),
+                                                ),
+                                                Positioned(
+                                                  right: 28,
+                                                  child: IgnorePointer(
+                                                    child: SvgPicture.asset(
+                                                      AppSvgs
+                                                          .leadDetailChevronMd,
+                                                      width: 18.75,
+                                                      height: 18.75,
+                                                    ),
+                                                  ),
+                                                ),
+                                                Positioned(
+                                                  right: 10,
+                                                  child: IgnorePointer(
+                                                    child: SvgPicture.asset(
+                                                      AppSvgs
+                                                          .leadDetailChevronXs,
+                                                      width: 8,
+                                                      height: 4.85,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    const Gap(10),
+                                    // 1749:550 - Stage / Status
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            'Stage / Status',
+                                            style: GoogleFonts.inter(
+                                              fontSize: 11.5,
+                                              fontWeight: FontWeight.w700,
+                                              color: const Color(0xFF334155),
+                                              height: 17.25 / 11.5,
+                                            ),
+                                          ),
+                                          const Gap(4),
+                                          SizedBox(
+                                            height: 40,
+                                            child: Stack(
+                                              alignment: Alignment.centerLeft,
+                                              children: [
+                                                Container(
+                                                  height: 40,
+                                                  decoration: BoxDecoration(
+                                                    color: const Color(
+                                                      0x80F8FAFC,
+                                                    ),
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                          12,
+                                                        ),
+                                                    border: Border.all(
+                                                      color: const Color(
+                                                        0xFFE2E8F0,
+                                                      ),
+                                                      width: 1,
+                                                    ),
+                                                  ),
+                                                  padding:
+                                                      const EdgeInsets.only(
+                                                        left: 13,
+                                                        right: 29,
+                                                      ),
+                                                  alignment:
+                                                      Alignment.centerLeft,
+                                                  child: DropdownButtonHideUnderline(
+                                                    child: DropdownButton<String>(
+                                                      value: selectedStatus,
+                                                      isExpanded: true,
+                                                      isDense: true,
+                                                      dropdownColor:
+                                                          Colors.white,
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                            12,
+                                                          ),
+                                                      icon:
+                                                          const SizedBox.shrink(),
+                                                      style: GoogleFonts.inter(
+                                                        fontSize: 12.5,
+                                                        fontWeight:
+                                                            FontWeight.w500,
+                                                        color: const Color(
+                                                          0xFF0F172A,
+                                                        ),
+                                                        height: 24 / 12.5,
+                                                      ),
+                                                      items: statusOptions
+                                                          .map(
+                                                            (
+                                                              s,
+                                                            ) => DropdownMenuItem(
+                                                              value: s,
+                                                              child: Text(
+                                                                s,
+                                                                overflow:
+                                                                    TextOverflow
+                                                                        .ellipsis,
+                                                                style: GoogleFonts.inter(
+                                                                  fontSize:
+                                                                      12.5,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .w500,
+                                                                  color:
+                                                                      const Color(
+                                                                        0xFF0F172A,
+                                                                      ),
+                                                                ),
+                                                              ),
+                                                            ),
+                                                          )
+                                                          .toList(),
+                                                      onChanged: (v) {
+                                                        if (v != null) {
+                                                          setD(
+                                                            () =>
+                                                                selectedStatus =
+                                                                    v,
+                                                          );
+                                                        }
+                                                      },
+                                                    ),
+                                                  ),
+                                                ),
+                                                Positioned(
+                                                  right: 28,
+                                                  child: IgnorePointer(
+                                                    child: SvgPicture.asset(
+                                                      AppSvgs
+                                                          .leadDetailChevronMd,
+                                                      width: 18.75,
+                                                      height: 18.75,
+                                                    ),
+                                                  ),
+                                                ),
+                                                Positioned(
+                                                  right: 10,
+                                                  child: IgnorePointer(
+                                                    child: SvgPicture.asset(
+                                                      AppSvgs
+                                                          .leadDetailChevronXs,
+                                                      width: 8,
+                                                      height: 4.85,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const Gap(12),
+
+                        // 1749:563 - Section - Quick Notes Bento Box
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(15),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: const Color(0xCCE2E8F0),
+                              width: 1,
+                            ),
+                            boxShadow: const [
+                              BoxShadow(
+                                color: Color(0x0D000000),
+                                blurRadius: 1,
+                                offset: Offset(0, 1),
+                              ),
+                            ],
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                ' NOTES',
+                                style: GoogleFonts.inter(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w700,
+                                  color: const Color(0xFF334155),
+                                  letterSpacing: 0.55,
+                                  height: 16.5 / 11,
+                                ),
+                              ),
+                              const Gap(10),
+                              TextFormField(
+                                controller: notesC,
+                                minLines: 2,
+                                maxLines: 4,
+                                style: GoogleFonts.inter(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w500,
+                                  color: const Color(0xFF0F172A),
+                                  height: 21.13 / 13,
+                                ),
+                                decoration: InputDecoration(
+                                  hintText:
+                                      'Inquired about Full-Stack cohort fees &\nschedule. Follow up regarding batch timing...',
+                                  hintStyle: GoogleFonts.inter(
+                                    color: const Color(0xFF94A3B8),
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w500,
+                                    height: 21.13 / 13,
+                                  ),
+                                  filled: true,
+                                  fillColor: const Color(0x66F8FAFC),
+                                  isDense: true,
+                                  contentPadding: const EdgeInsets.fromLTRB(
+                                    13,
+                                    10.06,
+                                    13,
+                                    17,
+                                  ),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: const BorderSide(
+                                      color: Color(0xFFE2E8F0),
+                                      width: 1,
+                                    ),
+                                  ),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: const BorderSide(
+                                      color: Color(0xFFE2E8F0),
+                                      width: 1,
+                                    ),
+                                  ),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: const BorderSide(
+                                      color: Color(0xFFE8612D),
+                                      width: 1.2,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const Gap(24),
+
+                        // 1749:611 - Button - Full-Width Primary Action (Save changes)
+                        Container(
+                          width: double.infinity,
+                          height: 44,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(12),
+                            boxShadow: const [
+                              BoxShadow(
+                                color: Color(0x33F97316),
+                                blurRadius: 1,
+                                offset: Offset(0, 1),
+                              ),
+                            ],
+                          ),
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFFE8612D),
+                              foregroundColor: Colors.white,
+                              elevation: 0,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            onPressed: saving
+                                ? null
+                                : () async {
+                                    setD(() => errorText = null);
+                                    if (!formKey.currentState!.validate()) {
+                                      return;
+                                    }
+                                    setD(() => saving = true);
+                                    try {
+                                      await CollegeSelectorField.saveCollegeIfNew(
+                                        collegeC.text,
+                                      );
+                                      await cubit.updateLead(
+                                        leadId: lead.id,
+                                        name: nameC.text.trim(),
+                                        phone: phoneC.text.trim(),
+                                        collegeBranch: collegeC.text.trim(),
+                                        source: selectedSource,
+                                        status: selectedStatus,
+                                        notes: notesC.text.trim(),
+                                      );
+                                      if (!dCtx.mounted) return;
+                                      Navigator.pop(dCtx);
+                                    } catch (e) {
+                                      if (!dCtx.mounted) return;
+                                      setD(() {
+                                        saving = false;
+                                        errorText = e.toString().replaceFirst(
+                                          'Exception: ',
+                                          '',
+                                        );
+                                      });
+                                    }
+                                  },
+                            child: saving
+                                ? const SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: Colors.white,
+                                    ),
+                                  )
+                                : Text(
+                                    'Save changes',
+                                    style: GoogleFonts.inter(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w700,
+                                      color: Colors.white,
+                                      height: 21 / 14,
+                                    ),
+                                  ),
+                          ),
+                        ),
+                        const Gap(22),
+
+                        // 1749:615 - Subtle Cancel Link
+                        Center(
+                          child: InkWell(
+                            onTap: saving ? null : () => Navigator.pop(dCtx),
+                            borderRadius: BorderRadius.circular(6),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 4,
+                              ),
+                              child: Text(
+                                'Cancel',
+                                textAlign: TextAlign.center,
+                                style: GoogleFonts.inter(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: const Color(0xFF94A3B8),
+                                  height: 16 / 12,
+                                ),
                               ),
                             ),
                           ),
-                        ],
-                      ),
-                    ],
+                        ),
+                      ],
+                    ),
                   ),
-                ),
                 ),
               ),
             ),
-          ),
-        ),
+          );
+        },
       ),
     );
   }

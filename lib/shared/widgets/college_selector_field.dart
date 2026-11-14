@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'package:acadeno_crm/core/services/firestore_stream_cache.dart';
+import 'package:acadeno_crm/shared/theme/app_svgs.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:gap/gap.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -17,6 +19,8 @@ class CollegeSelectorField extends StatefulWidget {
   final List<String>? additionalColleges;
   final String label;
   final String? Function(String?)? validator;
+  final bool useBentoLeadDetailsStyle;
+  final ValueChanged<String>? onChanged;
 
   const CollegeSelectorField({
     super.key,
@@ -24,6 +28,8 @@ class CollegeSelectorField extends StatefulWidget {
     this.additionalColleges,
     this.label = 'COLLEGE · BRANCH · YEAR',
     this.validator,
+    this.useBentoLeadDetailsStyle = false,
+    this.onChanged,
   });
 
   /// Persists a new college name into the Firestore 'colleges' collection so it
@@ -168,7 +174,9 @@ class _CollegeSelectorFieldState extends State<CollegeSelectorField> {
         final parts = widget.controller.text.split('·');
         final branchYear = parts.length > 1
             ? ' ·${parts.sublist(1).join('·')}'
-            : ' · CSE · 3rd yr';
+            : (widget.useBentoLeadDetailsStyle
+                  ? ' · CSE · 3'
+                  : ' · CSE · 3rd yr');
         _customCollegeCtrl.text = '';
         widget.controller.text = branchYear.trim();
       } else {
@@ -176,21 +184,25 @@ class _CollegeSelectorFieldState extends State<CollegeSelectorField> {
         final parts = widget.controller.text.split('·');
         final branchYear = parts.length > 1
             ? ' ·${parts.sublist(1).join('·')}'
-            : ' · CSE · 3rd yr';
+            : (widget.useBentoLeadDetailsStyle
+                  ? ' · CSE · 3'
+                  : ' · CSE · 3rd yr');
         widget.controller.text = '$val$branchYear';
       }
     });
+    widget.onChanged?.call(widget.controller.text);
   }
 
   void _onCustomCollegeChanged(String text) {
     final clean = text.trim();
     final parts = widget.controller.text.split('·');
     final branchYear = parts.length > 1
-      ? ' ·${parts.sublist(1).join('·')}'
-      : ' · CSE · 3rd yr';
+        ? ' ·${parts.sublist(1).join('·')}'
+        : (widget.useBentoLeadDetailsStyle ? ' · CSE · 3' : ' · CSE · 3rd yr');
     widget.controller.text = clean.isNotEmpty
         ? '$clean$branchYear'
         : branchYear.trim();
+    widget.onChanged?.call(widget.controller.text);
   }
 
   Future<void> _confirmAndAddCustomCollege() async {
@@ -207,9 +219,12 @@ class _CollegeSelectorFieldState extends State<CollegeSelectorField> {
       final parts = widget.controller.text.split('·');
       final branchYear = parts.length > 1
           ? ' ·${parts.sublist(1).join('·')}'
-          : ' · CSE · 3rd yr';
+          : (widget.useBentoLeadDetailsStyle
+                ? ' · CSE · 3'
+                : ' · CSE · 3rd yr');
       widget.controller.text = '$clean$branchYear';
     });
+    widget.onChanged?.call(widget.controller.text);
   }
 
   @override
@@ -239,6 +254,295 @@ class _CollegeSelectorFieldState extends State<CollegeSelectorField> {
         ),
       ),
     ];
+
+    if (widget.useBentoLeadDetailsStyle) {
+      final currentVal =
+          (_selectedCollege != null &&
+              dropdownItems.any((i) => i.value == _selectedCollege))
+          ? _selectedCollege
+          : (sortedColleges.isNotEmpty ? sortedColleges.first : null);
+
+      return Padding(
+        padding: const EdgeInsets.only(top: 4),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // 1749:515 - College Selection
+            Text(
+              'College Selection',
+              style: GoogleFonts.inter(
+                fontSize: 11.5,
+                fontWeight: FontWeight.w700,
+                color: const Color(0xFF334155),
+                height: 17.25 / 11.5,
+              ),
+            ),
+            const Gap(4),
+            SizedBox(
+              height: 40,
+              child: Stack(
+                alignment: Alignment.centerLeft,
+                children: [
+                  Container(
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: const Color(0x80F8FAFC),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: const Color(0xFFE2E8F0),
+                        width: 1,
+                      ),
+                    ),
+                    padding: const EdgeInsets.only(left: 13, right: 33),
+                    alignment: Alignment.centerLeft,
+                    child: DropdownButtonHideUnderline(
+                      child: DropdownButton<String>(
+                        value: currentVal,
+                        isExpanded: true,
+                        isDense: true,
+                        dropdownColor: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        icon: const SizedBox.shrink(),
+                        style: GoogleFonts.inter(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                          color: const Color(0xFF0F172A),
+                          height: 24 / 13,
+                        ),
+                        items: [
+                          ...sortedColleges.map(
+                            (c) => DropdownMenuItem<String>(
+                              value: c,
+                              child: Text(
+                                c,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: GoogleFonts.inter(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w500,
+                                  color: const Color(0xFF0F172A),
+                                ),
+                              ),
+                            ),
+                          ),
+                          DropdownMenuItem<String>(
+                            value: _otherValue,
+                            child: Text(
+                              '+ Add New College...',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: GoogleFonts.inter(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: const Color(0xFFE8612D),
+                              ),
+                            ),
+                          ),
+                        ],
+                        onChanged: _onDropdownChanged,
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    right: 34,
+                    child: IgnorePointer(
+                      child: SvgPicture.asset(
+                        AppSvgs.leadDetailChevronLg,
+                        width: 19.5,
+                        height: 19.5,
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    right: 12,
+                    child: IgnorePointer(
+                      child: SvgPicture.asset(
+                        AppSvgs.leadDetailChevronSm,
+                        width: 9,
+                        height: 5.45625,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (_isOther) ...[
+              const Gap(8),
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFF7ED),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: const Color(0xFFFED7AA)),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: SizedBox(
+                        height: 36,
+                        child: TextFormField(
+                          controller: _customCollegeCtrl,
+                          textAlignVertical: TextAlignVertical.center,
+                          onChanged: _onCustomCollegeChanged,
+                          style: GoogleFonts.inter(
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.w500,
+                            color: const Color(0xFF0F172A),
+                          ),
+                          decoration: InputDecoration(
+                            hintText: 'Type new college name...',
+                            hintStyle: GoogleFonts.inter(
+                              fontSize: 12,
+                              color: const Color(0xFF94A3B8),
+                            ),
+                            isDense: true,
+                            filled: true,
+                            fillColor: Colors.white,
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 8,
+                            ),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide: const BorderSide(
+                                color: Color(0xFFFDBA74),
+                              ),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide: const BorderSide(
+                                color: Color(0xFFFDBA74),
+                              ),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide: const BorderSide(
+                                color: Color(0xFFE8612D),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const Gap(8),
+                    SizedBox(
+                      height: 36,
+                      child: ElevatedButton(
+                        onPressed: _isSavingCollege
+                            ? null
+                            : _confirmAndAddCustomCollege,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFE8612D),
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        child: Text(
+                          'Add',
+                          style: GoogleFonts.inter(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+            const Gap(9),
+            // 1749:528 - College · Branch · Year
+            Text(
+              'College · Branch · Year',
+              style: GoogleFonts.inter(
+                fontSize: 11.5,
+                fontWeight: FontWeight.w700,
+                color: const Color(0xFF334155),
+                height: 17.25 / 11.5,
+              ),
+            ),
+            const Gap(4),
+            Stack(
+              children: [
+                TextFormField(
+                  controller: widget.controller,
+                  textAlignVertical: TextAlignVertical.center,
+                  onChanged: (v) {
+                    setState(() {
+                      _determineSelectionFromText(v);
+                    });
+                    widget.onChanged?.call(v);
+                  },
+                  style: GoogleFonts.inter(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                    color: const Color(0xFF0F172A),
+                  ),
+                  decoration: InputDecoration(
+                    hintText: 'NIT Calicut · CSE · 3',
+                    hintStyle: GoogleFonts.inter(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                      color: const Color(0xFF94A3B8),
+                    ),
+                    isDense: true,
+                    filled: true,
+                    fillColor: const Color(0x80F8FAFC),
+                    constraints: const BoxConstraints(minHeight: 40),
+                    contentPadding: const EdgeInsets.only(
+                      left: 37,
+                      right: 13,
+                      top: 10,
+                      bottom: 10,
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(
+                        color: Color(0xFFE2E8F0),
+                        width: 1,
+                      ),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(
+                        color: Color(0xFFE2E8F0),
+                        width: 1,
+                      ),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(
+                        color: Color(0xFFE8612D),
+                        width: 1.2,
+                      ),
+                    ),
+                  ),
+                  validator:
+                      widget.validator ??
+                      (v) => (v == null || v.trim().isEmpty)
+                          ? 'College details required'
+                          : null,
+                ),
+                Positioned(
+                  left: 14.55,
+                  top: 13.2,
+                  child: IgnorePointer(
+                    child: SvgPicture.asset(
+                      AppSvgs.leadDetailLayers,
+                      width: 11.9,
+                      height: 12.75,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      );
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
