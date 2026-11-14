@@ -676,12 +676,20 @@ class FirestoreLeadsBackend implements LeadsBackend {
       final phoneSnap = await tx.get(phoneIndexRef);
       if (phoneSnap.exists) {
         final pData = phoneSnap.data() ?? const {};
-        throw DuplicateLeadException(
-          phone10: phone10,
-          existingLeadId: (pData['leadId'] ?? '').toString(),
-          existingLeadName: (pData['leadName'] ?? 'Existing lead').toString(),
-          existingOwnerName: (pData['ownerName'] ?? '—').toString(),
-        );
+        final existingLeadId = (pData['leadId'] ?? '').toString().trim();
+        bool isStaleOrphan = existingLeadId.isEmpty;
+        if (!isStaleOrphan) {
+          final existingLeadSnap = await tx.get(_leads.doc(existingLeadId));
+          isStaleOrphan = !existingLeadSnap.exists;
+        }
+        if (!isStaleOrphan) {
+          throw DuplicateLeadException(
+            phone10: phone10,
+            existingLeadId: existingLeadId,
+            existingLeadName: (pData['leadName'] ?? 'Existing lead').toString(),
+            existingOwnerName: (pData['ownerName'] ?? '—').toString(),
+          );
+        }
       }
 
       tx.set(newLeadRef, {
@@ -792,15 +800,18 @@ class FirestoreLeadsBackend implements LeadsBackend {
         final newPhoneSnap = await tx.get(newPhoneRef);
         if (newPhoneSnap.exists) {
           final pData = newPhoneSnap.data() ?? const {};
-          final existingId = (pData['leadId'] ?? '').toString();
-          if (existingId != leadId) {
-            throw DuplicateLeadException(
-              phone10: newPhone10,
-              existingLeadId: existingId,
-              existingLeadName: (pData['leadName'] ?? 'Existing lead')
-                  .toString(),
-              existingOwnerName: (pData['ownerName'] ?? '—').toString(),
-            );
+          final existingId = (pData['leadId'] ?? '').toString().trim();
+          if (existingId.isNotEmpty && existingId != leadId) {
+            final existingLeadSnap = await tx.get(_leads.doc(existingId));
+            if (existingLeadSnap.exists) {
+              throw DuplicateLeadException(
+                phone10: newPhone10,
+                existingLeadId: existingId,
+                existingLeadName: (pData['leadName'] ?? 'Existing lead')
+                    .toString(),
+                existingOwnerName: (pData['ownerName'] ?? '—').toString(),
+              );
+            }
           }
         }
         if (oldPhone10.isNotEmpty) {
@@ -865,18 +876,39 @@ class FirestoreLeadsBackend implements LeadsBackend {
 
   @override
   Future<void> deleteLead(String leadId) async {
+    final cleanId = leadId.trim();
+    if (cleanId.isEmpty) return;
     final actor = await _verifyCurrentActor(requireAdminOrManager: true);
-    final leadDoc = await _leads.doc(leadId).get();
-    if (!leadDoc.exists) return;
+    final leadDoc = await _leads.doc(cleanId).get();
     final data = leadDoc.data() ?? {};
-    final phoneNormalized = (data['phoneNormalized'] ?? '').toString();
+    final phoneNormalized = (data['phoneNormalized'] ?? '').toString().trim();
     final leadName = (data['name'] ?? 'Lead').toString();
     final leadPhone = (data['phone'] ?? '').toString();
+    final fallbackPhone10 = LeadPhoneValidator.normalize10Digits(leadPhone);
+
+    final phonesToDelete = <String>{
+      if (phoneNormalized.isNotEmpty) phoneNormalized,
+      if (fallbackPhone10.length == 10) fallbackPhone10,
+    };
+
+    final byLeadIdPhones = await _leadPhones
+        .where('leadId', isEqualTo: cleanId)
+        .get();
+    for (final doc in byLeadIdPhones.docs) {
+      phonesToDelete.add(doc.id);
+    }
+
+    final byLeadIdAssignments = await _assignments
+        .where('leadId', isEqualTo: cleanId)
+        .get();
 
     final batch = _firestore.batch();
-    batch.delete(_leads.doc(leadId));
-    if (phoneNormalized.isNotEmpty) {
-      batch.delete(_leadPhones.doc(phoneNormalized));
+    batch.delete(_leads.doc(cleanId));
+    for (final p in phonesToDelete) {
+      batch.delete(_leadPhones.doc(p));
+    }
+    for (final assignDoc in byLeadIdAssignments.docs) {
+      batch.delete(assignDoc.reference);
     }
     await batch.commit();
 
@@ -897,13 +929,57 @@ class FirestoreLeadsBackend implements LeadsBackend {
     final actor = await _verifyCurrentActor(requireAdminOrManager: true);
 
     int deletedCount = 0;
-    for (var i = 0; i < cleanIds.length; i += 300) {
-      final chunk = cleanIds.sublist(i, math.min(i + 300, cleanIds.length));
-      final batch = _firestore.batch();
-      for (final id in chunk) {
-        batch.delete(_leads.doc(id));
+    for (var i = 0; i < cleanIds.length; i += 100) {
+      final chunk = cleanIds.sublist(i, math.min(i + 100, cleanIds.length));
+
+      // Read lead docs to gather phone numbers for `lead_phones` index cleanup
+      final leadSnaps = await Future.wait(
+        chunk.map((id) => _leads.doc(id).get()),
+      );
+
+      final phonesToDelete = <String>{};
+      for (final snap in leadSnaps) {
+        if (!snap.exists) continue;
+        final data = snap.data() ?? const {};
+        final pNorm = (data['phoneNormalized'] ?? '').toString().trim();
+        final rawPhone = (data['phone'] ?? '').toString();
+        final fallback10 = LeadPhoneValidator.normalize10Digits(rawPhone);
+        if (pNorm.isNotEmpty) phonesToDelete.add(pNorm);
+        if (fallback10.length == 10) phonesToDelete.add(fallback10);
       }
-      await batch.commit();
+
+      // Also clean up any lead_phones and lead_assignments referencing these leadIds (in chunks of 30 for whereIn)
+      final assignmentRefs = <DocumentReference<Map<String, dynamic>>>[];
+      for (var j = 0; j < chunk.length; j += 30) {
+        final subChunk = chunk.sublist(j, math.min(j + 30, chunk.length));
+        final phoneQuery = await _leadPhones
+            .where('leadId', whereIn: subChunk)
+            .get();
+        for (final doc in phoneQuery.docs) {
+          phonesToDelete.add(doc.id);
+        }
+        final assignQuery = await _assignments
+            .where('leadId', whereIn: subChunk)
+            .get();
+        for (final doc in assignQuery.docs) {
+          assignmentRefs.add(doc.reference);
+        }
+      }
+
+      final ops = <void Function(WriteBatch)>[
+        for (final id in chunk) (b) => b.delete(_leads.doc(id)),
+        for (final p in phonesToDelete) (b) => b.delete(_leadPhones.doc(p)),
+        for (final ref in assignmentRefs) (b) => b.delete(ref),
+      ];
+
+      for (var k = 0; k < ops.length; k += 400) {
+        final batch = _firestore.batch();
+        final slice = ops.sublist(k, math.min(k + 400, ops.length));
+        for (final op in slice) {
+          op(batch);
+        }
+        await batch.commit();
+      }
       deletedCount += chunk.length;
     }
 
@@ -1805,15 +1881,28 @@ class FirestoreLeadsBackend implements LeadsBackend {
     final snap = await _leadPhones.doc(phone10).get();
     if (snap.exists && snap.data() != null) {
       final d = snap.data()!;
-      final leadName = (d['leadName'] ?? 'Existing Lead').toString();
-      final ownerName = (d['ownerName'] ?? '—').toString();
-      final status = (d['status'] ?? 'Assigned').toString();
-      return (
-        found: true,
-        message: 'Already exists: $leadName ($phone10)',
-        owner: ownerName,
-        status: status,
-      );
+      final existingLeadId = (d['leadId'] ?? '').toString().trim();
+      bool leadStillExists = false;
+      if (existingLeadId.isNotEmpty) {
+        final leadSnap = await _leads.doc(existingLeadId).get();
+        leadStillExists = leadSnap.exists;
+      }
+      if (!leadStillExists) {
+        // Stale index entry from a previously deleted lead — clean it up automatically
+        try {
+          await _leadPhones.doc(phone10).delete();
+        } catch (_) {}
+      } else {
+        final leadName = (d['leadName'] ?? 'Existing Lead').toString();
+        final ownerName = (d['ownerName'] ?? '—').toString();
+        final status = (d['status'] ?? 'Assigned').toString();
+        return (
+          found: true,
+          message: 'Already exists: $leadName ($phone10)',
+          owner: ownerName,
+          status: status,
+        );
+      }
     }
 
     return (
@@ -1856,8 +1945,20 @@ class FirestoreLeadsBackend implements LeadsBackend {
       for (final snap in snaps) {
         if (snap.exists && snap.data() != null) {
           final data = snap.data()!;
+          final existingLeadId = (data['leadId'] ?? '').toString().trim();
+          if (existingLeadId.isNotEmpty) {
+            final leadSnap = await _leads.doc(existingLeadId).get();
+            if (!leadSnap.exists) {
+              try {
+                await _leadPhones.doc(snap.id).delete();
+              } catch (_) {}
+              continue;
+            }
+          } else {
+            continue;
+          }
           existingPhoneMap[snap.id] = (
-            leadId: (data['leadId'] ?? '').toString(),
+            leadId: existingLeadId,
             leadName: (data['leadName'] ?? 'Existing Lead').toString(),
             ownerName: (data['ownerName'] ?? '—').toString(),
           );

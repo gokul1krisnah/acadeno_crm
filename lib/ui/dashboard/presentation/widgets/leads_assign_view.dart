@@ -110,26 +110,28 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
         ),
-        title: const Row(
+        title: Row(
           children: [
-            Icon(
+            const Icon(
               Icons.warning_amber_rounded,
               color: Color(0xFFDC2626),
               size: 24,
             ),
-            Gap(10),
-            Text(
-              'Delete or Erase Personal Data?',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
-                color: Color(0xFF111827),
+            const Gap(10),
+            Expanded(
+              child: Text(
+                'Delete $count Selected ${count == 1 ? "Lead" : "Leads"}?',
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF111827),
+                ),
               ),
             ),
           ],
         ),
         content: Text(
-          'For $count selected lead(s), you can either Erase Personal Data (DPDP Act 2023 — anonymizes name/phone/notes while preserving call statistics) or Permanently Delete.',
+          'Are you sure you want to permanently delete the $count selected ${count == 1 ? "lead" : "leads"}? This will also release their phone number(s) so they can be added again if needed.',
           style: const TextStyle(
             fontSize: 14,
             color: Color(0xFF4B5563),
@@ -147,20 +149,6 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
               ),
             ),
           ),
-          OutlinedButton(
-            style: OutlinedButton.styleFrom(
-              foregroundColor: const Color(0xFF1E293B),
-              side: const BorderSide(color: Color(0xFFCBD5E1)),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-            ),
-            onPressed: () => Navigator.of(ctx).pop('erase_dpdp'),
-            child: const Text(
-              'Erase PII (DPDP)',
-              style: TextStyle(fontWeight: FontWeight.w600),
-            ),
-          ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFDC2626),
@@ -172,7 +160,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
             ),
             onPressed: () => Navigator.of(ctx).pop('delete'),
             child: Text(
-              'Delete $count Leads',
+              'Delete ${count == 1 ? "Lead" : "$count Leads"}',
               style: const TextStyle(fontWeight: FontWeight.w600),
             ),
           ),
@@ -182,14 +170,16 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
 
     if (!context.mounted) return;
     final cubit = context.read<AdminLeadsCubit>();
-    if (action == 'erase_dpdp') {
-      final ids = cubit.state.selectedLeadIds.toList();
-      for (final id in ids) {
-        await cubit.eraseLeadPersonalData(id);
+    if (action == 'delete') {
+      final deleted = await cubit.deleteSelectedLeads();
+      if (!context.mounted) return;
+      if (deleted > 0) {
+        SnackBarAlert.showToast(
+          context: context,
+          message:
+              'Deleted $deleted ${deleted == 1 ? "lead" : "leads"} and released phone number(s).',
+        );
       }
-      cubit.clearSelection();
-    } else if (action == 'delete') {
-      await cubit.deleteSelectedLeads();
     }
   }
 
