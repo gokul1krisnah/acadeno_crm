@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:gap/gap.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import 'package:acadeno_crm/shared/snackbar_alerts/snack_alert.dart';
 import 'package:acadeno_crm/shared/widgets/acadeno_dropdown.dart';
@@ -32,11 +33,6 @@ class _SettingsViewState extends State<SettingsView>
   final _currentPasswordController = TextEditingController();
   final _newPasswordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
-
-  bool _obscureEmailPass = true;
-  bool _obscureCurrentPass = true;
-  bool _obscureNewPass = true;
-  bool _obscureConfirmPass = true;
 
   bool _isSavingName = false;
   bool _isSavingEmail = false;
@@ -528,594 +524,508 @@ class _SettingsViewState extends State<SettingsView>
   }
 
   // ---------------------------------------------------------------------------
-  // Tab 1: Account & Security
+  // Tab 1: Account & Security (Figma Node 1774:888 - MainContainer)
   // ---------------------------------------------------------------------------
-  Widget _buildAccountAndSecurityTab() {
-    final isMobile = MediaQuery.of(context).size.width < 640;
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 40),
+  InputDecoration _figmaAccountInputDecoration() {
+    return InputDecoration(
+      isDense: true,
+      filled: true,
+      fillColor: Colors.white,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: Color(0xFF6B7280), width: 1),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: Color(0xFF6B7280), width: 1),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: Color(0xFFEB6625), width: 1.5),
+      ),
+    );
+  }
+
+  Widget _buildFigmaOrangeButton({
+    required String label,
+    required bool isLoading,
+    required VoidCallback onPressed,
+    required TextStyle textStyle,
+    double? width,
+    double? height,
+  }) {
+    return Container(
+      width: width,
+      height: height,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x0D000000),
+            blurRadius: 1,
+            offset: Offset(0, 1),
+          ),
+        ],
+      ),
+      child: ElevatedButton(
+        onPressed: isLoading ? null : onPressed,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: const Color(0xFFEB6625),
+          foregroundColor: Colors.white,
+          elevation: 0,
+          minimumSize: Size(width ?? 0, height ?? 42.5),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+        child: isLoading
+            ? const SizedBox(
+                width: 18,
+                height: 18,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: Colors.white,
+                ),
+              )
+            : Text(label, textAlign: TextAlign.center, style: textStyle),
+      ),
+    );
+  }
+
+  Widget _buildChangeEmailAndProfileCard({
+    required bool isNarrowCard,
+    required bool matchFixedHeight,
+  }) {
+    final padH = isNarrowCard ? 20.0 : 32.0;
+    final padTop = isNarrowCard ? 24.0 : 31.0;
+    final padBottom = isNarrowCard ? 24.0 : 33.0;
+
+    return Container(
+      constraints: matchFixedHeight
+          ? const BoxConstraints(minHeight: 542)
+          : null,
+      padding: EdgeInsets.fromLTRB(padH, padTop, padH, padBottom),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: const Color(0xFFE2E8F0), width: 1),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x05000000),
+            blurRadius: 4,
+            offset: Offset(0, 2),
+          ),
+        ],
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // 1. Profile Name Card
-          _buildCard(
-            title: 'Admin Profile',
-            subtitle:
-                'Change your public display name shown across audit logs and lead assignments.',
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Display Name',
-                  style: TextStyle(
-                    fontSize: 12.5,
-                    fontWeight: FontWeight.w600,
-                    color: _text,
-                  ),
+          // 1774:1150 - Heading 1: Admin Profile
+          const Text(
+            'Admin Profile',
+            style: TextStyle(
+              fontFamily: 'Poppins',
+              fontSize: 20,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF19233C),
+              letterSpacing: -0.5,
+              height: 27.5 / 20,
+            ),
+          ),
+          const Gap(6.5),
+          // 1774:890 - Subtitle
+          const Text(
+            'Change your public display name shown across audit logs and lead assignments',
+            style: TextStyle(
+              fontFamily: 'Poppins',
+              fontSize: 14,
+              fontWeight: FontWeight.w400,
+              color: Color(0xFF475569),
+              height: 22.75 / 14,
+            ),
+          ),
+          const Gap(15),
+          // 1774:896 - Display Name + Save Name
+          const Text(
+            'Display Name',
+            style: TextStyle(
+              fontFamily: 'Poppins',
+              fontSize: 14,
+              fontWeight: FontWeight.w400,
+              color: Color(0xFF19233C),
+              height: 21 / 14,
+            ),
+          ),
+          const Gap(8),
+          if (isNarrowCard) ...[
+            SizedBox(
+              height: 46,
+              child: TextField(
+                controller: _nameController,
+                textAlignVertical: TextAlignVertical.center,
+                style: const TextStyle(
+                  fontFamily: 'Poppins',
+                  fontSize: 14,
+                  fontWeight: FontWeight.w400,
+                  color: Color(0xFF19233C),
                 ),
-                const Gap(6),
-                if (isMobile) ...[
-                  SizedBox(
-                    height: 48,
+                decoration: _figmaAccountInputDecoration(),
+              ),
+            ),
+            const Gap(10),
+            _buildFigmaOrangeButton(
+              label: 'Save Name',
+              isLoading: _isSavingName,
+              onPressed: _updateDisplayName,
+              width: double.infinity,
+              height: 43,
+              textStyle: GoogleFonts.inter(
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
+                height: 22.5 / 15,
+              ),
+            ),
+          ] else
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Expanded(
+                  child: SizedBox(
+                    height: 46,
                     child: TextField(
                       controller: _nameController,
                       textAlignVertical: TextAlignVertical.center,
-                      decoration: InputDecoration(
-                        prefixIcon: const Icon(
-                          Icons.person_outline,
-                          size: 18,
-                          color: _muted,
-                        ),
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 12,
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                          borderSide: const BorderSide(color: _border),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                          borderSide: const BorderSide(color: _border),
-                        ),
+                      style: const TextStyle(
+                        fontFamily: 'Poppins',
+                        fontSize: 14,
+                        fontWeight: FontWeight.w400,
+                        color: Color(0xFF19233C),
                       ),
+                      decoration: _figmaAccountInputDecoration(),
                     ),
                   ),
-                  const Gap(12),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 48,
-                    child: ElevatedButton(
-                      onPressed: _isSavingName ? null : _updateDisplayName,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: _primary,
-                        foregroundColor: Colors.white,
-                        minimumSize: const Size(0, 48),
-                        padding: const EdgeInsets.symmetric(horizontal: 20),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                      child: _isSavingName
-                          ? const SizedBox(
-                              width: 18,
-                              height: 18,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: Colors.white,
-                              ),
-                            )
-                          : const Text(
-                              'Save Name',
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                    ),
-                  ),
-                ] else ...[
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Expanded(
-                        child: SizedBox(
-                          height: 48,
-                          child: TextField(
-                            controller: _nameController,
-                            textAlignVertical: TextAlignVertical.center,
-                            decoration: InputDecoration(
-                              prefixIcon: const Icon(
-                                Icons.person_outline,
-                                size: 18,
-                                color: _muted,
-                              ),
-                              contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 12,
-                              ),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(8),
-                                borderSide: const BorderSide(color: _border),
-                              ),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(8),
-                                borderSide: const BorderSide(color: _border),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                      const Gap(12),
-                      SizedBox(
-                        height: 48,
-                        child: ElevatedButton(
-                          onPressed: _isSavingName ? null : _updateDisplayName,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: _primary,
-                            foregroundColor: Colors.white,
-                            minimumSize: const Size(0, 48),
-                            padding: const EdgeInsets.symmetric(horizontal: 22),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
-                          child: _isSavingName
-                              ? const SizedBox(
-                                  width: 18,
-                                  height: 18,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    color: Colors.white,
-                                  ),
-                                )
-                              : const Text(
-                                  'Save Name',
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ],
-            ),
-          ),
-
-          const Gap(16),
-
-          // 2. Email Address Card
-          _buildCard(
-            title: 'Login Email Address',
-            subtitle: 'Requires re-authenticating with your current password.',
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'New Email Address',
-                  style: TextStyle(
-                    fontSize: 12.5,
+                ),
+                const Gap(7),
+                _buildFigmaOrangeButton(
+                  label: 'Save Name',
+                  isLoading: _isSavingName,
+                  onPressed: _updateDisplayName,
+                  width: 129,
+                  height: 43,
+                  textStyle: GoogleFonts.inter(
+                    fontSize: 15,
                     fontWeight: FontWeight.w600,
-                    color: _text,
-                  ),
-                ),
-                const Gap(6),
-                TextField(
-                  controller: _emailController,
-                  textAlignVertical: TextAlignVertical.center,
-                  decoration: InputDecoration(
-                    prefixIcon: const Icon(
-                      Icons.email_outlined,
-                      size: 18,
-                      color: _muted,
-                    ),
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 10,
-                    ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: const BorderSide(color: _border),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: const BorderSide(color: _border),
-                    ),
-                  ),
-                ),
-                const Gap(12),
-                const Text(
-                  'Current Password (for authorization)',
-                  style: TextStyle(
-                    fontSize: 12.5,
-                    fontWeight: FontWeight.w600,
-                    color: _text,
-                  ),
-                ),
-                const Gap(6),
-                TextField(
-                  controller: _emailPasswordController,
-                  obscureText: _obscureEmailPass,
-                  textAlignVertical: TextAlignVertical.center,
-                  decoration: InputDecoration(
-                    prefixIcon: const Icon(
-                      Icons.lock_outline,
-                      size: 18,
-                      color: _muted,
-                    ),
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        _obscureEmailPass
-                            ? Icons.visibility_off
-                            : Icons.visibility,
-                        size: 18,
-                        color: _muted,
-                      ),
-                      onPressed: () => setState(
-                        () => _obscureEmailPass = !_obscureEmailPass,
-                      ),
-                    ),
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 10,
-                    ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: const BorderSide(color: _border),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: const BorderSide(color: _border),
-                    ),
-                  ),
-                ),
-                const Gap(16),
-                SizedBox(
-                  width: isMobile ? double.infinity : null,
-                  height: 48,
-                  child: ElevatedButton(
-                    onPressed: _isSavingEmail ? null : _updateEmail,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: _primary,
-                      foregroundColor: Colors.white,
-                      minimumSize: const Size(0, 48),
-                      padding: const EdgeInsets.symmetric(horizontal: 24),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                    child: _isSavingEmail
-                        ? const SizedBox(
-                            width: 18,
-                            height: 18,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: Colors.white,
-                            ),
-                          )
-                        : const Text(
-                            'Update Email',
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
+                    color: Colors.white,
+                    height: 22.5 / 15,
                   ),
                 ),
               ],
             ),
+          const Gap(27),
+
+          // 1774:1149 - Change Email Title & Subtitle
+          const Text(
+            'Change Email ',
+            style: TextStyle(
+              fontFamily: 'Poppins',
+              fontSize: 20,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF19233C),
+              letterSpacing: -0.5,
+              height: 27.5 / 20,
+            ),
           ),
+          const Gap(8),
+          const Text(
+            'Requires re-authenticating with your current password',
+            style: TextStyle(
+              fontFamily: 'Poppins',
+              fontSize: 14,
+              fontWeight: FontWeight.w400,
+              color: Color(0xFF475569),
+              height: 22.75 / 14,
+            ),
+          ),
+          const Gap(15),
 
-          const Gap(16),
+          // 1774:895 - Change Email Form
+          const Text(
+            'New email',
+            style: TextStyle(
+              fontFamily: 'Poppins',
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+              color: Color(0xFF19233C),
+              height: 21 / 14,
+            ),
+          ),
+          const Gap(8),
+          SizedBox(
+            height: 46,
+            child: TextField(
+              controller: _emailController,
+              keyboardType: TextInputType.emailAddress,
+              textAlignVertical: TextAlignVertical.center,
+              style: const TextStyle(
+                fontFamily: 'Poppins',
+                fontSize: 14,
+                fontWeight: FontWeight.w400,
+                color: Color(0xFF19233C),
+              ),
+              decoration: _figmaAccountInputDecoration(),
+            ),
+          ),
+          const Gap(20),
 
-          // 3. Password Card
-          _buildCard(
-            title: 'Change Password',
-            subtitle:
-                'Ensure your account has a strong password of at least 6 characters.',
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Current Password',
-                  style: TextStyle(
-                    fontSize: 12.5,
-                    fontWeight: FontWeight.w600,
-                    color: _text,
-                  ),
-                ),
-                const Gap(6),
-                TextField(
-                  controller: _currentPasswordController,
-                  obscureText: _obscureCurrentPass,
-                  textAlignVertical: TextAlignVertical.center,
-                  decoration: InputDecoration(
-                    prefixIcon: const Icon(
-                      Icons.lock_outline,
-                      size: 18,
-                      color: _muted,
-                    ),
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        _obscureCurrentPass
-                            ? Icons.visibility_off
-                            : Icons.visibility,
-                        size: 18,
-                        color: _muted,
-                      ),
-                      onPressed: () => setState(
-                        () => _obscureCurrentPass = !_obscureCurrentPass,
-                      ),
-                    ),
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 10,
-                    ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: const BorderSide(color: _border),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: const BorderSide(color: _border),
-                    ),
-                  ),
-                ),
-                const Gap(12),
-                if (isMobile) ...[
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'New Password',
-                        style: TextStyle(
-                          fontSize: 12.5,
-                          fontWeight: FontWeight.w600,
-                          color: _text,
-                        ),
-                      ),
-                      const Gap(6),
-                      TextField(
-                        controller: _newPasswordController,
-                        obscureText: _obscureNewPass,
-                        textAlignVertical: TextAlignVertical.center,
-                        decoration: InputDecoration(
-                          prefixIcon: const Icon(
-                            Icons.lock_outline,
-                            size: 18,
-                            color: _muted,
-                          ),
-                          suffixIcon: IconButton(
-                            icon: Icon(
-                              _obscureNewPass
-                                  ? Icons.visibility_off
-                                  : Icons.visibility,
-                              size: 18,
-                              color: _muted,
-                            ),
-                            onPressed: () => setState(
-                              () => _obscureNewPass = !_obscureNewPass,
-                            ),
-                          ),
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 10,
-                          ),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                            borderSide: const BorderSide(color: _border),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                            borderSide: const BorderSide(color: _border),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const Gap(12),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Confirm New Password',
-                        style: TextStyle(
-                          fontSize: 12.5,
-                          fontWeight: FontWeight.w600,
-                          color: _text,
-                        ),
-                      ),
-                      const Gap(6),
-                      TextField(
-                        controller: _confirmPasswordController,
-                        obscureText: _obscureConfirmPass,
-                        textAlignVertical: TextAlignVertical.center,
-                        decoration: InputDecoration(
-                          prefixIcon: const Icon(
-                            Icons.lock_outline,
-                            size: 18,
-                            color: _muted,
-                          ),
-                          suffixIcon: IconButton(
-                            icon: Icon(
-                              _obscureConfirmPass
-                                  ? Icons.visibility_off
-                                  : Icons.visibility,
-                              size: 18,
-                              color: _muted,
-                            ),
-                            onPressed: () => setState(
-                              () => _obscureConfirmPass = !_obscureConfirmPass,
-                            ),
-                          ),
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 10,
-                          ),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                            borderSide: const BorderSide(color: _border),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                            borderSide: const BorderSide(color: _border),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ] else ...[
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'New Password',
-                              style: TextStyle(
-                                fontSize: 12.5,
-                                fontWeight: FontWeight.w600,
-                                color: _text,
-                              ),
-                            ),
-                            const Gap(6),
-                            TextField(
-                              controller: _newPasswordController,
-                              obscureText: _obscureNewPass,
-                              textAlignVertical: TextAlignVertical.center,
-                              decoration: InputDecoration(
-                                prefixIcon: const Icon(
-                                  Icons.lock_outline,
-                                  size: 18,
-                                  color: _muted,
-                                ),
-                                suffixIcon: IconButton(
-                                  icon: Icon(
-                                    _obscureNewPass
-                                        ? Icons.visibility_off
-                                        : Icons.visibility,
-                                    size: 18,
-                                    color: _muted,
-                                  ),
-                                  onPressed: () => setState(
-                                    () => _obscureNewPass = !_obscureNewPass,
-                                  ),
-                                ),
-                                contentPadding: const EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                  vertical: 10,
-                                ),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                  borderSide: const BorderSide(color: _border),
-                                ),
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                  borderSide: const BorderSide(color: _border),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const Gap(12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'Confirm New Password',
-                              style: TextStyle(
-                                fontSize: 12.5,
-                                fontWeight: FontWeight.w600,
-                                color: _text,
-                              ),
-                            ),
-                            const Gap(6),
-                            TextField(
-                              controller: _confirmPasswordController,
-                              obscureText: _obscureConfirmPass,
-                              textAlignVertical: TextAlignVertical.center,
-                              decoration: InputDecoration(
-                                prefixIcon: const Icon(
-                                  Icons.lock_outline,
-                                  size: 18,
-                                  color: _muted,
-                                ),
-                                suffixIcon: IconButton(
-                                  icon: Icon(
-                                    _obscureConfirmPass
-                                        ? Icons.visibility_off
-                                        : Icons.visibility,
-                                    size: 18,
-                                    color: _muted,
-                                  ),
-                                  onPressed: () => setState(
-                                    () => _obscureConfirmPass =
-                                        !_obscureConfirmPass,
-                                  ),
-                                ),
-                                contentPadding: const EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                  vertical: 10,
-                                ),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                  borderSide: const BorderSide(color: _border),
-                                ),
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                  borderSide: const BorderSide(color: _border),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-                const Gap(16),
-                SizedBox(
-                  width: isMobile ? double.infinity : null,
-                  height: 48,
-                  child: ElevatedButton(
-                    onPressed: _isSavingPassword ? null : _updatePassword,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: _primary,
-                      foregroundColor: Colors.white,
-                      minimumSize: const Size(0, 48),
-                      padding: const EdgeInsets.symmetric(horizontal: 24),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                    child: _isSavingPassword
-                        ? const SizedBox(
-                            width: 18,
-                            height: 18,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: Colors.white,
-                            ),
-                          )
-                        : const Text(
-                            'Update Password',
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                  ),
-                ),
-              ],
+          // 1774:900 - Current Password(for authorization)
+          const Text(
+            'Current Password(for authorization)',
+            style: TextStyle(
+              fontFamily: 'Poppins',
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+              color: Color(0xFF19233C),
+              height: 21 / 14,
+            ),
+          ),
+          const Gap(8),
+          SizedBox(
+            height: 46,
+            child: TextField(
+              controller: _emailPasswordController,
+              obscureText: true,
+              textAlignVertical: TextAlignVertical.center,
+              style: const TextStyle(
+                fontFamily: 'Poppins',
+                fontSize: 14,
+                fontWeight: FontWeight.w400,
+                color: Color(0xFF19233C),
+              ),
+              decoration: _figmaAccountInputDecoration(),
+            ),
+          ),
+          const Gap(28),
+
+          // 1774:904 - Submit Button (Update email)
+          _buildFigmaOrangeButton(
+            label: 'Update email',
+            isLoading: _isSavingEmail,
+            onPressed: _updateEmail,
+            width: isNarrowCard ? double.infinity : null,
+            height: 43,
+            textStyle: GoogleFonts.inter(
+              fontSize: 15,
+              fontWeight: FontWeight.w600,
+              color: Colors.white,
+              height: 22.5 / 15,
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildChangePasswordCard({
+    required bool isNarrowCard,
+    required bool matchFixedHeight,
+  }) {
+    final padH = isNarrowCard ? 20.0 : 33.0;
+    final padTop = isNarrowCard ? 24.0 : 32.0;
+    final padBottom = isNarrowCard ? 24.0 : 33.0;
+
+    return Container(
+      constraints: matchFixedHeight
+          ? const BoxConstraints(minHeight: 542)
+          : null,
+      padding: EdgeInsets.fromLTRB(padH, padTop, padH, padBottom),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: const Color(0xFFE2E8F0), width: 1),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x05000000),
+            blurRadius: 4,
+            offset: Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // 1774:908 - Title & Subtitle
+          const Text(
+            'Change password',
+            style: TextStyle(
+              fontFamily: 'Poppins',
+              fontSize: 20,
+              fontWeight: FontWeight.w400,
+              color: Color(0xFF19233C),
+              letterSpacing: -0.5,
+              height: 27.5 / 20,
+            ),
+          ),
+          const Gap(8),
+          Text(
+            'Use at least 8 characters.',
+            style: GoogleFonts.inter(
+              fontSize: 14,
+              fontWeight: FontWeight.w400,
+              color: const Color(0xFF475569),
+              height: 22.75 / 14,
+            ),
+          ),
+          const Gap(24),
+
+          // 1774:914 - Current password
+          Text(
+            'Current password',
+            style: GoogleFonts.inter(
+              fontSize: 14,
+              fontWeight: FontWeight.w400,
+              color: const Color(0xFF19233C),
+              height: 21 / 14,
+            ),
+          ),
+          const Gap(8),
+          SizedBox(
+            height: 46,
+            child: TextField(
+              controller: _currentPasswordController,
+              obscureText: true,
+              textAlignVertical: TextAlignVertical.center,
+              style: GoogleFonts.inter(
+                fontSize: 14,
+                fontWeight: FontWeight.w400,
+                color: const Color(0xFF19233C),
+              ),
+              decoration: _figmaAccountInputDecoration(),
+            ),
+          ),
+          const Gap(27),
+
+          // 1774:918 - New password
+          Text(
+            'New password',
+            style: GoogleFonts.inter(
+              fontSize: 14,
+              fontWeight: FontWeight.w400,
+              color: const Color(0xFF19233C),
+              height: 21 / 14,
+            ),
+          ),
+          const Gap(8),
+          SizedBox(
+            height: 50,
+            child: TextField(
+              controller: _newPasswordController,
+              obscureText: true,
+              textAlignVertical: TextAlignVertical.center,
+              style: GoogleFonts.inter(
+                fontSize: 14,
+                fontWeight: FontWeight.w400,
+                color: const Color(0xFF19233C),
+              ),
+              decoration: _figmaAccountInputDecoration(),
+            ),
+          ),
+          const Gap(27),
+
+          // 1774:923 - Confirm new password
+          Text(
+            'Confirm new password',
+            style: GoogleFonts.inter(
+              fontSize: 14,
+              fontWeight: FontWeight.w400,
+              color: const Color(0xFF19233C),
+              height: 21 / 14,
+            ),
+          ),
+          const Gap(8),
+          SizedBox(
+            height: 46,
+            child: TextField(
+              controller: _confirmPasswordController,
+              obscureText: true,
+              textAlignVertical: TextAlignVertical.center,
+              style: GoogleFonts.inter(
+                fontSize: 14,
+                fontWeight: FontWeight.w400,
+                color: const Color(0xFF19233C),
+              ),
+              decoration: _figmaAccountInputDecoration(),
+            ),
+          ),
+          const Gap(35),
+
+          // 1774:931 - Submit Button (Update password)
+          _buildFigmaOrangeButton(
+            label: 'Update password',
+            isLoading: _isSavingPassword,
+            onPressed: _updatePassword,
+            width: isNarrowCard ? double.infinity : null,
+            height: 43,
+            textStyle: GoogleFonts.inter(
+              fontSize: 15,
+              fontWeight: FontWeight.w400,
+              color: Colors.white,
+              height: 22.5 / 15,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAccountAndSecurityTab() {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 40),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final isDesktopTwoCol = constraints.maxWidth >= 900;
+          final isNarrowCard = constraints.maxWidth < 520;
+
+          if (isDesktopTwoCol) {
+            return IntrinsicHeight(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Expanded(
+                    child: _buildChangeEmailAndProfileCard(
+                      isNarrowCard: false,
+                      matchFixedHeight: true,
+                    ),
+                  ),
+                  const Gap(28),
+                  Expanded(
+                    child: _buildChangePasswordCard(
+                      isNarrowCard: false,
+                      matchFixedHeight: true,
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }
+
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _buildChangeEmailAndProfileCard(
+                isNarrowCard: isNarrowCard,
+                matchFixedHeight: false,
+              ),
+              const Gap(20),
+              _buildChangePasswordCard(
+                isNarrowCard: isNarrowCard,
+                matchFixedHeight: false,
+              ),
+            ],
+          );
+        },
       ),
     );
   }
