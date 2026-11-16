@@ -3040,296 +3040,294 @@ class _CancelledVisitCard extends StatelessWidget {
     required this.onDelete,
   });
 
+  static String _resolveWeekday(String month, String day) {
+    try {
+      final now = DateTime.now();
+      const months = [
+        'jan', 'feb', 'mar', 'apr', 'may', 'jun',
+        'jul', 'aug', 'sep', 'oct', 'nov', 'dec'
+      ];
+      final mIdx = months.indexOf(month.toLowerCase().trim());
+      if (mIdx != -1) {
+        final d = int.tryParse(day.trim()) ?? 1;
+        final dt = DateTime(now.year, mIdx + 1, d);
+        return DateFormat('E').format(dt);
+      }
+    } catch (_) {}
+    return 'Mon';
+  }
+
   @override
   Widget build(BuildContext context) {
-    final initials = visit.staffInitials.isNotEmpty
-        ? visit.staffInitials.first
-        : (visit.staffNames.trim().isNotEmpty
-            ? visit.staffNames
-                .trim()
-                .split(' ')
-                .take(2)
-                .map((s) => s.isNotEmpty ? s[0].toUpperCase() : '')
-                .join()
-            : 'AT');
-
-    final month = visit.monthShort.isNotEmpty ? visit.monthShort : 'NOV';
+    final month = (visit.monthShort.isNotEmpty ? visit.monthShort : 'OCT').toUpperCase();
     final day = visit.dayNumber.isNotEmpty
         ? (visit.dayNumber.length == 1 ? '0${visit.dayNumber}' : visit.dayNumber)
-        : '04';
+        : '28';
+    final weekday = _resolveWeekday(visit.monthShort, visit.dayNumber);
 
+    final collegeName = visit.collegeName.isNotEmpty
+        ? visit.collegeName
+        : "St. Joseph's Engineering College";
+    final location = visit.subtitle.isNotEmpty ? visit.subtitle : 'Kochi, Kerala';
     final reason = visit.cancelReason.isNotEmpty
         ? visit.cancelReason
         : (visit.metSummary.isNotEmpty
             ? visit.metSummary
-            : 'Visit cancelled by executive');
+            : 'Postponed due to internal exams.');
 
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFF3F4F6), width: 1),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x0D000000),
-            blurRadius: 1,
-            offset: Offset(0, 1),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Top Row: Red Date Badge + College Name / Subtitle / Status + Delete Button (Figma node 1863:640)
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Red/Rose Date Badge
-              Container(
-                width: 56,
-                height: 56,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFEF2F2),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: const Color(0xFFFECACA),
-                    width: 1,
-                  ),
-                ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      month,
-                      style: GoogleFonts.inter(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 0.37,
-                        color: const Color(0xFFDC2626),
-                        height: 15 / 10,
-                      ),
-                    ),
-                    Text(
-                      day,
-                      style: GoogleFonts.inter(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 0.02,
-                        color: const Color(0xFFDC2626),
-                        height: 28 / 20,
-                      ),
-                    ),
-                  ],
-                ),
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onReschedule,
+        borderRadius: BorderRadius.circular(24),
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(17),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: const Color(0xFFEDF0FA), width: 1),
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x0F4F46E5), // rgba(79, 70, 229, 0.06)
+                blurRadius: 30,
+                offset: Offset(0, 8),
+                spreadRadius: -4,
               ),
-              const Gap(16),
-
-              // Title, Subtitle & Cancelled Status
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      visit.collegeName.isNotEmpty
-                          ? visit.collegeName
-                          : 'Campus Visit',
-                      style: GoogleFonts.inter(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 0.07,
-                        color: const Color(0xFF1A1A1A),
-                        height: 22.5 / 18,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+              BoxShadow(
+                color: Color(0x05000000), // rgba(0, 0, 0, 0.02)
+                blurRadius: 6,
+                offset: Offset(0, 2),
+                spreadRadius: -1,
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Top Section: Date Pill Badge + Main Info (Figma Node 1863:433)
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Rose/Light Red Date Pill Badge (Figma Node 1863:435)
+                  Container(
+                    width: 70,
+                    decoration: BoxDecoration(
+                      color: const Color(0x99FFDAD6), // rgba(255, 218, 214, 0.6)
+                      borderRadius: BorderRadius.circular(16),
                     ),
-                    if (visit.subtitle.isNotEmpty) ...[
-                      const Gap(2),
-                      Text(
-                        visit.subtitle,
-                        style: GoogleFonts.inter(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w400,
-                          color: const Color(0xFF6B7280),
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Text(
+                          month,
+                          style: GoogleFonts.inter(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 0.55,
+                            color: const Color(0xFFBA1A1A),
+                            height: 16.5 / 11,
+                          ),
                         ),
-                        maxLines: 1,
+                        const SizedBox(height: 2),
+                        Text(
+                          day,
+                          style: GoogleFonts.inter(
+                            fontSize: 26,
+                            fontWeight: FontWeight.w700,
+                            color: const Color(0xFF0E142E),
+                            height: 1.0,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          weekday,
+                          style: GoogleFonts.inter(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w400,
+                            color: const Color(0xFF93000A),
+                            height: 16.5 / 11,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 14),
+
+                  // Main Card Information (Figma Node 1863:451)
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Row with College Name & Delete Trash Icon (Figma Node 1863:452, 1866:842)
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: Text(
+                                collegeName,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: GoogleFonts.inter(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w700,
+                                  letterSpacing: -0.4,
+                                  color: const Color(0xFF0E142E),
+                                  height: 20 / 16,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            // Delete / Trash Action (Figma Node 1866:842)
+                            Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                onTap: onDelete,
+                                borderRadius: BorderRadius.circular(6),
+                                child: Container(
+                                  padding: const EdgeInsets.all(2),
+                                  child: const Icon(
+                                    CupertinoIcons.trash,
+                                    size: 14,
+                                    color: Color(0xFFDC2626),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+
+                        // Cancelled Status Badge (Figma Node 1863:455)
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 2,
+                              ),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFFFDAD6),
+                                borderRadius: BorderRadius.circular(9999),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Container(
+                                    width: 6,
+                                    height: 6,
+                                    decoration: const BoxDecoration(
+                                      color: Color(0xFFBA1A1A),
+                                      shape: BoxShape.circle,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    visit.statusLabel.isNotEmpty
+                                        ? visit.statusLabel
+                                        : 'Cancelled',
+                                    style: GoogleFonts.inter(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w700,
+                                      color: const Color(0xFF93000A),
+                                      height: 16.5 / 11,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 6),
+
+                        // Location Row (Figma Node 1863:458)
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            const Icon(
+                              Icons.place_outlined,
+                              size: 14,
+                              color: Color(0xFF647196),
+                            ),
+                            const SizedBox(width: 4),
+                            Expanded(
+                              child: Text(
+                                location,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: GoogleFonts.inter(
+                                  fontSize: 12.5,
+                                  fontWeight: FontWeight.w400,
+                                  color: const Color(0xFF2D354D),
+                                  height: 18.75 / 12.5,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 14),
+
+              // Reason Capsule Sub-Card (Figma Node 1863:472)
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFEFF3FC),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    const Icon(
+                      Icons.help_outline_rounded,
+                      size: 15,
+                      color: Color(0xFF697289),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text.rich(
+                        TextSpan(
+                          children: [
+                            TextSpan(
+                              text: 'Reason:',
+                              style: GoogleFonts.inter(
+                                fontSize: 11.5,
+                                fontWeight: FontWeight.w700,
+                                color: const Color(0xFF0E142E),
+                                height: 17.25 / 11.5,
+                              ),
+                            ),
+                            TextSpan(
+                              text: ' $reason',
+                              style: GoogleFonts.inter(
+                                fontSize: 11.5,
+                                fontWeight: FontWeight.w400,
+                                color: const Color(0xFF2E374F),
+                                height: 17.25 / 11.5,
+                              ),
+                            ),
+                          ],
+                        ),
+                        maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
-                    ],
-                    const Gap(4),
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Container(
-                          width: 6,
-                          height: 6,
-                          decoration: const BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: Color(0xFFDC2626),
-                          ),
-                        ),
-                        const Gap(6),
-                        Text(
-                          'CANCELLED',
-                          style: GoogleFonts.inter(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: 0.02,
-                            color: const Color(0xFFDC2626),
-                            height: 15 / 10,
-                          ),
-                        ),
-                      ],
                     ),
                   ],
                 ),
               ),
-              const Gap(8),
-
-              // Trash / Delete Button
-              Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  onTap: onDelete,
-                  borderRadius: BorderRadius.circular(8),
-                  child: Container(
-                    padding: const EdgeInsets.all(6),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFFEF2F2),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: const Color(0xFFFECACA)),
-                    ),
-                    child: const Icon(
-                      CupertinoIcons.trash,
-                      size: 14,
-                      color: Color(0xFFDC2626),
-                    ),
-                  ),
-                ),
-              ),
             ],
           ),
-
-          // Cancellation Reason Box (Red/rose or neutral tinted)
-          const Gap(14),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-            decoration: BoxDecoration(
-              color: const Color(0xFFFFF7ED),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: const Color(0xFFFFEDD5)),
-            ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Icon(
-                  Icons.report_problem_outlined,
-                  size: 16,
-                  color: Color(0xFFEA580C),
-                ),
-                const Gap(8),
-                Expanded(
-                  child: RichText(
-                    text: TextSpan(
-                      text: 'Reason: ',
-                      style: GoogleFonts.inter(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w700,
-                        color: const Color(0xFF9A3412),
-                      ),
-                      children: [
-                        TextSpan(
-                          text: reason,
-                          style: GoogleFonts.inter(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w400,
-                            color: const Color(0xFFC2410C),
-                          ),
-                        ),
-                      ],
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          // Assigned Staff Row
-          const Gap(14),
-          Row(
-            children: [
-              Container(
-                width: 24,
-                height: 24,
-                decoration: const BoxDecoration(
-                  color: Color(0xFF64748B),
-                  shape: BoxShape.circle,
-                ),
-                alignment: Alignment.center,
-                child: Text(
-                  initials.isNotEmpty ? initials : 'AT',
-                  style: GoogleFonts.inter(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.white,
-                    letterSpacing: 0.72,
-                  ),
-                ),
-              ),
-              const Gap(8),
-              Expanded(
-                child: Text(
-                  visit.staffNames.isNotEmpty
-                      ? visit.staffNames
-                      : 'Assigned Team',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.inter(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
-                    color: const Color(0xFF475569),
-                  ),
-                ),
-              ),
-            ],
-          ),
-
-          // Reschedule Action Button
-          const Gap(16),
-          SizedBox(
-            width: double.infinity,
-            height: 46,
-            child: OutlinedButton.icon(
-              onPressed: onReschedule,
-              icon: const Icon(
-                Icons.restore_rounded,
-                size: 16,
-                color: Color(0xFF1E293B),
-              ),
-              label: Text(
-                'Reschedule Visit',
-                style: GoogleFonts.inter(
-                  fontSize: 13.5,
-                  fontWeight: FontWeight.w600,
-                  color: const Color(0xFF1E293B),
-                ),
-              ),
-              style: OutlinedButton.styleFrom(
-                side: const BorderSide(color: Color(0xFFCBD5E1)),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                backgroundColor: const Color(0xFFF8FAFC),
-              ),
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
