@@ -645,7 +645,7 @@ class _TeamManagementViewState extends State<TeamManagementView> {
                 final dropdownWidget = Container(
                   height: 47,
                   constraints: const BoxConstraints(minWidth: 180),
-                  padding: const EdgeInsets.symmetric(horizontal: 21),
+                  padding: const EdgeInsets.symmetric(horizontal: 18),
                   decoration: BoxDecoration(
                     color: const Color(0xFFF5F5F5),
                     borderRadius: BorderRadius.circular(16),
@@ -658,25 +658,34 @@ class _TeamManagementViewState extends State<TeamManagementView> {
                       ),
                     ],
                   ),
-                  child: DropdownButtonHideUnderline(
-                    child: DropdownButton<String>(
-                      value: _selectedDateRange,
-                      focusColor: Colors.transparent,
-                      dropdownColor: const Color(0xFFE2E2E2),
-                      borderRadius: BorderRadius.circular(12),
-                      elevation: 6,
-                      icon: const Icon(
-                        Icons.keyboard_arrow_down_rounded,
-                        size: 20,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(
+                        Icons.calendar_month_rounded,
+                        size: 18,
                         color: Color(0xFF2E1D44),
                       ),
-                      isDense: true,
-                      style: GoogleFonts.inter(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w400,
-                        color: const Color(0xFF2E1D44),
-                        height: 20 / 14,
-                      ),
+                      const Gap(10),
+                      DropdownButtonHideUnderline(
+                        child: DropdownButton<String>(
+                          value: _selectedDateRange,
+                          focusColor: Colors.transparent,
+                          dropdownColor: const Color(0xFFE2E2E2),
+                          borderRadius: BorderRadius.circular(12),
+                          elevation: 6,
+                          icon: const Icon(
+                            Icons.keyboard_arrow_down_rounded,
+                            size: 20,
+                            color: Color(0xFF2E1D44),
+                          ),
+                          isDense: true,
+                          style: GoogleFonts.inter(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w400,
+                            color: const Color(0xFF2E1D44),
+                            height: 20 / 14,
+                          ),
                       selectedItemBuilder: (context) => [
                         'All Time',
                         'Today',
@@ -759,7 +768,9 @@ class _TeamManagementViewState extends State<TeamManagementView> {
                       },
                     ),
                   ),
-                );
+                ],
+              ),
+            );
 
                 if (isNarrow) {
                   return Column(

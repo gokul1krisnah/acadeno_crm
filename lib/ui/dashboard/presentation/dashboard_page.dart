@@ -418,17 +418,18 @@ class _DashboardViewState extends State<_DashboardView> {
 
   Widget _buildDashboardDateSelector() {
     return Container(
-      height: 36,
-      padding: const EdgeInsets.symmetric(horizontal: 10),
+      height: 40,
+      constraints: const BoxConstraints(minWidth: 150),
+      padding: const EdgeInsets.symmetric(horizontal: 14),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
+        color: const Color(0xFFF5F5F5),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFE5E7EB)),
         boxShadow: const [
           BoxShadow(
-            color: Color(0x08000000),
-            blurRadius: 4,
-            offset: Offset(0, 1),
+            color: Color(0x0D764BA2),
+            blurRadius: 5,
+            offset: Offset(0, 2),
           ),
         ],
       ),
@@ -437,26 +438,28 @@ class _DashboardViewState extends State<_DashboardView> {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           const Icon(
-            Icons.calendar_today_rounded,
-            size: 13,
-            color: Color(0xFFEF8144),
+            Icons.calendar_month_rounded,
+            size: 18,
+            color: Color(0xFF2E1D44),
           ),
-          const Gap(6),
+          const Gap(8),
           DropdownButtonHideUnderline(
             child: DropdownButton<String>(
               value: _dashboardDateRange,
+              focusColor: Colors.transparent,
               dropdownColor: const Color(0xFFE2E2E2),
               borderRadius: BorderRadius.circular(12),
+              elevation: 6,
               icon: const Icon(
                 Icons.keyboard_arrow_down_rounded,
-                size: 17,
-                color: Color(0xFF64748B),
+                size: 20,
+                color: Color(0xFF2E1D44),
               ),
               isDense: true,
               style: GoogleFonts.inter(
-                fontSize: 12.5,
-                fontWeight: FontWeight.w600,
-                color: const Color(0xFF0F172A),
+                fontSize: 13.5,
+                fontWeight: FontWeight.w500,
+                color: const Color(0xFF2E1D44),
               ),
               selectedItemBuilder: (context) => [
                 'Today',
@@ -470,9 +473,9 @@ class _DashboardViewState extends State<_DashboardView> {
                 child: Text(
                   _dateRangeDisplayLabel,
                   style: GoogleFonts.inter(
-                    fontSize: 12.5,
-                    fontWeight: FontWeight.w600,
-                    color: const Color(0xFF0F172A),
+                    fontSize: 13.5,
+                    fontWeight: FontWeight.w500,
+                    color: const Color(0xFF2E1D44),
                   ),
                 ),
               )).toList(),
@@ -2519,7 +2522,7 @@ class _DashboardViewState extends State<_DashboardView> {
         color: const Color(0xFFE96849),
         valueColor: const Color(0xFFE96849),
         svgAsset: 'assets/svgs/stat_calendar_check.svg',
-        icon: Icons.calendar_today_rounded,
+        icon: Icons.calendar_month_rounded,
       ),
       _StatCard(
         label: 'Overdue / Pending',
@@ -2866,10 +2869,6 @@ class _StatCardState extends State<_StatCard> {
                                 widget.svgAsset!,
                                 width: svgSize,
                                 height: svgSize,
-                                colorFilter: ColorFilter.mode(
-                                  widget.color,
-                                  BlendMode.srcIn,
-                                ),
                               )
                             : (widget.icon != null
                                   ? Icon(
