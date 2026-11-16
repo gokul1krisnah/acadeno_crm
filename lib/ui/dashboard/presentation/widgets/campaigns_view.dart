@@ -2,12 +2,13 @@ import 'dart:async';
 import 'package:acadeno_crm/core/services/firestore_stream_cache.dart';
 import 'package:gap/gap.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 import 'package:acadeno_crm/ui/leads/data/model/lead_models.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'figma_calendar_dialog.dart';
 
-import '../../../../shared/extensions/build_context_extension.dart';
 import '../../../../shared/snackbar_alerts/snack_alert.dart';
 import 'package:acadeno_crm/shared/theme/app_typography.dart';
 
@@ -522,111 +523,368 @@ class _CampaignsViewState extends State<CampaignsView> {
     final topicsCtrl = TextEditingController(text: 'ai, python, data science');
     final branchesCtrl = TextEditingController(text: 'CSE, IT, ECE');
     final yearsCtrl = TextEditingController(text: '2nd, 3rd');
+    final formKey = GlobalKey<FormState>();
+
+    InputDecoration dialogInputDeco({
+      required String hintText,
+      Widget? prefixIcon,
+      Widget? suffixIcon,
+    }) {
+      return InputDecoration(
+        hintText: hintText,
+        hintStyle: GoogleFonts.inter(
+          color: const Color(0xFF94A3B8),
+          fontSize: 13,
+        ),
+        filled: true,
+        fillColor: const Color(0xFFF8FAFC),
+        prefixIcon: prefixIcon,
+        suffixIcon: suffixIcon,
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 14,
+          vertical: 12,
+        ),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Color(0xFFD45107), width: 1.5),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Color(0xFFEF4444)),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Color(0xFFEF4444), width: 1.5),
+        ),
+      );
+    }
 
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text(
-          'Create Workshop / Course Campaign',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
-        ),
-        content: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 440),
-          child: SingleChildScrollView(
-            padding: EdgeInsets.all(ctx.devicePadding),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextField(
-                  controller: titleCtrl,
-                  decoration: const InputDecoration(
-                    labelText: 'Campaign / Workshop title *',
-                    hintText: 'e.g. Cloud & DevOps Bootcamp',
-                  ),
-                ),
-                const Gap(12),
-                TextField(
-                  controller: badgeCtrl,
-                  decoration: const InputDecoration(
-                    labelText: 'Start date label',
-                  ),
-                ),
-                const Gap(12),
-                TextField(
-                  controller: topicsCtrl,
-                  decoration: const InputDecoration(
-                    labelText: 'Target topics (comma separated)',
-                  ),
-                ),
-                const Gap(12),
-                TextField(
-                  controller: branchesCtrl,
-                  decoration: const InputDecoration(
-                    labelText: 'Target branches',
-                  ),
-                ),
-                const Gap(12),
-                TextField(
-                  controller: yearsCtrl,
-                  decoration: const InputDecoration(labelText: 'Target years'),
-                ),
-              ],
-            ),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFEF8144),
-              foregroundColor: Colors.white,
-            ),
-            onPressed: () async {
-              if (titleCtrl.text.trim().isEmpty) return;
-              final newCamp = _CampaignData(
-                title: titleCtrl.text.trim(),
-                badge: badgeCtrl.text.trim().isEmpty
-                    ? 'Upcoming'
-                    : badgeCtrl.text.trim(),
-                topics: topicsCtrl.text.trim(),
-                branches: branchesCtrl.text.trim(),
-                years: yearsCtrl.text.trim(),
-                matchingLeads: '1,120',
-                score70Plus: '215',
-                assignedCount: 0,
-              );
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) {
+          return Dialog(
+            backgroundColor: Colors.white,
+            insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 480),
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
+                child: SingleChildScrollView(
+                  child: Form(
+                    key: formKey,
+                    autovalidateMode: AutovalidateMode.onUserInteraction,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Create Campaign',
+                                    style: GoogleFonts.inter(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.w700,
+                                      color: const Color(0xFF0F172A),
+                                      letterSpacing: -0.3,
+                                    ),
+                                  ),
+                                  const Gap(4),
+                                  Text(
+                                    'Launch targeted outreach for student courses and workshops',
+                                    style: GoogleFonts.inter(
+                                      fontSize: 13,
+                                      color: const Color(0xFF64748B),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            IconButton(
+                              onPressed: () => Navigator.pop(ctx),
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(
+                                minWidth: 32,
+                                minHeight: 32,
+                              ),
+                              icon: const Icon(
+                                Icons.close_rounded,
+                                size: 20,
+                                color: Color(0xFF64748B),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const Gap(20),
+                        Text(
+                          'Campaign / Workshop Title *',
+                          style: GoogleFonts.inter(
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.w600,
+                            color: const Color(0xFF334155),
+                          ),
+                        ),
+                        const Gap(6),
+                        TextFormField(
+                          controller: titleCtrl,
+                          style: GoogleFonts.inter(
+                            fontSize: 13.5,
+                            color: const Color(0xFF0F172A),
+                          ),
+                          decoration: dialogInputDeco(
+                            hintText: 'e.g. Cloud & DevOps Bootcamp',
+                            prefixIcon: const Icon(
+                              Icons.campaign_outlined,
+                              size: 18,
+                              color: Color(0xFF64748B),
+                            ),
+                          ),
+                          validator: (v) {
+                            if (v == null || v.trim().isEmpty) {
+                              return 'Please enter campaign title';
+                            }
+                            return null;
+                          },
+                        ),
+                        const Gap(14),
+                        Text(
+                          'Start Date / Badge',
+                          style: GoogleFonts.inter(
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.w600,
+                            color: const Color(0xFF334155),
+                          ),
+                        ),
+                        const Gap(6),
+                        TextFormField(
+                          controller: badgeCtrl,
+                          style: GoogleFonts.inter(
+                            fontSize: 13.5,
+                            color: const Color(0xFF0F172A),
+                          ),
+                          decoration: dialogInputDeco(
+                            hintText: 'e.g. Starts 25 Nov',
+                            prefixIcon: const Icon(
+                              Icons.calendar_today_rounded,
+                              size: 16,
+                              color: Color(0xFF64748B),
+                            ),
+                            suffixIcon: IconButton(
+                              icon: const Icon(
+                                Icons.edit_calendar_rounded,
+                                size: 18,
+                                color: Color(0xFFD45107),
+                              ),
+                              tooltip: 'Pick Date',
+                              onPressed: () async {
+                                final now = DateTime.now();
+                                final picked = await showFigmaCalendarDialog(
+                                  context: ctx,
+                                  initialDate: now,
+                                  firstDate: DateTime(2024),
+                                  lastDate: DateTime(2030),
+                                );
+                                if (picked != null) {
+                                  setDialogState(() {
+                                    badgeCtrl.text =
+                                        'Starts ${DateFormat('d MMM').format(picked)}';
+                                  });
+                                }
+                              },
+                            ),
+                          ),
+                        ),
+                        const Gap(14),
+                        Text(
+                          'Target Topics',
+                          style: GoogleFonts.inter(
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.w600,
+                            color: const Color(0xFF334155),
+                          ),
+                        ),
+                        const Gap(6),
+                        TextFormField(
+                          controller: topicsCtrl,
+                          style: GoogleFonts.inter(
+                            fontSize: 13.5,
+                            color: const Color(0xFF0F172A),
+                          ),
+                          decoration: dialogInputDeco(
+                            hintText: 'e.g. ai, python, data science',
+                            prefixIcon: const Icon(
+                              Icons.tag_rounded,
+                              size: 18,
+                              color: Color(0xFF64748B),
+                            ),
+                          ),
+                        ),
+                        const Gap(14),
+                        Text(
+                          'Target Branches',
+                          style: GoogleFonts.inter(
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.w600,
+                            color: const Color(0xFF334155),
+                          ),
+                        ),
+                        const Gap(6),
+                        TextFormField(
+                          controller: branchesCtrl,
+                          style: GoogleFonts.inter(
+                            fontSize: 13.5,
+                            color: const Color(0xFF0F172A),
+                          ),
+                          decoration: dialogInputDeco(
+                            hintText: 'e.g. CSE, IT, ECE',
+                            prefixIcon: const Icon(
+                              Icons.school_outlined,
+                              size: 18,
+                              color: Color(0xFF64748B),
+                            ),
+                          ),
+                        ),
+                        const Gap(14),
+                        Text(
+                          'Target Years',
+                          style: GoogleFonts.inter(
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.w600,
+                            color: const Color(0xFF334155),
+                          ),
+                        ),
+                        const Gap(6),
+                        TextFormField(
+                          controller: yearsCtrl,
+                          style: GoogleFonts.inter(
+                            fontSize: 13.5,
+                            color: const Color(0xFF0F172A),
+                          ),
+                          decoration: dialogInputDeco(
+                            hintText: 'e.g. 2nd, 3rd',
+                            prefixIcon: const Icon(
+                              Icons.hourglass_top_rounded,
+                              size: 18,
+                              color: Color(0xFF64748B),
+                            ),
+                          ),
+                        ),
+                        const Gap(24),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            OutlinedButton(
+                              onPressed: () => Navigator.pop(ctx),
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: const Color(0xFF334155),
+                                side: const BorderSide(color: Color(0xFFCBD5E1)),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 18,
+                                  vertical: 12,
+                                ),
+                              ),
+                              child: Text(
+                                'Cancel',
+                                style: GoogleFonts.inter(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                            const Gap(12),
+                            ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFFD45107),
+                                foregroundColor: Colors.white,
+                                elevation: 0,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 22,
+                                  vertical: 12,
+                                ),
+                              ),
+                              onPressed: () async {
+                                if (!(formKey.currentState?.validate() ?? false)) {
+                                  return;
+                                }
+                                final newCamp = _CampaignData(
+                                  title: titleCtrl.text.trim(),
+                                  badge: badgeCtrl.text.trim().isEmpty
+                                      ? 'Upcoming'
+                                      : badgeCtrl.text.trim(),
+                                  topics: topicsCtrl.text.trim(),
+                                  branches: branchesCtrl.text.trim(),
+                                  years: yearsCtrl.text.trim(),
+                                  matchingLeads: '1,120',
+                                  score70Plus: '215',
+                                  assignedCount: 0,
+                                );
 
-              await FirebaseFirestore.instance.collection('campaigns').add({
-                'title': newCamp.title,
-                'badge': newCamp.badge,
-                'topics': newCamp.topics,
-                'branches': newCamp.branches,
-                'years': newCamp.years,
-                'matchingLeads': newCamp.matchingLeads,
-                'score70Plus': newCamp.score70Plus,
-                'assignedCount': 0,
-                'createdByUid': FirebaseAuth.instance.currentUser?.uid,
-                'createdAt': FieldValue.serverTimestamp(),
-                'updatedAt': FieldValue.serverTimestamp(),
-              });
+                                await FirebaseFirestore.instance
+                                    .collection('campaigns')
+                                    .add({
+                                  'title': newCamp.title,
+                                  'badge': newCamp.badge,
+                                  'topics': newCamp.topics,
+                                  'branches': newCamp.branches,
+                                  'years': newCamp.years,
+                                  'matchingLeads': newCamp.matchingLeads,
+                                  'score70Plus': newCamp.score70Plus,
+                                  'assignedCount': 0,
+                                  'createdByUid':
+                                      FirebaseAuth.instance.currentUser?.uid,
+                                  'createdAt': FieldValue.serverTimestamp(),
+                                  'updatedAt': FieldValue.serverTimestamp(),
+                                });
 
-              if (mounted) {
-                setState(() {
-                  _campaigns.insert(0, newCamp);
-                  _activeCampaignIndex = 0;
-                  _showAllCampaigns = false;
-                });
-                _listenLiveLeadsAndRank();
-              }
-              if (ctx.mounted) Navigator.pop(ctx);
-            },
-            child: const Text('Create & Rank Leads'),
-          ),
-        ],
+                                if (mounted) {
+                                  setState(() {
+                                    _campaigns.insert(0, newCamp);
+                                    _activeCampaignIndex = 0;
+                                    _showAllCampaigns = false;
+                                  });
+                                  _listenLiveLeadsAndRank();
+                                }
+                                if (ctx.mounted) Navigator.pop(ctx);
+                              },
+                              child: Text(
+                                'Create & Rank Leads',
+                                style: GoogleFonts.inter(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
       ),
     );
   }
@@ -828,45 +1086,57 @@ class _CampaignsViewState extends State<CampaignsView> {
             const Gap(16),
 
             // Campaign Summary Card
-            Container(
-              width: double.infinity,
-              padding: EdgeInsets.all(isMobile ? 18 : 32),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(24),
-                border: Border.all(color: const Color(0xFFE2E8F0)),
-                boxShadow: const [
-                  BoxShadow(
-                    color: Color.fromRGBO(0, 0, 0, 0.05),
-                    offset: Offset(0, 1),
-                    blurRadius: 2,
+            LayoutBuilder(
+              builder: (context, cardConstraints) {
+                final isCardStacked = cardConstraints.maxWidth < 960;
+                return Container(
+                  width: double.infinity,
+                  padding: EdgeInsets.all(isCardStacked ? 18 : 32),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(24),
+                    border: Border.all(color: const Color(0xFFE2E8F0)),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Color.fromRGBO(0, 0, 0, 0.05),
+                        offset: Offset(0, 1),
+                        blurRadius: 2,
+                      ),
+                    ],
                   ),
-                ],
-              ),
-              child: isMobile
-                  ? Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _buildCampaignInfoLeft(campaign),
-                        const Gap(20),
-                        const Divider(height: 1, color: Color(0xFFF1F5F9)),
-                        const Gap(20),
-                        _buildCampaignStatsRight(campaign, isMobile: true),
-                      ],
-                    )
-                  : Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Expanded(child: _buildCampaignInfoLeft(campaign)),
-                        Container(
-                          height: 100,
-                          width: 1,
-                          color: const Color(0xFFF1F5F9),
-                          margin: const EdgeInsets.symmetric(horizontal: 28),
+                  child: isCardStacked
+                      ? Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _buildCampaignInfoLeft(campaign),
+                            const Gap(20),
+                            const Divider(height: 1, color: Color(0xFFF1F5F9)),
+                            const Gap(20),
+                            _buildCampaignStatsRight(campaign, isMobile: true),
+                          ],
+                        )
+                      : Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            Flexible(
+                              fit: FlexFit.loose,
+                              child: ConstrainedBox(
+                                constraints: const BoxConstraints(maxWidth: 680),
+                                child: _buildCampaignInfoLeft(campaign),
+                              ),
+                            ),
+                            Container(
+                              height: 100,
+                              width: 1,
+                              color: const Color(0xFFF1F5F9),
+                              margin: const EdgeInsets.symmetric(horizontal: 28),
+                            ),
+                            _buildCampaignStatsRight(campaign, isMobile: false),
+                          ],
                         ),
-                        _buildCampaignStatsRight(campaign, isMobile: false),
-                      ],
-                    ),
+                );
+              },
             ),
             const Gap(16),
 

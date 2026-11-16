@@ -340,7 +340,7 @@ class _TeamManagementViewState extends State<TeamManagementView> {
         ),
         const Gap(4),
         Text(
-          'Real-time team analytics, live conversion tracking, and member performance (FR-6.3)',
+          'Real-time team analytics, live conversion tracking, and member performance',
           style: GoogleFonts.inter(
             fontSize: 14,
             fontWeight: FontWeight.w500,
@@ -612,17 +612,14 @@ class _TeamManagementViewState extends State<TeamManagementView> {
           // Card Header with Title & Date Range Dropdown
           Padding(
             padding: const EdgeInsets.fromLTRB(32, 32, 32, 16),
-            child: Wrap(
-              spacing: 16,
-              runSpacing: 12,
-              alignment: WrapAlignment.spaceBetween,
-              crossAxisAlignment: WrapCrossAlignment.center,
-              children: [
-                Column(
+            child: LayoutBuilder(
+              builder: (context, headerConstraints) {
+                final isNarrow = headerConstraints.maxWidth < 680;
+                final titleWidget = Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Executive Performance Comparison (FR-6.3)',
+                      'Executive Performance Comparison',
                       style: GoogleFonts.inter(
                         fontSize: 20,
                         fontWeight: FontWeight.w700,
@@ -643,9 +640,11 @@ class _TeamManagementViewState extends State<TeamManagementView> {
                       ),
                     ),
                   ],
-                ),
-                Container(
+                );
+
+                final dropdownWidget = Container(
                   height: 47,
+                  constraints: const BoxConstraints(minWidth: 180),
                   padding: const EdgeInsets.symmetric(horizontal: 21),
                   decoration: BoxDecoration(
                     color: const Color(0xFFF5F5F5),
@@ -659,111 +658,88 @@ class _TeamManagementViewState extends State<TeamManagementView> {
                       ),
                     ],
                   ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      DropdownButtonHideUnderline(
-                        child: DropdownButton<String>(
-                          value: _selectedDateRange,
-                          dropdownColor: const Color(0xFFE2E2E2),
-                          borderRadius: BorderRadius.circular(12),
-                          icon: const Icon(
-                            Icons.keyboard_arrow_down_rounded,
-                            size: 20,
-                            color: Color(0xFF2E1D44),
-                          ),
-                          isDense: true,
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<String>(
+                      value: _selectedDateRange,
+                      focusColor: Colors.transparent,
+                      dropdownColor: const Color(0xFFE2E2E2),
+                      borderRadius: BorderRadius.circular(12),
+                      elevation: 6,
+                      icon: const Icon(
+                        Icons.keyboard_arrow_down_rounded,
+                        size: 20,
+                        color: Color(0xFF2E1D44),
+                      ),
+                      isDense: true,
+                      style: GoogleFonts.inter(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w400,
+                        color: const Color(0xFF2E1D44),
+                        height: 20 / 14,
+                      ),
+                      selectedItemBuilder: (context) => [
+                        'All Time',
+                        'Today',
+                        'This week',
+                        'This month',
+                        'Custom',
+                      ].map((val) => Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          val == 'Custom' && _selectedCustomDate != null
+                              ? DateFormat('d MMM yyyy').format(_selectedCustomDate!)
+                              : val,
                           style: GoogleFonts.inter(
                             fontSize: 14,
-                            fontWeight: FontWeight.w500,
+                            fontWeight: FontWeight.w400,
                             color: const Color(0xFF2E1D44),
-                            height: 20 / 14,
                           ),
-                          selectedItemBuilder: (context) => [
-                            'All Time',
-                            'Today',
-                            'This week',
-                            'This month',
-                            'Custom',
-                          ].map((val) => Align(
-                            alignment: Alignment.centerLeft,
-                            child: Text(
-                              val == 'Custom' && _selectedCustomDate != null
-                                  ? DateFormat('d MMM yyyy').format(_selectedCustomDate!)
-                                  : val,
-                              style: GoogleFonts.inter(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w500,
-                                color: const Color(0xFF2E1D44),
-                              ),
-                            ),
-                          )).toList(),
-                          items: [
-                            DropdownMenuItem(
-                              value: 'All Time',
-                              child: AcadenoDropdown.buildMenuItemChild(
-                                label: 'All Time',
-                                isSelected: _selectedDateRange == 'All Time',
-                              ),
-                            ),
-                            DropdownMenuItem(
-                              value: 'Today',
-                              child: AcadenoDropdown.buildMenuItemChild(
-                                label: 'Today',
-                                isSelected: _selectedDateRange == 'Today',
-                              ),
-                            ),
-                            DropdownMenuItem(
-                              value: 'This week',
-                              child: AcadenoDropdown.buildMenuItemChild(
-                                label: 'This week',
-                                isSelected: _selectedDateRange == 'This week',
-                              ),
-                            ),
-                            DropdownMenuItem(
-                              value: 'This month',
-                              child: AcadenoDropdown.buildMenuItemChild(
-                                label: 'This month',
-                                isSelected: _selectedDateRange == 'This month',
-                              ),
-                            ),
-                            DropdownMenuItem(
-                              value: 'Custom',
-                              child: AcadenoDropdown.buildMenuItemChild(
-                                label: _selectedCustomDate != null
-                                    ? DateFormat(
-                                        'd MMM yyyy',
-                                      ).format(_selectedCustomDate!)
-                                    : 'Pick Date...',
-                                isSelected: _selectedDateRange == 'Custom',
-                              ),
-                            ),
-                          ],
-                          onChanged: (v) async {
-                            if (v == null) return;
-                            if (v == 'Custom') {
-                              final now = DateTime.now();
-                              final picked = await showFigmaCalendarDialog(
-                                context: context,
-                                initialDate: _selectedCustomDate ?? now,
-                                firstDate: DateTime(2024),
-                                lastDate: DateTime(2030),
-                              );
-                              if (picked != null && mounted) {
-                                setState(() {
-                                  _selectedCustomDate = picked;
-                                  _selectedDateRange = 'Custom';
-                                });
-                              }
-                            } else {
-                              setState(() => _selectedDateRange = v);
-                            }
-                          },
                         ),
-                      ),
-                      const Gap(10),
-                      InkWell(
-                        onTap: () async {
+                      )).toList(),
+                      items: [
+                        DropdownMenuItem(
+                          value: 'All Time',
+                          child: AcadenoDropdown.buildMenuItemChild(
+                            label: 'All Time',
+                            isSelected: _selectedDateRange == 'All Time',
+                          ),
+                        ),
+                        DropdownMenuItem(
+                          value: 'Today',
+                          child: AcadenoDropdown.buildMenuItemChild(
+                            label: 'Today',
+                            isSelected: _selectedDateRange == 'Today',
+                          ),
+                        ),
+                        DropdownMenuItem(
+                          value: 'This week',
+                          child: AcadenoDropdown.buildMenuItemChild(
+                            label: 'This week',
+                            isSelected: _selectedDateRange == 'This week',
+                          ),
+                        ),
+                        DropdownMenuItem(
+                          value: 'This month',
+                          child: AcadenoDropdown.buildMenuItemChild(
+                            label: 'This month',
+                            isSelected: _selectedDateRange == 'This month',
+                          ),
+                        ),
+                        DropdownMenuItem(
+                          value: 'Custom',
+                          child: AcadenoDropdown.buildMenuItemChild(
+                            label: _selectedCustomDate != null
+                                ? DateFormat(
+                                    'd MMM yyyy',
+                                  ).format(_selectedCustomDate!)
+                                : 'Pick Date...',
+                            isSelected: _selectedDateRange == 'Custom',
+                          ),
+                        ),
+                      ],
+                      onChanged: (v) async {
+                        if (v == null) return;
+                        if (v == 'Custom') {
                           final now = DateTime.now();
                           final picked = await showFigmaCalendarDialog(
                             context: context,
@@ -777,18 +753,35 @@ class _TeamManagementViewState extends State<TeamManagementView> {
                               _selectedDateRange = 'Custom';
                             });
                           }
-                        },
-                        borderRadius: BorderRadius.circular(6),
-                        child: const Icon(
-                          Icons.calendar_month_rounded,
-                          size: 16,
-                          color: Color(0xFF64748B),
-                        ),
-                      ),
-                    ],
+                        } else {
+                          setState(() => _selectedDateRange = v);
+                        }
+                      },
+                    ),
                   ),
-                ),
-              ],
+                );
+
+                if (isNarrow) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      titleWidget,
+                      const Gap(14),
+                      dropdownWidget,
+                    ],
+                  );
+                }
+
+                return Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Expanded(child: titleWidget),
+                    const Gap(16),
+                    dropdownWidget,
+                  ],
+                );
+              },
             ),
           ),
 

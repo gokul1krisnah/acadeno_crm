@@ -1,15 +1,35 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:gap/gap.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../../shared/theme/app_svgs.dart';
 import '../../home/application/home_cubit.dart';
 import '../application/leads_cubit.dart';
 import '../application/leads_state.dart';
 
 /// Full tab view for "My Records" & performance logs.
-class MyRecordsTabView extends StatelessWidget {
+class MyRecordsTabView extends StatefulWidget {
   const MyRecordsTabView({super.key});
+
+  @override
+  State<MyRecordsTabView> createState() => _MyRecordsTabViewState();
+}
+
+class _MyRecordsTabViewState extends State<MyRecordsTabView> {
+  bool _isRefreshing = false;
+
+  Future<void> _performRefresh() async {
+    if (_isRefreshing) return;
+    setState(() => _isRefreshing = true);
+    context.read<LeadsCubit>().refresh();
+    await Future.delayed(const Duration(milliseconds: 1000));
+    if (mounted) {
+      setState(() => _isRefreshing = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -26,294 +46,462 @@ class MyRecordsTabView extends StatelessWidget {
 
         return Scaffold(
           backgroundColor: const Color(0xFFF9FAFB),
-          body: RefreshIndicator(
-            onRefresh: () async {
-              context.read<LeadsCubit>().refresh();
-            },
-            color: const Color(0xFF6366F1),
-            child: CustomScrollView(
-              physics: const AlwaysScrollableScrollPhysics(),
-              slivers: [
-                // Top Header
-                SliverToBoxAdapter(
-                  child: Container(
-                    color: Colors.white,
-                    padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              'My Records',
-                              style: GoogleFonts.inter(
-                                fontSize: 22,
-                                fontWeight: FontWeight.w700,
-                                color: const Color(0xFF0F172A),
-                                letterSpacing: -0.4,
-                              ),
-                            ),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 10,
-                                vertical: 4,
-                              ),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFEEF2FF),
-                                borderRadius: BorderRadius.circular(9999),
-                              ),
-                              child: Text(
-                                user.roleLabel.toUpperCase(),
+          body: Theme(
+            data: Theme.of(context).copyWith(platform: TargetPlatform.iOS),
+            child: RefreshIndicator.adaptive(
+              color: const Color(0xFF4338CA),
+              backgroundColor: Colors.white,
+              displacement: 24,
+              onRefresh: _performRefresh,
+              child: CustomScrollView(
+                physics: const AlwaysScrollableScrollPhysics(
+                  parent: BouncingScrollPhysics(),
+                ),
+                slivers: [
+                  // Top Header
+                  SliverToBoxAdapter(
+                    child: Container(
+                      color: Colors.white,
+                      padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'My Records',
                                 style: GoogleFonts.inter(
-                                  fontSize: 10,
+                                  fontSize: 22,
                                   fontWeight: FontWeight.w700,
-                                  color: const Color(0xFF4F46E5),
-                                  letterSpacing: 0.5,
+                                  color: const Color(0xFF0F172A),
+                                  letterSpacing: -0.4,
                                 ),
                               ),
-                            ),
-                          ],
-                        ),
-                        const Gap(4),
-                        Text(
-                          '${user.displayName} · Personal performance & call activity',
-                          style: GoogleFonts.inter(
-                            fontSize: 13,
-                            color: const Color(0xFF64748B),
-                          ),
-                        ),
-                        const Gap(16),
-                        // Summary metric cards
-                        Row(
-                          children: [
-                            Expanded(
-                              child: _metricBox(
-                                value: '$totalCalls',
-                                label: 'Total Calls',
-                                color: const Color(0xFF0F172A),
-                                bg: const Color(0xFFF3E8FF),
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  // Same Reloading Icon button & timing
+                                  Material(
+                                    color: Colors.transparent,
+                                    child: InkWell(
+                                      onTap: _isRefreshing
+                                          ? null
+                                          : _performRefresh,
+                                      borderRadius: BorderRadius.circular(12),
+                                      child: Container(
+                                        width: 38,
+                                        height: 38,
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFFF9FAFB),
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
+                                          border: Border.all(
+                                            color: const Color(0xFFF3F4F6),
+                                            width: 1,
+                                          ),
+                                        ),
+                                        alignment: Alignment.center,
+                                        child: _isRefreshing
+                                            ? const CupertinoActivityIndicator(
+                                                radius: 8,
+                                              )
+                                            : SvgPicture.asset(
+                                                AppSvgs.refresh,
+                                                width: 16,
+                                                height: 16,
+                                                colorFilter:
+                                                    const ColorFilter.mode(
+                                                      Color(0xFF64748B),
+                                                      BlendMode.srcIn,
+                                                    ),
+                                              ),
+                                      ),
+                                    ),
+                                  ),
+                                  const Gap(8),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 10,
+                                      vertical: 4,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFEEF2FF),
+                                      borderRadius: BorderRadius.circular(9999),
+                                    ),
+                                    child: Text(
+                                      user.roleLabel.toUpperCase(),
+                                      style: GoogleFonts.inter(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.w700,
+                                        color: const Color(0xFF4F46E5),
+                                        letterSpacing: 0.5,
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ),
-                            const Gap(8),
-                            Expanded(
-                              child: _metricBox(
-                                value: '$interestedCount',
-                                label: 'Interested',
-                                color: const Color(0xFF0284C7),
-                                bg: const Color(0xFFE0F2FE),
-                              ),
-                            ),
-                            const Gap(8),
-                            Expanded(
-                              child: _metricBox(
-                                value: '$convertedCount',
-                                label: 'Converted',
-                                color: const Color(0xFF16A34A),
-                                bg: const Color(0xFFDCFCE7),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-
-                const SliverToBoxAdapter(child: Gap(16)),
-
-                // Call Logs Section Header
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: Text(
-                      'PERMANENT CALL LOGS',
-                      style: GoogleFonts.inter(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w700,
-                        color: const Color(0xFF64748B),
-                        letterSpacing: 0.6,
-                      ),
-                    ),
-                  ),
-                ),
-
-                const SliverToBoxAdapter(child: Gap(10)),
-
-                // List of Call Logs
-                if (state.callRecords.isEmpty)
-                  SliverFillRemaining(
-                    hasScrollBody: false,
-                    child: Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.phone_disabled_rounded,
-                            size: 44,
-                            color: Colors.grey.shade400,
-                          ),
-                          const Gap(12),
-                          Text(
-                            'No call records logged yet',
-                            style: GoogleFonts.inter(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: const Color(0xFF475467),
-                            ),
+                            ],
                           ),
                           const Gap(4),
                           Text(
-                            'Outbound calls made to leads will appear here automatically.',
+                            '${user.displayName} · Personal performance & call activity',
                             style: GoogleFonts.inter(
-                              fontSize: 12,
-                              color: const Color(0xFF94A3B8),
+                              fontSize: 13,
+                              color: const Color(0xFF64748B),
+                            ),
+                          ),
+                          const Gap(16),
+                          // Summary metric cards
+                          Row(
+                            children: [
+                              Expanded(
+                                child: _metricBox(
+                                  value: '$totalCalls',
+                                  label: 'Total Calls',
+                                  color: const Color(0xFF0F172A),
+                                  bg: const Color(0xFFF3E8FF),
+                                ),
+                              ),
+                              const Gap(8),
+                              Expanded(
+                                child: _metricBox(
+                                  value: '$interestedCount',
+                                  label: 'Interested',
+                                  color: const Color(0xFF0284C7),
+                                  bg: const Color(0xFFE0F2FE),
+                                ),
+                              ),
+                              const Gap(8),
+                              Expanded(
+                                child: _metricBox(
+                                  value: '$convertedCount',
+                                  label: 'Converted',
+                                  color: const Color(0xFF16A34A),
+                                  bg: const Color(0xFFDCFCE7),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  const SliverToBoxAdapter(child: Gap(16)),
+
+                  // Call Logs Section Header with Refresh Option
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'PERMANENT CALL LOGS',
+                            style: GoogleFonts.inter(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                              color: const Color(0xFF64748B),
+                              letterSpacing: 0.6,
+                            ),
+                          ),
+                          InkWell(
+                            onTap: _isRefreshing ? null : _performRefresh,
+                            borderRadius: BorderRadius.circular(8),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 6,
+                                vertical: 3,
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  if (_isRefreshing) ...[
+                                    const CupertinoActivityIndicator(
+                                      radius: 6,
+                                    ),
+                                    const Gap(6),
+                                    Text(
+                                      'Refreshing...',
+                                      style: GoogleFonts.inter(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w600,
+                                        color: const Color(0xFF4F46E5),
+                                      ),
+                                    ),
+                                  ] else ...[
+                                    SvgPicture.asset(
+                                      AppSvgs.refresh,
+                                      width: 12,
+                                      height: 12,
+                                      colorFilter: const ColorFilter.mode(
+                                        Color(0xFF64748B),
+                                        BlendMode.srcIn,
+                                      ),
+                                    ),
+                                    const Gap(5),
+                                    Text(
+                                      'Refresh',
+                                      style: GoogleFonts.inter(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w600,
+                                        color: const Color(0xFF64748B),
+                                      ),
+                                    ),
+                                  ],
+                                ],
+                              ),
                             ),
                           ),
                         ],
                       ),
                     ),
-                  )
-                else
-                  SliverPadding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    sliver: SliverList(
-                      delegate: SliverChildBuilderDelegate(
-                        (context, index) {
-                          final rec = state.callRecords[index];
-                          final outcome = rec.outcome.trim();
-                          final isConverted =
-                              outcome.toLowerCase() == 'converted';
-                          final isInterested =
-                              outcome.toLowerCase() == 'interested';
+                  ),
 
-                          final badgeBg = isConverted
-                              ? const Color(0xFFDCFCE7)
-                              : (isInterested
-                                  ? const Color(0xFFE0F2FE)
-                                  : const Color(0xFFF1F5F9));
-                          final badgeText = isConverted
-                              ? const Color(0xFF166534)
-                              : (isInterested
-                                  ? const Color(0xFF0369A1)
-                                  : const Color(0xFF475467));
+                  const SliverToBoxAdapter(child: Gap(10)),
 
-                          return Container(
-                            margin: const EdgeInsets.only(bottom: 10),
-                            padding: const EdgeInsets.all(14),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(
-                                color: const Color(0xFFE5E7EB),
-                                width: 1,
-                              ),
-                              boxShadow: const [
-                                BoxShadow(
-                                  color: Color(0x05000000),
-                                  blurRadius: 4,
-                                  offset: Offset(0, 1),
-                                ),
-                              ],
+                  // List of Call Logs
+                  if (state.callRecords.isEmpty)
+                    SliverFillRemaining(
+                      hasScrollBody: false,
+                      child: Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.phone_disabled_rounded,
+                              size: 44,
+                              color: Colors.grey.shade400,
                             ),
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Container(
-                                  width: 38,
-                                  height: 38,
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFFEEF2FF),
-                                    borderRadius: BorderRadius.circular(10),
+                            const Gap(12),
+                            Text(
+                              'No call records logged yet',
+                              style: GoogleFonts.inter(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: const Color(0xFF475467),
+                              ),
+                            ),
+                            const Gap(4),
+                            Text(
+                              'Outbound calls made to leads will appear here automatically.',
+                              style: GoogleFonts.inter(
+                                fontSize: 12,
+                                color: const Color(0xFF94A3B8),
+                              ),
+                            ),
+                            const Gap(16),
+                            SizedBox(
+                              height: 40,
+                              child: OutlinedButton(
+                                onPressed: _isRefreshing
+                                    ? null
+                                    : _performRefresh,
+                                style: OutlinedButton.styleFrom(
+                                  backgroundColor: Colors.white,
+                                  foregroundColor: const Color(0xFF4B5563),
+                                  side: const BorderSide(
+                                    color: Color(0xFFE5E7EB),
+                                    width: 1,
                                   ),
-                                  alignment: Alignment.center,
-                                  child: const Icon(
-                                    Icons.call_rounded,
-                                    size: 18,
-                                    color: Color(0xFF4F46E5),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 8,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
                                   ),
                                 ),
-                                const Gap(12),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Expanded(
-                                            child: Text(
-                                              rec.leadName.isNotEmpty
-                                                  ? rec.leadName
-                                                  : 'Lead Contact',
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
-                                              style: GoogleFonts.inter(
-                                                fontSize: 14,
-                                                fontWeight: FontWeight.w600,
-                                                color: const Color(0xFF0F172A),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    if (_isRefreshing) ...[
+                                      const CupertinoActivityIndicator(
+                                        radius: 7,
+                                      ),
+                                      const Gap(8),
+                                      Text(
+                                        'Refreshing...',
+                                        style: GoogleFonts.inter(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w700,
+                                          color: const Color(0xFF4B5563),
+                                        ),
+                                      ),
+                                    ] else ...[
+                                      SvgPicture.asset(
+                                        AppSvgs.refresh,
+                                        width: 13,
+                                        height: 13,
+                                        colorFilter: const ColorFilter.mode(
+                                          Color(0xFF9CA3AF),
+                                          BlendMode.srcIn,
+                                        ),
+                                      ),
+                                      const Gap(8),
+                                      Text(
+                                        'Refresh',
+                                        style: GoogleFonts.inter(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w700,
+                                          color: const Color(0xFF4B5563),
+                                        ),
+                                      ),
+                                    ],
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    )
+                  else
+                    SliverPadding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      sliver: SliverList(
+                        delegate: SliverChildBuilderDelegate(
+                          (context, index) {
+                            final rec = state.callRecords[index];
+                            final outcome = rec.outcome.trim();
+                            final isConverted =
+                                outcome.toLowerCase() == 'converted';
+                            final isInterested =
+                                outcome.toLowerCase() == 'interested';
+
+                            final badgeBg = isConverted
+                                ? const Color(0xFFDCFCE7)
+                                : (isInterested
+                                    ? const Color(0xFFE0F2FE)
+                                    : const Color(0xFFF1F5F9));
+                            final badgeText = isConverted
+                                ? const Color(0xFF166534)
+                                : (isInterested
+                                    ? const Color(0xFF0369A1)
+                                    : const Color(0xFF475467));
+
+                            return Container(
+                              margin: const EdgeInsets.only(bottom: 10),
+                              padding: const EdgeInsets.all(14),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(
+                                  color: const Color(0xFFE5E7EB),
+                                  width: 1,
+                                ),
+                                boxShadow: const [
+                                  BoxShadow(
+                                    color: Color(0x05000000),
+                                    blurRadius: 4,
+                                    offset: Offset(0, 1),
+                                  ),
+                                ],
+                              ),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Container(
+                                    width: 38,
+                                    height: 38,
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFEEF2FF),
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    alignment: Alignment.center,
+                                    child: const Icon(
+                                      Icons.call_rounded,
+                                      size: 18,
+                                      color: Color(0xFF4F46E5),
+                                    ),
+                                  ),
+                                  const Gap(12),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            Expanded(
+                                              child: Text(
+                                                rec.leadName.isNotEmpty
+                                                    ? rec.leadName
+                                                    : 'Lead Contact',
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                                style: GoogleFonts.inter(
+                                                  fontSize: 14,
+                                                  fontWeight: FontWeight.w600,
+                                                  color: const Color(
+                                                    0xFF0F172A,
+                                                  ),
+                                                ),
                                               ),
                                             ),
+                                            Container(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    horizontal: 8,
+                                                    vertical: 3,
+                                              ),
+                                              decoration: BoxDecoration(
+                                                color: badgeBg,
+                                                borderRadius:
+                                                    BorderRadius.circular(6),
+                                              ),
+                                              child: Text(
+                                                outcome.toUpperCase(),
+                                                style: GoogleFonts.inter(
+                                                  fontSize: 10,
+                                                  fontWeight: FontWeight.w700,
+                                                  color: badgeText,
+                                                  letterSpacing: 0.3,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        const Gap(4),
+                                        Text(
+                                          '${rec.collegeInfo} · Duration: ${rec.duration} · ${rec.timestamp}',
+                                          style: GoogleFonts.inter(
+                                            fontSize: 12,
+                                            color: const Color(0xFF64748B),
                                           ),
-                                          Container(
-                                            padding: const EdgeInsets.symmetric(
-                                              horizontal: 8,
-                                              vertical: 3,
-                                            ),
-                                            decoration: BoxDecoration(
-                                              color: badgeBg,
-                                              borderRadius:
-                                                  BorderRadius.circular(6),
-                                            ),
-                                            child: Text(
-                                              outcome.toUpperCase(),
-                                              style: GoogleFonts.inter(
-                                                fontSize: 10,
-                                                fontWeight: FontWeight.w700,
-                                                color: badgeText,
-                                                letterSpacing: 0.3,
-                                              ),
+                                        ),
+                                        if (rec.notes.isNotEmpty) ...[
+                                          const Gap(6),
+                                          Text(
+                                            rec.notes,
+                                            maxLines: 2,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: GoogleFonts.inter(
+                                              fontSize: 12,
+                                              fontStyle: FontStyle.italic,
+                                              color: const Color(0xFF475467),
                                             ),
                                           ),
                                         ],
-                                      ),
-                                      const Gap(4),
-                                      Text(
-                                        '${rec.collegeInfo} · Duration: ${rec.duration} · ${rec.timestamp}',
-                                        style: GoogleFonts.inter(
-                                          fontSize: 12,
-                                          color: const Color(0xFF64748B),
-                                        ),
-                                      ),
-                                      if (rec.notes.isNotEmpty) ...[
-                                        const Gap(6),
-                                        Text(
-                                          rec.notes,
-                                          maxLines: 2,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: GoogleFonts.inter(
-                                            fontSize: 12,
-                                            fontStyle: FontStyle.italic,
-                                            color: const Color(0xFF475467),
-                                          ),
-                                        ),
                                       ],
-                                    ],
+                                    ),
                                   ),
-                                ),
-                              ],
-                            ),
-                          );
-                        },
-                        childCount: state.callRecords.length,
+                                ],
+                              ),
+                            );
+                          },
+                          childCount: state.callRecords.length,
+                        ),
                       ),
                     ),
-                  ),
 
-                const SliverToBoxAdapter(child: Gap(24)),
-              ],
+                  const SliverToBoxAdapter(child: Gap(24)),
+                ],
+              ),
             ),
           ),
         );

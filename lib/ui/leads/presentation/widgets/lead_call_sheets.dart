@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:acadeno_crm/shared/widgets/acadeno_dropdown.dart';
 import 'dart:ui' show ImageFilter;
 import '../pages/lead_detail_page.dart';
@@ -1621,85 +1622,125 @@ class LeadCallSheets {
   // 4. "My Record" & Personal Performance Sheet
   // ---------------------------------------------------------------------------
   static void showMyRecordSheet(BuildContext context) {
-    final state = context.read<LeadsCubit>().state;
     final user = context.read<HomeCubit>().state.user;
-
-    final totalCalls = state.callRecords.length;
-    final interestedCount = state.callRecords
-        .where((r) => r.outcome.trim().toLowerCase() == 'interested')
-        .length;
-    final convertedCount = state.callRecords
-        .where((r) => r.outcome.trim().toLowerCase() == 'converted')
-        .length;
+    bool isRefreshing = false;
 
     showDialog(
       context: context,
-      builder: (ctx) => Dialog(
-        backgroundColor: const Color(0xFFFFFFFF),
-        surfaceTintColor: Colors.transparent,
-        insetPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 20),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(32),
-          side: const BorderSide(color: Color(0xFFE2E8F0), width: 1),
-        ),
-        child: Container(
-          width: double.infinity,
-          constraints: const BoxConstraints(maxWidth: 420, maxHeight: 764.4),
-          decoration: BoxDecoration(
-            color: const Color(0xFFFFFFFF),
-            borderRadius: BorderRadius.circular(32),
-            border: Border.all(color: const Color(0xFFE2E8F0), width: 1),
-          ),
-          padding: const EdgeInsets.fromLTRB(10, 24, 10, 24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setSheetState) {
+          final state = ctx.watch<LeadsCubit>().state;
+          final totalCalls = state.callRecords.length;
+          final interestedCount = state.callRecords
+              .where((r) => r.outcome.trim().toLowerCase() == 'interested')
+              .length;
+          final convertedCount = state.callRecords
+              .where((r) => r.outcome.trim().toLowerCase() == 'converted')
+              .length;
+
+          return Dialog(
+            backgroundColor: const Color(0xFFFFFFFF),
+            surfaceTintColor: Colors.transparent,
+            insetPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 20),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(32),
+              side: const BorderSide(color: Color(0xFFE2E8F0), width: 1),
+            ),
+            child: Container(
+              width: double.infinity,
+              constraints: const BoxConstraints(maxWidth: 420, maxHeight: 764.4),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFFFFF),
+                borderRadius: BorderRadius.circular(32),
+                border: Border.all(color: const Color(0xFFE2E8F0), width: 1),
+              ),
+              padding: const EdgeInsets.fromLTRB(10, 24, 10, 24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'My Record & Performance',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w700,
-                            color: Color(0xFF0F172A),
-                          ),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'My Record & Performance',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFF0F172A),
+                              ),
+                            ),
+                            const Gap(4),
+                            Text(
+                              '${user.displayName} · ${user.roleLabel} · Joined ${user.joinedLabel}\nPermanent read-only call log',
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: Color(0xFF64748B),
+                                height: 1.35,
+                              ),
+                            ),
+                          ],
                         ),
-                        const Gap(4),
-                        Text(
-                          '${user.displayName} · ${user.roleLabel} · Joined ${user.joinedLabel}\nPermanent read-only call log',
-                          style: const TextStyle(
-                            fontSize: 12,
-                            color: Color(0xFF64748B),
-                            height: 1.35,
+                      ),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconButton(
+                            onPressed: isRefreshing
+                                ? null
+                                : () async {
+                                    setSheetState(() => isRefreshing = true);
+                                    ctx.read<LeadsCubit>().refresh();
+                                    await Future.delayed(
+                                      const Duration(milliseconds: 1000),
+                                    );
+                                    if (ctx.mounted) {
+                                      setSheetState(() => isRefreshing = false);
+                                    }
+                                  },
+                            icon: isRefreshing
+                                ? const CupertinoActivityIndicator(radius: 8)
+                                : SvgPicture.asset(
+                                    AppSvgs.refresh,
+                                    width: 16,
+                                    height: 16,
+                                    colorFilter: const ColorFilter.mode(
+                                      Color(0xFF64748B),
+                                      BlendMode.srcIn,
+                                    ),
+                                  ),
+                            visualDensity: VisualDensity.compact,
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(
+                              minWidth: 28,
+                              minHeight: 28,
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
+                          const Gap(4),
+                          IconButton(
+                            onPressed: () => Navigator.pop(ctx),
+                            icon: const Icon(
+                              Icons.close_rounded,
+                              size: 20,
+                              color: Color(0xFF94A3B8),
+                            ),
+                            visualDensity: VisualDensity.compact,
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(
+                              minWidth: 28,
+                              minHeight: 28,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
-                  IconButton(
-                    onPressed: () => Navigator.pop(ctx),
-                    icon: const Icon(
-                      Icons.close_rounded,
-                      size: 20,
-                      color: Color(0xFF94A3B8),
-                    ),
-                    visualDensity: VisualDensity.compact,
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(
-                      minWidth: 28,
-                      minHeight: 28,
-                    ),
-                  ),
-                ],
-              ),
               const Gap(18),
               // Responsive metric boxes with 10 left/right padding, height 84, gap 4px, radius 16
               Row(
@@ -1843,9 +1884,11 @@ class LeadCallSheets {
             ],
           ),
         ),
-      ),
-    );
-  }
+      );
+    },
+  ),
+);
+}
 
   static Widget _buildRecordMetricBox({
     required String value,

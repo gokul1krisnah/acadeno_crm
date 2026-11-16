@@ -445,7 +445,7 @@ class _DashboardViewState extends State<_DashboardView> {
           DropdownButtonHideUnderline(
             child: DropdownButton<String>(
               value: _dashboardDateRange,
-              dropdownColor: Colors.white,
+              dropdownColor: const Color(0xFFE2E2E2),
               borderRadius: BorderRadius.circular(12),
               icon: const Icon(
                 Icons.keyboard_arrow_down_rounded,
@@ -2638,6 +2638,7 @@ class _StatCardState extends State<_StatCard> {
 
         if (widget.isSolidHero) {
           return MouseRegion(
+            cursor: SystemMouseCursors.click,
             onEnter: (_) => setState(() => _isHovered = true),
             onExit: (_) => setState(() => _isHovered = false),
             child: AnimatedContainer(
@@ -2709,27 +2710,36 @@ class _StatCardState extends State<_StatCard> {
                               ),
                             ),
                             const Gap(4),
-                            AnimatedScale(
-                              duration: const Duration(milliseconds: 200),
-                              scale: _isHovered ? 1.12 : 1.0,
-                              curve: Curves.easeOutBack,
-                              child: widget.svgAsset != null
-                                  ? SvgPicture.asset(
-                                      widget.svgAsset!,
-                                      width: svgSize,
-                                      height: svgSize,
-                                      colorFilter: const ColorFilter.mode(
-                                        Colors.white,
-                                        BlendMode.srcIn,
-                                      ),
-                                    )
-                                  : (widget.icon != null
-                                        ? Icon(
-                                            widget.icon,
-                                            color: Colors.white,
-                                            size: iconSize,
-                                          )
-                                        : const SizedBox.shrink()),
+                            Container(
+                              width: isCompact ? 28 : 34,
+                              height: isCompact ? 28 : 34,
+                              alignment: Alignment.center,
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.16),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: AnimatedScale(
+                                duration: const Duration(milliseconds: 200),
+                                scale: _isHovered ? 1.12 : 1.0,
+                                curve: Curves.easeOutBack,
+                                child: widget.svgAsset != null
+                                    ? SvgPicture.asset(
+                                        widget.svgAsset!,
+                                        width: svgSize,
+                                        height: svgSize,
+                                        colorFilter: const ColorFilter.mode(
+                                          Colors.white,
+                                          BlendMode.srcIn,
+                                        ),
+                                      )
+                                    : (widget.icon != null
+                                          ? Icon(
+                                              widget.icon,
+                                              color: Colors.white,
+                                              size: iconSize,
+                                            )
+                                          : const SizedBox.shrink()),
+                              ),
                             ),
                           ],
                         ),
@@ -2776,6 +2786,7 @@ class _StatCardState extends State<_StatCard> {
         }
 
         return MouseRegion(
+          cursor: SystemMouseCursors.click,
           onEnter: (_) => setState(() => _isHovered = true),
           onExit: (_) => setState(() => _isHovered = false),
           child: AnimatedContainer(
@@ -2840,23 +2851,36 @@ class _StatCardState extends State<_StatCard> {
                       ),
                     ),
                     const Gap(4),
-                    AnimatedScale(
-                      duration: const Duration(milliseconds: 200),
-                      scale: _isHovered ? 1.12 : 1.0,
-                      curve: Curves.easeOutBack,
-                      child: widget.svgAsset != null
-                          ? SvgPicture.asset(
-                              widget.svgAsset!,
-                              width: svgSize,
-                              height: svgSize,
-                            )
-                          : (widget.icon != null
-                                ? Icon(
-                                    widget.icon,
-                                    color: widget.color,
-                                    size: iconSize,
-                                  )
-                                : const SizedBox.shrink()),
+                    Container(
+                      width: isCompact ? 28 : 34,
+                      height: isCompact ? 28 : 34,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: widget.color.withValues(alpha: _isHovered ? 0.14 : 0.08),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: AnimatedScale(
+                        duration: const Duration(milliseconds: 200),
+                        scale: _isHovered ? 1.12 : 1.0,
+                        curve: Curves.easeOutBack,
+                        child: widget.svgAsset != null
+                            ? SvgPicture.asset(
+                                widget.svgAsset!,
+                                width: svgSize,
+                                height: svgSize,
+                                colorFilter: ColorFilter.mode(
+                                  widget.color,
+                                  BlendMode.srcIn,
+                                ),
+                              )
+                            : (widget.icon != null
+                                  ? Icon(
+                                      widget.icon,
+                                      color: widget.color,
+                                      size: iconSize,
+                                    )
+                                  : const SizedBox.shrink()),
+                      ),
                     ),
                   ],
                 ),

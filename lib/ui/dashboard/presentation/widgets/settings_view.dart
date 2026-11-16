@@ -8,10 +8,6 @@ import 'package:hive/hive.dart';
 import 'package:acadeno_crm/shared/snackbar_alerts/snack_alert.dart';
 import 'package:acadeno_crm/shared/widgets/acadeno_dropdown.dart';
 
-const _border = Color(0xFFE5E7EB);
-const _muted = Color(0xFF6B7280);
-const _text = Color(0xFF111827);
-
 class SettingsView extends StatefulWidget {
   final VoidCallback? onLogout;
 
@@ -720,9 +716,9 @@ class _SettingsViewState extends State<SettingsView>
     required bool isNarrowCard,
     required bool matchFixedHeight,
   }) {
-    final padH = isNarrowCard ? 20.0 : 32.0;
-    final padTop = isNarrowCard ? 24.0 : 31.0;
-    final padBottom = isNarrowCard ? 24.0 : 33.0;
+    final padH = isNarrowCard ? 20.0 : 28.0;
+    final padTop = isNarrowCard ? 20.0 : 28.0;
+    final padBottom = isNarrowCard ? 20.0 : 28.0;
 
     return Container(
       constraints: matchFixedHeight
@@ -731,11 +727,11 @@ class _SettingsViewState extends State<SettingsView>
       padding: EdgeInsets.fromLTRB(padH, padTop, padH, padBottom),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(color: const Color(0xFFE2E8F0), width: 1),
         boxShadow: const [
           BoxShadow(
-            color: Color(0x05000000),
+            color: Color.fromRGBO(0, 0, 0, 0.03),
             blurRadius: 4,
             offset: Offset(0, 2),
           ),
@@ -961,9 +957,9 @@ class _SettingsViewState extends State<SettingsView>
     required bool isNarrowCard,
     required bool matchFixedHeight,
   }) {
-    final padH = isNarrowCard ? 20.0 : 33.0;
-    final padTop = isNarrowCard ? 24.0 : 32.0;
-    final padBottom = isNarrowCard ? 24.0 : 33.0;
+    final padH = isNarrowCard ? 20.0 : 28.0;
+    final padTop = isNarrowCard ? 20.0 : 28.0;
+    final padBottom = isNarrowCard ? 20.0 : 28.0;
 
     return Container(
       constraints: matchFixedHeight
@@ -972,11 +968,11 @@ class _SettingsViewState extends State<SettingsView>
       padding: EdgeInsets.fromLTRB(padH, padTop, padH, padBottom),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(color: const Color(0xFFE2E8F0), width: 1),
         boxShadow: const [
           BoxShadow(
-            color: Color(0x05000000),
+            color: Color.fromRGBO(0, 0, 0, 0.03),
             blurRadius: 4,
             offset: Offset(0, 2),
           ),
@@ -1156,7 +1152,7 @@ class _SettingsViewState extends State<SettingsView>
                       matchFixedHeight: true,
                     ),
                   ),
-                  const Gap(27),
+                  const Gap(24),
                   Expanded(
                     child: _buildChangePasswordCard(
                       isNarrowCard: false,
@@ -1303,17 +1299,17 @@ class _SettingsViewState extends State<SettingsView>
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(flex: 55, child: orgProfileCard),
-                    const Gap(20),
-                    Expanded(flex: 45, child: leadMgmtCard),
+                    Expanded(flex: 52, child: orgProfileCard),
+                    const Gap(24),
+                    Expanded(flex: 48, child: leadMgmtCard),
                   ],
                 )
               else ...[
                 orgProfileCard,
-                const Gap(16),
+                const Gap(20),
                 leadMgmtCard,
               ],
-              const Gap(20),
+              const Gap(24),
               _buildDangerZoneCard(),
             ],
           );
@@ -1330,16 +1326,16 @@ class _SettingsViewState extends State<SettingsView>
   }) {
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.all(isMobile ? 18 : 28),
+      padding: EdgeInsets.all(isMobile ? 20 : 28),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFF1F5F9)),
-        boxShadow: [
+        border: Border.all(color: const Color(0xFFE2E8F0), width: 1),
+        boxShadow: const [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
+            color: Color.fromRGBO(0, 0, 0, 0.03),
             blurRadius: 4,
-            offset: const Offset(0, 2),
+            offset: Offset(0, 2),
           ),
         ],
       ),
@@ -1348,20 +1344,20 @@ class _SettingsViewState extends State<SettingsView>
         children: [
           Text(
             title,
-            style: const TextStyle(
+            style: GoogleFonts.inter(
               fontSize: 16,
               fontWeight: FontWeight.w700,
               letterSpacing: -0.4,
-              color: Color(0xFF0F172A),
+              color: const Color(0xFF0F172A),
             ),
           ),
           const Gap(4),
           Text(
             subtitle,
-            style: const TextStyle(
-              fontSize: 11.5,
+            style: GoogleFonts.inter(
+              fontSize: 12.5,
               height: 1.5,
-              color: Color(0xFF64748B),
+              color: const Color(0xFF64748B),
             ),
           ),
           const Gap(24),
@@ -1568,17 +1564,17 @@ class _SettingsViewState extends State<SettingsView>
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(flex: 42, child: pushCard),
-                    const Gap(20),
-                    Expanded(flex: 58, child: versionCard),
+                    Expanded(flex: 48, child: pushCard),
+                    const Gap(24),
+                    Expanded(flex: 52, child: versionCard),
                   ],
                 )
               else ...[
                 pushCard,
-                const Gap(16),
+                const Gap(20),
                 versionCard,
               ],
-              const Gap(20),
+              const Gap(24),
               _buildDangerZoneCard(),
             ],
           );
@@ -1595,16 +1591,16 @@ class _SettingsViewState extends State<SettingsView>
   }) {
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.all(isMobile ? 18 : 24),
+      padding: EdgeInsets.all(isMobile ? 20 : 28),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
-        boxShadow: [
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE2E8F0), width: 1),
+        boxShadow: const [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 2,
-            offset: const Offset(0, 1),
+            color: Color.fromRGBO(0, 0, 0, 0.03),
+            blurRadius: 4,
+            offset: Offset(0, 2),
           ),
         ],
       ),
@@ -1616,19 +1612,20 @@ class _SettingsViewState extends State<SettingsView>
             style: GoogleFonts.inter(
               fontSize: 16,
               fontWeight: FontWeight.w700,
+              letterSpacing: -0.4,
               color: const Color(0xFF0F172A),
             ),
           ),
-          const Gap(6),
+          const Gap(4),
           Text(
             subtitle,
             style: GoogleFonts.inter(
-              fontSize: 12,
-              fontWeight: FontWeight.w400,
+              fontSize: 12.5,
+              height: 1.5,
               color: const Color(0xFF64748B),
             ),
           ),
-          const Gap(22),
+          const Gap(24),
           child,
         ],
       ),
@@ -1831,36 +1828,45 @@ class _SettingsViewState extends State<SettingsView>
     Color? borderColor,
   }) {
     final isMobile = MediaQuery.of(context).size.width < 640;
-    return Material(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        width: double.infinity,
-        padding: EdgeInsets.all(isMobile ? 14 : 20),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: borderColor ?? _border),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              title,
-              style: TextStyle(
-                fontSize: isMobile ? 15 : 16,
-                fontWeight: FontWeight.w700,
-                color: _text,
-              ),
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(isMobile ? 20 : 28),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: borderColor ?? const Color(0xFFE2E8F0), width: 1),
+        boxShadow: const [
+          BoxShadow(
+            color: Color.fromRGBO(0, 0, 0, 0.03),
+            blurRadius: 4,
+            offset: Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: GoogleFonts.inter(
+              fontSize: isMobile ? 15 : 16,
+              fontWeight: FontWeight.w700,
+              letterSpacing: -0.4,
+              color: const Color(0xFF0F172A),
             ),
-            const Gap(3),
-            Text(
-              subtitle,
-              style: const TextStyle(fontSize: 12.5, color: _muted),
+          ),
+          const Gap(4),
+          Text(
+            subtitle,
+            style: GoogleFonts.inter(
+              fontSize: 12.5,
+              height: 1.5,
+              color: const Color(0xFF64748B),
             ),
-            const Gap(16),
-            child,
-          ],
-        ),
+          ),
+          const Gap(24),
+          child,
+        ],
       ),
     );
   }

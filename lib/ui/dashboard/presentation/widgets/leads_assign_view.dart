@@ -261,7 +261,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                             contentPadding: EdgeInsets.zero,
                             activeThumbColor: _primary,
                             title: const Text(
-                              'Split evenly across multiple executives (FR-2.2)',
+                              'Split evenly across multiple executives',
                               style: TextStyle(
                                 fontSize: 12.5,
                                 fontWeight: FontWeight.w600,
@@ -3303,7 +3303,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
           children: [
             Container(
               color: const Color(0xFFF9FAFB),
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
@@ -3317,7 +3317,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                           onChanged: (v) =>
                               cubit.toggleSelectAllOnPage(v ?? false),
                         ),
-                        const Gap(20),
+                        const Gap(16),
                         Text('NAME', style: h),
                       ],
                     ),
@@ -3515,14 +3515,17 @@ class _DesktopLeadTableRowState extends State<_DesktopLeadTableRow> {
                       Expanded(
                         flex: 10,
                         child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            widget.checkboxBuilder(
-                              value: isSelected,
-                              isRowHovered: _isHovered,
-                              onChanged: widget.onSelectChanged,
+                            Padding(
+                              padding: const EdgeInsets.only(top: 2.0),
+                              child: widget.checkboxBuilder(
+                                value: isSelected,
+                                isRowHovered: _isHovered,
+                                onChanged: widget.onSelectChanged,
+                              ),
                             ),
-                            const Gap(20),
+                            const Gap(16),
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,

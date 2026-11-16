@@ -1097,33 +1097,35 @@ class _UserManagementViewState extends State<UserManagementView> {
                         'Role & Access *',
                         Icons.badge_outlined,
                       ),
-                      selectedItemBuilder: (context) => const [
-                        Text(
-                          'Admin',
+                      selectedItemBuilder: (context) => [
+                        'Admin',
+                        'HR & Operation Manager',
+                      ].map((t) => Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          t,
                           overflow: TextOverflow.ellipsis,
                           maxLines: 1,
+                          style: GoogleFonts.inter(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w400,
+                            color: const Color(0xFF2E1D44),
+                          ),
                         ),
-                        Text(
-                          'HR & Operation Manager',
-                          overflow: TextOverflow.ellipsis,
-                          maxLines: 1,
-                        ),
-                      ],
-                      items: const [
+                      )).toList(),
+                      items: [
                         DropdownMenuItem(
                           value: 'admin',
-                          child: Text(
-                            'Admin (Assign Leads, Full Control)',
-                            overflow: TextOverflow.ellipsis,
-                            maxLines: 1,
+                          child: AcadenoDropdown.buildMenuItemChild(
+                            label: 'Admin (Assign Leads, Full Control)',
+                            isSelected: selectedRole == 'admin',
                           ),
                         ),
                         DropdownMenuItem(
                           value: 'hr',
-                          child: Text(
-                            'HR & Operation Manager (Actual User)',
-                            overflow: TextOverflow.ellipsis,
-                            maxLines: 1,
+                          child: AcadenoDropdown.buildMenuItemChild(
+                            label: 'HR & Operation Manager (Actual User)',
+                            isSelected: selectedRole == 'hr',
                           ),
                         ),
                       ],
@@ -1281,7 +1283,10 @@ class _UserManagementViewState extends State<UserManagementView> {
                         .map(
                           (e) => DropdownMenuItem(
                             value: e,
-                            child: Text(e, overflow: TextOverflow.ellipsis),
+                            child: AcadenoDropdown.buildMenuItemChild(
+                              label: e,
+                              isSelected: reassignTarget == e,
+                            ),
                           ),
                         )
                         .toList(),
@@ -2235,7 +2240,7 @@ class _UserManagementViewState extends State<UserManagementView> {
                 flex: 257,
                 child: Padding(
                   padding: const EdgeInsets.only(right: 14),
-                  child: Text('DEVICE SECURITY (PR-5.1)', style: _tblHdr),
+                  child: Text('DEVICE SECURITY', style: _tblHdr),
                 ),
               ),
               SizedBox(
@@ -2251,8 +2256,7 @@ class _UserManagementViewState extends State<UserManagementView> {
               ),
               SizedBox(
                 width: 127,
-                child: Align(
-                  alignment: Alignment.centerRight,
+                child: Center(
                   child: Text('RESET PASSWORD', style: _tblHdr),
                 ),
               ),
@@ -2637,8 +2641,7 @@ class _UserManagementViewState extends State<UserManagementView> {
                     // RESET PASSWORD Column (Figma Node 1525:335)
                     SizedBox(
                       width: 127,
-                      child: Align(
-                        alignment: Alignment.centerRight,
+                      child: Center(
                         child: Container(
                           width: 32,
                           height: 32,
@@ -2653,7 +2656,7 @@ class _UserManagementViewState extends State<UserManagementView> {
                             ),
                             icon: const Icon(
                               Icons.lock_reset_rounded,
-                              size: 20,
+                              size: 18,
                               color: Color(0xFF334155),
                             ),
                             tooltip: 'Reset Password',
@@ -2995,7 +2998,7 @@ class _UserManagementViewState extends State<UserManagementView> {
                         IconButton(
                           icon: const Icon(
                             Icons.lock_reset_rounded,
-                            size: 20,
+                            size: 18,
                             color: Color(0xFF334155),
                           ),
                           tooltip: 'Reset Password',
