@@ -44,20 +44,18 @@ class AlertsState {
     return list;
   }
 
-  /// Alerts created before yesterday within the 3-day window, strictly ordered newest first
+  /// Alerts created before yesterday, strictly ordered newest first
   List<ExecutiveAlertItem> get earlierAlerts {
     final now = DateTime.now();
     final startOfToday = DateTime(now.year, now.month, now.day);
     final startOfYesterday = startOfToday.subtract(const Duration(days: 1));
-    final threeDaysAgo = startOfToday.subtract(const Duration(days: 3));
     final list = alerts.where((a) {
       final aDay = DateTime(
         a.createdAt.year,
         a.createdAt.month,
         a.createdAt.day,
       );
-      return aDay.isBefore(startOfYesterday) &&
-          (aDay.isAfter(threeDaysAgo) || aDay.isAtSameMomentAs(threeDaysAgo));
+      return aDay.isBefore(startOfYesterday);
     }).toList();
     list.sort((a, b) => b.createdAt.compareTo(a.createdAt));
     return list;

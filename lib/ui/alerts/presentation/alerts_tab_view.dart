@@ -8,6 +8,7 @@ import 'package:acadeno_crm/shared/theme/app_images.dart';
 import 'package:acadeno_crm/ui/alerts/application/alerts_cubit.dart';
 import 'package:acadeno_crm/ui/alerts/application/alerts_state.dart';
 import 'package:acadeno_crm/ui/alerts/data/model/alert_models.dart';
+import 'package:acadeno_crm/ui/home/application/home_cubit.dart';
 
 class AlertsTabView extends StatelessWidget {
   const AlertsTabView({super.key});
@@ -217,8 +218,12 @@ class AlertsTabView extends StatelessWidget {
   }
 
   void _handleAlertTap(BuildContext context, ExecutiveAlertItem item) {
-    // Mark alert as read in-place; do not navigate anywhere per user requirement
     context.read<AlertsCubit>().markSingleAlertRead(item.id);
+    if (item.targetTabIndex != null && item.targetTabIndex! >= 0) {
+      try {
+        context.read<HomeCubit>().selectBottomNav(item.targetTabIndex!);
+      } catch (_) {}
+    }
   }
 
   Widget _buildLoadingSkeleton() {
@@ -305,12 +310,12 @@ class _AlertCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(20),
           child: Container(
             width: double.infinity,
-            height: 80,
+            constraints: const BoxConstraints(minHeight: 80),
             decoration: BoxDecoration(
               color: const Color(0xFFFFFFFF),
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
-                color: const Color(0xFFF1F5F9),
+                color: item.isUnread ? const Color(0xFFE0E7FF) : const Color(0xFFF1F5F9),
                 width: 1,
               ),
               boxShadow: const [
@@ -347,6 +352,17 @@ class _AlertCard extends StatelessWidget {
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
+                          if (item.isUnread) ...[
+                            Container(
+                              width: 8,
+                              height: 8,
+                              margin: const EdgeInsets.only(right: 6),
+                              decoration: const BoxDecoration(
+                                color: Color(0xFF4338CA),
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                          ],
                           Expanded(
                             child: Text(
                               item.title,
@@ -354,7 +370,7 @@ class _AlertCard extends StatelessWidget {
                               overflow: TextOverflow.ellipsis,
                               style: GoogleFonts.inter(
                                 fontSize: 15,
-                                fontWeight: FontWeight.w500,
+                                fontWeight: item.isUnread ? FontWeight.w600 : FontWeight.w500,
                                 height: 18.75 / 15,
                                 letterSpacing: 15 * 0.001,
                                 color: const Color(0xFF0F172A),
@@ -372,20 +388,22 @@ class _AlertCard extends StatelessWidget {
                           ),
                         ],
                       ),
-                      const Gap(2),
-                      // Subtitle text
-                      Text(
-                        item.subtitle,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.inter(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w400,
-                          height: 20 / 12,
-                          letterSpacing: 0,
-                          color: const Color(0xFF64748B),
+                      if (item.subtitle.isNotEmpty) ...[
+                        const Gap(2),
+                        // Subtitle text
+                        Text(
+                          item.subtitle,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.inter(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w400,
+                            height: 20 / 12,
+                            letterSpacing: 0,
+                            color: const Color(0xFF64748B),
+                          ),
                         ),
-                      ),
+                      ],
                     ],
                   ),
                 ),

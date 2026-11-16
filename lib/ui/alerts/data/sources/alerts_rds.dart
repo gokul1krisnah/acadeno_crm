@@ -1,25 +1,20 @@
 import 'dart:async';
 
+import 'package:acadeno_crm/core/router/app_router.dart';
 import 'package:acadeno_crm/core/services/firestore_stream_cache.dart';
+import 'package:acadeno_crm/ui/auth/data/sources/auth_session_local_ds.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
 
 import '../../../follow_ups/data/model/follow_up_models.dart';
 import '../../../follow_ups/data/model/follow_up_time_helper.dart';
-import '../../../leads/data/model/lead_models.dart';
 import '../model/alert_models.dart';
 
-/// Remote data source for executive notifications connected to live Firestore data.
-/// 100% Real-time, authentic Firestore alerts stream synthesized from:
-/// 1. Real lead assignments (`assignments` collection)
-/// 2. Real scheduled follow-ups and overdue tasks (`leads` collection)
-/// 3. Real call logs (`call_logs` collection)
-/// 4. Genuine executive alerts (`alerts` collection)
-/// 5. Live daily briefing / greeting
-///
-/// Automatically purges stale, hardcoded, or mock test data so executives
-/// always see their authentic live records.
+/// Remote data source for real-time CRM notifications and alerts.
+/// Streams 100% authentic, real-time alerts from Firestore:
+/// 1. Authoritative Firestore `alerts` collection (Lead assignments, discount requests, security & system notices)
+/// 2. Active scheduled follow-ups & overdue tasks from `leads` collection
 class AlertsRds {
   final FirebaseFirestore _firestore;
   final FirebaseAuth _firebaseAuth;
@@ -41,39 +36,6 @@ class AlertsRds {
     return DateTime.fromMillisecondsSinceEpoch(0);
   }
 
-  /// Check whether a document in `alerts` is stale / fake test data from past manual tests.
-  bool _isFakeOrTestAlert(Map<String, dynamic> data, String uid) {
-    final title = (data['title'] ?? '').toString();
-    final subtitle = (data['subtitle'] ?? '').toString();
-    final titleLower = title.toLowerCase();
-    final subtitleLower = subtitle.toLowerCase();
-
-    // 1. Hardcoded past test mentions of 'alfas'
-    if (titleLower.contains('alfas') || subtitleLower.contains('alfas')) {
-      return true;
-    }
-
-    // 2. Hardcoded past test dates like '7 Nov' from earlier mock assignment tests
-    if (title.contains('7 Nov') || subtitle.contains('7 Nov')) {
-      return true;
-    }
-
-    // 3. Stale documents with missing timestamps
-    if (data['createdAt'] == null && data['timestamp'] == null) {
-      return true;
-    }
-
-    // 4. Stale generic test documents without specific recipient
-    final recUid = (data['recipientUid'] ?? '').toString();
-    if (recUid.isEmpty &&
-        (titleLower.contains('re assign') ||
-            titleLower.contains('good morning'))) {
-      return true;
-    }
-
-    return false;
-  }
-
   static bool _isLeadDone(Map<String, dynamic> data) {
     final val = data['isDone'] ?? data['followUpDone'];
     if (val is bool) return val;
@@ -85,24 +47,20 @@ class AlertsRds {
     return false;
   }
 
-  /// Streams 100% authentic, real-time alerts for the authenticated executive.
+  /// Streams 100% authentic, real-time alerts for the active user.
   Stream<List<ExecutiveAlertItem>> watchAlerts({String? executiveUid}) {
     late final StreamController<List<ExecutiveAlertItem>> controller;
     StreamSubscription? authSub;
     StreamSubscription? alertsSub;
-    StreamSubscription? assignmentsSub;
     StreamSubscription? leadsSub;
-    StreamSubscription? callLogsSub;
     StreamSubscription? userSub;
 
     List<QueryDocumentSnapshot<Map<String, dynamic>>> alertsDocs = [];
-    List<QueryDocumentSnapshot<Map<String, dynamic>>> assignmentsDocs = [];
     List<QueryDocumentSnapshot<Map<String, dynamic>>> leadsDocs = [];
-    List<QueryDocumentSnapshot<Map<String, dynamic>>> callLogsDocs = [];
     Map<String, dynamic>? userData;
     Timer? debounceTimer;
 
-    void emitCombined(String currentUid) {
+    void emitCombined(String currentUid, bool isAdmin) {
       if (controller.isClosed) return;
       debounceTimer?.cancel();
       debounceTimer = Timer(const Duration(milliseconds: 60), () {
@@ -110,10 +68,9 @@ class AlertsRds {
         try {
           final items = _buildLiveAlertItems(
             uid: currentUid,
+            isAdmin: isAdmin,
             alertsDocs: alertsDocs,
-            assignmentsDocs: assignmentsDocs,
             leadsDocs: leadsDocs,
-            callLogsDocs: callLogsDocs,
             userData: userData,
           );
           controller.add(items);
@@ -121,106 +78,69 @@ class AlertsRds {
       });
     }
 
-    void subscribeForUid(String uid) {
+    void subscribeForUid(String uid, bool isAdmin) {
       alertsSub?.cancel();
-      assignmentsSub?.cancel();
       leadsSub?.cancel();
-      callLogsSub?.cancel();
       userSub?.cancel();
 
       alertsDocs = [];
-      assignmentsDocs = [];
       leadsDocs = [];
-      callLogsDocs = [];
       userData = null;
 
-      if (uid.isEmpty) {
-        if (!controller.isClosed) controller.add(const []);
-        return;
+      // 1. Current user profile for greeting/context
+      if (uid.isNotEmpty) {
+        userSub = FirestoreStreamCache.instance
+            .watchDoc('users', uid, firestore: _firestore)
+            .listen((doc) {
+              if (doc.exists) {
+                userData = doc.data();
+                emitCombined(uid, isAdmin);
+              }
+            }, onError: (_) {});
       }
-
-      // 1. Current user profile for personalized greeting
-      userSub = FirestoreStreamCache.instance
-          .watchDoc('users', uid, firestore: _firestore)
-          .listen((doc) {
-            if (doc.exists) {
-              userData = doc.data();
-              emitCombined(uid);
-            }
-          }, onError: (_) {});
 
       // 2. Collection 'alerts' (direct server alerts)
       alertsSub = FirestoreStreamCache.instance
           .watchCollection('alerts', firestore: _firestore)
           .listen((snap) {
             alertsDocs = snap.docs;
-            emitCombined(uid);
+            emitCombined(uid, isAdmin);
           }, onError: (_) {});
 
-      // 3. Collection 'assignments' (real assigned leads for this executive)
-      assignmentsSub = FirestoreStreamCache.instance
-          .watchQuery(
-            'assignments:executiveUid:$uid',
-            () => _firestore
-                .collection('assignments')
-                .where('executiveUid', isEqualTo: uid),
-          )
-          .listen((snap) {
-            assignmentsDocs = snap.docs;
-            emitCombined(uid);
-          }, onError: (_) {});
-
-      // 4. Collection 'leads' (real follow-ups and overdue tasks)
-      leadsSub = FirestoreStreamCache.instance
-          .watchQuery(
-            'leads:assignedToUid:$uid',
-            () => _firestore
-                .collection('leads')
-                .where('assignedToUid', isEqualTo: uid),
-          )
-          .listen((snap) {
-            leadsDocs = snap.docs;
-            emitCombined(uid);
-          }, onError: (_) {});
-
-      // 5. Collection 'call_logs' (real call activity)
-      callLogsSub = FirestoreStreamCache.instance
-          .watchQuery(
-            'call_logs:executiveUid:$uid:limit15',
-            () => _firestore
-                .collection('call_logs')
-                .where('executiveUid', isEqualTo: uid)
-                .limit(15),
-          )
-          .listen((snap) {
-            callLogsDocs = snap.docs;
-            emitCombined(uid);
-          }, onError: (_) {});
+      // 3. Collection 'leads' (real follow-ups and overdue tasks for executive)
+      if (uid.isNotEmpty && !isAdmin) {
+        leadsSub = FirestoreStreamCache.instance
+            .watchQuery(
+              'leads:assignedToUid:$uid',
+              () => _firestore
+                  .collection('leads')
+                  .where('assignedToUid', isEqualTo: uid),
+            )
+            .listen((snap) {
+              leadsDocs = snap.docs;
+              emitCombined(uid, isAdmin);
+            }, onError: (_) {});
+      }
     }
 
     void onListen() {
-      purgeOldNotifications();
-      if (executiveUid != null && executiveUid.isNotEmpty) {
-        subscribeForUid(executiveUid);
-      } else {
-        final initialUid = _firebaseAuth.currentUser?.uid ?? '';
-        if (initialUid.isNotEmpty) {
-          subscribeForUid(initialUid);
-        }
-        authSub = _firebaseAuth.authStateChanges().listen((user) {
-          final newUid = user?.uid ?? '';
-          subscribeForUid(newUid);
-        }, onError: (_) {});
-      }
+      final saved = AuthSessionLocalDs().read();
+      final effectiveUid = executiveUid ?? _firebaseAuth.currentUser?.uid ?? saved?.uid ?? '';
+      final isAdmin = isAdminSession || (saved?.isAdmin ?? false);
+
+      subscribeForUid(effectiveUid, isAdmin);
+
+      authSub = _firebaseAuth.authStateChanges().listen((user) {
+        final newUid = user?.uid ?? saved?.uid ?? '';
+        subscribeForUid(newUid, isAdmin);
+      }, onError: (_) {});
     }
 
     void onCancel() {
       debounceTimer?.cancel();
       authSub?.cancel();
       alertsSub?.cancel();
-      assignmentsSub?.cancel();
       leadsSub?.cancel();
-      callLogsSub?.cancel();
       userSub?.cancel();
     }
 
@@ -234,19 +154,15 @@ class AlertsRds {
 
   List<ExecutiveAlertItem> _buildLiveAlertItems({
     required String uid,
+    required bool isAdmin,
     required List<QueryDocumentSnapshot<Map<String, dynamic>>> alertsDocs,
-    required List<QueryDocumentSnapshot<Map<String, dynamic>>> assignmentsDocs,
     required List<QueryDocumentSnapshot<Map<String, dynamic>>> leadsDocs,
-    required List<QueryDocumentSnapshot<Map<String, dynamic>>> callLogsDocs,
     Map<String, dynamic>? userData,
   }) {
     final liveAlerts = <ExecutiveAlertItem>[];
     final now = DateTime.now();
     final startOfToday = DateTime(now.year, now.month, now.day);
-    final todayKey = LeadDateHelper.todayDateKey();
-    final yesterdayDate = startOfToday.subtract(const Duration(days: 1));
-    final yesterdayKey = LeadDateHelper.dateKey(yesterdayDate);
-    final threeDaysAgo = startOfToday.subtract(const Duration(days: 3));
+    final startOfYesterday = startOfToday.subtract(const Duration(days: 1));
 
     // =========================================================================
     // 1. Process Genuine Alerts from Firestore `alerts` Collection
@@ -254,43 +170,44 @@ class AlertsRds {
     for (final doc in alertsDocs) {
       final data = doc.data();
 
-      // Check and purge fake / mock test records from database
-      if (_isFakeOrTestAlert(data, uid)) {
-        doc.reference.delete().catchError((_) {});
-        continue;
+      // Recipient filtering: Admins see all alerts; Executives see alerts targeted to them or broadcast
+      if (!isAdmin && uid.isNotEmpty) {
+        final recUid = (data['recipientUid'] ??
+                data['executiveUid'] ??
+                data['assignedToUid'] ??
+                data['userId'] ??
+                '')
+            .toString()
+            .trim();
+        if (recUid.isNotEmpty && recUid != 'all' && recUid != uid) {
+          continue;
+        }
       }
 
       final createdAt = _parseDateTime(
         data['createdAt'],
-        data['timestamp'],
+        data['timestamp'] ?? data['time'] ?? data['assignedAt'] ?? data['updatedAt'],
       ).toLocal();
-      if (createdAt.millisecondsSinceEpoch == 0) continue;
+      final effectiveCreatedAt =
+          createdAt.millisecondsSinceEpoch == 0 ? now : createdAt;
 
-      // Automatically purge/delete notifications older than 3 days from Firestore
-      if (createdAt.isBefore(threeDaysAgo)) {
-        doc.reference.delete().catchError((_) {});
-        continue;
+      final isRead = (data['isRead'] as bool?) ?? (data['read'] as bool?) ?? false;
+      final rawTitle = (data['title'] ?? data['heading'] ?? data['subject'] ?? 'Notification').toString().trim();
+      final subtitle = (data['subtitle'] ?? data['message'] ?? data['body'] ?? data['description'] ?? data['content'] ?? '').toString().trim();
+      final category = (data['category'] ?? data['type'] ?? '').toString().trim();
+
+      final itemDay = DateTime(effectiveCreatedAt.year, effectiveCreatedAt.month, effectiveCreatedAt.day);
+      final isToday = itemDay.isAtSameMomentAs(startOfToday) || itemDay.isAfter(startOfToday);
+      final isYesterday = itemDay.isAtSameMomentAs(startOfYesterday);
+
+      final String timeLabel;
+      if (isToday) {
+        timeLabel = DateFormat('hh:mm a').format(effectiveCreatedAt);
+      } else if (isYesterday) {
+        timeLabel = 'Yesterday · ${DateFormat('hh:mm a').format(effectiveCreatedAt)}';
+      } else {
+        timeLabel = DateFormat('dd MMM · hh:mm a').format(effectiveCreatedAt);
       }
-
-      final recUid = (data['recipientUid'] ?? '').toString();
-      if (recUid.isNotEmpty &&
-          recUid != 'all' &&
-          uid.isNotEmpty &&
-          recUid != uid) {
-        continue;
-      }
-
-      final isRead = data['isRead'] as bool? ?? false;
-      final rawTitle = (data['title'] ?? 'Notification').toString();
-      final subtitle = (data['subtitle'] ?? '').toString();
-      final category = (data['category'] ?? '').toString();
-
-      final itemDay = DateTime(createdAt.year, createdAt.month, createdAt.day);
-      final isToday =
-          itemDay.isAtSameMomentAs(startOfToday) ||
-          itemDay.isAfter(startOfToday);
-
-      final timeLabel = DateFormat('hh:mm a').format(createdAt);
 
       String cleanTitle = rawTitle
           .replaceFirst(RegExp(r'^(📞|🔄|⚠️|🔔)\s*'), '')
@@ -318,8 +235,12 @@ class AlertsRds {
         icon = AlertIconType.clock;
       } else if (catLower.contains('overdue') ||
           catLower.contains('warning') ||
+          catLower.contains('discount') ||
+          catLower.contains('security') ||
           titleLower.contains('overdue') ||
-          titleLower.contains('escalat')) {
+          titleLower.contains('escalat') ||
+          titleLower.contains('discount') ||
+          titleLower.contains('rate limit')) {
         icon = AlertIconType.warning;
       } else {
         icon = AlertIconType.phone;
@@ -335,105 +256,13 @@ class AlertsRds {
           isToday: isToday,
           isUnread: !isRead,
           targetTabIndex: category == 'followup' ? 1 : 0,
-          createdAt: createdAt,
-        ),
-      );
-    }
-
-    // =========================================================================
-    // 2. Synthesize Real Assignments (`assignments` collection)
-    // =========================================================================
-    final assignmentsByDate = <String, List<Map<String, dynamic>>>{};
-    for (final doc in assignmentsDocs) {
-      final d = doc.data();
-      final dKey = (d['dateKey'] ?? '').toString();
-      if (dKey.isEmpty) continue;
-      assignmentsByDate.putIfAbsent(dKey, () => []).add(d);
-    }
-
-    assignmentsByDate.forEach((dKey, list) {
-      final count = list.length;
-      final leadNames = list
-          .map((a) => (a['leadName'] ?? 'Lead').toString())
-          .where((n) => n.isNotEmpty)
-          .toList();
-      final preview = leadNames.take(3).join(', ');
-      final suffix = leadNames.length > 3
-          ? ' +${leadNames.length - 3} more'
-          : '';
-      final adminName = (list.first['assignedByName'] ?? 'AcadenoAdmin')
-          .toString();
-
-      final firstCreatedAt = _parseDateTime(
-        list.first['assignedAt'] ??
-            list.first['timestamp'] ??
-            list.first['createdAt'],
-      ).toLocal();
-      final effectiveCreatedAt = firstCreatedAt.millisecondsSinceEpoch == 0
-          ? (dKey == todayKey
-                ? startOfToday.add(const Duration(hours: 9))
-                : yesterdayDate)
-          : firstCreatedAt;
-
-      // Do not display assignment notifications older than 3 days
-      if (effectiveCreatedAt.isBefore(threeDaysAgo)) {
-        return;
-      }
-
-      final isToday = dKey == todayKey;
-      final isYesterday = dKey == yesterdayKey;
-      final timeLabel = DateFormat('hh:mm a').format(effectiveCreatedAt);
-
-      final title = isToday
-          ? '$count ${count == 1 ? "Lead" : "Leads"} Assigned for Today'
-          : isYesterday
-          ? '$count ${count == 1 ? "Lead" : "Leads"} Assigned for Yesterday'
-          : '$count ${count == 1 ? "Lead" : "Leads"} Assigned (${list.first["dateLabel"] ?? dKey})';
-
-      final subtitle = 'Assigned by $adminName · ($preview$suffix)';
-
-      liveAlerts.add(
-        ExecutiveAlertItem(
-          id: 'asgn_group_$dKey',
-          title: title,
-          subtitle: subtitle,
-          timeLabel: timeLabel,
-          iconType: AlertIconType.phone,
-          isToday: isToday,
-          isUnread: isToday,
-          targetTabIndex: 0,
           createdAt: effectiveCreatedAt,
         ),
       );
-
-      // Reassigned items
-      for (final asgn in list) {
-        final isReassigned =
-            asgn['isReassigned'] == true ||
-            (asgn['previousExecutiveUid'] != null &&
-                (asgn['previousExecutiveUid'] as String).isNotEmpty);
-        if (isReassigned) {
-          final lName = (asgn['leadName'] ?? 'Lead').toString();
-          liveAlerts.add(
-            ExecutiveAlertItem(
-              id: 'reassign_${asgn["id"] ?? lName}_$dKey',
-              title: 'Reassigned: $lName',
-              subtitle: 'Assigned by $adminName · Priority call',
-              timeLabel: timeLabel,
-              iconType: AlertIconType.reassign,
-              isToday: isToday,
-              isUnread: isToday,
-              targetTabIndex: 0,
-              targetLeadName: lName,
-              createdAt: effectiveCreatedAt,
-            ),
-          );
-        }
-      }
-    });
+    }
 
     // =========================================================================
-    // 3. Synthesize Real Follow-ups and Overdue Tasks (`leads` collection)
+    // 2. Synthesize Real Follow-ups and Overdue Tasks from `leads` (if not already present in alerts)
     // =========================================================================
     for (final doc in leadsDocs) {
       final d = doc.data();
@@ -441,8 +270,7 @@ class AlertsRds {
 
       final name = (d['name'] ?? 'Student Lead').toString();
       final status = (d['status'] ?? '').toString();
-      final course = (d['course'] ?? d['courseEnrolled'] ?? 'course inquiry')
-          .toString();
+      final course = (d['course'] ?? d['courseEnrolled'] ?? 'course inquiry').toString();
 
       final eval = FollowUpTimeHelper.evaluate(
         rawFollowUpTime: d['followUpTime'],
@@ -454,19 +282,34 @@ class AlertsRds {
         status: status,
       );
 
+      final itemDay = DateTime(eval.scheduledTime.year, eval.scheduledTime.month, eval.scheduledTime.day);
+      final isToday = itemDay.isAtSameMomentAs(startOfToday) || itemDay.isAfter(startOfToday);
+      final isYesterday = itemDay.isAtSameMomentAs(startOfYesterday);
+
+      final String timeLabel;
+      if (eval.isOverdue) {
+        timeLabel = 'Overdue';
+      } else if (isToday) {
+        timeLabel = DateFormat('hh:mm a').format(eval.scheduledTime);
+      } else if (isYesterday) {
+        timeLabel = 'Yesterday · ${DateFormat('hh:mm a').format(eval.scheduledTime)}';
+      } else {
+        timeLabel = DateFormat('dd MMM · hh:mm a').format(eval.scheduledTime);
+      }
+
       if (eval.isOverdue) {
         liveAlerts.add(
           ExecutiveAlertItem(
             id: 'fu_od_${doc.id}',
             title: 'Overdue follow-up: $name',
             subtitle: '${eval.displayLabel} · Requires immediate callback',
-            timeLabel: 'Overdue',
+            timeLabel: timeLabel,
             iconType: AlertIconType.warning,
             isToday: false,
             isUnread: true,
             targetTabIndex: 1,
             targetLeadName: name,
-            createdAt: yesterdayDate.add(const Duration(hours: 17)),
+            createdAt: eval.scheduledTime,
           ),
         );
       } else if (eval.bucket == FollowUpBucket.today) {
@@ -475,7 +318,7 @@ class AlertsRds {
             id: 'fu_today_${doc.id}',
             title: 'Follow-up: $name',
             subtitle: '${eval.displayLabel} · Call regarding $course',
-            timeLabel: DateFormat('hh:mm a').format(eval.scheduledTime),
+            timeLabel: timeLabel,
             iconType: AlertIconType.clock,
             isToday: true,
             isUnread: true,
@@ -487,86 +330,9 @@ class AlertsRds {
       }
     }
 
-    // =========================================================================
-    // 4. Synthesize Real Logged Calls (`call_logs` collection)
-    // =========================================================================
-    for (final doc in callLogsDocs) {
-      final d = doc.data();
-      final leadName = (d['leadName'] ?? 'Student').toString();
-      final outcome = (d['outcome'] ?? 'Completed').toString();
-      final duration = (d['duration'] ?? '0s').toString();
-      final callAt = _parseDateTime(d['timestamp'], d['createdAt']).toLocal();
-
-      if (callAt.millisecondsSinceEpoch == 0) continue;
-
-      // Do not show call log notifications older than 3 days
-      if (callAt.isBefore(threeDaysAgo)) continue;
-
-      final isToday =
-          callAt.isAfter(startOfToday) || callAt.isAtSameMomentAs(startOfToday);
-
-      liveAlerts.add(
-        ExecutiveAlertItem(
-          id: 'call_log_${doc.id}',
-          title: 'Call Logged: $leadName',
-          subtitle: '$outcome · Duration: $duration',
-          timeLabel: DateFormat('hh:mm a').format(callAt),
-          iconType: AlertIconType.phone,
-          isToday: isToday,
-          isUnread: false,
-          targetTabIndex: 0,
-          createdAt: callAt,
-        ),
-      );
-    }
-
-    // =========================================================================
-    // 5. Synthesize Executive Greeting Card (if tasks exist)
-    // =========================================================================
-    final todayAssignmentsCount = assignmentsByDate[todayKey]?.length ?? 0;
-    final todayFollowUpsCount = liveAlerts
-        .where((a) => a.iconType == AlertIconType.clock && a.isToday)
-        .length;
-    final overdueCount = liveAlerts
-        .where((a) => a.iconType == AlertIconType.warning)
-        .length;
-
-    if (todayAssignmentsCount > 0 ||
-        todayFollowUpsCount > 0 ||
-        overdueCount > 0) {
-      final hour = now.hour;
-      final greeting = hour < 12
-          ? 'Good Morning'
-          : hour < 17
-          ? 'Good Afternoon'
-          : 'Good Evening';
-      final rawName = (userData?['name'] ?? '').toString().trim();
-      final firstName = rawName.isNotEmpty ? rawName.split(' ').first : 'there';
-
-      final greetingTime = DateTime(now.year, now.month, now.day, 9, 0);
-
-      liveAlerts.add(
-        ExecutiveAlertItem(
-          id: 'live_greeting_${uid}_$todayKey',
-          title: '$greeting, $firstName',
-          subtitle:
-              '$todayAssignmentsCount calls assigned · $todayFollowUpsCount follow-ups today',
-          timeLabel: DateFormat(
-            'hh:mm a',
-          ).format(now.isBefore(greetingTime) ? now : greetingTime),
-          iconType: AlertIconType.sun,
-          isToday: true,
-          isUnread: false,
-          targetTabIndex: 0,
-          createdAt: now.isBefore(greetingTime) ? now : greetingTime,
-        ),
-      );
-    }
-
-    // Deduplicate items by ID and strictly drop notifications older than 3 days
+    // Deduplicate items by ID
     final deduplicated = <String, ExecutiveAlertItem>{};
     for (final item in liveAlerts) {
-      if (item.createdAt.isBefore(threeDaysAgo)) continue;
       deduplicated[item.id] = item;
     }
 
@@ -575,34 +341,21 @@ class AlertsRds {
     return result;
   }
 
-  /// Automatically purges notifications older than 3 days directly from Firestore
-  Future<void> purgeOldNotifications() async {
-    try {
-      final cutoff = DateTime.now().subtract(const Duration(days: 3));
-      final snap = await FirestoreStreamCache.instance.getCollection(
-        'alerts',
-        firestore: _firestore,
-      );
-      for (final doc in snap.docs) {
-        final data = doc.data();
-        final dt = _parseDateTime(data['createdAt'], data['timestamp']);
-        if (dt.millisecondsSinceEpoch > 0 && dt.isBefore(cutoff)) {
-          await doc.reference.delete().catchError((_) {});
-        }
-      }
-    } catch (_) {}
-  }
-
   /// Mark all alerts as read for the user in Firestore
   Future<void> markAllAlertsRead({String? executiveUid}) async {
-    final uid = executiveUid ?? _firebaseAuth.currentUser?.uid;
-    if (uid == null || uid.isEmpty) return;
+    final saved = AuthSessionLocalDs().read();
+    final uid = executiveUid ?? _firebaseAuth.currentUser?.uid ?? saved?.uid;
+    final isAdmin = isAdminSession || (saved?.isAdmin ?? false);
     try {
-      final snap = await _firestore
-          .collection('alerts')
-          .where('recipientUid', isEqualTo: uid)
-          .where('isRead', isEqualTo: false)
-          .get();
+      final query = isAdmin
+          ? _firestore.collection('alerts').where('isRead', isEqualTo: false)
+          : (uid != null && uid.isNotEmpty)
+              ? _firestore
+                  .collection('alerts')
+                  .where('recipientUid', isEqualTo: uid)
+                  .where('isRead', isEqualTo: false)
+              : _firestore.collection('alerts').where('isRead', isEqualTo: false);
+      final snap = await query.get();
       for (final doc in snap.docs) {
         await doc.reference.update({'isRead': true});
       }
