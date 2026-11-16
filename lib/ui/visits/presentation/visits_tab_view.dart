@@ -2699,8 +2699,8 @@ class _RecentVisitCard extends StatelessWidget {
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
                                         const Icon(
-                                          Icons.check_rounded,
-                                          size: 12,
+                                          Icons.check_circle_rounded,
+                                          size: 13,
                                           color: Color(0xFF166534),
                                         ),
                                         const SizedBox(width: 4),
@@ -2725,72 +2725,42 @@ class _RecentVisitCard extends StatelessWidget {
                             ),
                             const SizedBox(width: 8),
 
-                            // Outcome Tag / Button (Figma Node 1863:599) & optional Delete
-                            Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                if (onRecordOutcome != null)
-                                  Material(
-                                    color: const Color(0xFFEAEDFB),
-                                    borderRadius: BorderRadius.circular(9999),
-                                    child: InkWell(
-                                      onTap: onRecordOutcome,
-                                      borderRadius: BorderRadius.circular(9999),
-                                      child: Container(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 10,
-                                          vertical: 4,
-                                        ),
-                                        child: Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            const Icon(
-                                              Icons.description_outlined,
-                                              size: 12,
-                                              color: Color(0xFF2C3370),
-                                            ),
-                                            const SizedBox(width: 4),
-                                            Text(
-                                              'Outcome',
-                                              style: GoogleFonts.inter(
-                                                fontSize: 11,
-                                                fontWeight: FontWeight.w400,
-                                                color: const Color(0xFF2C3370),
-                                                height: 16.5 / 11,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
+                            // Outcome Tag / Button (Figma Node 1863:599)
+                            if (onRecordOutcome != null)
+                              Material(
+                                color: const Color(0xFFEAEDFB),
+                                borderRadius: BorderRadius.circular(9999),
+                                child: InkWell(
+                                  onTap: onRecordOutcome,
+                                  borderRadius: BorderRadius.circular(9999),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 10,
+                                      vertical: 4,
                                     ),
-                                  ),
-                                if (isCancelled && onDelete != null) ...[
-                                  const SizedBox(width: 6),
-                                  Material(
-                                    color: Colors.transparent,
-                                    child: InkWell(
-                                      onTap: onDelete,
-                                      borderRadius: BorderRadius.circular(8),
-                                      child: Container(
-                                        padding: const EdgeInsets.all(5.5),
-                                        decoration: BoxDecoration(
-                                          color: const Color(0xFFFEF2F2),
-                                          borderRadius: BorderRadius.circular(8),
-                                          border: Border.all(
-                                            color: const Color(0xFFFECACA),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        const Icon(
+                                          Icons.notes_rounded,
+                                          size: 13,
+                                          color: Color(0xFF2C3370),
+                                        ),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          'Outcome',
+                                          style: GoogleFonts.inter(
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.w400,
+                                            color: const Color(0xFF2C3370),
+                                            height: 16.5 / 11,
                                           ),
                                         ),
-                                        child: const Icon(
-                                          CupertinoIcons.trash,
-                                          size: 13,
-                                          color: Color(0xFFDC2626),
-                                        ),
-                                      ),
+                                      ],
                                     ),
                                   ),
-                                ],
-                              ],
-                            ),
+                                ),
+                              ),
                           ],
                         ),
                         const SizedBox(height: 12),
@@ -2805,9 +2775,9 @@ class _RecentVisitCard extends StatelessWidget {
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
                                 const Icon(
-                                  Icons.group_outlined,
-                                  size: 18,
-                                  color: Color(0xFF697289),
+                                  Icons.person_outline_rounded,
+                                  size: 19,
+                                  color: Color(0xFF0E142E),
                                 ),
                                 const SizedBox(width: 8),
                                 Column(
@@ -2852,9 +2822,9 @@ class _RecentVisitCard extends StatelessWidget {
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
                                 const Icon(
-                                  Icons.star_outline_rounded,
+                                  Icons.check_box_outlined,
                                   size: 18,
-                                  color: Color(0xFF697289),
+                                  color: Color(0xFF0E142E),
                                 ),
                                 const SizedBox(width: 8),
                                 Column(
@@ -2910,9 +2880,9 @@ class _RecentVisitCard extends StatelessWidget {
                         const Padding(
                           padding: EdgeInsets.only(top: 1.5),
                           child: Icon(
-                            Icons.access_time_rounded,
+                            Icons.timer_outlined,
                             size: 14,
-                            color: Color(0xFF697289),
+                            color: Color(0xFF0E142E),
                           ),
                         ),
                         const SizedBox(width: 8),
@@ -2955,9 +2925,9 @@ class _RecentVisitCard extends StatelessWidget {
                         const Padding(
                           padding: EdgeInsets.only(top: 1.5),
                           child: Icon(
-                            Icons.arrow_forward_rounded,
-                            size: 14,
-                            color: Color(0xFF697289),
+                            Icons.skip_next_rounded,
+                            size: 15,
+                            color: Color(0xFF0E142E),
                           ),
                         ),
                         const SizedBox(width: 8),
