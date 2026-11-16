@@ -352,7 +352,11 @@ class AlertsRds {
           icon = AlertIconType.reassign;
         } else if (catLower.contains('greeting') ||
             titleLower.contains('good morning') ||
-            titleLower.contains('morning')) {
+            titleLower.contains('good afternoon') ||
+            titleLower.contains('good evening') ||
+            titleLower.contains('morning') ||
+            titleLower.contains('afternoon') ||
+            titleLower.contains('evening')) {
           icon = AlertIconType.sun;
         } else if (catLower.contains('followup') ||
             titleLower.contains('follow-up') ||
@@ -587,9 +591,19 @@ class AlertsRds {
         .where((a) => a.iconType == AlertIconType.warning)
         .length;
 
-    if (todayAssignmentsCount > 0 ||
-        todayFollowUpsCount > 0 ||
-        overdueCount > 0) {
+    // Check if an existing greeting for today is already present in liveAlerts
+    final hasExistingTodayGreeting = liveAlerts.any((a) =>
+        a.isToday &&
+        (a.id.startsWith('daily_greeting_') ||
+         a.id.startsWith('live_greeting_') ||
+         a.title.toLowerCase().contains('good morning') ||
+         a.title.toLowerCase().contains('good afternoon') ||
+         a.title.toLowerCase().contains('good evening')));
+
+    if (!hasExistingTodayGreeting &&
+        (todayAssignmentsCount > 0 ||
+         todayFollowUpsCount > 0 ||
+         overdueCount > 0)) {
       final hour = now.hour;
       final greeting = hour < 12
           ? 'Good Morning'
@@ -598,7 +612,16 @@ class AlertsRds {
           : 'Good Evening';
       final rawName = (userData?['name'] ?? '').toString().trim();
       final firstName = rawName.isNotEmpty ? rawName.split(' ').first : 'there';
-      final greetingTime = DateTime(now.year, now.month, now.day, 9, 0);
+
+      final DateTime greetingTime;
+      if (hour < 12) {
+        final nineAm = DateTime(now.year, now.month, now.day, 9, 0);
+        greetingTime = now.isBefore(nineAm) ? now : nineAm;
+      } else if (hour < 17) {
+        greetingTime = DateTime(now.year, now.month, now.day, 12, 0);
+      } else {
+        greetingTime = DateTime(now.year, now.month, now.day, 17, 0);
+      }
 
       liveAlerts.add(
         ExecutiveAlertItem(
@@ -606,14 +629,12 @@ class AlertsRds {
           title: '$greeting, $firstName',
           subtitle:
               '$todayAssignmentsCount calls assigned · $todayFollowUpsCount follow-ups today',
-          timeLabel: DateFormat(
-            'hh:mm a',
-          ).format(now.isBefore(greetingTime) ? now : greetingTime),
+          timeLabel: DateFormat('hh:mm a').format(greetingTime),
           iconType: AlertIconType.sun,
           isToday: true,
           isUnread: false,
           targetTabIndex: 0,
-          createdAt: now.isBefore(greetingTime) ? now : greetingTime,
+          createdAt: greetingTime,
         ),
       );
     }
