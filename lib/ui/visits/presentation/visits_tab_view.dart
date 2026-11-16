@@ -2056,6 +2056,23 @@ class _UpcomingVisitCard extends StatelessWidget {
     this.onDelete,
   });
 
+  static String _resolveWeekday(String month, String day) {
+    try {
+      final now = DateTime.now();
+      const months = [
+        'jan', 'feb', 'mar', 'apr', 'may', 'jun',
+        'jul', 'aug', 'sep', 'oct', 'nov', 'dec'
+      ];
+      final mIdx = months.indexOf(month.toLowerCase().trim());
+      if (mIdx != -1) {
+        final d = int.tryParse(day.trim()) ?? 1;
+        final dt = DateTime(now.year, mIdx + 1, d);
+        return DateFormat('E').format(dt);
+      }
+    } catch (_) {}
+    return 'Mon';
+  }
+
   @override
   Widget build(BuildContext context) {
     final initials = visit.staffInitials.isNotEmpty
@@ -2063,26 +2080,48 @@ class _UpcomingVisitCard extends StatelessWidget {
         : (visit.staffNames.trim().isNotEmpty
               ? visit.staffNames
                     .trim()
-                    .split(' ')
+                    .split(RegExp(r'\s+'))
                     .take(2)
                     .map((s) => s.isNotEmpty ? s[0].toUpperCase() : '')
                     .join()
               : 'AT');
 
-    final month = visit.monthShort.isNotEmpty ? visit.monthShort : 'Nov';
+    final month = (visit.monthShort.isNotEmpty ? visit.monthShort : 'NOV').toUpperCase();
     final day = visit.dayNumber.isNotEmpty ? visit.dayNumber : '11';
+    final weekday = _resolveWeekday(visit.monthShort, visit.dayNumber);
+
+    String teamLine1 = 'Assigned';
+    String teamLine2 = 'Team';
+    if (visit.staffNames.trim().isNotEmpty &&
+        visit.staffNames.trim().toLowerCase() != 'assigned team') {
+      final parts = visit.staffNames.trim().split(RegExp(r'\s+'));
+      if (parts.length >= 2) {
+        teamLine1 = parts[0];
+        teamLine2 = parts.sublist(1).join(' ');
+      } else {
+        teamLine1 = parts.first;
+        teamLine2 = '';
+      }
+    }
 
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(17),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFF3F4F6), width: 1),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: const Color(0xFFEDF0FA), width: 1),
         boxShadow: const [
           BoxShadow(
-            color: Color(0x0D000000),
-            blurRadius: 1,
-            offset: Offset(0, 1),
+            color: Color(0x0F4F46E5), // rgba(79, 70, 229, 0.06)
+            blurRadius: 30,
+            offset: Offset(0, 8),
+            spreadRadius: -4,
+          ),
+          BoxShadow(
+            color: Color(0x05000000), // rgba(0, 0, 0, 0.02)
+            blurRadius: 6,
+            offset: Offset(0, 2),
+            spreadRadius: -1,
           ),
         ],
       ),
@@ -2092,278 +2131,383 @@ class _UpcomingVisitCard extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Date Badge (Figma Node 1606:1494): #EEEBF6, rounded 12px, 56x56
+              // Date Column with Curved Visual Decorator / Date Pill Badge (Figma Node 1863:80)
               Container(
-                width: 56,
-                height: 56,
+                width: 70,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFEEEBF6),
-                  borderRadius: BorderRadius.circular(12),
+                  color: const Color(0xFFECF1FE),
+                  borderRadius: BorderRadius.circular(16),
                 ),
-                alignment: Alignment.center,
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Text(
                       month,
                       style: GoogleFonts.inter(
-                        fontSize: 10,
+                        fontSize: 11,
                         fontWeight: FontWeight.w700,
-                        letterSpacing: 0.37,
-                        color: const Color(0xFF4A3AFF),
-                        height: 15 / 10,
+                        letterSpacing: 0.55,
+                        color: const Color(0xFF2D3A77),
+                        height: 16.5 / 11,
                       ),
                     ),
+                    const SizedBox(height: 2),
                     Text(
                       day,
                       style: GoogleFonts.inter(
-                        fontSize: 20,
+                        fontSize: 26,
                         fontWeight: FontWeight.w700,
-                        color: const Color(0xFF4A3AFF),
-                        height: 28 / 20,
+                        color: const Color(0xFF0E142E),
+                        height: 1.0,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      weekday,
+                      style: GoogleFonts.inter(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w400,
+                        color: const Color(0xFF647196),
+                        height: 16.5 / 11,
                       ),
                     ),
                   ],
                 ),
               ),
-              const Gap(16),
+              const SizedBox(width: 14),
 
-              // College & Subtitle (Figma Node 1606:1500)
+              // Main Card Information (Figma Node 1863:94)
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // College Name & Status Tag Row (Figma Node 1863:95)
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            visit.collegeName.isNotEmpty
+                                ? visit.collegeName
+                                : 'Govt. Arts College',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: GoogleFonts.inter(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: -0.4,
+                              color: const Color(0xFF0E142E),
+                              height: 20 / 16,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        // Status Tag (Figma Node 1863:97)
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFE8EAFC),
+                            borderRadius: BorderRadius.circular(9999),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Container(
+                                width: 6,
+                                height: 6,
+                                decoration: const BoxDecoration(
+                                  color: Color(0xFF4944B5),
+                                  shape: BoxShape.circle,
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                visit.statusLabel.isNotEmpty
+                                    ? visit.statusLabel
+                                    : 'Planned',
+                                style: GoogleFonts.inter(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w700,
+                                  color: const Color(0xFF3D3F9E),
+                                  height: 16.5 / 11,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        if (onCancel != null) ...[
+                          const SizedBox(width: 4),
+                          Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              onTap: onCancel,
+                              borderRadius: BorderRadius.circular(6),
+                              child: Container(
+                                padding: const EdgeInsets.all(3),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFFEF2F2),
+                                  borderRadius: BorderRadius.circular(6),
+                                  border: Border.all(
+                                    color: const Color(0xFFFECACA),
+                                    width: 0.8,
+                                  ),
+                                ),
+                                child: const Icon(
+                                  Icons.close_rounded,
+                                  size: 11,
+                                  color: Color(0xFFDC2626),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+
+                    // Location Row (Figma Node 1863:100)
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        const Icon(
+                          Icons.place_outlined,
+                          size: 14,
+                          color: Color(0xFF647196),
+                        ),
+                        const SizedBox(width: 4),
+                        Expanded(
+                          child: Text(
+                            visit.subtitle.isNotEmpty
+                                ? visit.subtitle
+                                : 'Kozhikode, Kerala',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: GoogleFonts.inter(
+                              fontSize: 12.5,
+                              fontWeight: FontWeight.w400,
+                              color: const Color(0xFF2D354D),
+                              height: 18.75 / 12.5,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+
+                    // Notes / Description (Figma Node 1863:108)
                     Text(
-                      visit.collegeName,
-                      maxLines: 1,
+                      visit.purpose.isNotEmpty
+                          ? visit.purpose
+                          : 'Campus visit for course awareness and admission outreach.',
+                      maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: GoogleFonts.inter(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 0.07,
-                        color: const Color(0xFF1A1A1A),
-                        height: 22.5 / 18,
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.w400,
+                        color: const Color(0xFF555E77),
+                        height: 18.69 / 11.5,
                       ),
                     ),
-                    if (visit.subtitle.isNotEmpty) ...[
-                      const Gap(2),
-                      Text(
-                        visit.subtitle,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.inter(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w400,
-                          letterSpacing: 0.15,
-                          color: const Color(0xFF6B7280),
-                          height: 20 / 14,
-                        ),
-                      ),
-                    ],
                   ],
                 ),
               ),
-              const Gap(8),
-
-              // Planned Status Pill (Figma Node 1606:1505) & Quick Cancel
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFF3E8FF),
-                      borderRadius: BorderRadius.circular(9999),
-                    ),
-                    child: Text(
-                      visit.statusLabel.isNotEmpty ? visit.statusLabel : 'Planned',
-                      style: GoogleFonts.inter(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w700,
-                        color: const Color(0xFF6B21A8),
-                        height: 15 / 10,
-                      ),
-                    ),
-                  ),
-                  if (onCancel != null) ...[
-                    const Gap(6),
-                    Material(
-                      color: Colors.transparent,
-                      child: InkWell(
-                        onTap: onCancel,
-                        borderRadius: BorderRadius.circular(8),
-                        child: Container(
-                          padding: const EdgeInsets.all(4.5),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFFEF2F2),
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: const Color(0xFFFECACA)),
-                          ),
-                          child: const Icon(
-                            Icons.close_rounded,
-                            size: 13,
-                            color: Color(0xFFDC2626),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ],
-              ),
             ],
           ),
+          const SizedBox(height: 16),
 
-          // Purpose / Notes (Figma Node 1606:1507)
-          if (visit.purpose.isNotEmpty) ...[
-            const Gap(12),
-            Text(
-              visit.purpose,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: GoogleFonts.inter(
-                fontSize: 14,
-                fontWeight: FontWeight.w400,
-                color: const Color(0xFF9CA3AF),
-                height: 20 / 14,
+          // Card Actions & Assignment Footer (Figma Node 1863:114)
+          Container(
+            padding: const EdgeInsets.only(top: 13),
+            decoration: const BoxDecoration(
+              border: Border(
+                top: BorderSide(
+                  color: Color(0xFFF8FAFC),
+                  width: 1,
+                ),
               ),
             ),
-          ],
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final isVeryCompact = constraints.maxWidth < 315;
 
-          // Assigned Team Row (Figma Node 1606:1509)
-          const Gap(12),
-          Row(
-            children: [
-              Container(
-                width: 24,
-                height: 24,
-                decoration: const BoxDecoration(
-                  color: Color(0xFF1A119B),
-                  shape: BoxShape.circle,
-                ),
-                alignment: Alignment.center,
-                child: Text(
-                  initials.isNotEmpty ? initials : 'AT',
-                  style: GoogleFonts.inter(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.white,
-                    letterSpacing: 0.72,
-                    height: 15 / 10,
-                  ),
-                ),
-              ),
-              const Gap(8),
-              Expanded(
-                child: Text(
-                  visit.staffNames.isNotEmpty
-                      ? visit.staffNames
-                      : 'Assigned Team',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.inter(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    color: const Color(0xFF374151),
-                    letterSpacing: 0.12,
-                    height: 20 / 14,
-                  ),
-                ),
-              ),
-            ],
-          ),
-
-          // Action Buttons (Figma Node 1606:1514)
-          const Gap(16),
-          if (visit.statusLabel.toLowerCase() == 'cancelled')
-            Align(
-              alignment: Alignment.centerRight,
-              child: Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  onTap: onDelete,
-                  borderRadius: BorderRadius.circular(8),
-                  child: Container(
-                    padding: const EdgeInsets.all(6.5),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFFEF2F2),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: const Color(0xFFFECACA)),
-                    ),
-                    child: const Icon(
-                      CupertinoIcons.trash,
-                      size: 14,
-                      color: Color(0xFFDC2626),
-                    ),
-                  ),
-                ),
-              ),
-            )
-          else
-            Row(
-              children: [
-                Expanded(
-                  child: SizedBox(
-                    height: 50,
-                    child: OutlinedButton.icon(
-                      onPressed: onDirections,
-                      icon: const Icon(
-                        Icons.navigation_rounded,
-                        size: 14,
-                        color: Color(0xFF374151),
+                final assignedBadge = Row(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Container(
+                      width: 24,
+                      height: 24,
+                      decoration: const BoxDecoration(
+                        color: Color(0xFF1B2075),
+                        shape: BoxShape.circle,
                       ),
-                      label: Text(
+                      alignment: Alignment.center,
+                      child: Text(
+                        initials.isNotEmpty ? initials : 'AT',
+                        style: GoogleFonts.inter(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
+                          height: 1.0,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          teamLine1,
+                          style: GoogleFonts.inter(
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.w700,
+                            color: const Color(0xFF1E2540),
+                            height: 1.2,
+                          ),
+                        ),
+                        if (teamLine2.isNotEmpty)
+                          Text(
+                            teamLine2,
+                            style: GoogleFonts.inter(
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.w700,
+                              color: const Color(0xFF1E2540),
+                              height: 1.2,
+                            ),
+                          ),
+                      ],
+                    ),
+                  ],
+                );
+
+                final directionsBtn = Material(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(9999),
+                  child: InkWell(
+                    onTap: onDirections,
+                    borderRadius: BorderRadius.circular(9999),
+                    child: Container(
+                      height: 29,
+                      padding: const EdgeInsets.symmetric(horizontal: 14),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(9999),
+                        border: Border.all(
+                          color: const Color(0xFFCAD1EA),
+                          width: 1,
+                        ),
+                      ),
+                      alignment: Alignment.center,
+                      child: Text(
                         'Directions',
                         style: GoogleFonts.inter(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: const Color(0xFF374151),
-                          letterSpacing: 0.1,
-                          height: 20 / 14,
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.w500,
+                          color: const Color(0xFF2A3068),
+                          height: 1.0,
                         ),
-                      ),
-                      style: OutlinedButton.styleFrom(
-                        side: const BorderSide(color: Color(0xFFE5E7EB)),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
                       ),
                     ),
                   ),
-                ),
-                const Gap(14),
-                Expanded(
-                  child: SizedBox(
-                    height: 50,
-                    child: ElevatedButton(
-                      onPressed: onRecordOutcome,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF1A119B),
-                        foregroundColor: Colors.white,
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                      ),
+                );
+
+                final recordOutcomeBtn = Material(
+                  color: const Color(0xFFE64A19),
+                  borderRadius: BorderRadius.circular(9999),
+                  elevation: 1,
+                  shadowColor: const Color(0x0D000000),
+                  child: InkWell(
+                    onTap: onRecordOutcome,
+                    borderRadius: BorderRadius.circular(9999),
+                    child: Container(
+                      height: 31,
+                      padding: const EdgeInsets.symmetric(horizontal: 14),
+                      alignment: Alignment.center,
                       child: Text(
                         'Record Outcome',
                         style: GoogleFonts.inter(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.w500,
                           color: Colors.white,
-                          letterSpacing: 0.2,
-                          height: 14 / 14,
+                          height: 1.0,
                         ),
                       ),
                     ),
                   ),
-                ),
-              ],
+                );
+
+                if (visit.statusLabel.toLowerCase() == 'cancelled' &&
+                    onDelete != null) {
+                  return Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      assignedBadge,
+                      Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          onTap: onDelete,
+                          borderRadius: BorderRadius.circular(8),
+                          child: Container(
+                            padding: const EdgeInsets.all(6.5),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFFEF2F2),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
+                                color: const Color(0xFFFECACA),
+                              ),
+                            ),
+                            child: const Icon(
+                              CupertinoIcons.trash,
+                              size: 14,
+                              color: Color(0xFFDC2626),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  );
+                }
+
+                if (isVeryCompact) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      assignedBadge,
+                      const SizedBox(height: 10),
+                      Row(
+                        children: [
+                          Expanded(child: directionsBtn),
+                          const SizedBox(width: 8),
+                          Expanded(child: recordOutcomeBtn),
+                        ],
+                      ),
+                    ],
+                  );
+                }
+
+                return Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    assignedBadge,
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        directionsBtn,
+                        const SizedBox(width: 11),
+                        recordOutcomeBtn,
+                      ],
+                    ),
+                  ],
+                );
+              },
             ),
+          ),
         ],
       ),
     );
