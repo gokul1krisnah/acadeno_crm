@@ -1138,8 +1138,8 @@ class _SettingsViewState extends State<SettingsView>
       padding: const EdgeInsets.only(bottom: 40),
       child: LayoutBuilder(
         builder: (context, constraints) {
-          final isDesktopTwoCol = constraints.maxWidth >= 900;
-          final isNarrowCard = constraints.maxWidth < 520;
+          final isDesktopTwoCol = constraints.maxWidth >= 840;
+          final isNarrowCard = constraints.maxWidth < 600;
 
           if (isDesktopTwoCol) {
             return IntrinsicHeight(
@@ -1191,7 +1191,7 @@ class _SettingsViewState extends State<SettingsView>
       padding: const EdgeInsets.only(bottom: 40),
       child: LayoutBuilder(
         builder: (context, constraints) {
-          final isWide = constraints.maxWidth >= 820;
+          final isWide = constraints.maxWidth >= 840;
           final isMobile = constraints.maxWidth < 600;
 
           final orgProfileCard = _buildFigmaOrgCard(
@@ -1299,9 +1299,9 @@ class _SettingsViewState extends State<SettingsView>
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(flex: 52, child: orgProfileCard),
+                    Expanded(child: orgProfileCard),
                     const Gap(24),
-                    Expanded(flex: 48, child: leadMgmtCard),
+                    Expanded(child: leadMgmtCard),
                   ],
                 )
               else ...[
@@ -1310,7 +1310,7 @@ class _SettingsViewState extends State<SettingsView>
                 leadMgmtCard,
               ],
               const Gap(24),
-              _buildDangerZoneCard(),
+              _buildDangerZoneCard(isMobile: isMobile),
             ],
           );
         },
@@ -1480,7 +1480,7 @@ class _SettingsViewState extends State<SettingsView>
       padding: const EdgeInsets.only(bottom: 40),
       child: LayoutBuilder(
         builder: (context, constraints) {
-          final isWide = constraints.maxWidth >= 820;
+          final isWide = constraints.maxWidth >= 840;
           final isMobile = constraints.maxWidth < 600;
 
           final pushCard = _buildFigmaSystemCard(
@@ -1564,9 +1564,9 @@ class _SettingsViewState extends State<SettingsView>
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(flex: 48, child: pushCard),
+                    Expanded(child: pushCard),
                     const Gap(24),
-                    Expanded(flex: 52, child: versionCard),
+                    Expanded(child: versionCard),
                   ],
                 )
               else ...[
@@ -1575,7 +1575,7 @@ class _SettingsViewState extends State<SettingsView>
                 versionCard,
               ],
               const Gap(24),
-              _buildDangerZoneCard(),
+              _buildDangerZoneCard(isMobile: isMobile),
             ],
           );
         },
@@ -1732,8 +1732,9 @@ class _SettingsViewState extends State<SettingsView>
     );
   }
 
-  Widget _buildDangerZoneCard() {
+  Widget _buildDangerZoneCard({bool isMobile = false}) {
     return _buildCard(
+      isMobile: isMobile,
       title: 'Danger Zone · Fresh CRM Reset',
       subtitle:
           'Permanently purge all operational records (leads, campaigns, follow-ups, visits, call logs). Users & Admins remain strictly preserved.',
@@ -1826,8 +1827,8 @@ class _SettingsViewState extends State<SettingsView>
     required String subtitle,
     required Widget child,
     Color? borderColor,
+    bool isMobile = false,
   }) {
-    final isMobile = MediaQuery.of(context).size.width < 640;
     return Container(
       width: double.infinity,
       padding: EdgeInsets.all(isMobile ? 20 : 28),

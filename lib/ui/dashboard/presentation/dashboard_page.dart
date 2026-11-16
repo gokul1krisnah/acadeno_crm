@@ -2644,7 +2644,6 @@ class _StatCardState extends State<_StatCard> {
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 200),
               curve: Curves.easeOutCubic,
-              transform: Matrix4.translationValues(0, _isHovered ? -4 : 0, 0),
               constraints: BoxConstraints(minHeight: minCardHeight),
               clipBehavior: Clip.antiAlias,
               decoration: BoxDecoration(
@@ -2654,8 +2653,8 @@ class _StatCardState extends State<_StatCard> {
                     ? [
                         BoxShadow(
                           color: widget.color.withValues(alpha: 0.38),
-                          blurRadius: 20,
-                          offset: const Offset(0, 10),
+                          blurRadius: 16,
+                          offset: const Offset(0, 6),
                         ),
                       ]
                     : [
@@ -2711,8 +2710,8 @@ class _StatCardState extends State<_StatCard> {
                             ),
                             const Gap(4),
                             Container(
-                              width: isCompact ? 28 : 34,
-                              height: isCompact ? 28 : 34,
+                              width: isCompact ? 28 : 36,
+                              height: isCompact ? 28 : 36,
                               alignment: Alignment.center,
                               decoration: BoxDecoration(
                                 color: Colors.white.withValues(alpha: 0.16),
@@ -2720,8 +2719,8 @@ class _StatCardState extends State<_StatCard> {
                               ),
                               child: AnimatedScale(
                                 duration: const Duration(milliseconds: 200),
-                                scale: _isHovered ? 1.12 : 1.0,
-                                curve: Curves.easeOutBack,
+                                scale: _isHovered ? 1.08 : 1.0,
+                                curve: Curves.easeOutCubic,
                                 child: widget.svgAsset != null
                                     ? SvgPicture.asset(
                                         widget.svgAsset!,
@@ -2792,7 +2791,6 @@ class _StatCardState extends State<_StatCard> {
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 200),
             curve: Curves.easeOutCubic,
-            transform: Matrix4.translationValues(0, _isHovered ? -4 : 0, 0),
             constraints: BoxConstraints(minHeight: minCardHeight),
             padding: cardPadding,
             decoration: BoxDecoration(
@@ -2800,19 +2798,19 @@ class _StatCardState extends State<_StatCard> {
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
                 color: _isHovered
-                    ? widget.color.withValues(alpha: 0.35)
+                    ? widget.color.withValues(alpha: 0.4)
                     : const Color(0xFFE2E8E5),
-                width: _isHovered ? 1.2 : 1,
+                width: 1,
               ),
               boxShadow: _isHovered
                   ? [
                       BoxShadow(
-                        color: widget.color.withValues(alpha: 0.12),
-                        blurRadius: 18,
-                        offset: const Offset(0, 8),
+                        color: widget.color.withValues(alpha: 0.16),
+                        blurRadius: 16,
+                        offset: const Offset(0, 4),
                       ),
                       const BoxShadow(
-                        color: Color(0x060F172A),
+                        color: Color(0x080F172A),
                         blurRadius: 6,
                         offset: Offset(0, 2),
                       ),
@@ -2852,17 +2850,17 @@ class _StatCardState extends State<_StatCard> {
                     ),
                     const Gap(4),
                     Container(
-                      width: isCompact ? 28 : 34,
-                      height: isCompact ? 28 : 34,
+                      width: isCompact ? 28 : 36,
+                      height: isCompact ? 28 : 36,
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
-                        color: widget.color.withValues(alpha: _isHovered ? 0.14 : 0.08),
+                        color: widget.color.withValues(alpha: _isHovered ? 0.16 : 0.08),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: AnimatedScale(
                         duration: const Duration(milliseconds: 200),
-                        scale: _isHovered ? 1.12 : 1.0,
-                        curve: Curves.easeOutBack,
+                        scale: _isHovered ? 1.08 : 1.0,
+                        curve: Curves.easeOutCubic,
                         child: widget.svgAsset != null
                             ? SvgPicture.asset(
                                 widget.svgAsset!,

@@ -554,7 +554,7 @@ class _CampaignsViewState extends State<CampaignsView> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFFD45107), width: 1.5),
+          borderSide: const BorderSide(color: Color(0xFFEF8144), width: 1.5),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
@@ -688,7 +688,7 @@ class _CampaignsViewState extends State<CampaignsView> {
                               icon: const Icon(
                                 Icons.edit_calendar_rounded,
                                 size: 18,
-                                color: Color(0xFFD45107),
+                                color: Color(0xFFEF8144),
                               ),
                               tooltip: 'Pick Date',
                               onPressed: () async {
@@ -812,7 +812,7 @@ class _CampaignsViewState extends State<CampaignsView> {
                             const Gap(12),
                             ElevatedButton(
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFFD45107),
+                                backgroundColor: const Color(0xFFEF8144),
                                 foregroundColor: Colors.white,
                                 elevation: 0,
                                 shape: RoundedRectangleBorder(
@@ -1117,12 +1117,10 @@ class _CampaignsViewState extends State<CampaignsView> {
                         )
                       : Row(
                           crossAxisAlignment: CrossAxisAlignment.center,
-                          mainAxisAlignment: MainAxisAlignment.start,
                           children: [
-                            Flexible(
-                              fit: FlexFit.loose,
-                              child: ConstrainedBox(
-                                constraints: const BoxConstraints(maxWidth: 680),
+                            Expanded(
+                              child: Padding(
+                                padding: const EdgeInsets.only(right: 32),
                                 child: _buildCampaignInfoLeft(campaign),
                               ),
                             ),
@@ -1130,9 +1128,14 @@ class _CampaignsViewState extends State<CampaignsView> {
                               height: 100,
                               width: 1,
                               color: const Color(0xFFF1F5F9),
-                              margin: const EdgeInsets.symmetric(horizontal: 28),
                             ),
-                            _buildCampaignStatsRight(campaign, isMobile: false),
+                            Padding(
+                              padding: const EdgeInsets.only(left: 32),
+                              child: _buildCampaignStatsRight(
+                                campaign,
+                                isMobile: false,
+                              ),
+                            ),
                           ],
                         ),
                 );
@@ -1529,18 +1532,27 @@ class _CampaignsViewState extends State<CampaignsView> {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        SizedBox(width: 112, child: boxes[0]),
-        const Gap(10),
-        SizedBox(width: 104, child: boxes[1]),
-        const Gap(10),
-        SizedBox(width: 104, child: boxes[2]),
+        ConstrainedBox(
+          constraints: const BoxConstraints(minWidth: 100),
+          child: boxes[0],
+        ),
+        const Gap(24),
+        ConstrainedBox(
+          constraints: const BoxConstraints(minWidth: 100),
+          child: boxes[1],
+        ),
+        const Gap(24),
+        ConstrainedBox(
+          constraints: const BoxConstraints(minWidth: 100),
+          child: boxes[2],
+        ),
       ],
     );
   }
 
   Widget _buildStatMiniBox(String value, String label, Color valueColor) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       decoration: BoxDecoration(
         color: const Color(0xFFF8FAFC),
         borderRadius: BorderRadius.circular(16),
@@ -1557,6 +1569,7 @@ class _CampaignsViewState extends State<CampaignsView> {
                 fontSize: 24,
                 fontWeight: FontWeight.w700,
                 color: valueColor,
+                letterSpacing: 0.05,
               ),
             ),
           ),
@@ -1566,10 +1579,10 @@ class _CampaignsViewState extends State<CampaignsView> {
             child: Text(
               label,
               style: GoogleFonts.inter(
-                fontSize: 10,
+                fontSize: 11,
                 fontWeight: FontWeight.w700,
                 color: const Color(0xFF94A3B8),
-                letterSpacing: 0.5,
+                letterSpacing: -0.275,
               ),
             ),
           ),
@@ -1612,29 +1625,29 @@ class _CampaignsViewState extends State<CampaignsView> {
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      SizedBox(width: 50, child: Text('#', style: headerStyle)),
-                      Expanded(flex: 3, child: Text('NAME', style: headerStyle)),
+                      SizedBox(width: 58, child: Text('#', style: headerStyle)),
+                      Expanded(flex: 15, child: Text('NAME', style: headerStyle)),
                       Expanded(
-                        flex: 4,
+                        flex: 17,
                         child: Text('COLLEGE & BRANCH', style: headerStyle),
                       ),
-                      Expanded(flex: 2, child: Text('SCORE', style: headerStyle)),
+                      Expanded(flex: 17, child: Text('SCORE', style: headerStyle)),
                       Expanded(
-                        flex: 5,
+                        flex: 30,
                         child: Text(
                           'REASONS FOR HIGH SCORE',
                           style: headerStyle,
                         ),
                       ),
                       Expanded(
-                        flex: 2,
+                        flex: 13,
                         child: Align(
                           alignment: Alignment.centerRight,
                           child: Text('LAST CONTACT', style: headerStyle),
                         ),
                       ),
                       Expanded(
-                        flex: 3,
+                        flex: 13,
                         child: Center(
                           child: Text('ASSIGNED', style: headerStyle),
                         ),
@@ -1699,7 +1712,7 @@ class _CampaignsViewState extends State<CampaignsView> {
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
                               SizedBox(
-                                width: 50,
+                                width: 58,
                                 child: Text(
                                   '${lead.rank}',
                                   style: GoogleFonts.inter(
@@ -1710,7 +1723,7 @@ class _CampaignsViewState extends State<CampaignsView> {
                                 ),
                               ),
                               Expanded(
-                                flex: 3,
+                                flex: 15,
                                 child: Text(
                                   lead.name,
                                   maxLines: 1,
@@ -1723,7 +1736,7 @@ class _CampaignsViewState extends State<CampaignsView> {
                                 ),
                               ),
                               Expanded(
-                                flex: 4,
+                                flex: 17,
                                 child: Text(
                                   lead.collegeBranchYear,
                                   maxLines: 2,
@@ -1736,7 +1749,7 @@ class _CampaignsViewState extends State<CampaignsView> {
                                 ),
                               ),
                               Expanded(
-                                flex: 2,
+                                flex: 17,
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
@@ -1767,7 +1780,7 @@ class _CampaignsViewState extends State<CampaignsView> {
                                 ),
                               ),
                               Expanded(
-                                flex: 5,
+                                flex: 30,
                                 child: Wrap(
                                   spacing: 6,
                                   runSpacing: 6,
@@ -1795,7 +1808,7 @@ class _CampaignsViewState extends State<CampaignsView> {
                                 ),
                               ),
                               Expanded(
-                                flex: 2,
+                                flex: 13,
                                 child: Align(
                                   alignment: Alignment.centerRight,
                                   child: Text(
@@ -1811,7 +1824,7 @@ class _CampaignsViewState extends State<CampaignsView> {
                                 ),
                               ),
                               Expanded(
-                                flex: 3,
+                                flex: 13,
                                 child: lead.assignedExec != null
                                     ? Center(
                                         child: Container(

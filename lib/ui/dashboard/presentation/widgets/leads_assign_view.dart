@@ -3515,15 +3515,12 @@ class _DesktopLeadTableRowState extends State<_DesktopLeadTableRow> {
                       Expanded(
                         flex: 10,
                         child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
-                            Padding(
-                              padding: const EdgeInsets.only(top: 2.0),
-                              child: widget.checkboxBuilder(
-                                value: isSelected,
-                                isRowHovered: _isHovered,
-                                onChanged: widget.onSelectChanged,
-                              ),
+                            widget.checkboxBuilder(
+                              value: isSelected,
+                              isRowHovered: _isHovered,
+                              onChanged: widget.onSelectChanged,
                             ),
                             const Gap(16),
                             Expanded(

@@ -2254,12 +2254,6 @@ class _UserManagementViewState extends State<UserManagementView> {
                   child: Text('ACTIONS', style: _tblHdr),
                 ),
               ),
-              SizedBox(
-                width: 127,
-                child: Center(
-                  child: Text('RESET PASSWORD', style: _tblHdr),
-                ),
-              ),
             ],
           ),
         ),
@@ -2560,23 +2554,47 @@ class _UserManagementViewState extends State<UserManagementView> {
                       ),
                     ),
 
-                    // ACTIONS Column
+                    // ACTIONS Column (Figma Node 1364:2951 & 1364:2990)
                     SizedBox(
                       width: 127,
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.end,
+                        crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           Container(
-                            width: 32,
-                            height: 32,
+                            width: 28,
+                            height: 28,
                             decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(6),
                             ),
                             child: IconButton(
                               padding: EdgeInsets.zero,
                               constraints: const BoxConstraints(
-                                minWidth: 32,
-                                minHeight: 32,
+                                minWidth: 28,
+                                minHeight: 28,
+                              ),
+                              icon: const Icon(
+                                Icons.lock_reset_rounded,
+                                size: 16,
+                                color: Color(0xFF334155),
+                              ),
+                              tooltip: 'Reset Password',
+                              onPressed: () =>
+                                  _confirmResetPassword(context, cubit, user),
+                            ),
+                          ),
+                          const Gap(4),
+                          Container(
+                            width: 28,
+                            height: 28,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: IconButton(
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(
+                                minWidth: 28,
+                                minHeight: 28,
                               ),
                               icon: const Icon(
                                 Icons.logout_rounded,
@@ -2588,19 +2606,19 @@ class _UserManagementViewState extends State<UserManagementView> {
                                   _confirmForceSignOut(context, cubit, user),
                             ),
                           ),
-                          const Gap(8),
+                          const Gap(4),
                           if (isMe)
                             Container(
-                              width: 32,
-                              height: 32,
+                              width: 28,
+                              height: 28,
                               decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(8),
+                                borderRadius: BorderRadius.circular(6),
                               ),
                               child: IconButton(
                                 padding: EdgeInsets.zero,
                                 constraints: const BoxConstraints(
-                                  minWidth: 32,
-                                  minHeight: 32,
+                                  minWidth: 28,
+                                  minHeight: 28,
                                 ),
                                 icon: const Icon(
                                   Icons.tune_rounded,
@@ -2613,16 +2631,16 @@ class _UserManagementViewState extends State<UserManagementView> {
                             )
                           else
                             Container(
-                              width: 32,
-                              height: 32,
+                              width: 28,
+                              height: 28,
                               decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(8),
+                                borderRadius: BorderRadius.circular(6),
                               ),
                               child: IconButton(
                                 padding: EdgeInsets.zero,
                                 constraints: const BoxConstraints(
-                                  minWidth: 32,
-                                  minHeight: 32,
+                                  minWidth: 28,
+                                  minHeight: 28,
                                 ),
                                 icon: const Icon(
                                   Icons.delete_outline_rounded,
@@ -2635,35 +2653,6 @@ class _UserManagementViewState extends State<UserManagementView> {
                               ),
                             ),
                         ],
-                      ),
-                    ),
-
-                    // RESET PASSWORD Column (Figma Node 1525:335)
-                    SizedBox(
-                      width: 127,
-                      child: Center(
-                        child: Container(
-                          width: 32,
-                          height: 32,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: IconButton(
-                            padding: EdgeInsets.zero,
-                            constraints: const BoxConstraints(
-                              minWidth: 32,
-                              minHeight: 32,
-                            ),
-                            icon: const Icon(
-                              Icons.lock_reset_rounded,
-                              size: 18,
-                              color: Color(0xFF334155),
-                            ),
-                            tooltip: 'Reset Password',
-                            onPressed: () =>
-                                _confirmResetPassword(context, cubit, user),
-                          ),
-                        ),
                       ),
                     ),
                   ],
