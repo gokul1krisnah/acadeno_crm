@@ -64,7 +64,7 @@ module.exports = async function handler(req, res) {
       priority: 'high',
       collapseKey: 'leads_assignment',
       notification: {
-        channelId: 'acadeno_crm_high_importance',
+        channelId: 'acadeno_crm_notifications_v3',
         tag: notificationTag,
         icon: 'ic_notification',
         color: '#EA580C',

@@ -29,6 +29,13 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
       final payload = message.data['leadId'] ?? message.data['target'] ?? '';
 
       // Attempt native custom RemoteViews layout
+      final subText = title.toLowerCase().contains('lead')
+          ? 'Leads'
+          : title.toLowerCase().contains('visit')
+              ? 'Visits'
+              : title.toLowerCase().contains('follow')
+                  ? 'Follow-ups'
+                  : 'Updates';
       try {
         const platformChannel = MethodChannel('com.acadeno.crm/notifications');
         final success = await platformChannel.invokeMethod<bool>('showCustomNotification', {
@@ -36,24 +43,29 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
           'body': body,
           'payload': payload,
           'id': 1001,
+          'subText': subText,
         });
         if (success == true) return;
       } catch (_) {}
 
       final localNotifications = FlutterLocalNotificationsPlugin();
-      const androidDetails = AndroidNotificationDetails(
-        'acadeno_crm_high_importance',
-        'Acadeno Reminders & Leads',
+      final androidDetails = AndroidNotificationDetails(
+        'acadeno_crm_notifications_v3',
+        'Leads & Tasks',
         channelDescription: 'High priority alerts for assigned student leads and reminders',
         importance: Importance.max,
         priority: Priority.high,
         playSound: true,
         enableVibration: true,
         tag: 'lead_assigned',
+        subText: subText,
         icon: '@drawable/ic_notification',
-        largeIcon: DrawableResourceAndroidBitmap('@drawable/ic_notification_large'),
-        color: Color(0xFFEA580C),
-        styleInformation: BigTextStyleInformation(''),
+        largeIcon: const DrawableResourceAndroidBitmap('@drawable/ic_notification_large'),
+        color: const Color(0xFFEA580C),
+        styleInformation: BigTextStyleInformation(
+          body,
+          summaryText: subText,
+        ),
       );
       const notificationDetails = NotificationDetails(android: androidDetails);
 
@@ -142,8 +154,8 @@ class AppNotificationService {
         );
 
         const androidChannel = AndroidNotificationChannel(
-          'acadeno_crm_high_importance',
-          'Acadeno Reminders & Leads',
+          'acadeno_crm_notifications_v3',
+          'Leads & Tasks',
           description: 'High priority alerts for assigned student leads and reminders',
           importance: Importance.max,
           playSound: true,
@@ -264,7 +276,15 @@ class AppNotificationService {
   }) async {
     if (kIsWeb) return;
 
-    // 1. Invoke native Android Custom RemoteViews layout (matching Figma 1824:1634 exact capsule)
+    final resolvedSubText = tag == 'lead_assigned' || title.toLowerCase().contains('lead') || body.toLowerCase().contains('lead')
+        ? 'Leads'
+        : title.toLowerCase().contains('visit')
+            ? 'Visits'
+            : title.toLowerCase().contains('follow')
+                ? 'Follow-ups'
+                : 'Updates';
+
+    // 1. Invoke native Android Custom RemoteViews layout (matching District-style clean header & right-side emblem)
     if (defaultTargetPlatform == TargetPlatform.android) {
       try {
         const platformChannel = MethodChannel('com.acadeno.crm/notifications');
@@ -273,6 +293,7 @@ class AppNotificationService {
           'body': body,
           'payload': payload ?? '',
           'id': id,
+          'subText': resolvedSubText,
         });
         if (success == true) {
           return;
@@ -285,14 +306,15 @@ class AppNotificationService {
     // 2. Fallback to FlutterLocalNotificationsPlugin
     try {
       final androidDetails = AndroidNotificationDetails(
-        'acadeno_crm_high_importance',
-        'Acadeno Reminders & Leads',
+        'acadeno_crm_notifications_v3',
+        'Leads & Tasks',
         channelDescription: 'High priority alerts for assigned student leads and reminders',
         importance: Importance.max,
         priority: Priority.high,
         playSound: true,
         enableVibration: true,
         tag: tag ?? 'lead_assigned',
+        subText: resolvedSubText,
         icon: '@drawable/ic_notification',
         largeIcon: const DrawableResourceAndroidBitmap('@drawable/ic_notification_large'),
         color: const Color(0xFFEA580C),
@@ -301,6 +323,7 @@ class AppNotificationService {
           htmlFormatBigText: true,
           contentTitle: title,
           htmlFormatContentTitle: true,
+          summaryText: resolvedSubText,
         ),
       );
       final details = NotificationDetails(android: androidDetails);

@@ -173,13 +173,15 @@ class MainActivity : FlutterActivity() {
                     val body = call.argument<String>("body") ?: ""
                     val payload = call.argument<String>("payload")
                     val id = (call.argument<Number>("id"))?.toInt() ?: 1001
+                    val subText = call.argument<String>("subText")
                     try {
                         CustomNotificationHelper.showCustomNotification(
                             context = applicationContext,
                             title = title,
                             body = body,
                             payload = payload,
-                            id = id
+                            id = id,
+                            subText = subText
                         )
                         result.success(true)
                     } catch (e: Exception) {

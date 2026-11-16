@@ -802,7 +802,7 @@ class _SettingsViewState extends State<SettingsView>
               isLoading: _isSavingName,
               onPressed: _updateDisplayName,
               width: double.infinity,
-              height: 43,
+              height: 46,
               textStyle: GoogleFonts.inter(
                 fontSize: 15,
                 fontWeight: FontWeight.w600,
@@ -812,11 +812,11 @@ class _SettingsViewState extends State<SettingsView>
             ),
           ] else
             Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Expanded(
                   child: SizedBox(
-                    height: 40,
+                    height: 46,
                     child: TextField(
                       controller: _nameController,
                       textAlignVertical: TextAlignVertical.center,
@@ -826,9 +826,7 @@ class _SettingsViewState extends State<SettingsView>
                         fontWeight: FontWeight.w400,
                         color: Color(0xFF19233C),
                       ),
-                      decoration: _figmaAccountInputDecoration(
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                      ),
+                      decoration: _figmaAccountInputDecoration(),
                     ),
                   ),
                 ),
@@ -838,7 +836,7 @@ class _SettingsViewState extends State<SettingsView>
                   isLoading: _isSavingName,
                   onPressed: _updateDisplayName,
                   width: 132,
-                  height: 40,
+                  height: 46,
                   textStyle: GoogleFonts.inter(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
