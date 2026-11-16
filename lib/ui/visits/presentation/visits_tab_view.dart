@@ -3106,10 +3106,9 @@ class _CancelledVisitCard extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Row with College Name & Delete Trash Icon (Figma Node 1863:452, 1866:842)
+                        // Row with College Name & Right Stack (Delete Trash Icon + Cancelled Badge)
                         Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Expanded(
                               child: Text(
@@ -3126,64 +3125,62 @@ class _CancelledVisitCard extends StatelessWidget {
                               ),
                             ),
                             const SizedBox(width: 8),
-                            // Delete / Trash Action (Figma Node 1866:842)
-                            Material(
-                              color: Colors.transparent,
-                              child: InkWell(
-                                onTap: onDelete,
-                                borderRadius: BorderRadius.circular(6),
-                                child: Container(
-                                  padding: const EdgeInsets.all(2),
-                                  child: const Icon(
-                                    CupertinoIcons.trash,
-                                    size: 14,
-                                    color: Color(0xFFDC2626),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                // Delete / Trash Action (Figma Node 1866:842)
+                                Material(
+                                  color: Colors.transparent,
+                                  child: InkWell(
+                                    onTap: onDelete,
+                                    borderRadius: BorderRadius.circular(4),
+                                    child: const Padding(
+                                      padding: EdgeInsets.only(bottom: 6, left: 4),
+                                      child: Icon(
+                                        Icons.delete_outline_rounded,
+                                        size: 16,
+                                        color: Color(0xFFE53E3E),
+                                      ),
+                                    ),
                                   ),
                                 ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 4),
-
-                        // Cancelled Status Badge (Figma Node 1863:455)
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 2,
-                              ),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFFFDAD6),
-                                borderRadius: BorderRadius.circular(9999),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Container(
-                                    width: 6,
-                                    height: 6,
-                                    decoration: const BoxDecoration(
-                                      color: Color(0xFFBA1A1A),
-                                      shape: BoxShape.circle,
-                                    ),
+                                // Cancelled Status Badge (Figma Node 1863:455)
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 2,
                                   ),
-                                  const SizedBox(width: 6),
-                                  Text(
-                                    visit.statusLabel.isNotEmpty
-                                        ? visit.statusLabel
-                                        : 'Cancelled',
-                                    style: GoogleFonts.inter(
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w700,
-                                      color: const Color(0xFF93000A),
-                                      height: 16.5 / 11,
-                                    ),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFFFDAD6),
+                                    borderRadius: BorderRadius.circular(9999),
                                   ),
-                                ],
-                              ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Container(
+                                        width: 6,
+                                        height: 6,
+                                        decoration: const BoxDecoration(
+                                          color: Color(0xFFBA1A1A),
+                                          shape: BoxShape.circle,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 6),
+                                      Text(
+                                        visit.statusLabel.isNotEmpty
+                                            ? visit.statusLabel
+                                            : 'Cancelled',
+                                        style: GoogleFonts.inter(
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w700,
+                                          color: const Color(0xFF93000A),
+                                          height: 16.5 / 11,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
                             ),
                           ],
                         ),
@@ -3232,10 +3229,23 @@ class _CancelledVisitCard extends StatelessWidget {
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    const Icon(
-                      Icons.help_outline_rounded,
-                      size: 15,
-                      color: Color(0xFF697289),
+                    Container(
+                      width: 15,
+                      height: 15,
+                      decoration: const BoxDecoration(
+                        color: Color(0xFF0E142E),
+                        shape: BoxShape.circle,
+                      ),
+                      alignment: Alignment.center,
+                      child: const Text(
+                        '?',
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
+                          height: 1.0,
+                        ),
+                      ),
                     ),
                     const SizedBox(width: 8),
                     Expanded(
