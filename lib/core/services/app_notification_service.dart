@@ -32,19 +32,20 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
       final subText = title.toLowerCase().contains('lead')
           ? 'Leads'
           : title.toLowerCase().contains('visit')
-              ? 'Visits'
-              : title.toLowerCase().contains('follow')
-                  ? 'Follow-ups'
-                  : 'Updates';
+          ? 'Visits'
+          : title.toLowerCase().contains('follow')
+          ? 'Follow-ups'
+          : 'Updates';
       try {
         const platformChannel = MethodChannel('com.acadeno.crm/notifications');
-        final success = await platformChannel.invokeMethod<bool>('showCustomNotification', {
-          'title': title,
-          'body': body,
-          'payload': payload,
-          'id': 1001,
-          'subText': subText,
-        });
+        final success = await platformChannel
+            .invokeMethod<bool>('showCustomNotification', {
+              'title': title,
+              'body': body,
+              'payload': payload,
+              'id': 1001,
+              'subText': subText,
+            });
         if (success == true) return;
       } catch (_) {}
 
@@ -52,7 +53,8 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
       final androidDetails = AndroidNotificationDetails(
         'acadeno_crm_notifications_v3',
         'Leads & Tasks',
-        channelDescription: 'High priority alerts for assigned student leads and reminders',
+        channelDescription:
+            'High priority alerts for assigned student leads and reminders',
         importance: Importance.max,
         priority: Priority.high,
         playSound: true,
@@ -60,14 +62,13 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
         tag: 'lead_assigned',
         subText: subText,
         icon: '@drawable/ic_notification',
-        largeIcon: const DrawableResourceAndroidBitmap('@drawable/ic_notification_large'),
-        color: const Color(0xFFEA580C),
-        styleInformation: BigTextStyleInformation(
-          body,
-          summaryText: subText,
+        largeIcon: const DrawableResourceAndroidBitmap(
+          '@drawable/ic_notification_large',
         ),
+        color: const Color(0xFFEA580C),
+        styleInformation: BigTextStyleInformation(body, summaryText: subText),
       );
-      const notificationDetails = NotificationDetails(android: androidDetails);
+      final notificationDetails = NotificationDetails(android: androidDetails);
 
       await localNotifications.show(
         id: 1001,
@@ -156,7 +157,8 @@ class AppNotificationService {
         const androidChannel = AndroidNotificationChannel(
           'acadeno_crm_notifications_v3',
           'Leads & Tasks',
-          description: 'High priority alerts for assigned student leads and reminders',
+          description:
+              'High priority alerts for assigned student leads and reminders',
           importance: Importance.max,
           playSound: true,
           enableVibration: true,
@@ -229,8 +231,13 @@ class AppNotificationService {
         // Show native Android system notification in notification shade & heads-up
         if (!kIsWeb) {
           final notif = message.notification;
-          final title = (notif?.title ?? message.data['title'] ?? 'Reminder').toString().trim();
-          final body = (notif?.body ?? message.data['body'] ?? 'You have a new update').toString().trim();
+          final title = (notif?.title ?? message.data['title'] ?? 'Reminder')
+              .toString()
+              .trim();
+          final body =
+              (notif?.body ?? message.data['body'] ?? 'You have a new update')
+                  .toString()
+                  .trim();
           if (title.isNotEmpty || body.isNotEmpty) {
             showNativeNotification(
               title: title.isNotEmpty ? title : 'Reminder',
@@ -276,25 +283,29 @@ class AppNotificationService {
   }) async {
     if (kIsWeb) return;
 
-    final resolvedSubText = tag == 'lead_assigned' || title.toLowerCase().contains('lead') || body.toLowerCase().contains('lead')
+    final resolvedSubText =
+        tag == 'lead_assigned' ||
+            title.toLowerCase().contains('lead') ||
+            body.toLowerCase().contains('lead')
         ? 'Leads'
         : title.toLowerCase().contains('visit')
-            ? 'Visits'
-            : title.toLowerCase().contains('follow')
-                ? 'Follow-ups'
-                : 'Updates';
+        ? 'Visits'
+        : title.toLowerCase().contains('follow')
+        ? 'Follow-ups'
+        : 'Updates';
 
     // 1. Invoke native Android Custom RemoteViews layout (matching District-style clean header & right-side emblem)
     if (defaultTargetPlatform == TargetPlatform.android) {
       try {
         const platformChannel = MethodChannel('com.acadeno.crm/notifications');
-        final success = await platformChannel.invokeMethod<bool>('showCustomNotification', {
-          'title': title,
-          'body': body,
-          'payload': payload ?? '',
-          'id': id,
-          'subText': resolvedSubText,
-        });
+        final success = await platformChannel
+            .invokeMethod<bool>('showCustomNotification', {
+              'title': title,
+              'body': body,
+              'payload': payload ?? '',
+              'id': id,
+              'subText': resolvedSubText,
+            });
         if (success == true) {
           return;
         }
@@ -308,7 +319,8 @@ class AppNotificationService {
       final androidDetails = AndroidNotificationDetails(
         'acadeno_crm_notifications_v3',
         'Leads & Tasks',
-        channelDescription: 'High priority alerts for assigned student leads and reminders',
+        channelDescription:
+            'High priority alerts for assigned student leads and reminders',
         importance: Importance.max,
         priority: Priority.high,
         playSound: true,
@@ -316,7 +328,9 @@ class AppNotificationService {
         tag: tag ?? 'lead_assigned',
         subText: resolvedSubText,
         icon: '@drawable/ic_notification',
-        largeIcon: const DrawableResourceAndroidBitmap('@drawable/ic_notification_large'),
+        largeIcon: const DrawableResourceAndroidBitmap(
+          '@drawable/ic_notification_large',
+        ),
         color: const Color(0xFFEA580C),
         styleInformation: BigTextStyleInformation(
           body,

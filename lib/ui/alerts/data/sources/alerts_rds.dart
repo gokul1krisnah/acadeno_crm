@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:acadeno_crm/core/router/app_router.dart';
 import 'package:acadeno_crm/core/services/firestore_stream_cache.dart';
-import 'package:acadeno_crm/ui/auth/data/sources/auth_session_local_ds.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
@@ -130,8 +129,7 @@ class AlertsRds {
       callLogsDocs = [];
       userData = null;
 
-      final saved = AuthSessionLocalDs().read();
-      final isAdmin = isAdminSession || (saved?.isAdmin ?? false);
+      final isAdmin = isAdminSession;
 
       // 1. User document
       if (uid.isNotEmpty) {
@@ -205,15 +203,14 @@ class AlertsRds {
     }
 
     void onListen() {
-      final saved = AuthSessionLocalDs().read();
       final effectiveUid =
-          executiveUid ?? _firebaseAuth.currentUser?.uid ?? saved?.uid ?? '';
+          executiveUid ?? _firebaseAuth.currentUser?.uid ?? '';
 
       subscribeForUid(effectiveUid);
 
       authSub = _firebaseAuth.authStateChanges().listen((user) {
-        final newUid = user?.uid ?? saved?.uid ?? '';
-        if (newUid != currentSubscribedUid) {
+        final newUid = user?.uid ?? '';
+        if (newUid.isNotEmpty && newUid != currentSubscribedUid) {
           subscribeForUid(newUid);
         }
       }, onError: (_) {});
@@ -250,8 +247,7 @@ class AlertsRds {
     final startOfToday = DateTime(now.year, now.month, now.day);
     final startOfYesterday = startOfToday.subtract(const Duration(days: 1));
 
-    final saved = AuthSessionLocalDs().read();
-    final isAdmin = isAdminSession || (saved?.isAdmin ?? false);
+    final isAdmin = isAdminSession;
 
     // =========================================================================
     // 1. Process Genuine Alerts from Firestore `alerts` Collection
@@ -653,10 +649,9 @@ class AlertsRds {
 
   /// Mark all alerts as read for the user in Firestore
   Future<void> markAllAlertsRead({String? executiveUid}) async {
-    final saved = AuthSessionLocalDs().read();
     final uid =
-        executiveUid ?? _firebaseAuth.currentUser?.uid ?? saved?.uid ?? '';
-    final isAdmin = isAdminSession || (saved?.isAdmin ?? false);
+        executiveUid ?? _firebaseAuth.currentUser?.uid ?? '';
+    final isAdmin = isAdminSession;
     try {
       final snap = await _firestore.collection('alerts').get();
       for (final doc in snap.docs) {
