@@ -11,12 +11,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:acadeno_crm/shared/extensions/build_context_extension.dart';
-import 'package:acadeno_crm/shared/theme/app_svgs.dart';
 import 'package:acadeno_crm/ui/dashboard/presentation/widgets/figma_calendar_dialog.dart';
 import 'package:acadeno_crm/ui/visits/application/visits_cubit.dart';
 import 'package:acadeno_crm/ui/visits/application/visits_state.dart';
 import 'package:acadeno_crm/ui/visits/data/model/visit_models.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 
 class VisitsTabView extends StatefulWidget {
   const VisitsTabView({super.key});
@@ -2528,6 +2526,23 @@ class _RecentVisitCard extends StatelessWidget {
     this.onDelete,
   });
 
+  static String _resolveWeekday(String month, String day) {
+    try {
+      final now = DateTime.now();
+      const months = [
+        'jan', 'feb', 'mar', 'apr', 'may', 'jun',
+        'jul', 'aug', 'sep', 'oct', 'nov', 'dec'
+      ];
+      final mIdx = months.indexOf(month.toLowerCase().trim());
+      if (mIdx != -1) {
+        final d = int.tryParse(day.trim()) ?? 1;
+        final dt = DateTime(now.year, mIdx + 1, d);
+        return DateFormat('E').format(dt);
+      }
+    } catch (_) {}
+    return 'Wed';
+  }
+
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
@@ -2570,22 +2585,22 @@ class _RecentVisitCard extends StatelessWidget {
             : (matchedInterested.isNotEmpty ? matchedInterested.length : 0);
 
         final isCancelled = visit.statusLabel.toLowerCase() == 'cancelled';
-        final month = visit.monthShort.isNotEmpty ? visit.monthShort : 'NOV';
+        final month = (visit.monthShort.isNotEmpty ? visit.monthShort : 'NOV').toUpperCase();
         final day = visit.dayNumber.isNotEmpty
             ? (visit.dayNumber.length == 1
                   ? '0${visit.dayNumber}'
                   : visit.dayNumber)
-            : '04';
+            : '06';
+        final weekday = _resolveWeekday(visit.monthShort, visit.dayNumber);
 
         final title = visit.collegeName.isNotEmpty
             ? visit.collegeName
-            : 'Campus Visit';
-        final subtitle = visit.subtitle.isNotEmpty ? visit.subtitle : '';
+            : 'NSS College';
         final met = visit.metSummary.isNotEmpty
             ? visit.metSummary
             : (isCancelled
                   ? 'Visit cancelled by executive'
-                  : 'Meeting completed with college coordinators.');
+                  : 'Scheduled campus visit.');
         final next = visit.nextActionSummary.isNotEmpty
             ? visit.nextActionSummary
             : (isCancelled
@@ -2594,16 +2609,23 @@ class _RecentVisitCard extends StatelessWidget {
 
         return Container(
           width: double.infinity,
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.all(17),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: const Color(0xFFF3F4F6), width: 1),
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: const Color(0xFFEDF0FA), width: 1),
             boxShadow: const [
               BoxShadow(
-                color: Color(0x0D000000),
-                blurRadius: 1,
-                offset: Offset(0, 1),
+                color: Color(0x0F4F46E5), // rgba(79, 70, 229, 0.06)
+                blurRadius: 30,
+                offset: Offset(0, 8),
+                spreadRadius: -4,
+              ),
+              BoxShadow(
+                color: Color(0x05000000), // rgba(0, 0, 0, 0.02)
+                blurRadius: 6,
+                offset: Offset(0, 2),
+                spreadRadius: -1,
               ),
             ],
           ),
@@ -2611,283 +2633,338 @@ class _RecentVisitCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Top Row: Date Badge + Title/Subtitle/Status + Action Buttons (Figma Node 1606:1528)
+              // Top Row: Date Pill Badge + Main Card Info (Figma Node 1863:580)
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Date Badge (Figma Node 1606:1530)
+                  // Date Column with Success Checkmark Node Decorator / Date Pill Badge (Mint Green) (Figma Node 1863:582)
                   Container(
-                    width: 56,
-                    height: 56,
+                    width: 70,
                     decoration: BoxDecoration(
-                      color: const Color(0xFFF0FDF4),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: const Color(0xFFDCFCE7),
-                        width: 1,
-                      ),
+                      color: const Color(0xFFE3F4E8),
+                      borderRadius: BorderRadius.circular(16),
                     ),
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
                     child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Text(
                           month,
                           style: GoogleFonts.inter(
-                            fontSize: 10,
+                            fontSize: 11,
                             fontWeight: FontWeight.w700,
-                            letterSpacing: 0.37,
-                            color: const Color(0xFF166534),
-                            height: 15 / 10,
+                            letterSpacing: 0.55,
+                            color: const Color(0xFF1E613F),
+                            height: 16.5 / 11,
                           ),
                         ),
+                        const SizedBox(height: 2),
                         Text(
                           day,
                           style: GoogleFonts.inter(
-                            fontSize: 20,
+                            fontSize: 26,
                             fontWeight: FontWeight.w700,
-                            letterSpacing: 0.02,
-                            color: const Color(0xFF166534),
-                            height: 28 / 20,
+                            color: const Color(0xFF0E142E),
+                            height: 1.0,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          weekday,
+                          style: GoogleFonts.inter(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w400,
+                            color: const Color(0xFF4F7D63),
+                            height: 16.5 / 11,
                           ),
                         ),
                       ],
                     ),
                   ),
-                  const Gap(16),
+                  const SizedBox(width: 14),
 
-                  // Title, Subtitle & Status (Figma Node 1606:1536)
+                  // Main Card Information (Figma Node 1863:591)
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          title,
-                          style: GoogleFonts.inter(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: 0.07,
-                            color: const Color(0xFF1A1A1A),
-                            height: 22.5 / 18,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        if (subtitle.isNotEmpty) ...[
-                          const Gap(2),
-                          Text(
-                            subtitle,
-                            style: GoogleFonts.inter(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w400,
-                              color: const Color(0xFF6B7280),
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ],
-                        const Gap(4),
+                        // College Name & Outcome Button Row (Figma Node 1863:592)
                         Row(
-                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Container(
-                              width: 6,
-                              height: 6,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: isCancelled
-                                    ? const Color(0xFFDC2626)
-                                    : const Color(0xFF10B981),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    title,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: GoogleFonts.inter(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w700,
+                                      letterSpacing: -0.4,
+                                      color: const Color(0xFF0E142E),
+                                      height: 20 / 16,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  // Completed Status Badge (Figma Node 1863:595)
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 2,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFDCFCE7),
+                                      borderRadius: BorderRadius.circular(9999),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        const Icon(
+                                          Icons.check_rounded,
+                                          size: 12,
+                                          color: Color(0xFF166534),
+                                        ),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          visit.statusLabel.isNotEmpty
+                                              ? visit.statusLabel
+                                              : (isCancelled
+                                                  ? 'Cancelled'
+                                                  : 'Completed'),
+                                          style: GoogleFonts.inter(
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.w700,
+                                            color: const Color(0xFF166534),
+                                            height: 16.5 / 11,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                            const Gap(6),
-                            Text(
-                              isCancelled ? 'CANCELLED' : 'COMPLETED',
-                              style: GoogleFonts.inter(
-                                fontSize: 10,
-                                fontWeight: FontWeight.w700,
-                                letterSpacing: 0.02,
-                                color: isCancelled
-                                    ? const Color(0xFFDC2626)
-                                    : const Color(0xFF059669),
-                                height: 15 / 10,
-                              ),
+                            const SizedBox(width: 8),
+
+                            // Outcome Tag / Button (Figma Node 1863:599) & optional Delete
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                if (onRecordOutcome != null)
+                                  Material(
+                                    color: const Color(0xFFEAEDFB),
+                                    borderRadius: BorderRadius.circular(9999),
+                                    child: InkWell(
+                                      onTap: onRecordOutcome,
+                                      borderRadius: BorderRadius.circular(9999),
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 10,
+                                          vertical: 4,
+                                        ),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            const Icon(
+                                              Icons.description_outlined,
+                                              size: 12,
+                                              color: Color(0xFF2C3370),
+                                            ),
+                                            const SizedBox(width: 4),
+                                            Text(
+                                              'Outcome',
+                                              style: GoogleFonts.inter(
+                                                fontSize: 11,
+                                                fontWeight: FontWeight.w400,
+                                                color: const Color(0xFF2C3370),
+                                                height: 16.5 / 11,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                if (isCancelled && onDelete != null) ...[
+                                  const SizedBox(width: 6),
+                                  Material(
+                                    color: Colors.transparent,
+                                    child: InkWell(
+                                      onTap: onDelete,
+                                      borderRadius: BorderRadius.circular(8),
+                                      child: Container(
+                                        padding: const EdgeInsets.all(5.5),
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFFFEF2F2),
+                                          borderRadius: BorderRadius.circular(8),
+                                          border: Border.all(
+                                            color: const Color(0xFFFECACA),
+                                          ),
+                                        ),
+                                        child: const Icon(
+                                          CupertinoIcons.trash,
+                                          size: 13,
+                                          color: Color(0xFFDC2626),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+
+                        // Metrics Row: Leads & Interested (Figma Node 1863:603)
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            // Total Leads (Figma Node 1863:604)
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                const Icon(
+                                  Icons.group_outlined,
+                                  size: 18,
+                                  color: Color(0xFF697289),
+                                ),
+                                const SizedBox(width: 8),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      '$leads',
+                                      style: GoogleFonts.inter(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w700,
+                                        color: const Color(0xFF0E142E),
+                                        height: 18.75 / 15,
+                                      ),
+                                    ),
+                                    Text(
+                                      'Total Leads',
+                                      style: GoogleFonts.inter(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.w400,
+                                        color: const Color(0xFF697289),
+                                        height: 15 / 10,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                            const SizedBox(width: 20),
+
+                            // Vertical Separator Line (Figma Node 1863:614)
+                            Container(
+                              width: 1,
+                              height: 24,
+                              color: const Color(0xFFE2E8F0),
+                            ),
+                            const SizedBox(width: 20),
+
+                            // Interested (Figma Node 1863:615)
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                const Icon(
+                                  Icons.star_outline_rounded,
+                                  size: 18,
+                                  color: Color(0xFF697289),
+                                ),
+                                const SizedBox(width: 8),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      '$interested',
+                                      style: GoogleFonts.inter(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w700,
+                                        color: const Color(0xFF0E142E),
+                                        height: 18.75 / 15,
+                                      ),
+                                    ),
+                                    Text(
+                                      'Interested',
+                                      style: GoogleFonts.inter(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.w400,
+                                        color: const Color(0xFF697289),
+                                        height: 15 / 10,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
                             ),
                           ],
                         ),
                       ],
                     ),
                   ),
-                  const Gap(8),
-
-                  // Direction & Outcome or Delete Button (Figma Node 1606:1542)
-                  if (isCancelled) ...[
-                    if (onDelete != null)
-                      Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          onTap: onDelete,
-                          borderRadius: BorderRadius.circular(8),
-                          child: Container(
-                            padding: const EdgeInsets.all(5.5),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFFEF2F2),
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(
-                                color: const Color(0xFFFECACA),
-                              ),
-                            ),
-                            child: const Icon(
-                              CupertinoIcons.trash,
-                              size: 13,
-                              color: Color(0xFFDC2626),
-                            ),
-                          ),
-                        ),
-                      ),
-                  ] else if (onRecordOutcome != null) ...[
-                    InkWell(
-                      onTap: onRecordOutcome,
-                      borderRadius: BorderRadius.circular(8),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 6,
-                          vertical: 4,
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            SvgPicture.asset(
-                              AppSvgs.visitOutcome,
-                              width: 12,
-                              height: 12,
-                            ),
-                            const Gap(6),
-                            Text(
-                              'Outcome',
-                              style: GoogleFonts.inter(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w500,
-                                color: const Color(0xFF6B7280),
-                                letterSpacing: 0.08,
-                                height: 16 / 12,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
                 ],
               ),
-              const Gap(16),
+              const SizedBox(height: 22),
 
-              // Stat Divider Section (Figma Node 1606:1549)
-              Container(
-                decoration: const BoxDecoration(
-                  border: Border(
-                    top: BorderSide(color: Color(0xFFF3F4F6), width: 1),
-                    bottom: BorderSide(color: Color(0xFFF3F4F6), width: 1),
-                  ),
-                ),
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            '$leads',
-                            style: GoogleFonts.inter(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
-                              color: const Color(0xFF1A1A1A),
-                              height: 24 / 16,
-                            ),
-                          ),
-                          const Gap(6),
-                          Text(
-                            'LEADS',
-                            style: GoogleFonts.inter(
-                              fontSize: 10,
-                              fontWeight: FontWeight.w700,
-                              color: const Color(0xFF6B7280),
-                              letterSpacing: 0.25,
-                              height: 15 / 10,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Container(
-                      width: 1,
-                      height: 16,
-                      color: const Color(0xFFE5E7EB),
-                    ),
-                    Expanded(
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            '$interested',
-                            style: GoogleFonts.inter(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
-                              color: const Color(0xFF1A1A1A),
-                              height: 24 / 16,
-                            ),
-                          ),
-                          const Gap(6),
-                          Text(
-                            'INTERESTED',
-                            style: GoogleFonts.inter(
-                              fontSize: 10,
-                              fontWeight: FontWeight.w700,
-                              color: const Color(0xFF6B7280),
-                              letterSpacing: 0.25,
-                              height: 15 / 10,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const Gap(16),
-
-              // Notes Box (Figma Node 1606:1563)
+              // Notes Capsule Sub-Card (Figma Node 1863:625)
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF8F9FA),
-                  borderRadius: BorderRadius.circular(12),
+                  color: const Color(0xFFEFF3FC),
+                  borderRadius: BorderRadius.circular(16),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // Met Item (Figma Node 1863:626)
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          'Met: ',
-                          style: GoogleFonts.inter(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: 0.2,
-                            color: const Color(0xFF374151),
-                            height: 16 / 12,
+                        const Padding(
+                          padding: EdgeInsets.only(top: 1.5),
+                          child: Icon(
+                            Icons.access_time_rounded,
+                            size: 14,
+                            color: Color(0xFF697289),
                           ),
                         ),
+                        const SizedBox(width: 8),
                         Expanded(
-                          child: Text(
-                            met,
-                            style: GoogleFonts.inter(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w400,
-                              color: const Color(0xFF4B5563),
-                              height: 16 / 12,
+                          child: Text.rich(
+                            TextSpan(
+                              children: [
+                                TextSpan(
+                                  text: 'Met:',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 11.5,
+                                    fontWeight: FontWeight.w700,
+                                    color: const Color(0xFF0E142E),
+                                    height: 17.25 / 11.5,
+                                  ),
+                                ),
+                                TextSpan(
+                                  text: ' $met',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 11.5,
+                                    fontWeight: FontWeight.w400,
+                                    color: const Color(0xFF2E374F),
+                                    height: 17.25 / 11.5,
+                                  ),
+                                ),
+                              ],
                             ),
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
@@ -2895,28 +2972,44 @@ class _RecentVisitCard extends StatelessWidget {
                         ),
                       ],
                     ),
-                    const Gap(8),
+                    const SizedBox(height: 6),
+
+                    // Next Item (Figma Node 1863:633)
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          'Next: ',
-                          style: GoogleFonts.inter(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: 0.25,
-                            color: const Color(0xFF374151),
-                            height: 16 / 12,
+                        const Padding(
+                          padding: EdgeInsets.only(top: 1.5),
+                          child: Icon(
+                            Icons.arrow_forward_rounded,
+                            size: 14,
+                            color: Color(0xFF697289),
                           ),
                         ),
+                        const SizedBox(width: 8),
                         Expanded(
-                          child: Text(
-                            next,
-                            style: GoogleFonts.inter(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w400,
-                              color: const Color(0xFF4B5563),
-                              height: 16 / 12,
+                          child: Text.rich(
+                            TextSpan(
+                              children: [
+                                TextSpan(
+                                  text: 'Next:',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 11.5,
+                                    fontWeight: FontWeight.w700,
+                                    color: const Color(0xFF0E142E),
+                                    height: 17.25 / 11.5,
+                                  ),
+                                ),
+                                TextSpan(
+                                  text: ' $next',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 11.5,
+                                    fontWeight: FontWeight.w400,
+                                    color: const Color(0xFF2E374F),
+                                    height: 17.25 / 11.5,
+                                  ),
+                                ),
+                              ],
                             ),
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
