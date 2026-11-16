@@ -78,69 +78,24 @@ class _MyRecordsTabViewState extends State<MyRecordsTabView> {
                                   letterSpacing: -0.4,
                                 ),
                               ),
-                              Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  // Same Reloading Icon button & timing
-                                  Material(
-                                    color: Colors.transparent,
-                                    child: InkWell(
-                                      onTap: _isRefreshing
-                                          ? null
-                                          : _performRefresh,
-                                      borderRadius: BorderRadius.circular(12),
-                                      child: Container(
-                                        width: 38,
-                                        height: 38,
-                                        decoration: BoxDecoration(
-                                          color: const Color(0xFFF9FAFB),
-                                          borderRadius: BorderRadius.circular(
-                                            12,
-                                          ),
-                                          border: Border.all(
-                                            color: const Color(0xFFF3F4F6),
-                                            width: 1,
-                                          ),
-                                        ),
-                                        alignment: Alignment.center,
-                                        child: _isRefreshing
-                                            ? const CupertinoActivityIndicator(
-                                                radius: 8,
-                                              )
-                                            : SvgPicture.asset(
-                                                AppSvgs.refresh,
-                                                width: 16,
-                                                height: 16,
-                                                colorFilter:
-                                                    const ColorFilter.mode(
-                                                      Color(0xFF64748B),
-                                                      BlendMode.srcIn,
-                                                    ),
-                                              ),
-                                      ),
-                                    ),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 4,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFEEF2FF),
+                                  borderRadius: BorderRadius.circular(9999),
+                                ),
+                                child: Text(
+                                  user.roleLabel.toUpperCase(),
+                                  style: GoogleFonts.inter(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w700,
+                                    color: const Color(0xFF4F46E5),
+                                    letterSpacing: 0.5,
                                   ),
-                                  const Gap(8),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 10,
-                                      vertical: 4,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: const Color(0xFFEEF2FF),
-                                      borderRadius: BorderRadius.circular(9999),
-                                    ),
-                                    child: Text(
-                                      user.roleLabel.toUpperCase(),
-                                      style: GoogleFonts.inter(
-                                        fontSize: 10,
-                                        fontWeight: FontWeight.w700,
-                                        color: const Color(0xFF4F46E5),
-                                        letterSpacing: 0.5,
-                                      ),
-                                    ),
-                                  ),
-                                ],
+                                ),
                               ),
                             ],
                           ),

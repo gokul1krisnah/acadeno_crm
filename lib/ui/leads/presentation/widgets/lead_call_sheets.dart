@@ -1623,7 +1623,6 @@ class LeadCallSheets {
   // ---------------------------------------------------------------------------
   static void showMyRecordSheet(BuildContext context) {
     final user = context.read<HomeCubit>().state.user;
-    bool isRefreshing = false;
 
     showDialog(
       context: context,
@@ -1688,56 +1687,19 @@ class LeadCallSheets {
                           ],
                         ),
                       ),
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          IconButton(
-                            onPressed: isRefreshing
-                                ? null
-                                : () async {
-                                    setSheetState(() => isRefreshing = true);
-                                    ctx.read<LeadsCubit>().refresh();
-                                    await Future.delayed(
-                                      const Duration(milliseconds: 1000),
-                                    );
-                                    if (ctx.mounted) {
-                                      setSheetState(() => isRefreshing = false);
-                                    }
-                                  },
-                            icon: isRefreshing
-                                ? const CupertinoActivityIndicator(radius: 8)
-                                : SvgPicture.asset(
-                                    AppSvgs.refresh,
-                                    width: 16,
-                                    height: 16,
-                                    colorFilter: const ColorFilter.mode(
-                                      Color(0xFF64748B),
-                                      BlendMode.srcIn,
-                                    ),
-                                  ),
-                            visualDensity: VisualDensity.compact,
-                            padding: EdgeInsets.zero,
-                            constraints: const BoxConstraints(
-                              minWidth: 28,
-                              minHeight: 28,
-                            ),
-                          ),
-                          const Gap(4),
-                          IconButton(
-                            onPressed: () => Navigator.pop(ctx),
-                            icon: const Icon(
-                              Icons.close_rounded,
-                              size: 20,
-                              color: Color(0xFF94A3B8),
-                            ),
-                            visualDensity: VisualDensity.compact,
-                            padding: EdgeInsets.zero,
-                            constraints: const BoxConstraints(
-                              minWidth: 28,
-                              minHeight: 28,
-                            ),
-                          ),
-                        ],
+                      IconButton(
+                        onPressed: () => Navigator.pop(ctx),
+                        icon: const Icon(
+                          Icons.close_rounded,
+                          size: 20,
+                          color: Color(0xFF94A3B8),
+                        ),
+                        visualDensity: VisualDensity.compact,
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(
+                          minWidth: 28,
+                          minHeight: 28,
+                        ),
                       ),
                     ],
                   ),
