@@ -32,6 +32,12 @@ class VisitsCubit extends Cubit<VisitsState> {
     _subscribe();
   }
 
+  void selectBucket(VisitStatusBucket bucket) {
+    if (state.selectedBucket != bucket) {
+      emit(state.copyWith(selectedBucket: bucket));
+    }
+  }
+
   void clearToast() {
     if (state.toastMessage != null) {
       emit(state.copyWith(clearToast: true));
@@ -66,6 +72,46 @@ class VisitsCubit extends Cubit<VisitsState> {
     }
   }
 
+  // Update visit status (Planned/Upcoming, Completed, Cancelled) with immediate reactive state update
+  Future<void> updateVisitStatus({
+    required String visitId,
+    required String newStatus,
+    String? reason,
+    String? dayNumber,
+    String? monthShort,
+  }) async {
+    final normalized = newStatus.trim();
+    final isUpcoming = normalized.toLowerCase() == 'planned' ||
+        normalized.toLowerCase() == 'upcoming';
+
+    // Immediate optimistic local update so lists and counts reflect changes instantly
+    final updatedList = state.visits.map((v) {
+      if (v.id == visitId) {
+        return v.copyWith(
+          statusLabel: normalized,
+          isUpcoming: isUpcoming,
+          cancelReason: reason ?? v.cancelReason,
+          dayNumber: dayNumber ?? v.dayNumber,
+          monthShort: monthShort ?? v.monthShort,
+        );
+      }
+      return v;
+    }).toList();
+    emit(state.copyWith(visits: updatedList));
+
+    try {
+      await _repository.updateVisitStatus(
+        visitId: visitId,
+        status: normalized,
+        reason: reason,
+        dayNumber: dayNumber,
+        monthShort: monthShort,
+      );
+    } catch (_) {
+      // Stream subscription will reconcile with remote state
+    }
+  }
+
   // Record outcome of an assigned college visit and persist to Firestore
   Future<void> recordVisitOutcome({
     required String visitId,
@@ -74,6 +120,28 @@ class VisitsCubit extends Cubit<VisitsState> {
     required int leadsCollected,
     required int interestedCount,
   }) async {
+    // Immediate optimistic update
+    final updatedList = state.visits.map((v) {
+      if (v.id == visitId) {
+        return v.copyWith(
+          statusLabel: 'Completed',
+          isUpcoming: false,
+          metSummary: metPeople.trim(),
+          nextActionSummary: nextAction.trim(),
+          leadsCollected: leadsCollected,
+          interestedCount: interestedCount,
+        );
+      }
+      return v;
+    }).toList();
+    emit(
+      state.copyWith(
+        visits: updatedList,
+        toastMessage:
+            'Recorded visit outcome ($leadsCollected leads collected) ✓',
+      ),
+    );
+
     try {
       await _repository.recordVisitOutcome(
         visitId: visitId,
@@ -82,31 +150,34 @@ class VisitsCubit extends Cubit<VisitsState> {
         leadsCollected: leadsCollected,
         interestedCount: interestedCount,
       );
-      if (!isClosed) {
-        emit(
-          state.copyWith(
-            toastMessage:
-                'Recorded visit outcome ($leadsCollected leads collected) ✓',
-          ),
-        );
-      }
     } catch (_) {
-      if (!isClosed) {
-        emit(state.copyWith(toastMessage: 'Recorded outcome ✓'));
-      }
+      // Handled by offline queue in visits_rds
     }
   }
 
-  // Cancel college visit
+  // Cancel college visit with immediate list and count update
   Future<void> cancelCollegeVisit({
     required String visitId,
     String reason = '',
   }) async {
+    // Immediate optimistic update
+    final updatedList = state.visits.map((v) {
+      if (v.id == visitId) {
+        return v.copyWith(
+          statusLabel: 'Cancelled',
+          isUpcoming: false,
+          cancelReason:
+              reason.trim().isNotEmpty ? reason.trim() : 'Visit cancelled',
+          metSummary:
+              reason.trim().isNotEmpty ? reason.trim() : 'Visit cancelled',
+        );
+      }
+      return v;
+    }).toList();
+    emit(state.copyWith(visits: updatedList, toastMessage: 'Visit cancelled ✓'));
+
     try {
       await _repository.cancelCollegeVisit(visitId: visitId, reason: reason);
-      if (!isClosed) {
-        emit(state.copyWith(toastMessage: 'Visit cancelled ✓'));
-      }
     } catch (_) {
       if (!isClosed) {
         emit(state.copyWith(toastMessage: 'Error cancelling visit'));
@@ -114,13 +185,13 @@ class VisitsCubit extends Cubit<VisitsState> {
     }
   }
 
-  // Delete college visit
+  // Delete college visit with immediate update
   Future<void> deleteCollegeVisit(String visitId) async {
+    final updatedList = state.visits.where((v) => v.id != visitId).toList();
+    emit(state.copyWith(visits: updatedList, toastMessage: 'Visit deleted ✓'));
+
     try {
       await _repository.deleteCollegeVisit(visitId);
-      if (!isClosed) {
-        emit(state.copyWith(toastMessage: 'Visit deleted ✓'));
-      }
     } catch (_) {
       if (!isClosed) {
         emit(state.copyWith(toastMessage: 'Error deleting visit'));

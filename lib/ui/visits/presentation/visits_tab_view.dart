@@ -26,88 +26,219 @@ class VisitsTabView extends StatefulWidget {
 }
 
 class _VisitsTabViewState extends State<VisitsTabView> {
-  double _scrollProgress = 0.0;
+  late final PageController _pageController;
+  bool _isProgrammaticScroll = false;
+  int? _targetPageIndex;
 
-  bool _handleScroll(ScrollNotification notification) {
-    if (notification.metrics.axis == Axis.vertical) {
-      final offset = notification.metrics.pixels;
-      final progress = (offset / 24.0).clamp(0.0, 1.0);
-      if (progress != _scrollProgress) {
-        setState(() => _scrollProgress = progress);
-      }
+  @override
+  void initState() {
+    super.initState();
+    final initialIndex = context.read<VisitsCubit>().state.selectedBucket.index;
+    _pageController = PageController(initialPage: initialIndex);
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  void _onTabTapped(VisitsCubit cubit, VisitStatusBucket bucket) {
+    final target = bucket.index;
+    if (_pageController.hasClients &&
+        _pageController.page?.round() == target &&
+        !_isProgrammaticScroll) {
+      return;
     }
-    return false;
+    setState(() {
+      _isProgrammaticScroll = true;
+      _targetPageIndex = target;
+    });
+    cubit.selectBucket(bucket);
+    if (_pageController.hasClients) {
+      _pageController
+          .animateToPage(
+            target,
+            duration: const Duration(milliseconds: 280),
+            curve: Curves.easeInOutCubic,
+          )
+          .then((_) {
+            if (mounted) {
+              setState(() {
+                _isProgrammaticScroll = false;
+                _targetPageIndex = null;
+              });
+            }
+          });
+    } else {
+      _isProgrammaticScroll = false;
+      _targetPageIndex = null;
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<VisitsCubit, VisitsState>(
+    return BlocConsumer<VisitsCubit, VisitsState>(
+      listener: (context, state) {
+        final targetPage = state.selectedBucket.index;
+        if (!_isProgrammaticScroll &&
+            _pageController.hasClients &&
+            _pageController.page?.round() != targetPage) {
+          _pageController.animateToPage(
+            targetPage,
+            duration: const Duration(milliseconds: 280),
+            curve: Curves.easeInOutCubic,
+          );
+        }
+      },
       builder: (context, state) {
-        final pad = context.devicePadding;
-        final upcoming = state.upcomingVisits;
-        final recent = state.recentVisits;
-        final isEmptyState = upcoming.isEmpty && recent.isEmpty;
+        final cubit = context.read<VisitsCubit>();
+        final media = MediaQuery.of(context);
+        final screenWidth = media.size.width;
+        final isLandscape = media.orientation == Orientation.landscape;
+        final isCompact = screenWidth < 360;
+        final hPad = isCompact ? 16.0 : 24.0;
+        final topPad = media.padding.top > 0
+            ? media.padding.top + (isLandscape ? 10.0 : 16.0)
+            : (isLandscape ? 12.0 : 20.0);
+        final headerToTabsGap = isLandscape ? 12.0 : 20.0;
 
         return Theme(
           data: Theme.of(context).copyWith(platform: TargetPlatform.iOS),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Top White Header (Matches Figma node 1606:1480)
+              // Top White Header with Title, "Log visit" action button, and 3 Status Tabs
               Container(
                 width: double.infinity,
                 color: Colors.white,
-                padding: EdgeInsets.fromLTRB(
-                  pad.clamp(16.0, 24.0),
-                  MediaQuery.paddingOf(context).top > 0
-                      ? MediaQuery.paddingOf(context).top + 16
-                      : 24,
-                  pad.clamp(16.0, 24.0),
-                  24,
-                ),
+                padding: EdgeInsets.fromLTRB(hPad, topPad, hPad, 0),
                 child: Center(
                   child: ConstrainedBox(
                     constraints: const BoxConstraints(maxWidth: 800),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.center,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          'College visits',
-                          style: GoogleFonts.inter(
-                            fontSize: 24,
-                            fontWeight: FontWeight.w500,
-                            color: const Color(0xFF1A1A1A),
-                            letterSpacing: -0.6,
-                            height: 32 / 24,
-                          ),
-                        ),
-                        SizedBox(
-                          height: 40,
-                          child: ElevatedButton.icon(
-                            onPressed: () => _showLogVisitModal(context),
-                            icon: const Icon(Icons.add, size: 14, color: Colors.white),
-                            label: Text(
-                              'Log visit',
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Text(
+                              'College visits',
                               style: GoogleFonts.inter(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.white,
-                                letterSpacing: 0.11,
-                                height: 20 / 14,
+                                fontSize: isCompact ? 22 : 24,
+                                fontWeight: FontWeight.w700,
+                                color: const Color(0xFF0F172A),
+                                letterSpacing: -0.5,
+                                height: 32 / 24,
                               ),
                             ),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFFE64A19),
-                              foregroundColor: Colors.white,
-                              elevation: 0,
-                              shadowColor: const Color(0x0D000000),
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 20,
-                                vertical: 10,
+                            SizedBox(
+                              height: 38,
+                              child: ElevatedButton.icon(
+                                onPressed: () => _showLogVisitModal(context),
+                                icon: const Icon(Icons.add, size: 16, color: Colors.white),
+                                label: Text(
+                                  'Log visit',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 13.5,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.white,
+                                    letterSpacing: 0.1,
+                                  ),
+                                ),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFFE64A19),
+                                  foregroundColor: Colors.white,
+                                  elevation: 0,
+                                  shadowColor: const Color(0x0D000000),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 8,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(9999),
+                                  ),
+                                ),
                               ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(9999),
+                            ),
+                          ],
+                        ),
+                        Gap(headerToTabsGap),
+
+                        // Flat Tab Headers: UPCOMING | COMPLETED | CANCELLED
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _VisitTabItem(
+                                title: 'UPCOMING',
+                                count: state.upcomingCount,
+                                alignment: Alignment.centerLeft,
+                                isSelected:
+                                    state.selectedBucket == VisitStatusBucket.upcoming,
+                                onTap: () => _onTabTapped(
+                                  cubit,
+                                  VisitStatusBucket.upcoming,
+                                ),
+                              ),
+                            ),
+                            Expanded(
+                              child: _VisitTabItem(
+                                title: 'COMPLETED',
+                                count: state.completedCount,
+                                alignment: Alignment.center,
+                                isSelected:
+                                    state.selectedBucket == VisitStatusBucket.completed,
+                                onTap: () => _onTabTapped(
+                                  cubit,
+                                  VisitStatusBucket.completed,
+                                ),
+                              ),
+                            ),
+                            Expanded(
+                              child: _VisitTabItem(
+                                title: 'CANCELLED',
+                                count: state.cancelledCount,
+                                alignment: Alignment.centerRight,
+                                isSelected:
+                                    state.selectedBucket == VisitStatusBucket.cancelled,
+                                onTap: () => _onTabTapped(
+                                  cubit,
+                                  VisitStatusBucket.cancelled,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const Gap(8),
+
+                        // Continuous sliding 2px indicator matching Follow-ups style
+                        SizedBox(
+                          height: 2,
+                          width: double.infinity,
+                          child: AnimatedAlign(
+                            alignment: switch (state.selectedBucket) {
+                              VisitStatusBucket.upcoming => Alignment.centerLeft,
+                              VisitStatusBucket.completed => Alignment.center,
+                              VisitStatusBucket.cancelled => Alignment.centerRight,
+                            },
+                            duration: const Duration(milliseconds: 260),
+                            curve: Curves.easeInOutCubic,
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 260),
+                              curve: Curves.easeInOutCubic,
+                              height: 2,
+                              width: switch (state.selectedBucket) {
+                                VisitStatusBucket.upcoming =>
+                                  isCompact ? 72.0 : 86.0,
+                                VisitStatusBucket.completed =>
+                                  isCompact ? 78.0 : 94.0,
+                                VisitStatusBucket.cancelled =>
+                                  isCompact ? 74.0 : 88.0,
+                              },
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFE64A19),
+                                borderRadius: BorderRadius.circular(999),
                               ),
                             ),
                           ),
@@ -118,286 +249,407 @@ class _VisitsTabViewState extends State<VisitsTabView> {
                 ),
               ),
 
-              // Body Content (Scrollable with RefreshIndicator and Ambient Shade)
+              // PageView supporting horizontal swipe navigation between Upcoming, Completed, and Cancelled
               Expanded(
-                child: Container(
+                child: ColoredBox(
                   color: const Color(0xFFF8F9FA),
-                  child: Stack(
-                    children: [
-                      RefreshIndicator.adaptive(
-                        color: const Color(0xFF4338CA),
-                        backgroundColor: Colors.white,
-                        displacement: 20,
-                        onRefresh: () async {
-                          context.read<VisitsCubit>().refresh();
-                          await Future.delayed(
-                            const Duration(milliseconds: 1000),
-                          );
-                        },
-                        child: NotificationListener<ScrollNotification>(
-                          onNotification: _handleScroll,
-                          child: SingleChildScrollView(
-                            physics: isEmptyState
-                                ? const AlwaysScrollableScrollPhysics(
-                                    parent: ClampingScrollPhysics(),
-                                  )
-                                : const AlwaysScrollableScrollPhysics(
-                                    parent: BouncingScrollPhysics(),
-                                  ),
-                            padding: EdgeInsets.fromLTRB(
-                              pad.clamp(16.0, 24.0),
-                              16,
-                              pad.clamp(16.0, 24.0),
-                              32,
-                            ),
-                            child: Center(
-                              child: ConstrainedBox(
-                                constraints: const BoxConstraints(maxWidth: 800),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                        if (upcoming.isEmpty && recent.isEmpty) ...[
-                          Container(
-                            width: double.infinity,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 24,
-                              vertical: 36,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(
-                                color: const Color(0xFFE2E8F0),
-                                width: 1.2,
-                              ),
-                              boxShadow: const [
-                                BoxShadow(
-                                  color: Color(0x04000000),
-                                  blurRadius: 6,
-                                  offset: Offset(0, 2),
-                                ),
-                              ],
-                            ),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Container(
-                                  width: 52,
-                                  height: 52,
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFFF8FAFC),
-                                    shape: BoxShape.circle,
-                                    border: Border.all(
-                                      color: const Color(0xFFE2E8F0),
-                                    ),
-                                  ),
-                                  alignment: Alignment.center,
-                                  child: const Icon(
-                                    CupertinoIcons.calendar_today,
-                                    color: Color(0xFF94A3B8),
-                                    size: 24,
-                                  ),
-                                ),
-                                const Gap(16),
-                                const Text(
-                                  'No planned visits',
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    fontSize: 16.5,
-                                    fontWeight: FontWeight.w700,
-                                    color: Color(0xFF0F172A),
-                                    letterSpacing: -0.2,
-                                  ),
-                                ),
-                                const Gap(6),
-                                const Text(
-                                  'You have no college campus visits scheduled right now.\nTap "Log visit" above to schedule a new visit.',
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w400,
-                                    color: Color(0xFF64748B),
-                                    height: 1.4,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ] else ...[
-                          // UPCOMING · ASSIGNED TO YOU (Figma node 1606:1489)
-                          Text(
-                            'UPCOMING · ASSIGNED TO YOU',
-                            style: GoogleFonts.inter(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w700,
-                              letterSpacing: 1.1,
-                              color: const Color(0xFF6B7280),
-                              height: 16.5 / 11,
-                            ),
-                          ),
-                          const Gap(10),
-                          if (upcoming.isEmpty)
-                            Container(
-                              width: double.infinity,
-                              margin: const EdgeInsets.only(bottom: 14),
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 20,
-                              ),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(14),
-                                border: Border.all(
-                                  color: const Color(0xFFF1F5F9),
-                                  width: 1.2,
-                                ),
-                              ),
-                              child: const Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    CupertinoIcons.calendar_badge_minus,
-                                    size: 18,
-                                    color: Color(0xFF94A3B8),
-                                  ),
-                                  Gap(8),
-                                  Text(
-                                    'No planned visits scheduled',
-                                    style: TextStyle(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w500,
-                                      color: Color(0xFF64748B),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            )
-                          else
-                            ...upcoming.map(
-                              (visit) => Padding(
-                                padding: const EdgeInsets.only(bottom: 14),
-                                child: _UpcomingVisitCard(
-                                  visit: visit,
-                                  onDirections: () =>
-                                      _handleDirections(context, visit),
-                                  onRecordOutcome: () =>
-                                      _showRecordOutcomeSheet(context, visit),
-                                  onDelete: () =>
-                                      _confirmDeleteVisit(context, visit),
-                                ),
-                              ),
-                            ),
-                          const Gap(10),
-
-                          // RECENT (Figma node 1606:1525)
-                          Text(
-                            'RECENT',
-                            style: GoogleFonts.inter(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w700,
-                              letterSpacing: 1.1,
-                              color: const Color(0xFF6B7280),
-                              height: 16.5 / 11,
-                            ),
-                          ),
-                          const Gap(10),
-                          if (recent.isEmpty)
-                            Container(
-                              width: double.infinity,
-                              margin: const EdgeInsets.only(bottom: 12),
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 20,
-                              ),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(14),
-                                border: Border.all(
-                                  color: const Color(0xFFF1F5F9),
-                                  width: 1.2,
-                                ),
-                              ),
-                              child: const Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    CupertinoIcons.clock,
-                                    size: 18,
-                                    color: Color(0xFF94A3B8),
-                                  ),
-                                  Gap(8),
-                                  Text(
-                                    'No past visits recorded yet',
-                                    style: TextStyle(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w500,
-                                      color: Color(0xFF64748B),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            )
-                          else
-                            ...recent.map(
-                              (visit) => Padding(
-                                padding: const EdgeInsets.only(bottom: 12),
-                                child: _RecentVisitCard(
-                                  visit: visit,
-                                  onDirections: () =>
-                                      _handleDirections(context, visit),
-                                  onRecordOutcome: () =>
-                                      _showRecordOutcomeSheet(context, visit),
-                                  onDelete: () =>
-                                      _confirmDeleteVisit(context, visit),
-                                ),
-                              ),
-                            ),
-                        ],
-                      ],
+                  child: PageView(
+                    controller: _pageController,
+                    physics: const AlwaysScrollableScrollPhysics(
+                      parent: BouncingScrollPhysics(),
                     ),
+                    onPageChanged: (pageIndex) {
+                      if (_isProgrammaticScroll) {
+                        if (_targetPageIndex != null &&
+                            pageIndex == _targetPageIndex) {
+                          setState(() {
+                            _isProgrammaticScroll = false;
+                            _targetPageIndex = null;
+                          });
+                        }
+                        return;
+                      }
+                      final bucket = VisitStatusBucket.values[pageIndex];
+                      cubit.selectBucket(bucket);
+                    },
+                    children: [
+                      _buildVisitBucketPage(
+                        context: context,
+                        items: state.upcomingVisits,
+                        bucket: VisitStatusBucket.upcoming,
+                        cubit: cubit,
+                        pad: hPad,
+                        isLandscape: isLandscape,
+                      ),
+                      _buildVisitBucketPage(
+                        context: context,
+                        items: state.completedVisits,
+                        bucket: VisitStatusBucket.completed,
+                        cubit: cubit,
+                        pad: hPad,
+                        isLandscape: isLandscape,
+                      ),
+                      _buildVisitBucketPage(
+                        context: context,
+                        items: state.cancelledVisits,
+                        bucket: VisitStatusBucket.cancelled,
+                        cubit: cubit,
+                        pad: hPad,
+                        isLandscape: isLandscape,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildVisitBucketPage({
+    required BuildContext context,
+    required List<ExecutiveCollegeVisit> items,
+    required VisitStatusBucket bucket,
+    required VisitsCubit cubit,
+    required double pad,
+    required bool isLandscape,
+  }) {
+    return Theme(
+      data: Theme.of(context).copyWith(platform: TargetPlatform.iOS),
+      child: RefreshIndicator.adaptive(
+        color: const Color(0xFF4338CA),
+        backgroundColor: Colors.white,
+        onRefresh: () async {
+          cubit.refresh();
+          await Future.delayed(const Duration(milliseconds: 1000));
+        },
+        child: items.isEmpty
+            ? ListView(
+                physics: const AlwaysScrollableScrollPhysics(
+                  parent: BouncingScrollPhysics(),
+                ),
+                padding: EdgeInsets.fromLTRB(
+                  pad.clamp(16.0, 24.0),
+                  isLandscape ? 16 : 24,
+                  pad.clamp(16.0, 24.0),
+                  32,
+                ),
+                children: [
+                  Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 800),
+                      child: _buildEmptyState(context, bucket),
+                    ),
+                  ),
+                ],
+              )
+            : ListView.separated(
+                physics: const AlwaysScrollableScrollPhysics(
+                  parent: BouncingScrollPhysics(),
+                ),
+                padding: EdgeInsets.fromLTRB(
+                  pad.clamp(16.0, 24.0),
+                  isLandscape ? 14 : 20,
+                  pad.clamp(16.0, 24.0),
+                  32,
+                ),
+                itemCount: items.length,
+                separatorBuilder: (_, _) => const Gap(14), // Strictly >= 10px spacing
+                itemBuilder: (context, index) {
+                  final visit = items[index];
+                  return Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 800),
+                      child: switch (bucket) {
+                        VisitStatusBucket.upcoming => _UpcomingVisitCard(
+                            key: ValueKey(visit.id),
+                            visit: visit,
+                            onDirections: () => _handleDirections(context, visit),
+                            onRecordOutcome: () =>
+                                _showRecordOutcomeSheet(context, visit),
+                            onCancel: () =>
+                                _showCancelVisitDialog(context, visit),
+                            onDelete: () =>
+                                _confirmDeleteVisit(context, visit),
+                          ),
+                        VisitStatusBucket.completed => _RecentVisitCard(
+                            key: ValueKey(visit.id),
+                            visit: visit,
+                            onDirections: () => _handleDirections(context, visit),
+                            onRecordOutcome: () =>
+                                _showRecordOutcomeSheet(context, visit),
+                            onDelete: () =>
+                                _confirmDeleteVisit(context, visit),
+                          ),
+                        VisitStatusBucket.cancelled => _CancelledVisitCard(
+                            key: ValueKey(visit.id),
+                            visit: visit,
+                            onReschedule: () =>
+                                _showRescheduleDialog(context, visit),
+                            onDelete: () =>
+                                _confirmDeleteVisit(context, visit),
+                          ),
+                      },
+                    ),
+                  );
+                },
+              ),
+      ),
+    );
+  }
+
+  Widget _buildEmptyState(BuildContext context, VisitStatusBucket bucket) {
+    final (icon, iconColor, iconBg, title, subtitle, showAction) =
+        switch (bucket) {
+      VisitStatusBucket.upcoming => (
+          CupertinoIcons.calendar_today,
+          const Color(0xFF4A3AFF),
+          const Color(0xFFEEEBF6),
+          'No upcoming visits',
+          'You have no college campus visits scheduled right now.\nTap "Log visit" below to schedule a new visit.',
+          true,
+        ),
+      VisitStatusBucket.completed => (
+          Icons.verified_outlined,
+          const Color(0xFF166534),
+          const Color(0xFFF0FDF4),
+          'No completed visits yet',
+          'Visits you complete will appear here along with collected leads, student interest counts, and follow-up notes.',
+          false,
+        ),
+      VisitStatusBucket.cancelled => (
+          Icons.event_busy_outlined,
+          const Color(0xFFDC2626),
+          const Color(0xFFFEF2F2),
+          'No cancelled visits',
+          'Any cancelled or discontinued campus visits will be kept here for reference.',
+          false,
+        ),
+    };
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 36),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE2E8F0), width: 1.2),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x04000000),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 56,
+            height: 56,
+            decoration: BoxDecoration(
+              color: iconBg,
+              shape: BoxShape.circle,
+              border: Border.all(color: iconColor.withValues(alpha: 0.2)),
+            ),
+            alignment: Alignment.center,
+            child: Icon(icon, color: iconColor, size: 26),
+          ),
+          const Gap(16),
+          Text(
+            title,
+            textAlign: TextAlign.center,
+            style: GoogleFonts.inter(
+              fontSize: 16.5,
+              fontWeight: FontWeight.w700,
+              color: const Color(0xFF0F172A),
+              letterSpacing: -0.2,
+            ),
+          ),
+          const Gap(6),
+          Text(
+            subtitle,
+            textAlign: TextAlign.center,
+            style: GoogleFonts.inter(
+              fontSize: 13,
+              fontWeight: FontWeight.w400,
+              color: const Color(0xFF64748B),
+              height: 1.45,
+            ),
+          ),
+          if (showAction) ...[
+            const Gap(20),
+            SizedBox(
+              height: 42,
+              child: ElevatedButton.icon(
+                onPressed: () => _showLogVisitModal(context),
+                icon: const Icon(Icons.add, size: 16, color: Colors.white),
+                label: Text(
+                  'Log visit',
+                  style: GoogleFonts.inter(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFE64A19),
+                  foregroundColor: Colors.white,
+                  elevation: 0,
+                  padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 10),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(9999),
                   ),
                 ),
               ),
             ),
-          ),
-              // Top Ambient Shade Overlay when scrolling (Smooth gradient shade without cutting)
-              if (_scrollProgress > 0.01)
-                Positioned(
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  height: 24,
-                  child: IgnorePointer(
-                    child: Opacity(
-                      opacity: _scrollProgress.clamp(0.0, 1.0),
-                      child: Container(
-                        decoration: const BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                            stops: [0.0, 0.35, 0.70, 1.0],
-                            colors: [
-                              Color(0x18000000),
-                              Color(0x0A000000),
-                              Color(0x03000000),
-                              Colors.transparent,
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-            ],
+          ],
+        ],
+      ),
+    );
+  }
+
+  void _showCancelVisitDialog(
+    BuildContext context,
+    ExecutiveCollegeVisit visit,
+  ) {
+    final cubit = context.read<VisitsCubit>();
+    final reasonCtrl = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: Colors.white,
+        surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        title: Text(
+          'Cancel Visit',
+          style: GoogleFonts.inter(
+            fontSize: 18,
+            fontWeight: FontWeight.w700,
+            color: const Color(0xFF0F172A),
           ),
         ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Are you sure you want to cancel the campus visit to ${visit.collegeName}?',
+              style: GoogleFonts.inter(
+                fontSize: 13.5,
+                color: const Color(0xFF64748B),
+                height: 1.4,
+              ),
+            ),
+            const Gap(16),
+            TextField(
+              controller: reasonCtrl,
+              maxLines: 2,
+              style: GoogleFonts.inter(
+                fontSize: 13,
+                color: const Color(0xFF0F172A),
+              ),
+              decoration: InputDecoration(
+                hintText: 'Cancellation reason (e.g. exams, rescheduled)...',
+                hintStyle: GoogleFonts.inter(
+                  fontSize: 13,
+                  color: const Color(0xFF94A3B8),
+                ),
+                filled: true,
+                fillColor: const Color(0xFFF8FAFC),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(
+                    color: Color(0xFFD45107),
+                    width: 1.5,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(
+              'Keep Visit',
+              style: GoogleFonts.inter(
+                fontWeight: FontWeight.w600,
+                color: const Color(0xFF64748B),
+              ),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              cubit.cancelCollegeVisit(
+                visitId: visit.id,
+                reason: reasonCtrl.text.trim().isNotEmpty
+                    ? reasonCtrl.text.trim()
+                    : 'Visit cancelled by executive',
+              );
+              if (context.mounted) {
+                SnackBarAlert.showToast(
+                  context: context,
+                  message: 'Visit cancelled for ${visit.collegeName}',
+                );
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFDC2626),
+              foregroundColor: Colors.white,
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            child: const Text('Cancel Visit'),
+          ),
+        ],
       ),
-    ],
-  ),
-);
-},
-);
-}
+    );
+  }
+
+  Future<void> _showRescheduleDialog(
+    BuildContext context,
+    ExecutiveCollegeVisit visit,
+  ) async {
+    final cubit = context.read<VisitsCubit>();
+    final picked = await showFigmaCalendarDialog(
+      context: context,
+      initialDate: DateTime.now().add(const Duration(days: 1)),
+    );
+    if (picked != null && context.mounted) {
+      final dayStr = picked.day.toString();
+      final monthStr = DateFormat('MMM').format(picked).toUpperCase();
+      cubit.updateVisitStatus(
+        visitId: visit.id,
+        newStatus: 'Planned',
+        dayNumber: dayStr,
+        monthShort: monthStr,
+      );
+      if (context.mounted) {
+        SnackBarAlert.showToast(
+          context: context,
+          message: 'Visit rescheduled to $dayStr $monthStr ✓',
+        );
+      }
+    }
+  }
 
   Future<void> _handleDirections(
     BuildContext context,
@@ -1792,12 +2044,15 @@ class _UpcomingVisitCard extends StatelessWidget {
   final ExecutiveCollegeVisit visit;
   final VoidCallback onDirections;
   final VoidCallback onRecordOutcome;
+  final VoidCallback? onCancel;
   final VoidCallback? onDelete;
 
   const _UpcomingVisitCard({
+    super.key,
     required this.visit,
     required this.onDirections,
     required this.onRecordOutcome,
+    this.onCancel,
     this.onDelete,
   });
 
@@ -1910,25 +2165,53 @@ class _UpcomingVisitCard extends StatelessWidget {
               ),
               const Gap(8),
 
-              // Planned Status Pill (Figma Node 1606:1505)
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 4,
-                ),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF3E8FF),
-                  borderRadius: BorderRadius.circular(9999),
-                ),
-                child: Text(
-                  visit.statusLabel.isNotEmpty ? visit.statusLabel : 'Planned',
-                  style: GoogleFonts.inter(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w700,
-                    color: const Color(0xFF6B21A8),
-                    height: 15 / 10,
+              // Planned Status Pill (Figma Node 1606:1505) & Quick Cancel
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF3E8FF),
+                      borderRadius: BorderRadius.circular(9999),
+                    ),
+                    child: Text(
+                      visit.statusLabel.isNotEmpty ? visit.statusLabel : 'Planned',
+                      style: GoogleFonts.inter(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFF6B21A8),
+                        height: 15 / 10,
+                      ),
+                    ),
                   ),
-                ),
+                  if (onCancel != null) ...[
+                    const Gap(6),
+                    Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        onTap: onCancel,
+                        borderRadius: BorderRadius.circular(8),
+                        child: Container(
+                          padding: const EdgeInsets.all(4.5),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFEF2F2),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: const Color(0xFFFECACA)),
+                          ),
+                          child: const Icon(
+                            Icons.close_rounded,
+                            size: 13,
+                            color: Color(0xFFDC2626),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
               ),
             ],
           ),
@@ -2094,6 +2377,7 @@ class _RecentVisitCard extends StatelessWidget {
   final VoidCallback? onDelete;
 
   const _RecentVisitCard({
+    super.key,
     required this.visit,
     this.onDirections,
     this.onRecordOutcome,
@@ -2503,6 +2787,395 @@ class _RecentVisitCard extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+}
+
+class _CancelledVisitCard extends StatelessWidget {
+  final ExecutiveCollegeVisit visit;
+  final VoidCallback onReschedule;
+  final VoidCallback onDelete;
+
+  const _CancelledVisitCard({
+    super.key,
+    required this.visit,
+    required this.onReschedule,
+    required this.onDelete,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final initials = visit.staffInitials.isNotEmpty
+        ? visit.staffInitials.first
+        : (visit.staffNames.trim().isNotEmpty
+            ? visit.staffNames
+                .trim()
+                .split(' ')
+                .take(2)
+                .map((s) => s.isNotEmpty ? s[0].toUpperCase() : '')
+                .join()
+            : 'AT');
+
+    final month = visit.monthShort.isNotEmpty ? visit.monthShort : 'NOV';
+    final day = visit.dayNumber.isNotEmpty
+        ? (visit.dayNumber.length == 1 ? '0${visit.dayNumber}' : visit.dayNumber)
+        : '04';
+
+    final reason = visit.cancelReason.isNotEmpty
+        ? visit.cancelReason
+        : (visit.metSummary.isNotEmpty
+            ? visit.metSummary
+            : 'Visit cancelled by executive');
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFF3F4F6), width: 1),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x0D000000),
+            blurRadius: 1,
+            offset: Offset(0, 1),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Top Row: Red Date Badge + College Name / Subtitle / Status + Delete Button (Figma node 1863:640)
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Red/Rose Date Badge
+              Container(
+                width: 56,
+                height: 56,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFEF2F2),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: const Color(0xFFFECACA),
+                    width: 1,
+                  ),
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      month,
+                      style: GoogleFonts.inter(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.37,
+                        color: const Color(0xFFDC2626),
+                        height: 15 / 10,
+                      ),
+                    ),
+                    Text(
+                      day,
+                      style: GoogleFonts.inter(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.02,
+                        color: const Color(0xFFDC2626),
+                        height: 28 / 20,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Gap(16),
+
+              // Title, Subtitle & Cancelled Status
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      visit.collegeName.isNotEmpty
+                          ? visit.collegeName
+                          : 'Campus Visit',
+                      style: GoogleFonts.inter(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.07,
+                        color: const Color(0xFF1A1A1A),
+                        height: 22.5 / 18,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    if (visit.subtitle.isNotEmpty) ...[
+                      const Gap(2),
+                      Text(
+                        visit.subtitle,
+                        style: GoogleFonts.inter(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w400,
+                          color: const Color(0xFF6B7280),
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                    const Gap(4),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          width: 6,
+                          height: 6,
+                          decoration: const BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Color(0xFFDC2626),
+                          ),
+                        ),
+                        const Gap(6),
+                        Text(
+                          'CANCELLED',
+                          style: GoogleFonts.inter(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 0.02,
+                            color: const Color(0xFFDC2626),
+                            height: 15 / 10,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const Gap(8),
+
+              // Trash / Delete Button
+              Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: onDelete,
+                  borderRadius: BorderRadius.circular(8),
+                  child: Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFEF2F2),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: const Color(0xFFFECACA)),
+                    ),
+                    child: const Icon(
+                      CupertinoIcons.trash,
+                      size: 14,
+                      color: Color(0xFFDC2626),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+
+          // Cancellation Reason Box (Red/rose or neutral tinted)
+          const Gap(14),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            decoration: BoxDecoration(
+              color: const Color(0xFFFFF7ED),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: const Color(0xFFFFEDD5)),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Icon(
+                  Icons.report_problem_outlined,
+                  size: 16,
+                  color: Color(0xFFEA580C),
+                ),
+                const Gap(8),
+                Expanded(
+                  child: RichText(
+                    text: TextSpan(
+                      text: 'Reason: ',
+                      style: GoogleFonts.inter(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFF9A3412),
+                      ),
+                      children: [
+                        TextSpan(
+                          text: reason,
+                          style: GoogleFonts.inter(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w400,
+                            color: const Color(0xFFC2410C),
+                          ),
+                        ),
+                      ],
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // Assigned Staff Row
+          const Gap(14),
+          Row(
+            children: [
+              Container(
+                width: 24,
+                height: 24,
+                decoration: const BoxDecoration(
+                  color: Color(0xFF64748B),
+                  shape: BoxShape.circle,
+                ),
+                alignment: Alignment.center,
+                child: Text(
+                  initials.isNotEmpty ? initials : 'AT',
+                  style: GoogleFonts.inter(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                    letterSpacing: 0.72,
+                  ),
+                ),
+              ),
+              const Gap(8),
+              Expanded(
+                child: Text(
+                  visit.staffNames.isNotEmpty
+                      ? visit.staffNames
+                      : 'Assigned Team',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.inter(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                    color: const Color(0xFF475569),
+                  ),
+                ),
+              ),
+            ],
+          ),
+
+          // Reschedule Action Button
+          const Gap(16),
+          SizedBox(
+            width: double.infinity,
+            height: 46,
+            child: OutlinedButton.icon(
+              onPressed: onReschedule,
+              icon: const Icon(
+                Icons.restore_rounded,
+                size: 16,
+                color: Color(0xFF1E293B),
+              ),
+              label: Text(
+                'Reschedule Visit',
+                style: GoogleFonts.inter(
+                  fontSize: 13.5,
+                  fontWeight: FontWeight.w600,
+                  color: const Color(0xFF1E293B),
+                ),
+              ),
+              style: OutlinedButton.styleFrom(
+                side: const BorderSide(color: Color(0xFFCBD5E1)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                backgroundColor: const Color(0xFFF8FAFC),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _VisitTabItem extends StatelessWidget {
+  final String title;
+  final int count;
+  final Alignment alignment;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _VisitTabItem({
+    required this.title,
+    required this.count,
+    required this.alignment,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      splashColor: Colors.transparent,
+      highlightColor: Colors.transparent,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 4),
+        child: Align(
+          alignment: alignment,
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                AnimatedDefaultTextStyle(
+                  duration: const Duration(milliseconds: 200),
+                  style: GoogleFonts.inter(
+                    fontSize: 12,
+                    fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+                    letterSpacing: 0.6,
+                    height: 17 / 12,
+                    color: isSelected
+                        ? const Color(0xFF0F172A)
+                        : const Color(0xFF94A3B8),
+                  ),
+                  child: Text(title, maxLines: 1),
+                ),
+                const Gap(5),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 1.5,
+                  ),
+                  decoration: BoxDecoration(
+                    color: isSelected
+                        ? const Color(0xFFFFF1EB)
+                        : const Color(0xFFF1F5F9),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                      color: isSelected
+                          ? const Color(0xFFFFD8CC)
+                          : const Color(0xFFE2E8F0),
+                      width: 0.8,
+                    ),
+                  ),
+                  child: Text(
+                    '$count',
+                    style: GoogleFonts.inter(
+                      fontSize: 10,
+                      fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+                      color: isSelected
+                          ? const Color(0xFFD45107)
+                          : const Color(0xFF64748B),
+                      height: 1.2,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

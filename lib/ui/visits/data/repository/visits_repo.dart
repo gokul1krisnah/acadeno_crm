@@ -46,6 +46,20 @@ class VisitsRepository {
     String reason = '',
   }) => _rds.cancelCollegeVisit(visitId: visitId, reason: reason);
 
+  Future<void> updateVisitStatus({
+    required String visitId,
+    required String status,
+    String? reason,
+    String? dayNumber,
+    String? monthShort,
+  }) => _rds.updateVisitStatus(
+    visitId: visitId,
+    status: status,
+    reason: reason,
+    dayNumber: dayNumber,
+    monthShort: monthShort,
+  );
+
   Future<void> deleteCollegeVisit(String visitId) =>
       _rds.deleteCollegeVisit(visitId);
 }

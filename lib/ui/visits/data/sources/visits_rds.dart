@@ -63,6 +63,12 @@ class VisitsRds {
           }
         }
 
+        final cancelReason =
+            (data['cancelReason'] ?? data['outcomeNotes'] ?? '').toString();
+        final isUpcoming = status.toLowerCase() != 'completed' &&
+            status.toLowerCase() != 'cancelled' &&
+            status.toLowerCase() != 'canceled';
+
         return ExecutiveCollegeVisit(
           id: doc.id,
           monthShort: (data['monthShort'] ?? 'OCT').toString(),
@@ -78,7 +84,8 @@ class VisitsRds {
           metSummary: (data['metSummary'] ?? data['outcomeNotes'] ?? '')
               .toString(),
           nextActionSummary: (data['nextActionSummary'] ?? '').toString(),
-          isUpcoming: status != 'Completed' && status != 'Cancelled',
+          cancelReason: cancelReason,
+          isUpcoming: isUpcoming,
         );
       }).toList();
     });
@@ -178,6 +185,37 @@ class VisitsRds {
       'updatedByUid': uid,
       'updatedAt': FieldValue.serverTimestamp(),
     }, SetOptions(merge: true));
+  }
+
+  /// Updates the status of an assigned college visit (e.g. Planned, Completed, Cancelled).
+  Future<void> updateVisitStatus({
+    required String visitId,
+    required String status,
+    String? reason,
+    String? dayNumber,
+    String? monthShort,
+  }) async {
+    final uid = _firebaseAuth.currentUser?.uid;
+    final Map<String, dynamic> updateData = {
+      'status': status.trim(),
+      'statusLabel': status.trim(),
+      'updatedByUid': uid,
+      'updatedAt': FieldValue.serverTimestamp(),
+    };
+    if (dayNumber != null && dayNumber.isNotEmpty) {
+      updateData['dayNumber'] = dayNumber.trim();
+    }
+    if (monthShort != null && monthShort.isNotEmpty) {
+      updateData['monthShort'] = monthShort.trim().toUpperCase();
+    }
+    if (status.trim().toLowerCase() == 'cancelled') {
+      updateData['cancelReason'] =
+          (reason != null && reason.trim().isNotEmpty) ? reason.trim() : 'Visit cancelled';
+      updateData['outcomeNotes'] = updateData['cancelReason'];
+    } else if (status.trim().toLowerCase() == 'planned') {
+      updateData['cancelReason'] = '';
+    }
+    await _visits.doc(visitId).set(updateData, SetOptions(merge: true));
   }
 
   /// Permanently deletes a college visit from Firestore.

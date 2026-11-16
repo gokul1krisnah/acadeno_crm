@@ -12,6 +12,7 @@ class ExecutiveCollegeVisit {
   int interestedCount;
   String metSummary;
   String nextActionSummary;
+  String cancelReason;
   bool isUpcoming;
 
   ExecutiveCollegeVisit({
@@ -28,6 +29,43 @@ class ExecutiveCollegeVisit {
     this.interestedCount = 0,
     this.metSummary = '',
     this.nextActionSummary = '',
+    this.cancelReason = '',
     required this.isUpcoming,
   });
+
+  ExecutiveCollegeVisit copyWith({
+    String? id,
+    String? monthShort,
+    String? dayNumber,
+    String? collegeName,
+    String? subtitle,
+    String? statusLabel,
+    String? purpose,
+    List<String>? staffInitials,
+    String? staffNames,
+    int? leadsCollected,
+    int? interestedCount,
+    String? metSummary,
+    String? nextActionSummary,
+    String? cancelReason,
+    bool? isUpcoming,
+  }) {
+    return ExecutiveCollegeVisit(
+      id: id ?? this.id,
+      monthShort: monthShort ?? this.monthShort,
+      dayNumber: dayNumber ?? this.dayNumber,
+      collegeName: collegeName ?? this.collegeName,
+      subtitle: subtitle ?? this.subtitle,
+      statusLabel: statusLabel ?? this.statusLabel,
+      purpose: purpose ?? this.purpose,
+      staffInitials: staffInitials ?? this.staffInitials,
+      staffNames: staffNames ?? this.staffNames,
+      leadsCollected: leadsCollected ?? this.leadsCollected,
+      interestedCount: interestedCount ?? this.interestedCount,
+      metSummary: metSummary ?? this.metSummary,
+      nextActionSummary: nextActionSummary ?? this.nextActionSummary,
+      cancelReason: cancelReason ?? this.cancelReason,
+      isUpcoming: isUpcoming ?? this.isUpcoming,
+    );
+  }
 }
