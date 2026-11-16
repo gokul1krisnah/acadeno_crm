@@ -5,6 +5,7 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.media.RingtoneManager
 import android.os.Build
@@ -56,6 +57,13 @@ object CustomNotificationHelper {
 
         val soundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
 
+        // Modern District-style transparent floating brand emblem for right-side visual
+        val largeIcon = try {
+            BitmapFactory.decodeResource(context.resources, R.drawable.ic_notification_large)
+        } catch (_: Exception) {
+            null
+        }
+
         val actionIntent = PendingIntent.getActivity(context, id + 10, intent, flags)
 
         val builder = NotificationCompat.Builder(context, CHANNEL_ID)
@@ -75,6 +83,10 @@ object CustomNotificationHelper {
             .setColor(Color.parseColor("#EA580C"))
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             .addAction(R.drawable.ic_notification, "Check tasks", actionIntent)
+
+        if (largeIcon != null) {
+            builder.setLargeIcon(largeIcon)
+        }
 
         val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         manager.notify(id, builder.build())

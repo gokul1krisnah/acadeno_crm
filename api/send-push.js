@@ -66,8 +66,8 @@ module.exports = async function handler(req, res) {
       notification: {
         channelId: 'acadeno_crm_high_importance',
         tag: notificationTag,
-        icon: 'ic_launcher',
-        color: '#4338CA',
+        icon: 'ic_notification',
+        color: '#EA580C',
         sound: 'default',
         priority: 'high',
         defaultSound: true,

@@ -51,6 +51,7 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
         enableVibration: true,
         tag: 'lead_assigned',
         icon: '@drawable/ic_notification',
+        largeIcon: DrawableResourceAndroidBitmap('@drawable/ic_notification_large'),
         color: Color(0xFFEA580C),
         styleInformation: BigTextStyleInformation(''),
       );
@@ -293,6 +294,7 @@ class AppNotificationService {
         enableVibration: true,
         tag: tag ?? 'lead_assigned',
         icon: '@drawable/ic_notification',
+        largeIcon: const DrawableResourceAndroidBitmap('@drawable/ic_notification_large'),
         color: const Color(0xFFEA580C),
         styleInformation: BigTextStyleInformation(
           body,
