@@ -2238,32 +2238,6 @@ class _UpcomingVisitCard extends StatelessWidget {
                             ],
                           ),
                         ),
-                        if (onCancel != null) ...[
-                          const SizedBox(width: 4),
-                          Material(
-                            color: Colors.transparent,
-                            child: InkWell(
-                              onTap: onCancel,
-                              borderRadius: BorderRadius.circular(6),
-                              child: Container(
-                                padding: const EdgeInsets.all(3),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFFEF2F2),
-                                  borderRadius: BorderRadius.circular(6),
-                                  border: Border.all(
-                                    color: const Color(0xFFFECACA),
-                                    width: 0.8,
-                                  ),
-                                ),
-                                child: const Icon(
-                                  Icons.close_rounded,
-                                  size: 11,
-                                  color: Color(0xFFDC2626),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
                       ],
                     ),
                     const SizedBox(height: 6),
