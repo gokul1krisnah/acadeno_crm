@@ -8,6 +8,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 import '../../firebase_options.dart';
@@ -23,6 +24,22 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
     // tray displays it automatically. We only show a manual local notification if
     // the payload is data-only (no system notification block).
     if (!kIsWeb && message.notification == null) {
+      final title = message.data['title'] ?? 'Reminder';
+      final body = message.data['body'] ?? 'You have a new update';
+      final payload = message.data['leadId'] ?? message.data['target'] ?? '';
+
+      // Attempt native custom RemoteViews layout
+      try {
+        const platformChannel = MethodChannel('com.acadeno.crm/notifications');
+        final success = await platformChannel.invokeMethod<bool>('showCustomNotification', {
+          'title': title,
+          'body': body,
+          'payload': payload,
+          'id': 1001,
+        });
+        if (success == true) return;
+      } catch (_) {}
+
       final localNotifications = FlutterLocalNotificationsPlugin();
       const androidDetails = AndroidNotificationDetails(
         'acadeno_crm_high_importance',
@@ -34,14 +51,10 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
         enableVibration: true,
         tag: 'lead_assigned',
         icon: '@drawable/ic_notification',
-        largeIcon: DrawableResourceAndroidBitmap('@drawable/ic_notification_large'),
         color: Color(0xFFEA580C),
         styleInformation: BigTextStyleInformation(''),
       );
       const notificationDetails = NotificationDetails(android: androidDetails);
-
-      final title = message.data['title'] ?? 'Reminder';
-      final body = message.data['body'] ?? 'You have a new update';
 
       await localNotifications.show(
         id: 1001,
@@ -249,6 +262,26 @@ class AppNotificationService {
     int id = 1001,
   }) async {
     if (kIsWeb) return;
+
+    // 1. Invoke native Android Custom RemoteViews layout (matching Figma 1824:1634 exact capsule)
+    if (defaultTargetPlatform == TargetPlatform.android) {
+      try {
+        const platformChannel = MethodChannel('com.acadeno.crm/notifications');
+        final success = await platformChannel.invokeMethod<bool>('showCustomNotification', {
+          'title': title,
+          'body': body,
+          'payload': payload ?? '',
+          'id': id,
+        });
+        if (success == true) {
+          return;
+        }
+      } catch (e) {
+        debugPrint('Custom notification platform invocation error: $e');
+      }
+    }
+
+    // 2. Fallback to FlutterLocalNotificationsPlugin
     try {
       final androidDetails = AndroidNotificationDetails(
         'acadeno_crm_high_importance',
@@ -260,14 +293,12 @@ class AppNotificationService {
         enableVibration: true,
         tag: tag ?? 'lead_assigned',
         icon: '@drawable/ic_notification',
-        largeIcon: const DrawableResourceAndroidBitmap('@drawable/ic_notification_large'),
         color: const Color(0xFFEA580C),
         styleInformation: BigTextStyleInformation(
           body,
           htmlFormatBigText: true,
           contentTitle: title,
           htmlFormatContentTitle: true,
-          summaryText: 'Acadeno CRM',
         ),
       );
       final details = NotificationDetails(android: androidDetails);

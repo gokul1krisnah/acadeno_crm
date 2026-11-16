@@ -299,8 +299,8 @@ class _TeamManagementViewState extends State<TeamManagementView> {
                         _buildHeader(maxWidth, activeUsers, filteredLeads),
                         const Gap(32),
 
-                        // 5 KPI Summary Cards (Matching Dashboard Page)
-                        _buildStatCards(maxWidth, filteredLeads, activeUsers),
+                        // 5 KPI Summary Cards (Full leads info across the entire team)
+                        _buildStatCards(maxWidth, rawLeads, activeUsers),
                         const Gap(32),
 
                         // Executive Performance Comparison Table (Figma Node 1363:2068)

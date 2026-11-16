@@ -3,14 +3,23 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
-/// Shows the exact Figma Calendar UI (`node-id=1713-335`) as a modal dialog
+/// Shows the exact Figma Calendar UI (`node-id=1713-335`) as a responsive modal dialog
 /// and returns the selected [DateTime], or `null` if dismissed.
+/// Adapts dynamically to smaller mobile screens with compact padding, proportional
+/// row heights, and clean responsive layout.
 Future<DateTime?> showFigmaCalendarDialog({
   required BuildContext context,
   required DateTime initialDate,
   DateTime? firstDate,
   DateTime? lastDate,
 }) {
+  final mediaQuery = MediaQuery.of(context);
+  final screenWidth = mediaQuery.size.width;
+  final isSmallMobile = screenWidth < 360;
+  final isMobile = screenWidth < 500;
+  final hPad = isSmallMobile ? 8.0 : (isMobile ? 12.0 : 20.0);
+  final vPad = isMobile ? 14.0 : 24.0;
+
   return showDialog<DateTime>(
     context: context,
     barrierColor: Colors.black.withValues(alpha: 0.25),
@@ -18,7 +27,7 @@ Future<DateTime?> showFigmaCalendarDialog({
       backgroundColor: Colors.transparent,
       surfaceTintColor: Colors.transparent,
       elevation: 0,
-      insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+      insetPadding: EdgeInsets.symmetric(horizontal: hPad, vertical: vPad),
       child: SingleChildScrollView(
         child: Center(
           child: FigmaCalendarCard(
@@ -157,13 +166,29 @@ class _FigmaCalendarCardState extends State<FigmaCalendarCard> {
 
     return LayoutBuilder(
       builder: (context, constraints) {
+        final screenWidth = MediaQuery.sizeOf(context).width;
         final maxW = constraints.maxWidth.isFinite
-            ? math.min(504.0, constraints.maxWidth)
-            : 504.0;
-        final isCompact = maxW < 440;
-        final cardPadding = isCompact ? 24.0 : 48.0;
-        final cardRadius = isCompact ? 32.0 : 48.0;
-        final rowHeight = isCompact ? 48.0 : 64.0;
+            ? math.min(
+                screenWidth < 400
+                    ? 336.0
+                    : (screenWidth < 520 ? 370.0 : 480.0),
+                constraints.maxWidth,
+              )
+            : 350.0;
+
+        final isSmallMobile = maxW < 350;
+        final isMobile = maxW < 440;
+
+        final cardPadding = isSmallMobile ? 12.0 : (isMobile ? 16.0 : 28.0);
+        final cardRadius = isSmallMobile ? 20.0 : (isMobile ? 24.0 : 36.0);
+        final titleFontSize = isSmallMobile ? 17.0 : (isMobile ? 19.0 : 22.0);
+        final headerGap = isSmallMobile ? 6.0 : (isMobile ? 8.0 : 12.0);
+        final weekdayBarVPad = isSmallMobile ? 6.0 : (isMobile ? 8.0 : 12.0);
+        final weekdayFontSize = isSmallMobile ? 10.5 : (isMobile ? 11.5 : 13.0);
+        final rowHeight = isSmallMobile ? 32.0 : (isMobile ? 36.0 : 46.0);
+        final dayCircleSize = isSmallMobile ? 26.0 : (isMobile ? 30.0 : 38.0);
+        final dayFontSize = isSmallMobile ? 12.5 : (isMobile ? 14.0 : 16.0);
+
         final minDate = DateTime(
           widget.firstDate.year,
           widget.firstDate.month,
@@ -193,13 +218,12 @@ class _FigmaCalendarCardState extends State<FigmaCalendarCard> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Top Heading Container (node 1713:337)
-              SizedBox(
-                height: 60,
-                width: double.infinity,
-                child: Align(
-                  alignment: const Alignment(-1.0, -0.15),
-                  child: GestureDetector(
+              // Top Heading Container & Navigation
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  GestureDetector(
                     behavior: HitTestBehavior.opaque,
                     onTap: () {
                       setState(() {
@@ -215,18 +239,17 @@ class _FigmaCalendarCardState extends State<FigmaCalendarCard> {
                           Text(
                             monthTitle,
                             style: GoogleFonts.inter(
-                              fontSize: isCompact ? 20 : 24,
+                              fontSize: titleFontSize,
                               fontWeight: FontWeight.w600,
                               color: const Color(0xFF1A1A1A),
                               letterSpacing: 0.0938,
-                              height: 36 / 24,
                             ),
                           ),
-                          const SizedBox(width: 12),
+                          const SizedBox(width: 8),
                           Transform.rotate(
                             angle: _showYearMonthPicker ? math.pi : 0,
                             child: const CustomPaint(
-                              size: Size(14, 8.75),
+                              size: Size(12, 7.5),
                               painter: _DownChevronPainter(
                                 color: Color(0xFF1A1A1A),
                               ),
@@ -236,75 +259,88 @@ class _FigmaCalendarCardState extends State<FigmaCalendarCard> {
                       ),
                     ),
                   ),
-                ),
-              ),
 
-              const SizedBox(height: 2),
-
-              // Prev / Next Month Chevrons (node 1713:341)
-              Padding(
-                padding: const EdgeInsets.only(top: 2.75, bottom: 11.25),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    GestureDetector(
-                      behavior: HitTestBehavior.opaque,
-                      onTap: _previousMonth,
-                      child: const MouseRegion(
-                        cursor: SystemMouseCursors.click,
-                        child: Padding(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 2,
-                            vertical: 3,
-                          ),
-                          child: CustomPaint(
-                            size: Size(8.75, 14),
-                            painter: _SideChevronPainter(
-                              isLeft: true,
-                              color: Color(0xFFD1D5DB),
+                  // Month Navigation & Close
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onTap: _previousMonth,
+                        child: const MouseRegion(
+                          cursor: SystemMouseCursors.click,
+                          child: Padding(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 4,
+                            ),
+                            child: CustomPaint(
+                              size: Size(8, 13),
+                              painter: _SideChevronPainter(
+                                isLeft: true,
+                                color: Color(0xFF9CA3AF),
+                              ),
                             ),
                           ),
                         ),
                       ),
-                    ),
-                    const SizedBox(width: 16),
-                    GestureDetector(
-                      behavior: HitTestBehavior.opaque,
-                      onTap: _nextMonth,
-                      child: const MouseRegion(
-                        cursor: SystemMouseCursors.click,
-                        child: Padding(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 2,
-                            vertical: 3,
-                          ),
-                          child: CustomPaint(
-                            size: Size(8.75, 14),
-                            painter: _SideChevronPainter(
-                              isLeft: false,
-                              color: Color(0xFFD1D5DB),
+                      const SizedBox(width: 6),
+                      GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onTap: _nextMonth,
+                        child: const MouseRegion(
+                          cursor: SystemMouseCursors.click,
+                          child: Padding(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 4,
+                            ),
+                            child: CustomPaint(
+                              size: Size(8, 13),
+                              painter: _SideChevronPainter(
+                                isLeft: false,
+                                color: Color(0xFF9CA3AF),
+                              ),
                             ),
                           ),
                         ),
                       ),
-                    ),
-                  ],
-                ),
+                      const SizedBox(width: 8),
+                      GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onTap: () => Navigator.of(context).pop(),
+                        child: const MouseRegion(
+                          cursor: SystemMouseCursors.click,
+                          child: Padding(
+                            padding: EdgeInsets.all(2),
+                            child: Icon(
+                              Icons.close_rounded,
+                              size: 18,
+                              color: Color(0xFF9CA3AF),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
+
+              SizedBox(height: headerGap),
 
               if (_showYearMonthPicker)
-                _buildMonthYearPickerGrid()
+                _buildMonthYearPickerGrid(isSmallMobile: isSmallMobile, isMobile: isMobile)
               else ...[
                 // Weekday Header Pill Bar (node 1713:354)
                 Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 16,
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: weekdayBarVPad,
                   ),
                   decoration: BoxDecoration(
                     color: const Color(0xFFF8F9FA),
-                    borderRadius: BorderRadius.circular(24),
+                    borderRadius: BorderRadius.circular(16),
                   ),
                   child: Row(
                     children: List.generate(_weekdays.length, (index) {
@@ -315,13 +351,12 @@ class _FigmaCalendarCardState extends State<FigmaCalendarCard> {
                             _weekdays[index],
                             textAlign: TextAlign.center,
                             style: GoogleFonts.inter(
-                              fontSize: isCompact ? 12 : 14,
+                              fontSize: weekdayFontSize,
                               fontWeight: FontWeight.w500,
                               color: isSunday
                                   ? const Color(0xFF1A1A1A)
                                   : const Color(0xFF666666),
-                              letterSpacing: 0.7,
-                              height: 20 / 14,
+                              letterSpacing: 0.5,
                             ),
                           ),
                         ),
@@ -330,7 +365,7 @@ class _FigmaCalendarCardState extends State<FigmaCalendarCard> {
                   ),
                 ),
 
-                const SizedBox(height: 2),
+                const SizedBox(height: 4),
 
                 // Dates Grid (node 1713:369)
                 SizedBox(
@@ -374,8 +409,8 @@ class _FigmaCalendarCardState extends State<FigmaCalendarCard> {
                                   child: Center(
                                     child: isSelected
                                         ? Container(
-                                            width: isCompact ? 36 : 40,
-                                            height: isCompact ? 36 : 40,
+                                            width: dayCircleSize,
+                                            height: dayCircleSize,
                                             alignment: Alignment.center,
                                             decoration: const BoxDecoration(
                                               color: Color(0xFF3B82F6),
@@ -399,10 +434,9 @@ class _FigmaCalendarCardState extends State<FigmaCalendarCard> {
                                               '${item.date.day}',
                                               textAlign: TextAlign.center,
                                               style: GoogleFonts.inter(
-                                                fontSize: isCompact ? 16 : 18,
-                                                fontWeight: FontWeight.w500,
+                                                fontSize: dayFontSize,
+                                                fontWeight: FontWeight.w600,
                                                 color: Colors.white,
-                                                height: 28 / 18,
                                               ),
                                             ),
                                           )
@@ -410,14 +444,12 @@ class _FigmaCalendarCardState extends State<FigmaCalendarCard> {
                                             '${item.date.day}',
                                             textAlign: TextAlign.center,
                                             style: GoogleFonts.inter(
-                                              fontSize: isCompact ? 16 : 18,
+                                              fontSize: dayFontSize,
                                               fontWeight: FontWeight.w500,
-                                              color:
-                                                  (item.isCurrentMonth &&
+                                              color: (item.isCurrentMonth &&
                                                       !isDisabled)
                                                   ? const Color(0xFF1A1A1A)
                                                   : const Color(0xFFD1D5DB),
-                                              height: 28 / 18,
                                             ),
                                           ),
                                   ),
@@ -438,23 +470,29 @@ class _FigmaCalendarCardState extends State<FigmaCalendarCard> {
     );
   }
 
-  Widget _buildMonthYearPickerGrid() {
+  Widget _buildMonthYearPickerGrid({
+    required bool isSmallMobile,
+    required bool isMobile,
+  }) {
     final currentYear = _displayedMonth.year;
     final months = List.generate(
       12,
       (i) => DateFormat('MMM').format(DateTime(currentYear, i + 1, 1)),
     );
+    final pickerHeight = isSmallMobile ? 220.0 : (isMobile ? 250.0 : 310.0);
+    final monthFontSize = isSmallMobile ? 12.5 : (isMobile ? 13.5 : 15.0);
+    final yearFontSize = isSmallMobile ? 15.0 : (isMobile ? 16.0 : 18.0);
 
     return SizedBox(
-      height: 374,
+      height: pickerHeight,
       width: double.infinity,
       child: Column(
         children: [
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
             decoration: BoxDecoration(
               color: const Color(0xFFF8F9FA),
-              borderRadius: BorderRadius.circular(24),
+              borderRadius: BorderRadius.circular(16),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -473,9 +511,9 @@ class _FigmaCalendarCardState extends State<FigmaCalendarCard> {
                   child: const MouseRegion(
                     cursor: SystemMouseCursors.click,
                     child: Padding(
-                      padding: EdgeInsets.all(6),
+                      padding: EdgeInsets.all(4),
                       child: CustomPaint(
-                        size: Size(8.75, 14),
+                        size: Size(8, 13),
                         painter: _SideChevronPainter(
                           isLeft: true,
                           color: Color(0xFF1A1A1A),
@@ -487,7 +525,7 @@ class _FigmaCalendarCardState extends State<FigmaCalendarCard> {
                 Text(
                   '$currentYear',
                   style: GoogleFonts.inter(
-                    fontSize: 18,
+                    fontSize: yearFontSize,
                     fontWeight: FontWeight.w600,
                     color: const Color(0xFF1A1A1A),
                   ),
@@ -506,9 +544,9 @@ class _FigmaCalendarCardState extends State<FigmaCalendarCard> {
                   child: const MouseRegion(
                     cursor: SystemMouseCursors.click,
                     child: Padding(
-                      padding: EdgeInsets.all(6),
+                      padding: EdgeInsets.all(4),
                       child: CustomPaint(
-                        size: Size(8.75, 14),
+                        size: Size(8, 13),
                         painter: _SideChevronPainter(
                           isLeft: false,
                           color: Color(0xFF1A1A1A),
@@ -520,15 +558,15 @@ class _FigmaCalendarCardState extends State<FigmaCalendarCard> {
               ],
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 10),
           Expanded(
             child: GridView.builder(
               physics: const NeverScrollableScrollPhysics(),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 3,
-                mainAxisSpacing: 12,
-                crossAxisSpacing: 12,
-                childAspectRatio: 2.1,
+                mainAxisSpacing: isSmallMobile ? 6 : 8,
+                crossAxisSpacing: isSmallMobile ? 6 : 8,
+                childAspectRatio: isSmallMobile ? 2.4 : 2.2,
               ),
               itemCount: 12,
               itemBuilder: (context, index) {
@@ -555,7 +593,7 @@ class _FigmaCalendarCardState extends State<FigmaCalendarCard> {
                       child: Text(
                         months[index],
                         style: GoogleFonts.inter(
-                          fontSize: 16,
+                          fontSize: monthFontSize,
                           fontWeight: FontWeight.w500,
                           color: isSelectedMonth
                               ? Colors.white
@@ -608,7 +646,7 @@ class _DownChevronPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _DownChevronPainter oldDelegate) =>
-      oldDelegate.color != color;
+    oldDelegate.color != color;
 }
 
 class _SideChevronPainter extends CustomPainter {
@@ -647,5 +685,5 @@ class _SideChevronPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _SideChevronPainter oldDelegate) =>
-      oldDelegate.isLeft != isLeft || oldDelegate.color != color;
+    oldDelegate.isLeft != isLeft || oldDelegate.color != color;
 }

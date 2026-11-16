@@ -34,6 +34,11 @@ class _SettingsViewState extends State<SettingsView>
   final _newPasswordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
 
+  bool _obscureEmailPassword = true;
+  bool _obscureCurrentPassword = true;
+  bool _obscureNewPassword = true;
+  bool _obscureConfirmPassword = true;
+
   bool _isSavingName = false;
   bool _isSavingEmail = false;
   bool _isSavingPassword = false;
@@ -607,12 +612,13 @@ class _SettingsViewState extends State<SettingsView>
   // ---------------------------------------------------------------------------
   // Tab 1: Account & Security (Figma Node 1774:888 - MainContainer)
   // ---------------------------------------------------------------------------
-  InputDecoration _figmaAccountInputDecoration() {
+  InputDecoration _figmaAccountInputDecoration({Widget? suffixIcon}) {
     return InputDecoration(
       isDense: true,
       filled: true,
       fillColor: Colors.white,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      contentPadding: EdgeInsets.fromLTRB(14, 12, suffixIcon != null ? 4 : 14, 12),
+      suffixIcon: suffixIcon,
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
         borderSide: const BorderSide(color: Color(0xFF6B7280), width: 1),
@@ -624,6 +630,25 @@ class _SettingsViewState extends State<SettingsView>
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
         borderSide: const BorderSide(color: Color(0xFFEB6625), width: 1.5),
+      ),
+    );
+  }
+
+  Widget _buildPasswordEyeButton({
+    required bool obscureText,
+    required VoidCallback onToggle,
+  }) {
+    return IconButton(
+      onPressed: onToggle,
+      splashRadius: 20,
+      padding: EdgeInsets.zero,
+      constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
+      icon: Icon(
+        obscureText
+            ? Icons.visibility_off_outlined
+            : Icons.visibility_outlined,
+        color: const Color(0xFF5A5F73),
+        size: 20,
       ),
     );
   }
@@ -746,7 +771,7 @@ class _SettingsViewState extends State<SettingsView>
             style: TextStyle(
               fontFamily: 'Poppins',
               fontSize: 14,
-              fontWeight: FontWeight.w400,
+              fontWeight: FontWeight.w500,
               color: Color(0xFF19233C),
               height: 21 / 14,
             ),
@@ -873,9 +898,9 @@ class _SettingsViewState extends State<SettingsView>
           ),
           const Gap(20),
 
-          // 1774:900 - Current Password(for authorization)
+          // 1774:900 - Current Password (For Authorization)
           const Text(
-            'Current Password(for authorization)',
+            'Current Password (For Authorization)',
             style: TextStyle(
               fontFamily: 'Poppins',
               fontSize: 14,
@@ -889,7 +914,7 @@ class _SettingsViewState extends State<SettingsView>
             height: 46,
             child: TextField(
               controller: _emailPasswordController,
-              obscureText: true,
+              obscureText: _obscureEmailPassword,
               textAlignVertical: TextAlignVertical.center,
               style: const TextStyle(
                 fontFamily: 'Poppins',
@@ -897,18 +922,25 @@ class _SettingsViewState extends State<SettingsView>
                 fontWeight: FontWeight.w400,
                 color: Color(0xFF19233C),
               ),
-              decoration: _figmaAccountInputDecoration(),
+              decoration: _figmaAccountInputDecoration(
+                suffixIcon: _buildPasswordEyeButton(
+                  obscureText: _obscureEmailPassword,
+                  onToggle: () => setState(() {
+                    _obscureEmailPassword = !_obscureEmailPassword;
+                  }),
+                ),
+              ),
             ),
           ),
           const Gap(28),
 
-          // 1774:904 - Submit Button (Update email)
+          // 1774:904 - Submit Button (Update Email)
           _buildFigmaOrangeButton(
-            label: 'Update email',
+            label: 'Update Email',
             isLoading: _isSavingEmail,
             onPressed: _updateEmail,
             width: isNarrowCard ? double.infinity : null,
-            height: 43,
+            height: 46,
             textStyle: GoogleFonts.inter(
               fontSize: 15,
               fontWeight: FontWeight.w600,
@@ -955,31 +987,33 @@ class _SettingsViewState extends State<SettingsView>
             style: TextStyle(
               fontFamily: 'Poppins',
               fontSize: 20,
-              fontWeight: FontWeight.w400,
+              fontWeight: FontWeight.w600,
               color: Color(0xFF19233C),
               letterSpacing: -0.5,
               height: 27.5 / 20,
             ),
           ),
           const Gap(8),
-          Text(
+          const Text(
             'Use at least 8 characters.',
-            style: GoogleFonts.inter(
+            style: TextStyle(
+              fontFamily: 'Poppins',
               fontSize: 14,
               fontWeight: FontWeight.w400,
-              color: const Color(0xFF475569),
+              color: Color(0xFF475569),
               height: 22.75 / 14,
             ),
           ),
           const Gap(24),
 
           // 1774:914 - Current password
-          Text(
+          const Text(
             'Current password',
-            style: GoogleFonts.inter(
+            style: TextStyle(
+              fontFamily: 'Poppins',
               fontSize: 14,
-              fontWeight: FontWeight.w400,
-              color: const Color(0xFF19233C),
+              fontWeight: FontWeight.w500,
+              color: Color(0xFF19233C),
               height: 21 / 14,
             ),
           ),
@@ -988,25 +1022,34 @@ class _SettingsViewState extends State<SettingsView>
             height: 46,
             child: TextField(
               controller: _currentPasswordController,
-              obscureText: true,
+              obscureText: _obscureCurrentPassword,
               textAlignVertical: TextAlignVertical.center,
-              style: GoogleFonts.inter(
+              style: const TextStyle(
+                fontFamily: 'Poppins',
                 fontSize: 14,
                 fontWeight: FontWeight.w400,
-                color: const Color(0xFF19233C),
+                color: Color(0xFF19233C),
               ),
-              decoration: _figmaAccountInputDecoration(),
+              decoration: _figmaAccountInputDecoration(
+                suffixIcon: _buildPasswordEyeButton(
+                  obscureText: _obscureCurrentPassword,
+                  onToggle: () => setState(() {
+                    _obscureCurrentPassword = !_obscureCurrentPassword;
+                  }),
+                ),
+              ),
             ),
           ),
           const Gap(27),
 
           // 1774:918 - New password
-          Text(
+          const Text(
             'New password',
-            style: GoogleFonts.inter(
+            style: TextStyle(
+              fontFamily: 'Poppins',
               fontSize: 14,
-              fontWeight: FontWeight.w400,
-              color: const Color(0xFF19233C),
+              fontWeight: FontWeight.w500,
+              color: Color(0xFF19233C),
               height: 21 / 14,
             ),
           ),
@@ -1015,25 +1058,34 @@ class _SettingsViewState extends State<SettingsView>
             height: 50,
             child: TextField(
               controller: _newPasswordController,
-              obscureText: true,
+              obscureText: _obscureNewPassword,
               textAlignVertical: TextAlignVertical.center,
-              style: GoogleFonts.inter(
+              style: const TextStyle(
+                fontFamily: 'Poppins',
                 fontSize: 14,
                 fontWeight: FontWeight.w400,
-                color: const Color(0xFF19233C),
+                color: Color(0xFF19233C),
               ),
-              decoration: _figmaAccountInputDecoration(),
+              decoration: _figmaAccountInputDecoration(
+                suffixIcon: _buildPasswordEyeButton(
+                  obscureText: _obscureNewPassword,
+                  onToggle: () => setState(() {
+                    _obscureNewPassword = !_obscureNewPassword;
+                  }),
+                ),
+              ),
             ),
           ),
           const Gap(27),
 
           // 1774:923 - Confirm new password
-          Text(
+          const Text(
             'Confirm new password',
-            style: GoogleFonts.inter(
+            style: TextStyle(
+              fontFamily: 'Poppins',
               fontSize: 14,
-              fontWeight: FontWeight.w400,
-              color: const Color(0xFF19233C),
+              fontWeight: FontWeight.w500,
+              color: Color(0xFF19233C),
               height: 21 / 14,
             ),
           ),
@@ -1042,28 +1094,36 @@ class _SettingsViewState extends State<SettingsView>
             height: 46,
             child: TextField(
               controller: _confirmPasswordController,
-              obscureText: true,
+              obscureText: _obscureConfirmPassword,
               textAlignVertical: TextAlignVertical.center,
-              style: GoogleFonts.inter(
+              style: const TextStyle(
+                fontFamily: 'Poppins',
                 fontSize: 14,
                 fontWeight: FontWeight.w400,
-                color: const Color(0xFF19233C),
+                color: Color(0xFF19233C),
               ),
-              decoration: _figmaAccountInputDecoration(),
+              decoration: _figmaAccountInputDecoration(
+                suffixIcon: _buildPasswordEyeButton(
+                  obscureText: _obscureConfirmPassword,
+                  onToggle: () => setState(() {
+                    _obscureConfirmPassword = !_obscureConfirmPassword;
+                  }),
+                ),
+              ),
             ),
           ),
           const Gap(35),
 
-          // 1774:931 - Submit Button (Update password)
+          // 1774:931 - Submit Button (Update Password)
           _buildFigmaOrangeButton(
-            label: 'Update password',
+            label: 'Update Password',
             isLoading: _isSavingPassword,
             onPressed: _updatePassword,
             width: isNarrowCard ? double.infinity : null,
-            height: 43,
+            height: 46,
             textStyle: GoogleFonts.inter(
               fontSize: 15,
-              fontWeight: FontWeight.w400,
+              fontWeight: FontWeight.w600,
               color: Colors.white,
               height: 22.5 / 15,
             ),
@@ -1092,7 +1152,7 @@ class _SettingsViewState extends State<SettingsView>
                       matchFixedHeight: true,
                     ),
                   ),
-                  const Gap(28),
+                  const Gap(27),
                   Expanded(
                     child: _buildChangePasswordCard(
                       isNarrowCard: false,
@@ -1391,7 +1451,7 @@ class _SettingsViewState extends State<SettingsView>
             height: 24,
             padding: const EdgeInsets.all(2),
             decoration: BoxDecoration(
-              color: value ? const Color(0xFFEA580C) : const Color(0xFFE2E8F0),
+              color: value ? const Color(0xFF1D149D) : const Color(0xFFE2E8F0),
               borderRadius: BorderRadius.circular(9999),
             ),
             child: AnimatedAlign(

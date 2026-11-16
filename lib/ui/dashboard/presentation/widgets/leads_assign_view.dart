@@ -2,7 +2,6 @@ import 'dart:math' as math;
 import 'package:flutter/cupertino.dart';
 import 'package:gap/gap.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:acadeno_crm/shared/theme/app_typography.dart';
 import 'package:acadeno_crm/shared/widgets/college_selector_field.dart';
 import 'package:acadeno_crm/shared/extensions/build_context_extension.dart';
 import 'package:acadeno_crm/shared/snackbar_alerts/snack_alert.dart';
@@ -2638,8 +2637,8 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
 
                 final execDropdown = Container(
                   height: 38,
-                  width: isMobileBar ? null : 189,
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  width: isMobileBar ? null : 190,
+                  padding: const EdgeInsets.symmetric(horizontal: 14),
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
                     color: const Color(0xFF1F2937),
@@ -2654,9 +2653,9 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                         ? Center(
                             child: Text(
                               'No active HR users',
-                              style: GoogleFonts.poppins(
+                              style: GoogleFonts.inter(
                                 color: const Color(0xFF9CA3AF),
-                                fontSize: 12,
+                                fontSize: 13,
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
@@ -2672,9 +2671,9 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                               size: 18,
                               color: Color(0xFF9CA3AF),
                             ),
-                            style: GoogleFonts.poppins(
+                            style: GoogleFonts.inter(
                               color: Colors.white,
-                              fontSize: 12,
+                              fontSize: 13.5,
                               fontWeight: FontWeight.w500,
                             ),
                             items: safeExecutives.map((exec) {
@@ -2686,6 +2685,11 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                                 child: Text(
                                   '${exec.name} ($count today)',
                                   overflow: TextOverflow.ellipsis,
+                                  style: GoogleFonts.inter(
+                                    color: Colors.white,
+                                    fontSize: 13.5,
+                                    fontWeight: FontWeight.w500,
+                                  ),
                                 ),
                               );
                             }).toList(),
@@ -2725,8 +2729,8 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                     borderRadius: BorderRadius.circular(8),
                     child: Container(
                       height: 38,
-                      width: isMobileBar ? null : 147.75,
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      width: isMobileBar ? null : 155,
+                      padding: const EdgeInsets.symmetric(horizontal: 14),
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
                         color: const Color(0xFF1F2937),
@@ -2746,10 +2750,11 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                             child: Text(
                               selectedDateDisplayLabel,
                               overflow: TextOverflow.ellipsis,
-                              style: GoogleFonts.poppins(
+                              style: GoogleFonts.inter(
                                 color: Colors.white,
-                                fontSize: 12,
+                                fontSize: 13.5,
                                 fontWeight: FontWeight.w500,
+                                letterSpacing: 0.07,
                               ),
                             ),
                           ),
@@ -2766,8 +2771,8 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                 );
 
                 final assignBtn = SizedBox(
-                  height: 36,
-                  width: isMobileBar ? double.infinity : 97,
+                  height: 38,
+                  width: isMobileBar ? double.infinity : 98,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       alignment: Alignment.center,
@@ -2777,13 +2782,13 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                           ? const Color(0xFF1F2937)
                           : const Color(0xFFEF8144),
                       foregroundColor: state.selectedLeadIds.isEmpty
-                          ? const Color(0xFF9CA3AF)
+                          ? const Color(0xFF6B7280)
                           : Colors.white,
                       disabledBackgroundColor: const Color(0xFF1F2937),
-                      disabledForegroundColor: const Color(0xFF9CA3AF),
+                      disabledForegroundColor: const Color(0xFF6B7280),
                       elevation: 0,
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
+                        horizontal: 20,
                         vertical: 8,
                       ),
                       shape: RoundedRectangleBorder(
@@ -2804,22 +2809,23 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                         : () => _openReviewAssignmentDialog(context, state),
                     child: Center(
                       child: isMobileBar && state.selectedLeadIds.isNotEmpty
-                          ? FittedBox(
-                              fit: BoxFit.scaleDown,
-                              child: Text(
-                                'Assign ${state.selectedLeadIds.length} Selected Leads',
-                                textAlign: TextAlign.center,
-                                style: AppTypography.figmaButton(
-                                  color: Colors.white,
-                                ),
+                          ? Text(
+                              'Assign ${state.selectedLeadIds.length} Selected Leads',
+                              textAlign: TextAlign.center,
+                              style: GoogleFonts.inter(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white,
                               ),
                             )
                           : Text(
                               'Assign',
                               textAlign: TextAlign.center,
-                              style: AppTypography.figmaButton(
+                              style: GoogleFonts.inter(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
                                 color: state.selectedLeadIds.isEmpty
-                                    ? const Color(0xFF9CA3AF)
+                                    ? const Color(0xFF6B7280)
                                     : Colors.white,
                               ),
                             ),
@@ -2828,32 +2834,34 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                 );
 
                 final bulkDeleteBtn = Tooltip(
-                  message: 'Delete Selected Leads',
-                  child: InkWell(
-                    onTap: () => _confirmAndDeleteSelectedLeads(
-                      context,
-                      state.selectedLeadIds.length,
-                    ),
-                    borderRadius: BorderRadius.circular(8),
-                    child: Container(
-                      width: 38,
-                      height: 38,
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        color: const Color(0x1ADC2626),
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(
-                          color: const Color(0xFFDC2626),
-                          width: 1.2,
-                        ),
-                      ),
-                      child: SvgPicture.asset(
-                        AppSvgs.delete,
-                        width: 14,
-                        height: 16,
-                        colorFilter: const ColorFilter.mode(
-                          Color(0xFFDC2626),
-                          BlendMode.srcIn,
+                  message: state.selectedLeadIds.isEmpty
+                      ? 'Select leads below to delete'
+                      : 'Delete ${state.selectedLeadIds.length} Selected Leads',
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: state.selectedLeadIds.isEmpty
+                          ? null
+                          : () => _confirmAndDeleteSelectedLeads(
+                                context,
+                                state.selectedLeadIds.length,
+                              ),
+                      borderRadius: BorderRadius.circular(8),
+                      child: Opacity(
+                        opacity: state.selectedLeadIds.isEmpty ? 0.35 : 1.0,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 8,
+                          ),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: const Icon(
+                            CupertinoIcons.trash_fill,
+                            size: 16,
+                            color: Color(0xFFEF4444),
+                          ),
                         ),
                       ),
                     ),
@@ -2863,10 +2871,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                 if (isMobileBar) {
                   return Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 14,
-                    ),
+                    padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(
                       color: const Color(0xFF111827),
                       borderRadius: BorderRadius.circular(12),
@@ -2883,25 +2888,22 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                       children: [
                         Row(
                           children: [
-                            if (state.selectedLeadIds.isNotEmpty) ...[
-                              bulkDeleteBtn,
-                              const Gap(12),
-                            ],
+                            bulkDeleteBtn,
+                            const Gap(8),
                             Expanded(
                               child: Text(
                                 '${state.selectedLeadIds.length} Leads selected',
-                                style: GoogleFonts.poppins(
+                                style: GoogleFonts.inter(
                                   color: Colors.white,
                                   fontSize: 14,
                                   fontWeight: FontWeight.w600,
-                                  height: 20 / 14,
                                   letterSpacing: 0.35,
                                 ),
                               ),
                             ),
                           ],
                         ),
-                        const Gap(12),
+                        const Gap(10),
                         Row(
                           children: [
                             Expanded(child: execDropdown),
@@ -2909,7 +2911,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                             Expanded(child: dateDropdown),
                           ],
                         ),
-                        const Gap(12),
+                        const Gap(10),
                         assignBtn,
                       ],
                     ),
@@ -2918,10 +2920,10 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
 
                 return Container(
                   width: double.infinity,
-                  height: 70,
+                  height: 68,
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 24,
-                    vertical: 16,
+                    horizontal: 20,
+                    vertical: 14,
                   ),
                   decoration: BoxDecoration(
                     color: const Color(0xFF111827),
@@ -2942,17 +2944,14 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                         mainAxisSize: MainAxisSize.min,
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          if (state.selectedLeadIds.isNotEmpty) ...[
-                            bulkDeleteBtn,
-                            const Gap(14),
-                          ],
+                          bulkDeleteBtn,
+                          const Gap(10),
                           Text(
                             '${state.selectedLeadIds.length} Leads selected',
-                            style: GoogleFonts.poppins(
+                            style: GoogleFonts.inter(
                               color: Colors.white,
                               fontSize: 14,
                               fontWeight: FontWeight.w600,
-                              height: 20 / 14,
                               letterSpacing: 0.35,
                             ),
                           ),
@@ -2967,28 +2966,26 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                             children: [
                               Text(
                                 'Assign to',
-                                style: GoogleFonts.poppins(
+                                style: GoogleFonts.inter(
                                   color: const Color(0xFF9CA3AF),
                                   fontSize: 12,
                                   fontWeight: FontWeight.w500,
-                                  height: 16 / 12,
-                                  letterSpacing: 12 * 0.0049,
+                                  letterSpacing: 0.05,
                                 ),
                               ),
-                              const Gap(16),
+                              const Gap(12),
                               execDropdown,
                               const Gap(16),
                               Text(
                                 'for',
-                                style: GoogleFonts.poppins(
+                                style: GoogleFonts.inter(
                                   color: const Color(0xFF9CA3AF),
                                   fontSize: 12,
                                   fontWeight: FontWeight.w500,
-                                  height: 16 / 12,
-                                  letterSpacing: 12 * 0.0313,
+                                  letterSpacing: 0.49,
                                 ),
                               ),
-                              const Gap(16),
+                              const Gap(12),
                               dateDropdown,
                               const Gap(16),
                               assignBtn,
@@ -3603,31 +3600,7 @@ class _DesktopLeadTableRowState extends State<_DesktopLeadTableRow> {
                         flex: 4,
                         child: Align(
                           alignment: Alignment.centerLeft,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              widget.statusBadge,
-                              if (r.status.toLowerCase() == 'converted' &&
-                                  (r.course.isNotEmpty ||
-                                      r.batch.isNotEmpty)) ...[
-                                const Gap(4),
-                                Text(
-                                  [
-                                    if (r.course.isNotEmpty) r.course,
-                                    if (r.batch.isNotEmpty) r.batch,
-                                  ].join(' · '),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: GoogleFonts.inter(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w600,
-                                    color: const Color(0xFF166534),
-                                  ),
-                                ),
-                              ],
-                            ],
-                          ),
+                          child: widget.statusBadge,
                         ),
                       ),
                       Expanded(

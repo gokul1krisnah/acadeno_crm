@@ -1898,9 +1898,9 @@ class _UserManagementViewState extends State<UserManagementView> {
                       builder: (context, constraints) {
                         final isDesktop = constraints.maxWidth >= 820;
                         if (isDesktop) {
-                          final tableWidth = constraints.maxWidth > 1150
+                          final tableWidth = constraints.maxWidth > 1340
                               ? constraints.maxWidth
-                              : 1150.0;
+                              : 1340.0;
                           return SizedBox(
                             width: double.infinity,
                             child: SingleChildScrollView(
@@ -2028,6 +2028,161 @@ class _UserManagementViewState extends State<UserManagementView> {
     );
   }
 
+  Widget _buildFigmaSwitch({
+    required bool value,
+    required ValueChanged<bool>? onChanged,
+  }) {
+    return GestureDetector(
+      onTap: onChanged == null ? null : () => onChanged(!value),
+      child: MouseRegion(
+        cursor: onChanged == null ? SystemMouseCursors.basic : SystemMouseCursors.click,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          curve: Curves.easeInOut,
+          width: 40,
+          height: 20,
+          padding: const EdgeInsets.all(2),
+          decoration: BoxDecoration(
+            color: value
+                ? const Color(0xFF4F46E5)
+                : (onChanged == null ? const Color(0x66E2E8F0) : const Color(0xCCE2E8F0)),
+            borderRadius: BorderRadius.circular(9999),
+          ),
+          alignment: value ? Alignment.centerRight : Alignment.centerLeft,
+          child: Container(
+            width: 16,
+            height: 16,
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: Color(0x1A000000),
+                  blurRadius: 2,
+                  offset: Offset(0, 1),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRolePill({
+    required DashboardUserModel user,
+    required DashboardCubit cubit,
+    required bool isMe,
+  }) {
+    final canChangeRole = !isMe;
+
+    final pillChild = Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: canChangeRole
+            ? const Color(0xFFF1F5F9)
+            : const Color(0xB2F8FAFC),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            user.roleLabel,
+            style: GoogleFonts.inter(
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+              color: canChangeRole
+                  ? const Color(0xFF334155)
+                  : const Color(0xFF94A3B8),
+              height: 20 / 14,
+            ),
+          ),
+          const Gap(10),
+          Icon(
+            Icons.keyboard_arrow_down_rounded,
+            size: 14,
+            color: canChangeRole
+                ? const Color(0xFF64748B)
+                : const Color(0xFF94A3B8),
+          ),
+        ],
+      ),
+    );
+
+    if (!canChangeRole) {
+      return pillChild;
+    }
+
+    return PopupMenuButton<String>(
+      tooltip: 'Change Role',
+      offset: const Offset(0, 36),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      onSelected: (newRole) {
+        if (newRole != user.role) {
+          cubit.updateUserRole(user.uid, newRole, userName: user.name);
+        }
+      },
+      itemBuilder: (ctx) => [
+        PopupMenuItem(
+          value: 'admin',
+          child: Row(
+            children: [
+              const Icon(
+                Icons.admin_panel_settings_outlined,
+                size: 18,
+                color: Color(0xFFD97706),
+              ),
+              const Gap(10),
+              Text(
+                'Admin',
+                style: GoogleFonts.inter(
+                  fontSize: 13.5,
+                  fontWeight: user.role == 'admin'
+                      ? FontWeight.w700
+                      : FontWeight.w500,
+                  color: const Color(0xFF0F172A),
+                ),
+              ),
+              if (user.role == 'admin') ...[
+                const Spacer(),
+                const Icon(Icons.check, size: 16, color: Color(0xFFEF8144)),
+              ],
+            ],
+          ),
+        ),
+        PopupMenuItem(
+          value: 'hr',
+          child: Row(
+            children: [
+              const Icon(
+                Icons.badge_outlined,
+                size: 18,
+                color: Color(0xFF3B82F6),
+              ),
+              const Gap(10),
+              Text(
+                'HR & Operations',
+                style: GoogleFonts.inter(
+                  fontSize: 13.5,
+                  fontWeight: user.role == 'hr'
+                      ? FontWeight.w700
+                      : FontWeight.w500,
+                  color: const Color(0xFF0F172A),
+                ),
+              ),
+              if (user.role == 'hr') ...[
+                const Spacer(),
+                const Icon(Icons.check, size: 16, color: Color(0xFFEF8144)),
+              ],
+            ],
+          ),
+        ),
+      ],
+      child: pillChild,
+    );
+  }
+
   static TextStyle get _tblHdr => GoogleFonts.inter(
         fontSize: 11,
         fontWeight: FontWeight.w700,
@@ -2056,28 +2211,28 @@ class _UserManagementViewState extends State<UserManagementView> {
           child: Row(
             children: [
               Expanded(
-                flex: 3,
+                flex: 267,
                 child: Padding(
                   padding: const EdgeInsets.only(right: 14),
                   child: Text('USER', style: _tblHdr),
                 ),
               ),
               Expanded(
-                flex: 3,
+                flex: 259,
                 child: Padding(
                   padding: const EdgeInsets.only(right: 14),
                   child: Text('EMAIL & UID', style: _tblHdr),
                 ),
               ),
               Expanded(
-                flex: 2,
+                flex: 210,
                 child: Padding(
                   padding: const EdgeInsets.only(right: 14),
                   child: Text('ROLE', style: _tblHdr),
                 ),
               ),
               Expanded(
-                flex: 3,
+                flex: 257,
                 child: Padding(
                   padding: const EdgeInsets.only(right: 14),
                   child: Text('DEVICE SECURITY (PR-5.1)', style: _tblHdr),
@@ -2088,14 +2243,14 @@ class _UserManagementViewState extends State<UserManagementView> {
                 child: Center(child: Text('ACTIVE', style: _tblHdr)),
               ),
               SizedBox(
-                width: 125,
+                width: 127,
                 child: Align(
                   alignment: Alignment.centerRight,
                   child: Text('ACTIONS', style: _tblHdr),
                 ),
               ),
               SizedBox(
-                width: 125,
+                width: 127,
                 child: Align(
                   alignment: Alignment.centerRight,
                   child: Text('RESET PASSWORD', style: _tblHdr),
@@ -2144,7 +2299,7 @@ class _UserManagementViewState extends State<UserManagementView> {
                   children: [
                     // USER Column
                     Expanded(
-                      flex: 3,
+                      flex: 267,
                       child: Padding(
                         padding: const EdgeInsets.only(right: 14),
                         child: Row(
@@ -2221,7 +2376,7 @@ class _UserManagementViewState extends State<UserManagementView> {
 
                     // EMAIL & UID Column
                     Expanded(
-                      flex: 3,
+                      flex: 259,
                       child: Padding(
                         padding: const EdgeInsets.only(right: 14),
                         child: Column(
@@ -2273,19 +2428,17 @@ class _UserManagementViewState extends State<UserManagementView> {
                       ),
                     ),
 
-                    // ROLE Column
+                    // ROLE Column (Figma Node 1364:2968)
                     Expanded(
-                      flex: 2,
+                      flex: 210,
                       child: Padding(
                         padding: const EdgeInsets.only(right: 14),
-                        child: Text(
-                          user.roleLabel,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: GoogleFonts.inter(
-                            fontSize: 13.5,
-                            fontWeight: FontWeight.w500,
-                            color: const Color(0xFF1E293B),
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: _buildRolePill(
+                            user: user,
+                            cubit: cubit,
+                            isMe: isMe,
                           ),
                         ),
                       ),
@@ -2293,7 +2446,7 @@ class _UserManagementViewState extends State<UserManagementView> {
 
                     // DEVICE SECURITY Column
                     Expanded(
-                      flex: 3,
+                      flex: 257,
                       child: Padding(
                         padding: const EdgeInsets.only(right: 14),
                         child: Row(
@@ -2377,44 +2530,35 @@ class _UserManagementViewState extends State<UserManagementView> {
                       ),
                     ),
 
-                    // ACTIVE Switch Column
+                    // ACTIVE Switch Column (Figma Node 1364:2988)
                     SizedBox(
                       width: 95,
                       child: Center(
-                        child: Transform.scale(
-                          scale: 0.8,
-                          child: Switch(
-                            value: user.isActive,
-                            activeTrackColor: const Color(0xFF4F46E5),
-                            inactiveTrackColor: const Color(0xFFE2E8F0),
-                            thumbColor: WidgetStateProperty.all(Colors.white),
-                            trackOutlineColor: WidgetStateProperty.all(
-                              Colors.transparent,
-                            ),
-                            onChanged: isMe
-                                ? null
-                                : (val) {
-                                    if (!val) {
-                                      _showDeactivateAndReassignDialog(
-                                        user,
-                                        allUsers,
-                                      );
-                                    } else {
-                                      cubit.updateUserActive(
-                                        user.uid,
-                                        true,
-                                        userName: user.name,
-                                      );
-                                    }
-                                  },
-                          ),
+                        child: _buildFigmaSwitch(
+                          value: user.isActive,
+                          onChanged: isMe
+                              ? null
+                              : (val) {
+                                  if (!val) {
+                                    _showDeactivateAndReassignDialog(
+                                      user,
+                                      allUsers,
+                                    );
+                                  } else {
+                                    cubit.updateUserActive(
+                                      user.uid,
+                                      true,
+                                      userName: user.name,
+                                    );
+                                  }
+                                },
                         ),
                       ),
                     ),
 
                     // ACTIONS Column
                     SizedBox(
-                      width: 125,
+                      width: 127,
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
@@ -2425,6 +2569,11 @@ class _UserManagementViewState extends State<UserManagementView> {
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: IconButton(
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(
+                                minWidth: 32,
+                                minHeight: 32,
+                              ),
                               icon: const Icon(
                                 Icons.logout_rounded,
                                 size: 16,
@@ -2444,6 +2593,11 @@ class _UserManagementViewState extends State<UserManagementView> {
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: IconButton(
+                                padding: EdgeInsets.zero,
+                                constraints: const BoxConstraints(
+                                  minWidth: 32,
+                                  minHeight: 32,
+                                ),
                                 icon: const Icon(
                                   Icons.tune_rounded,
                                   size: 16,
@@ -2461,6 +2615,11 @@ class _UserManagementViewState extends State<UserManagementView> {
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: IconButton(
+                                padding: EdgeInsets.zero,
+                                constraints: const BoxConstraints(
+                                  minWidth: 32,
+                                  minHeight: 32,
+                                ),
                                 icon: const Icon(
                                   Icons.delete_outline_rounded,
                                   size: 16,
@@ -2477,7 +2636,7 @@ class _UserManagementViewState extends State<UserManagementView> {
 
                     // RESET PASSWORD Column (Figma Node 1525:335)
                     SizedBox(
-                      width: 125,
+                      width: 127,
                       child: Align(
                         alignment: Alignment.centerRight,
                         child: Container(
@@ -2487,6 +2646,11 @@ class _UserManagementViewState extends State<UserManagementView> {
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: IconButton(
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(
+                              minWidth: 32,
+                              minHeight: 32,
+                            ),
                             icon: const Icon(
                               Icons.lock_reset_rounded,
                               size: 20,
@@ -2643,33 +2807,24 @@ class _UserManagementViewState extends State<UserManagementView> {
                             ],
                           ),
                         ),
-                        Transform.scale(
-                          scale: 0.8,
-                          child: Switch(
-                            value: user.isActive,
-                            activeTrackColor: const Color(0xFF4F46E5),
-                            inactiveTrackColor: const Color(0xFFE2E8F0),
-                            thumbColor: WidgetStateProperty.all(Colors.white),
-                            trackOutlineColor: WidgetStateProperty.all(
-                              Colors.transparent,
-                            ),
-                            onChanged: isMe
-                                ? null
-                                : (val) {
-                                    if (!val) {
-                                      _showDeactivateAndReassignDialog(
-                                        user,
-                                        allUsers,
-                                      );
-                                    } else {
-                                      cubit.updateUserActive(
-                                        user.uid,
-                                        true,
-                                        userName: user.name,
-                                      );
-                                    }
-                                  },
-                          ),
+                        _buildFigmaSwitch(
+                          value: user.isActive,
+                          onChanged: isMe
+                              ? null
+                              : (val) {
+                                  if (!val) {
+                                    _showDeactivateAndReassignDialog(
+                                      user,
+                                      allUsers,
+                                    );
+                                  } else {
+                                    cubit.updateUserActive(
+                                      user.uid,
+                                      true,
+                                      userName: user.name,
+                                    );
+                                  }
+                                },
                         ),
                       ],
                     ),
@@ -2730,17 +2885,10 @@ class _UserManagementViewState extends State<UserManagementView> {
                           ),
                         ),
                         const Gap(10),
-                        Expanded(
-                          child: Text(
-                            user.roleLabel,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: GoogleFonts.inter(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w500,
-                              color: const Color(0xFF1E293B),
-                            ),
-                          ),
+                        _buildRolePill(
+                          user: user,
+                          cubit: cubit,
+                          isMe: isMe,
                         ),
                       ],
                     ),

@@ -20,6 +20,7 @@ import io.flutter.plugin.common.MethodChannel
 class MainActivity : FlutterActivity() {
     private val securityChannel = "com.acadeno.crm/security"
     private val phoneCallChannel = "com.acadeno.crm/phone_call"
+    private val notificationChannel = "com.acadeno.crm/notifications"
     private val PERMISSION_REQUEST_CODE = 4421
     private var didPlaceCall = false
 
@@ -158,6 +159,31 @@ class MainActivity : FlutterActivity() {
                         result.success(durationSeconds)
                     } else {
                         result.success(-1L)
+                    }
+                }
+                else -> result.notImplemented()
+            }
+        }
+
+        // 3. Custom Figma System Notification Channel
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, notificationChannel).setMethodCallHandler { call, result ->
+            when (call.method) {
+                "showCustomNotification" -> {
+                    val title = call.argument<String>("title") ?: "Reminder"
+                    val body = call.argument<String>("body") ?: ""
+                    val payload = call.argument<String>("payload")
+                    val id = (call.argument<Number>("id"))?.toInt() ?: 1001
+                    try {
+                        CustomNotificationHelper.showCustomNotification(
+                            context = applicationContext,
+                            title = title,
+                            body = body,
+                            payload = payload,
+                            id = id
+                        )
+                        result.success(true)
+                    } catch (e: Exception) {
+                        result.error("NOTIFICATION_ERROR", e.localizedMessage, null)
                     }
                 }
                 else -> result.notImplemented()

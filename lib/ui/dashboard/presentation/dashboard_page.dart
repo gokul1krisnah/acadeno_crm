@@ -1,4 +1,5 @@
 import 'package:acadeno_crm/ui/follow_ups/data/model/follow_up_models.dart';
+import 'package:acadeno_crm/shared/widgets/acadeno_dropdown.dart';
 import 'package:acadeno_crm/core/services/firestore_stream_cache.dart';
 import 'package:gap/gap.dart';
 import 'package:acadeno_crm/ui/follow_ups/data/model/follow_up_time_helper.dart';
@@ -349,39 +350,193 @@ class _DashboardViewState extends State<_DashboardView> {
     ),
   ];
 
-  DateTime? _selectedDashboardDate;
+  String _dashboardDateRange = 'Today';
+  DateTime? _selectedCustomDate;
 
   DateTime get _effectiveDashboardDate {
-    final n = _selectedDashboardDate ?? DateTime.now();
+    if (_dashboardDateRange == 'Yesterday') {
+      final y = DateTime.now().subtract(const Duration(days: 1));
+      return DateTime(y.year, y.month, y.day);
+    }
+    if (_dashboardDateRange == 'Custom' && _selectedCustomDate != null) {
+      return DateTime(
+        _selectedCustomDate!.year,
+        _selectedCustomDate!.month,
+        _selectedCustomDate!.day,
+      );
+    }
+    final n = DateTime.now();
     return DateTime(n.year, n.month, n.day);
   }
 
-  String get _today {
-    return DateFormat('EEEE, d MMMM').format(_effectiveDashboardDate);
+  String get _dateRangeDisplayLabel {
+    final now = DateTime.now();
+    switch (_dashboardDateRange) {
+      case 'Today':
+        return 'Today · ${DateFormat('d MMM').format(now)}';
+      case 'Yesterday':
+        final y = now.subtract(const Duration(days: 1));
+        return 'Yesterday · ${DateFormat('d MMM').format(y)}';
+      case 'This week':
+        final startOfWeek = now.subtract(Duration(days: now.weekday - 1));
+        return 'This week (${DateFormat('d MMM').format(startOfWeek)}–${DateFormat('d MMM').format(now)})';
+      case 'This month':
+        return 'This month (${DateFormat('MMMM yyyy').format(now)})';
+      case 'All Time':
+        return 'All Time';
+      case 'Custom':
+        if (_selectedCustomDate != null) {
+          return DateFormat('d MMM yyyy').format(_selectedCustomDate!);
+        }
+        return 'Custom Date';
+      default:
+        return 'Today · ${DateFormat('d MMM').format(now)}';
+    }
   }
 
-  Future<void> _pickDashboardDate() async {
+  Future<void> _pickDashboardCustomDate() async {
     final now = DateTime.now();
     final picked = await showFigmaCalendarDialog(
       context: context,
-      initialDate: _selectedDashboardDate ?? now,
+      initialDate: _selectedCustomDate ?? now,
       firstDate: DateTime(2024),
       lastDate: DateTime(2030),
     );
     if (picked != null) {
       final normalizedPicked = DateTime(picked.year, picked.month, picked.day);
-      final normalizedToday = DateTime(now.year, now.month, now.day);
       setState(() {
-        _selectedDashboardDate = normalizedPicked == normalizedToday
-            ? null
-            : normalizedPicked;
+        _selectedCustomDate = normalizedPicked;
+        _dashboardDateRange = 'Custom';
       });
-      if (mounted && !normalizedPicked.isBefore(normalizedToday)) {
+      if (mounted) {
         context.read<AdminLeadsCubit>().selectCustomAssignmentDate(
           normalizedPicked,
         );
       }
     }
+  }
+
+  Widget _buildDashboardDateSelector() {
+    return Container(
+      height: 36,
+      padding: const EdgeInsets.symmetric(horizontal: 10),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x08000000),
+            blurRadius: 4,
+            offset: Offset(0, 1),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          const Icon(
+            Icons.calendar_today_rounded,
+            size: 13,
+            color: Color(0xFFEF8144),
+          ),
+          const Gap(6),
+          DropdownButtonHideUnderline(
+            child: DropdownButton<String>(
+              value: _dashboardDateRange,
+              dropdownColor: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              icon: const Icon(
+                Icons.keyboard_arrow_down_rounded,
+                size: 17,
+                color: Color(0xFF64748B),
+              ),
+              isDense: true,
+              style: GoogleFonts.inter(
+                fontSize: 12.5,
+                fontWeight: FontWeight.w600,
+                color: const Color(0xFF0F172A),
+              ),
+              selectedItemBuilder: (context) => [
+                'Today',
+                'Yesterday',
+                'This week',
+                'This month',
+                'All Time',
+                'Custom',
+              ].map((val) => Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  _dateRangeDisplayLabel,
+                  style: GoogleFonts.inter(
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFF0F172A),
+                  ),
+                ),
+              )).toList(),
+              items: [
+                DropdownMenuItem(
+                  value: 'Today',
+                  child: AcadenoDropdown.buildMenuItemChild(
+                    label: 'Today',
+                    isSelected: _dashboardDateRange == 'Today',
+                  ),
+                ),
+                DropdownMenuItem(
+                  value: 'Yesterday',
+                  child: AcadenoDropdown.buildMenuItemChild(
+                    label: 'Yesterday',
+                    isSelected: _dashboardDateRange == 'Yesterday',
+                  ),
+                ),
+                DropdownMenuItem(
+                  value: 'This week',
+                  child: AcadenoDropdown.buildMenuItemChild(
+                    label: 'This week',
+                    isSelected: _dashboardDateRange == 'This week',
+                  ),
+                ),
+                DropdownMenuItem(
+                  value: 'This month',
+                  child: AcadenoDropdown.buildMenuItemChild(
+                    label: 'This month',
+                    isSelected: _dashboardDateRange == 'This month',
+                  ),
+                ),
+                DropdownMenuItem(
+                  value: 'All Time',
+                  child: AcadenoDropdown.buildMenuItemChild(
+                    label: 'All Time',
+                    isSelected: _dashboardDateRange == 'All Time',
+                  ),
+                ),
+                DropdownMenuItem(
+                  value: 'Custom',
+                  child: AcadenoDropdown.buildMenuItemChild(
+                    label: _selectedCustomDate != null
+                        ? 'Custom (${DateFormat('d MMM yyyy').format(_selectedCustomDate!)})'
+                        : 'Pick custom date...',
+                    isSelected: _dashboardDateRange == 'Custom',
+                  ),
+                ),
+              ],
+              onChanged: (val) async {
+                if (val == null) return;
+                if (val == 'Custom') {
+                  await _pickDashboardCustomDate();
+                } else {
+                  setState(() {
+                    _dashboardDateRange = val;
+                  });
+                }
+              },
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   static String? _extractDateKey(dynamic val, {DateTime? now}) {
@@ -415,8 +570,54 @@ class _DashboardViewState extends State<_DashboardView> {
     required List<Map<String, dynamic>> rawAssignments,
     required List<Map<String, dynamic>> rawCallLogs,
     required DateTime targetDate,
+    String dateRange = 'Today',
   }) {
+    if (dateRange == 'All Time') {
+      return rawLeads;
+    }
+
     final now = DateTime.now();
+
+    if (dateRange == 'This week') {
+      final startOfWeek = now.subtract(Duration(days: now.weekday - 1));
+      final startMidnight = DateTime(startOfWeek.year, startOfWeek.month, startOfWeek.day);
+      return rawLeads.where((l) {
+        final ca = l['createdAt'];
+        if (ca is Timestamp && ca.toDate().isAfter(startMidnight)) return true;
+        final aa = l['assignedAt'];
+        if (aa is Timestamp && aa.toDate().isAfter(startMidnight)) return true;
+        final lc = l['lastCalledAt'] ?? l['lastContactAt'];
+        if (lc is Timestamp && lc.toDate().isAfter(startMidnight)) return true;
+        final ua = l['updatedAt'];
+        if (ua is Timestamp && ua.toDate().isAfter(startMidnight)) return true;
+        final adk = _extractDateKey(l['assignedDateKey'], now: now);
+        if (adk != null) {
+          final p = DateTime.tryParse(adk);
+          if (p != null && (p.isAfter(startMidnight) || p.isAtSameMomentAs(startMidnight))) return true;
+        }
+        return false;
+      }).toList();
+    }
+
+    if (dateRange == 'This month') {
+      final startOfMonth = DateTime(now.year, now.month, 1);
+      return rawLeads.where((l) {
+        final ca = l['createdAt'];
+        if (ca is Timestamp && ca.toDate().isAfter(startOfMonth)) return true;
+        final aa = l['assignedAt'];
+        if (aa is Timestamp && aa.toDate().isAfter(startOfMonth)) return true;
+        final lc = l['lastCalledAt'] ?? l['lastContactAt'];
+        if (lc is Timestamp && lc.toDate().isAfter(startOfMonth)) return true;
+        final ua = l['updatedAt'];
+        if (ua is Timestamp && ua.toDate().isAfter(startOfMonth)) return true;
+        final adk = _extractDateKey(l['assignedDateKey'], now: now);
+        if (adk != null) {
+          final p = DateTime.tryParse(adk);
+          if (p != null && (p.isAfter(startOfMonth) || p.isAtSameMomentAs(startOfMonth))) return true;
+        }
+        return false;
+      }).toList();
+    }
     final todayDay = DateTime(now.year, now.month, now.day);
     final targetDay = DateTime(
       targetDate.year,
@@ -1023,6 +1224,8 @@ class _DashboardViewState extends State<_DashboardView> {
                                                             rawCallLogs,
                                                         targetDate:
                                                             _effectiveDashboardDate,
+                                                        dateRange:
+                                                            _dashboardDateRange,
                                                       );
 
                                                   return LayoutBuilder(
@@ -1431,9 +1634,10 @@ class _DashboardViewState extends State<_DashboardView> {
       isSelected: selectedIndex == index,
       compact: compact,
       onTap: () {
-        if (index == 0 && _selectedDashboardDate != null) {
+        if (index == 0 && (_dashboardDateRange != 'Today' || _selectedCustomDate != null)) {
           setState(() {
-            _selectedDashboardDate = null;
+            _dashboardDateRange = 'Today';
+            _selectedCustomDate = null;
           });
         }
         cubit.selectNav(index);
@@ -1489,20 +1693,8 @@ class _DashboardViewState extends State<_DashboardView> {
                         letterSpacing: -0.4102,
                       ),
                     ),
-                    const Gap(2),
-                    InkWell(
-                      onTap: _pickDashboardDate,
-                      borderRadius: BorderRadius.circular(6),
-                      child: Text(
-                        _today,
-                        style: GoogleFonts.inter(
-                          color: const Color(0xFF718096),
-                          fontSize: 13,
-                          fontWeight: FontWeight.w400,
-                          letterSpacing: -0.3418,
-                        ),
-                      ),
-                    ),
+                    const Gap(6),
+                    _buildDashboardDateSelector(),
                   ],
                 ),
               ),
@@ -1557,7 +1749,6 @@ class _DashboardViewState extends State<_DashboardView> {
     final titleFontSize = isCompactHeader
         ? 22.0
         : (isMediumHeader ? 26.0 : 30.0);
-    final dateFontSize = isCompactHeader ? 12.0 : 14.0;
     final searchMaxWidth = isCompactHeader
         ? 185.0
         : (isMediumHeader ? 260.0 : 360.0);
@@ -1601,23 +1792,8 @@ class _DashboardViewState extends State<_DashboardView> {
                   height: 36 / 30,
                 ),
               ),
-              const Gap(4),
-              InkWell(
-                onTap: _pickDashboardDate,
-                borderRadius: BorderRadius.circular(6),
-                child: Text(
-                  _today,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.inter(
-                    color: const Color(0xFF718096),
-                    fontSize: dateFontSize,
-                    fontWeight: FontWeight.w400,
-                    letterSpacing: -0.3418,
-                    height: 20 / 14,
-                  ),
-                ),
-              ),
+              const Gap(6),
+              _buildDashboardDateSelector(),
             ],
           ),
         ),
