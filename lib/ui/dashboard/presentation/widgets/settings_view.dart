@@ -612,12 +612,16 @@ class _SettingsViewState extends State<SettingsView>
   // ---------------------------------------------------------------------------
   // Tab 1: Account & Security (Figma Node 1774:888 - MainContainer)
   // ---------------------------------------------------------------------------
-  InputDecoration _figmaAccountInputDecoration({Widget? suffixIcon}) {
+  InputDecoration _figmaAccountInputDecoration({
+    Widget? suffixIcon,
+    EdgeInsetsGeometry? contentPadding,
+  }) {
     return InputDecoration(
       isDense: true,
       filled: true,
       fillColor: Colors.white,
-      contentPadding: EdgeInsets.fromLTRB(14, 12, suffixIcon != null ? 4 : 14, 12),
+      contentPadding: contentPadding ??
+          EdgeInsets.fromLTRB(14, 12, suffixIcon != null ? 4 : 14, 12),
       suffixIcon: suffixIcon,
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
@@ -812,7 +816,7 @@ class _SettingsViewState extends State<SettingsView>
               children: [
                 Expanded(
                   child: SizedBox(
-                    height: 46,
+                    height: 40,
                     child: TextField(
                       controller: _nameController,
                       textAlignVertical: TextAlignVertical.center,
@@ -822,19 +826,21 @@ class _SettingsViewState extends State<SettingsView>
                         fontWeight: FontWeight.w400,
                         color: Color(0xFF19233C),
                       ),
-                      decoration: _figmaAccountInputDecoration(),
+                      decoration: _figmaAccountInputDecoration(
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                      ),
                     ),
                   ),
                 ),
-                const Gap(7),
+                const Gap(8),
                 _buildFigmaOrangeButton(
                   label: 'Save Name',
                   isLoading: _isSavingName,
                   onPressed: _updateDisplayName,
                   width: 132,
-                  height: 46,
+                  height: 40,
                   textStyle: GoogleFonts.inter(
-                    fontSize: 15,
+                    fontSize: 14,
                     fontWeight: FontWeight.w600,
                     color: Colors.white,
                     height: 1.2,
