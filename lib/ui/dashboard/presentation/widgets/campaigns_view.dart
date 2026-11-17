@@ -951,8 +951,8 @@ class _CampaignsViewState extends State<CampaignsView> {
     return LayoutBuilder(
       builder: (context, constraints) {
         final isMobile =
-            MediaQuery.of(context).size.width < 768 ||
-            constraints.maxWidth < 800;
+            MediaQuery.of(context).size.width < 600 ||
+            constraints.maxWidth < 520;
 
         if (_showAllCampaigns) {
           return _buildAllCampaignsList(isMobile);
@@ -1143,114 +1143,150 @@ class _CampaignsViewState extends State<CampaignsView> {
             ),
             const Gap(16),
 
-            // Split Top Leads Bar (Responsive Indigo border)
+            // Split Top Leads Bar (Figma Node: 1357:403 & 1357:404)
             LayoutBuilder(
               builder: (context, barC) {
-                final isMobileBar = barC.maxWidth < 640;
+                final isDesktopFull = barC.maxWidth >= 1060;
+                final isMobileBar = barC.maxWidth < 680;
 
-                final splitInputRow = Wrap(
-                  spacing: 10,
-                  runSpacing: 6,
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  children: [
-                    Text(
-                      'Split Top',
-                      style: GoogleFonts.inter(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                        color: const Color(0xFF0F172A),
-                      ),
+                final splitTopLabel = Padding(
+                  padding: const EdgeInsets.only(left: 8),
+                  child: Text(
+                    'Split Top',
+                    style: GoogleFonts.inter(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      color: const Color(0xFF0F172A),
+                      letterSpacing: -0.0273,
+                      height: 20 / 14,
                     ),
-                    Container(
-                      width: 64,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: const Color(0xFFE2E8F0)),
-                      ),
-                      alignment: Alignment.center,
+                  ),
+                );
+
+                final splitInputField = Container(
+                  width: 64,
+                  height: 40,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: const Color(0xFFE2E8F0), width: 1.0),
+                  ),
+                  child: Center(
+                    child: SizedBox(
+                      height: 24,
                       child: TextField(
                         controller: _splitCountController,
+                        maxLines: 1,
                         keyboardType: TextInputType.number,
                         textAlign: TextAlign.center,
                         textAlignVertical: TextAlignVertical.center,
                         onChanged: (_) => setState(() {}),
                         style: GoogleFonts.inter(
-                          fontSize: 16,
+                          fontSize: 15,
                           fontWeight: FontWeight.w700,
                           color: const Color(0xFF0F172A),
                         ),
                         decoration: const InputDecoration(
-                          isDense: true,
                           border: InputBorder.none,
+                          isCollapsed: true,
                           contentPadding: EdgeInsets.zero,
                         ),
                       ),
                     ),
-                    Text(
-                      'Leads Evenly Across',
-                      style: GoogleFonts.inter(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                        color: const Color(0xFF0F172A),
+                  ),
+                );
+
+                final leadsEvenlyAcrossLabel = Text(
+                  'Leads Evenly Across',
+                  style: GoogleFonts.inter(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: const Color(0xFF0F172A),
+                    height: 20 / 14,
+                  ),
+                );
+
+                final execPillsList = _allExecutives.map((exec) {
+                  final isSelected = _selectedExecutives.contains(exec);
+                  return InkWell(
+                    onTap: () {
+                      setState(() {
+                        if (isSelected && _selectedExecutives.length > 1) {
+                          _selectedExecutives.remove(exec);
+                        } else {
+                          _selectedExecutives.add(exec);
+                        }
+                      });
+                    },
+                    borderRadius: BorderRadius.circular(9999),
+                    child: Container(
+                      height: 38,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
+                      decoration: BoxDecoration(
+                        color: isSelected
+                            ? const Color(0xFFEEF2FF)
+                            : Colors.white,
+                        borderRadius: BorderRadius.circular(9999),
+                        border: Border.all(
+                          color: isSelected
+                              ? const Color(0xFFC7D2FE)
+                              : const Color(0xFFE2E8F0),
+                          width: 1.0,
+                        ),
+                      ),
+                      alignment: Alignment.center,
+                      child: Text(
+                        exec,
+                        style: GoogleFonts.inter(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          color: isSelected
+                              ? const Color(0xFF4F46E5)
+                              : const Color(0xFF64748B),
+                          letterSpacing: 0.1,
+                          height: 20 / 14,
+                        ),
                       ),
                     ),
-                  ],
+                  );
+                }).toList();
+
+                final perExecText = Text(
+                  '$_perExecCount each',
+                  style: GoogleFonts.inter(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: const Color(0xFF64748B),
+                    height: 20 / 14,
+                  ),
                 );
 
-                final execPills = Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  children: _allExecutives.map((exec) {
-                    final isSelected = _selectedExecutives.contains(exec);
-                    return InkWell(
-                      onTap: () {
-                        setState(() {
-                          if (isSelected && _selectedExecutives.length > 1) {
-                            _selectedExecutives.remove(exec);
-                          } else {
-                            _selectedExecutives.add(exec);
-                          }
-                        });
-                      },
-                      borderRadius: BorderRadius.circular(9999),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 8,
-                        ),
-                        decoration: BoxDecoration(
-                          color: isSelected
-                              ? const Color(0xFFEEF2FF)
-                              : Colors.white,
-                          borderRadius: BorderRadius.circular(9999),
-                          border: Border.all(
-                            color: isSelected
-                                ? const Color(0xFFC7D2FE)
-                                : const Color(0xFFE2E8F0),
-                            width: 1.0,
-                          ),
-                        ),
-                        child: Text(
-                          exec,
-                          style: GoogleFonts.inter(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                            color: isSelected
-                                ? const Color(0xFF4F46E5)
-                                : const Color(0xFF64748B),
-                          ),
-                        ),
-                      ),
-                    );
-                  }).toList(),
-                );
-
-                final assignBtn = SizedBox(
+                final assignBtn = Container(
                   height: 40,
-                  width: isMobileBar ? double.infinity : null,
+                  constraints: BoxConstraints(
+                    minWidth: isMobileBar ? double.infinity : 195,
+                  ),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Color(0x33E0E7FF),
+                        offset: Offset(0, 4),
+                        blurRadius: 6,
+                        spreadRadius: -1,
+                      ),
+                      BoxShadow(
+                        color: Color(0x33E0E7FF),
+                        offset: Offset(0, 2),
+                        blurRadius: 4,
+                        spreadRadius: -2,
+                      ),
+                    ],
+                  ),
                   child: ElevatedButton(
                     onPressed: _assignCampaignLeads,
                     style: ElevatedButton.styleFrom(
@@ -1258,7 +1294,10 @@ class _CampaignsViewState extends State<CampaignsView> {
                       backgroundColor: const Color(0xFFEF8144),
                       foregroundColor: Colors.white,
                       elevation: 0,
-                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 10,
+                      ),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -1271,41 +1310,56 @@ class _CampaignsViewState extends State<CampaignsView> {
                           fontSize: 14,
                           fontWeight: FontWeight.w700,
                           color: Colors.white,
+                          letterSpacing: 0.041,
+                          height: 20 / 14,
                         ),
                       ),
                     ),
                   ),
                 );
 
+                // Container decoration matching Figma 1357:403
+                final containerDecoration = BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: const Color(0xFF818CF8),
+                    width: 1.0,
+                  ),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Color.fromRGBO(0, 0, 0, 0.05),
+                      offset: Offset(0, 1),
+                      blurRadius: 1,
+                    ),
+                  ],
+                );
+
+                // Mobile Layout (< 680px)
                 if (isMobileBar) {
                   return Container(
                     width: double.infinity,
                     padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: const Color(0xFF818CF8),
-                        width: 1.0,
-                      ),
-                      boxShadow: const [
-                        BoxShadow(
-                          color: Color.fromRGBO(0, 0, 0, 0.05),
-                          offset: Offset(0, 1),
-                          blurRadius: 2,
-                        ),
-                      ],
-                    ),
+                    decoration: containerDecoration,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         Wrap(
-                          spacing: 8,
-                          runSpacing: 6,
+                          spacing: 10,
+                          runSpacing: 8,
                           crossAxisAlignment: WrapCrossAlignment.center,
                           alignment: WrapAlignment.spaceBetween,
                           children: [
-                            splitInputRow,
+                            Wrap(
+                              spacing: 10,
+                              runSpacing: 6,
+                              crossAxisAlignment: WrapCrossAlignment.center,
+                              children: [
+                                splitTopLabel,
+                                splitInputField,
+                                leadsEvenlyAcrossLabel,
+                              ],
+                            ),
                             Container(
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 10,
@@ -1327,61 +1381,120 @@ class _CampaignsViewState extends State<CampaignsView> {
                           ],
                         ),
                         const Gap(12),
-                        execPills,
-                        const Gap(12),
-                        assignBtn,
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: execPillsList,
+                        ),
+                        const Gap(14),
+                        SizedBox(
+                          width: double.infinity,
+                          child: assignBtn,
+                        ),
                       ],
                     ),
                   );
                 }
 
+                // Desktop Full Width Layout (matches Figma 1357:403 & 1357:404 exactly)
+                if (isDesktopFull) {
+                  return Container(
+                    width: double.infinity,
+                    height: 74,
+                    padding: const EdgeInsets.all(16),
+                    decoration: containerDecoration,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        // Figma: 1357:404 (Container)
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            splitTopLabel,
+                            const Gap(16),
+                            splitInputField,
+                            const Gap(16),
+                            leadsEvenlyAcrossLabel,
+                            const Gap(16),
+                            // Figma: 1357:412 (Executive pills)
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                for (int i = 0; i < execPillsList.length; i++) ...[
+                                  execPillsList[i],
+                                  if (i < execPillsList.length - 1)
+                                    const Gap(8),
+                                ],
+                              ],
+                            ),
+                          ],
+                        ),
+                        // Figma: 1357:419 (Right Container)
+                        Padding(
+                          padding: const EdgeInsets.only(right: 8),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              perExecText,
+                              const Gap(24),
+                              assignBtn,
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+
+                // Tablet / Intermediate Layout (Figma styles preserved with responsive wrap)
                 return Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 16,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: const Color(0xFF818CF8),
-                      width: 1.0,
-                    ),
-                    boxShadow: const [
-                      BoxShadow(
-                        color: Color.fromRGBO(0, 0, 0, 0.05),
-                        offset: Offset(0, 1),
-                        blurRadius: 2,
-                      ),
-                    ],
-                  ),
+                  padding: const EdgeInsets.all(16),
+                  decoration: containerDecoration,
                   child: Wrap(
                     spacing: 16,
                     runSpacing: 12,
                     crossAxisAlignment: WrapCrossAlignment.center,
                     alignment: WrapAlignment.spaceBetween,
                     children: [
+                      // Left group (1357:404)
                       Wrap(
-                        spacing: 12,
+                        spacing: 16,
                         runSpacing: 10,
                         crossAxisAlignment: WrapCrossAlignment.center,
-                        children: [splitInputRow, execPills],
-                      ),
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          Text(
-                            '$_perExecCount each',
-                            style: GoogleFonts.inter(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                              color: const Color(0xFF64748B),
-                            ),
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              splitTopLabel,
+                              const Gap(16),
+                              splitInputField,
+                              const Gap(16),
+                              leadsEvenlyAcrossLabel,
+                            ],
                           ),
-                          const Gap(16),
-                          assignBtn,
+                          Wrap(
+                            spacing: 8,
+                            runSpacing: 8,
+                            children: execPillsList,
+                          ),
                         ],
+                      ),
+                      // Right group (1357:419)
+                      Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            perExecText,
+                            const Gap(24),
+                            assignBtn,
+                          ],
+                        ),
                       ),
                     ],
                   ),
@@ -1389,7 +1502,6 @@ class _CampaignsViewState extends State<CampaignsView> {
               },
             ),
             const Gap(16),
-
             // Ranked Leads Table / Mobile List
             Container(
               width: double.infinity,
@@ -1641,8 +1753,7 @@ class _CampaignsViewState extends State<CampaignsView> {
                       ),
                       Expanded(
                         flex: 13,
-                        child: Align(
-                          alignment: Alignment.centerRight,
+                        child: Center(
                           child: Text('LAST CONTACT', style: headerStyle),
                         ),
                       ),
@@ -1809,16 +1920,16 @@ class _CampaignsViewState extends State<CampaignsView> {
                               ),
                               Expanded(
                                 flex: 13,
-                                child: Align(
-                                  alignment: Alignment.centerRight,
+                                child: Center(
                                   child: Text(
                                     lead.lastContact,
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
+                                    textAlign: TextAlign.center,
                                     style: GoogleFonts.inter(
                                       fontSize: 14,
                                       fontWeight: FontWeight.w400,
-                                      color: const Color(0xFF94A3B8),
+                                      color: const Color(0xFF64748B),
                                     ),
                                   ),
                                 ),

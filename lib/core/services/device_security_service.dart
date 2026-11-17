@@ -78,31 +78,93 @@ class DeviceSecurityService {
     final currentId = device.deviceId;
     final currentName = device.deviceName;
 
-    final registeredId = userData['registeredDeviceId'] as String?;
-    final isDeviceBound = userData['deviceBound'] as bool? ?? false;
+    // Always fetch fresh document directly from Firestore server to prevent stale cache blocks
+    Map<String, dynamic> liveData = userData;
+    try {
+      final docSnap = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .get(const GetOptions(source: Source.server))
+          .timeout(const Duration(seconds: 4));
+      if (docSnap.exists && docSnap.data() != null) {
+        liveData = docSnap.data()!;
+      }
+    } catch (_) {
+      try {
+        final docSnap = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid)
+            .get();
+        if (docSnap.exists && docSnap.data() != null) {
+          liveData = docSnap.data()!;
+        }
+      } catch (_) {}
+    }
 
-    if (!isDeviceBound || registeredId == null || registeredId.isEmpty) {
+    final registeredId =
+        (liveData['registeredDeviceId'] ?? liveData['deviceId']) as String?;
+    final isDeviceBound = (liveData['deviceBound'] as bool?) ?? false;
+    final boundDeviceName =
+        (liveData['deviceName'] ?? liveData['boundDeviceModel'] ?? '').toString();
+    final isPendingBinding = boundDeviceName.toLowerCase().contains('pending');
+
+    final isUnbound = !isDeviceBound ||
+        registeredId == null ||
+        registeredId.trim().isEmpty ||
+        isPendingBinding;
+
+    if (isUnbound) {
       // First login or reset device approval: bind this phone to the executive
       try {
         await FirebaseFirestore.instance
             .collection('users')
             .doc(user.uid)
-            .update({
+            .set({
               'registeredDeviceId': currentId,
+              'deviceId': currentId,
               'deviceName': currentName,
               'deviceBound': true,
               'lastBoundAt': FieldValue.serverTimestamp(),
-            });
+            }, SetOptions(merge: true));
       } catch (_) {}
       return null;
     }
 
-    if (registeredId != currentId) {
-      // Trying to sign in on a second phone!
-      final boundName = (userData['deviceName'] ?? 'another phone').toString();
-      return 'Device Binding Violation: Your account is registered to $boundName. Sales executives may only use one registered phone. Contact Super Admin to approve a device switch.';
+    if (registeredId == currentId) {
+      // Already bound to this physical phone
+      return null;
     }
 
-    return null;
+    // Account is actively bound to a different phone
+    final boundName =
+        boundDeviceName.isNotEmpty ? boundDeviceName : 'another phone';
+    return 'Device Binding Violation: Your account is registered to $boundName. Sales executives may only use one registered phone. Contact Super Admin or unbind this account to switch devices.';
+  }
+
+  /// Unbinds any registered device for a user in Firestore.
+  static Future<void> unbindDevice(String uid) async {
+    try {
+      await FirebaseFirestore.instance.collection('users').doc(uid).set({
+        'registeredDeviceId': null,
+        'deviceId': null,
+        'deviceBound': false,
+        'deviceName': 'Pending new phone binding',
+        'lastUnboundAt': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+    } catch (_) {}
+  }
+
+  /// Force-binds current hardware device to the given user account.
+  static Future<void> forceBindCurrentDevice(User user) async {
+    final device = await getDeviceIdentifier();
+    await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
+      'registeredDeviceId': device.deviceId,
+      'deviceId': device.deviceId,
+      'deviceName': device.deviceName,
+      'deviceBound': true,
+      'lastBoundAt': FieldValue.serverTimestamp(),
+      'forceLogoutToken': null,
+      'forceLogoutAt': null,
+    }, SetOptions(merge: true));
   }
 }

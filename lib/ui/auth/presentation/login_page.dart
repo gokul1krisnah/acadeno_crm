@@ -87,6 +87,86 @@ class _LoginViewState extends State<_LoginView> {
     );
   }
 
+  void _showDeviceBindingDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (dCtx) => AlertDialog(
+        backgroundColor: Colors.white,
+        surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Row(
+          children: const [
+            Icon(Icons.phonelink_lock_rounded, color: Color(0xFFD45107), size: 24),
+            Gap(10),
+            Expanded(
+              child: Text(
+                'Switch Registered Phone',
+                style: TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF0F172A),
+                ),
+              ),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              message,
+              style: const TextStyle(
+                fontSize: 13,
+                color: Color(0xFF475467),
+                height: 1.4,
+              ),
+            ),
+            const Gap(14),
+            const Text(
+              'Do you want to unbind the previous phone and register this phone to your account now?',
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF0F172A),
+                height: 1.4,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dCtx),
+            child: const Text('Cancel', style: TextStyle(color: Color(0xFF64748B))),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFD45107),
+              foregroundColor: Colors.white,
+              elevation: 0,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            onPressed: () {
+              Navigator.pop(dCtx);
+              final request = LoginRequestModel(
+                email: _emailController.text.trim(),
+                password: _passwordController.text,
+              );
+              context.read<LoginCubit>().unbindAndSignIn(request);
+            },
+            child: const Text(
+              'Unbind & Register This Phone',
+              style: TextStyle(fontWeight: FontWeight.w600),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Future<void> _forgotPassword() async {
     final email = _emailController.text.trim();
 
@@ -118,7 +198,15 @@ class _LoginViewState extends State<_LoginView> {
               context.router.replaceAll([const HomeRoute()]);
             }
           },
-          failure: (message) => _snack(message, isError: true),
+          failure: (message) {
+            if (message.contains('Device Binding Violation') ||
+                message.contains('registered to') ||
+                message.contains('registered phone')) {
+              _showDeviceBindingDialog(message);
+            } else {
+              _snack(message, isError: true);
+            }
+          },
         );
       },
       builder: (context, state) {

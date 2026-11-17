@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../../../core/injection/injection.dart';
 import '../../../../core/services/app_phone_call_service.dart';
 import '../../../../core/services/firestore_stream_cache.dart';
 import '../../../../shared/widgets/staff_watermark_overlay.dart';
@@ -26,6 +27,100 @@ class LeadDetailPage extends StatefulWidget {
 
 class _LeadDetailPageState extends State<LeadDetailPage> {
   String? _rescheduledFollowUp;
+  late final TextEditingController _studentNotesCtrl;
+  late final TextEditingController _managerNotesCtrl;
+  bool _studentNotesInitialized = false;
+  bool _managerNotesInitialized = false;
+  bool _isSavingStudentNotes = false;
+  bool _isSavingManagerNotes = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _studentNotesCtrl = TextEditingController();
+    _managerNotesCtrl = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _studentNotesCtrl.dispose();
+    _managerNotesCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _saveStudentNotes() async {
+    if (_isSavingStudentNotes) return;
+    setState(() => _isSavingStudentNotes = true);
+    final text = _studentNotesCtrl.text.trim();
+    try {
+      await FirebaseFirestore.instance
+          .collection('leads')
+          .doc(widget.lead.id)
+          .set({
+            'studentNotes': text,
+            'notes': text,
+            'updatedAt': FieldValue.serverTimestamp(),
+          }, SetOptions(merge: true));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Student notes saved successfully'),
+            duration: Duration(seconds: 2),
+            backgroundColor: Color(0xFF15803D),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to update student notes: $e'),
+            duration: const Duration(seconds: 2),
+            backgroundColor: const Color(0xFFEF4444),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isSavingStudentNotes = false);
+    }
+  }
+
+  Future<void> _saveManagerNotes() async {
+    if (_isSavingManagerNotes) return;
+    setState(() => _isSavingManagerNotes = true);
+    final text = _managerNotesCtrl.text.trim();
+    try {
+      await FirebaseFirestore.instance
+          .collection('leads')
+          .doc(widget.lead.id)
+          .set({
+            'managerNotes': text,
+            'leadManagerNotes': text,
+            'updatedAt': FieldValue.serverTimestamp(),
+          }, SetOptions(merge: true));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Manager notes saved successfully'),
+            duration: Duration(seconds: 2),
+            backgroundColor: Color(0xFF15803D),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to update manager notes: $e'),
+            duration: const Duration(seconds: 2),
+            backgroundColor: const Color(0xFFEF4444),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isSavingManagerNotes = false);
+    }
+  }
 
   void _onReschedule(String leadId, String currentSlot) async {
     final now = DateTime.now();
@@ -71,7 +166,15 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
         } catch (_) {}
 
         if (mounted) {
-          context.read<FollowUpsCubit>().addFromCallOutcome(
+          FollowUpsCubit? fuCubit;
+          try {
+            fuCubit = context.read<FollowUpsCubit>();
+          } catch (_) {
+            try {
+              fuCubit = getIt<FollowUpsCubit>();
+            } catch (_) {}
+          }
+          fuCubit?.addFromCallOutcome(
             leadName: widget.lead.name,
             collegeInfo: widget.lead.collegeInfo,
             outcome: 'Follow-up',
@@ -154,9 +257,25 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
               '${LeadDateHelper.relativeStamp(eval.scheduledTime)}${eval.isOverdue ? ' · Overdue' : ''}';
         }
 
-        final liveNotes = (snapData != null ? (snapData['notes'] ?? '') : '')
+        final liveStudentNotes = (snapData != null
+                ? (snapData['studentNotes'] ?? snapData['notes'] ?? snapData['additionalNotes'] ?? '')
+                : '')
             .toString()
             .trim();
+        if (!_studentNotesInitialized) {
+          _studentNotesCtrl.text = liveStudentNotes;
+          _studentNotesInitialized = true;
+        }
+
+        final liveManagerNotes = (snapData != null
+                ? (snapData['managerNotes'] ?? snapData['leadManagerNotes'] ?? '')
+                : '')
+            .toString()
+            .trim();
+        if (!_managerNotesInitialized) {
+          _managerNotesCtrl.text = liveManagerNotes;
+          _managerNotesInitialized = true;
+        }
         final liveCourse =
             (snapData != null ? (snapData['course'] ?? '') : lead.course)
                 .toString()
@@ -493,9 +612,34 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
                                   height: 46,
                                   child: ElevatedButton.icon(
                                     onPressed: () {
+                                      final callingLead = lead.copyWith(
+                                        fullPhone: effectivePhone,
+                                        maskedPhone:
+                                            lead.maskedPhone.isNotEmpty
+                                                ? lead.maskedPhone
+                                                : effectivePhone,
+                                        collegeInfo: effectiveCollegeInfo,
+                                        campaignTag: effectiveCampaign,
+                                        statusTag: effectiveStatus,
+                                        followUpTime: effectiveFollowUp,
+                                        course:
+                                            liveCourse.isNotEmpty
+                                                ? liveCourse
+                                                : lead.course,
+                                        batch:
+                                            liveBatch.isNotEmpty
+                                                ? liveBatch
+                                                : lead.batch,
+                                        fee:
+                                            (snapData != null
+                                                    ? (snapData['fee'] ?? '')
+                                                    : lead.fee)
+                                                .toString()
+                                                .trim(),
+                                      );
                                       AppPhoneCallService.instance.dialLead(
                                         context,
-                                        lead,
+                                        callingLead,
                                       );
                                     },
                                     icon: const Icon(
@@ -766,11 +910,13 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
                                 ),
                                 const Gap(2),
                                 Text(
-                                  liveNotes.isNotEmpty
-                                      ? liveNotes
-                                      : (liveCourse.isNotEmpty
+                                  liveManagerNotes.isNotEmpty
+                                      ? 'Manager: $liveManagerNotes'
+                                      : (liveStudentNotes.isNotEmpty
+                                            ? liveStudentNotes
+                                            : (liveCourse.isNotEmpty
                                             ? 'Interested in $liveCourse'
-                                            : 'No notes added'),
+                                            : 'No notes added')),
                                   style: const TextStyle(
                                     fontSize: 12,
                                     fontWeight: FontWeight.w500,
@@ -1089,6 +1235,233 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
                               isLast: isLast,
                             );
                           }),
+                          const Gap(16),
+                          const Divider(height: 1, color: Color(0xFFF1F5F9)),
+                          const Gap(14),
+                          // 1. STUDENT NOTES (Inquiries & Requirements)
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Row(
+                                children: const [
+                                  Icon(
+                                    Icons.school_outlined,
+                                    size: 15,
+                                    color: Color(0xFF2563EB),
+                                  ),
+                                  Gap(6),
+                                  Text(
+                                    'STUDENT NOTES',
+                                    style: TextStyle(
+                                      fontSize: 11.5,
+                                      fontWeight: FontWeight.w700,
+                                      color: Color(0xFF1E40AF),
+                                      letterSpacing: 0.6,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              if (_isSavingStudentNotes)
+                                const SizedBox(
+                                  width: 14,
+                                  height: 14,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                      Color(0xFF2563EB),
+                                    ),
+                                  ),
+                                )
+                              else
+                                InkWell(
+                                  onTap: _saveStudentNotes,
+                                  borderRadius: BorderRadius.circular(6),
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 6,
+                                      vertical: 2,
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: const [
+                                        Icon(
+                                          Icons.check_rounded,
+                                          size: 14,
+                                          color: Color(0xFF2563EB),
+                                        ),
+                                        Gap(4),
+                                        Text(
+                                          'Save Student Note',
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w600,
+                                            color: Color(0xFF2563EB),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                          const Gap(8),
+                          TextField(
+                            controller: _studentNotesCtrl,
+                            maxLines: 3,
+                            minLines: 2,
+                            style: const TextStyle(
+                              fontSize: 13,
+                              color: Color(0xFF0F172A),
+                              height: 1.4,
+                            ),
+                            decoration: InputDecoration(
+                              hintText:
+                                  'Enter student inquiry details, background, or course questions...',
+                              hintStyle: const TextStyle(
+                                fontSize: 12.5,
+                                color: Color(0xFF94A3B8),
+                              ),
+                              filled: true,
+                              fillColor: const Color(0xFFF8FAFC),
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 14,
+                                vertical: 12,
+                              ),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                                borderSide: const BorderSide(
+                                  color: Color(0xFFE2E8F0),
+                                ),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                                borderSide: const BorderSide(
+                                  color: Color(0xFFE2E8F0),
+                                ),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                                borderSide: const BorderSide(
+                                  color: Color(0xFF2563EB),
+                                  width: 1.5,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const Gap(16),
+                          const Divider(height: 1, color: Color(0xFFF1F5F9)),
+                          const Gap(14),
+
+                          // 2. MANAGER NOTES (Lead Manager's Noting & Remarks)
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Row(
+                                children: const [
+                                  Icon(
+                                    Icons.rate_review_outlined,
+                                    size: 15,
+                                    color: Color(0xFFD45107),
+                                  ),
+                                  Gap(6),
+                                  Text(
+                                    'MANAGER NOTES',
+                                    style: TextStyle(
+                                      fontSize: 11.5,
+                                      fontWeight: FontWeight.w700,
+                                      color: Color(0xFFD45107),
+                                      letterSpacing: 0.6,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              if (_isSavingManagerNotes)
+                                const SizedBox(
+                                  width: 14,
+                                  height: 14,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                      Color(0xFFD45107),
+                                    ),
+                                  ),
+                                )
+                              else
+                                InkWell(
+                                  onTap: _saveManagerNotes,
+                                  borderRadius: BorderRadius.circular(6),
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 6,
+                                      vertical: 2,
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: const [
+                                        Icon(
+                                          Icons.check_rounded,
+                                          size: 14,
+                                          color: Color(0xFFD45107),
+                                        ),
+                                        Gap(4),
+                                        Text(
+                                          'Save Manager Note',
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w600,
+                                            color: Color(0xFFD45107),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                          const Gap(8),
+                          TextField(
+                            controller: _managerNotesCtrl,
+                            maxLines: 3,
+                            minLines: 2,
+                            style: const TextStyle(
+                              fontSize: 13,
+                              color: Color(0xFF0F172A),
+                              height: 1.4,
+                            ),
+                            decoration: InputDecoration(
+                              hintText:
+                                  'Lead manager notes, review comments, or assignment directions...',
+                              hintStyle: const TextStyle(
+                                fontSize: 12.5,
+                                color: Color(0xFF94A3B8),
+                              ),
+                              filled: true,
+                              fillColor: const Color(0xFFF8FAFC),
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 14,
+                                vertical: 12,
+                              ),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                                borderSide: const BorderSide(
+                                  color: Color(0xFFE2E8F0),
+                                ),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                                borderSide: const BorderSide(
+                                  color: Color(0xFFE2E8F0),
+                                ),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                                borderSide: const BorderSide(
+                                  color: Color(0xFFD45107),
+                                  width: 1.5,
+                                ),
+                              ),
+                            ),
+                          ),
                         ],
                       ),
                     ),

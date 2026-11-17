@@ -1,4 +1,5 @@
 import 'package:acadeno_crm/core/services/firestore_stream_cache.dart';
+import 'package:acadeno_crm/shared/widgets/acadeno_dropdown.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:gap/gap.dart';
 import 'package:intl/intl.dart';
@@ -245,9 +246,12 @@ class _VisitsTabViewState extends State<VisitsTabView> {
                                   curve: Curves.easeInOutCubic,
                                   height: 2,
                                   width: switch (state.selectedBucket) {
-                                    VisitStatusBucket.upcoming => 71.0,
-                                    VisitStatusBucket.completed => 78.0,
-                                    VisitStatusBucket.cancelled => 73.0,
+                                    VisitStatusBucket.upcoming =>
+                                      isCompact ? 72.0 : 86.0,
+                                    VisitStatusBucket.completed =>
+                                      isCompact ? 78.0 : 94.0,
+                                    VisitStatusBucket.cancelled =>
+                                      isCompact ? 74.0 : 88.0,
                                   },
                                   decoration: BoxDecoration(
                                     color: const Color(0xFFE64A19),
@@ -812,6 +816,35 @@ class _VisitsTabViewState extends State<VisitsTabView> {
                             Expanded(
                               child: Text(
                                 'Purpose: ${visit.purpose}',
+                                style: const TextStyle(
+                                  fontSize: 12.5,
+                                  color: Color(0xFF475467),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                      if (visit.sourceEvent.isNotEmpty ||
+                          visit.content.isNotEmpty) ...[
+                        const Gap(6),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Icon(
+                              Icons.event_note_outlined,
+                              size: 16,
+                              color: Color(0xFF64748B),
+                            ),
+                            const Gap(6),
+                            Expanded(
+                              child: Text(
+                                [
+                                  if (visit.sourceEvent.isNotEmpty)
+                                    'Source: ${visit.sourceEvent}',
+                                  if (visit.content.isNotEmpty)
+                                    'Content: ${visit.content}',
+                                ].join('  •  '),
                                 style: const TextStyle(
                                   fontSize: 12.5,
                                   color: Color(0xFF475467),
@@ -1642,7 +1675,12 @@ class _VisitsTabViewState extends State<VisitsTabView> {
       text: DateFormat('dd MMM yyyy').format(selectedDate),
     );
     final subCtrl = TextEditingController();
-    final purposeCtrl = TextEditingController();
+    String selectedPurpose = 'Campus outreach & seminar';
+    final otherPurposeCtrl = TextEditingController();
+    String selectedSourceEvent = 'Direct Walk-in';
+    final otherSourceCtrl = TextEditingController();
+    String selectedContent = 'AI & Machine Learning Workshop';
+    final otherContentCtrl = TextEditingController();
 
     showDialog(
       context: context,
@@ -1928,80 +1966,244 @@ class _VisitsTabViewState extends State<VisitsTabView> {
                         ),
                       ),
                       const Gap(14),
-                      TextFormField(
-                        controller: purposeCtrl,
-                        textAlignVertical: TextAlignVertical.center,
-                        validator: (v) {
-                          if (v == null || v.trim().isEmpty) {
-                            return 'Please enter visit purpose';
-                          }
-                          return null;
-                        },
+                      Text(
+                        'Visit Purpose',
                         style: GoogleFonts.inter(
                           fontSize: 13,
-                          fontWeight: FontWeight.w400,
-                          color: const Color(0xFF0F172A),
-                        ),
-                        decoration: InputDecoration(
-                          hintText: 'Visit Purpose *',
-                          hintStyle: GoogleFonts.inter(
-                            color: const Color(0xFF94A3B8),
-                            fontSize: 13,
-                          ),
-                          filled: true,
-                          fillColor: const Color(0xFFF8FAFC),
-                          prefixIcon: const Icon(
-                            Icons.assignment_outlined,
-                            size: 19,
-                            color: Color(0xFF64748B),
-                          ),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(
-                              color: Color(0xFFE2E8F0),
-                              width: 1,
-                            ),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(
-                              color: Color(0xFFE2E8F0),
-                              width: 1,
-                            ),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(
-                              color: Color(0xFFD45107),
-                              width: 1.5,
-                            ),
-                          ),
-                          errorBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(
-                              color: Color(0xFFEF4444),
-                              width: 1,
-                            ),
-                          ),
-                          focusedErrorBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(
-                              color: Color(0xFFEF4444),
-                              width: 1.5,
-                            ),
-                          ),
-                          errorStyle: GoogleFonts.inter(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w500,
-                            color: const Color(0xFFEF4444),
-                          ),
-                          isDense: true,
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 16,
-                          ),
+                          fontWeight: FontWeight.w600,
+                          color: const Color(0xFF334155),
                         ),
                       ),
+                      const Gap(6),
+                      AcadenoDropdown.strings(
+                        value: selectedPurpose,
+                        borderRadius: 16.0,
+                        items: const [
+                          'Campus outreach & seminar',
+                          'Workshop / Technical Talk',
+                          'Placement & Internship Drive',
+                          'Faculty Meeting & MoU',
+                          'Course Awareness & Admissions',
+                          'Other',
+                        ],
+                        onChanged: (v) {
+                          if (v != null) {
+                            setDialogState(() => selectedPurpose = v);
+                          }
+                        },
+                      ),
+                      if (selectedPurpose == 'Other') ...[
+                        const Gap(10),
+                        TextFormField(
+                          controller: otherPurposeCtrl,
+                          textAlignVertical: TextAlignVertical.center,
+                          style: GoogleFonts.inter(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w400,
+                            color: const Color(0xFF0F172A),
+                          ),
+                          decoration: InputDecoration(
+                            hintText: 'Enter purpose details *',
+                            hintStyle: GoogleFonts.inter(
+                              color: const Color(0xFF94A3B8),
+                              fontSize: 13,
+                            ),
+                            filled: true,
+                            fillColor: const Color(0xFFF8FAFC),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(
+                                color: Color(0xFFE2E8F0),
+                                width: 1,
+                              ),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(
+                                color: Color(0xFFE2E8F0),
+                                width: 1,
+                              ),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(
+                                color: Color(0xFFD45107),
+                                width: 1.5,
+                              ),
+                            ),
+                            isDense: true,
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 16,
+                            ),
+                          ),
+                          validator: (v) =>
+                              (selectedPurpose == 'Other' &&
+                                  (v == null || v.trim().isEmpty))
+                              ? 'Please enter purpose details'
+                              : null,
+                        ),
+                      ],
+                      const Gap(14),
+                      Text(
+                        'Source Event',
+                        style: GoogleFonts.inter(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: const Color(0xFF334155),
+                        ),
+                      ),
+                      const Gap(6),
+                      AcadenoDropdown.strings(
+                        value: selectedSourceEvent,
+                        borderRadius: 16.0,
+                        items: const [
+                          'Direct Walk-in',
+                          'AI Webinar',
+                          'College visit',
+                          'Campus Drive',
+                          'Python workshop',
+                          'Add-on course',
+                          'Other',
+                        ],
+                        onChanged: (v) {
+                          if (v != null) {
+                            setDialogState(() => selectedSourceEvent = v);
+                          }
+                        },
+                      ),
+                      if (selectedSourceEvent == 'Other') ...[
+                        const Gap(10),
+                        TextFormField(
+                          controller: otherSourceCtrl,
+                          textAlignVertical: TextAlignVertical.center,
+                          style: GoogleFonts.inter(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w400,
+                            color: const Color(0xFF0F172A),
+                          ),
+                          decoration: InputDecoration(
+                            hintText: 'Enter source details *',
+                            hintStyle: GoogleFonts.inter(
+                              color: const Color(0xFF94A3B8),
+                              fontSize: 13,
+                            ),
+                            filled: true,
+                            fillColor: const Color(0xFFF8FAFC),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(
+                                color: Color(0xFFE2E8F0),
+                                width: 1,
+                              ),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(
+                                color: Color(0xFFE2E8F0),
+                                width: 1,
+                              ),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(
+                                color: Color(0xFFD45107),
+                                width: 1.5,
+                              ),
+                            ),
+                            isDense: true,
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 16,
+                            ),
+                          ),
+                          validator: (v) =>
+                              (selectedSourceEvent == 'Other' &&
+                                  (v == null || v.trim().isEmpty))
+                              ? 'Please enter source details'
+                              : null,
+                        ),
+                      ],
+                      const Gap(14),
+                      Text(
+                        'Content',
+                        style: GoogleFonts.inter(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: const Color(0xFF334155),
+                        ),
+                      ),
+                      const Gap(6),
+                      AcadenoDropdown.strings(
+                        value: selectedContent,
+                        borderRadius: 16.0,
+                        items: const [
+                          'AI & Machine Learning Workshop',
+                          'Python & Data Science Bootcamp',
+                          'Full-Stack Web Development',
+                          'Cybersecurity & Cloud Computing',
+                          'Career Guidance & Placement',
+                          'General Awareness',
+                          'Other',
+                        ],
+                        onChanged: (v) {
+                          if (v != null) {
+                            setDialogState(() => selectedContent = v);
+                          }
+                        },
+                      ),
+                      if (selectedContent == 'Other') ...[
+                        const Gap(10),
+                        TextFormField(
+                          controller: otherContentCtrl,
+                          textAlignVertical: TextAlignVertical.center,
+                          style: GoogleFonts.inter(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w400,
+                            color: const Color(0xFF0F172A),
+                          ),
+                          decoration: InputDecoration(
+                            hintText: 'Enter content details *',
+                            hintStyle: GoogleFonts.inter(
+                              color: const Color(0xFF94A3B8),
+                              fontSize: 13,
+                            ),
+                            filled: true,
+                            fillColor: const Color(0xFFF8FAFC),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(
+                                color: Color(0xFFE2E8F0),
+                                width: 1,
+                              ),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(
+                                color: Color(0xFFE2E8F0),
+                                width: 1,
+                              ),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(
+                                color: Color(0xFFD45107),
+                                width: 1.5,
+                              ),
+                            ),
+                            isDense: true,
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 16,
+                            ),
+                          ),
+                          validator: (v) =>
+                              (selectedContent == 'Other' &&
+                                  (v == null || v.trim().isEmpty))
+                              ? 'Please enter content details'
+                              : null,
+                        ),
+                      ],
                       const Gap(20),
                       SizedBox(
                         width: double.infinity,
@@ -2018,6 +2220,22 @@ class _VisitsTabViewState extends State<VisitsTabView> {
                             final month = DateFormat(
                               'MMM',
                             ).format(selectedDate).toUpperCase();
+                            final effPurpose =
+                                selectedPurpose == 'Other' &&
+                                    otherPurposeCtrl.text.trim().isNotEmpty
+                                ? otherPurposeCtrl.text.trim()
+                                : selectedPurpose;
+                            final effSource =
+                                selectedSourceEvent == 'Other' &&
+                                    otherSourceCtrl.text.trim().isNotEmpty
+                                ? otherSourceCtrl.text.trim()
+                                : selectedSourceEvent;
+                            final effContent =
+                                selectedContent == 'Other' &&
+                                    otherContentCtrl.text.trim().isNotEmpty
+                                ? otherContentCtrl.text.trim()
+                                : selectedContent;
+
                             cubit.addCollegeVisit(
                               collegeName: collegeCtrl.text.trim(),
                               dayNumber: dayNum,
@@ -2027,9 +2245,9 @@ class _VisitsTabViewState extends State<VisitsTabView> {
                                   : DateFormat(
                                       'EEE · hh:mm a',
                                     ).format(selectedDate),
-                              purpose: purposeCtrl.text.trim().isNotEmpty
-                                  ? purposeCtrl.text.trim()
-                                  : 'Campus outreach & student interaction',
+                              purpose: effPurpose,
+                              sourceEvent: effSource,
+                              content: effContent,
                             );
                             Navigator.pop(ctx);
                           },
@@ -3365,17 +3583,57 @@ class _VisitTabItem extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 4),
         child: Align(
           alignment: alignment,
-          child: Text(
-            title,
-            maxLines: 1,
-            style: GoogleFonts.inter(
-              fontSize: 13,
-              fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-              letterSpacing: -0.2,
-              height: 17 / 13,
-              color: isSelected
-                  ? const Color(0xFF0E142E)
-                  : const Color(0xFF647196),
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                AnimatedDefaultTextStyle(
+                  duration: const Duration(milliseconds: 200),
+                  style: GoogleFonts.inter(
+                    fontSize: 12,
+                    fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+                    letterSpacing: 0.6,
+                    height: 17 / 12,
+                    color: isSelected
+                        ? const Color(0xFF0F172A)
+                        : const Color(0xFF94A3B8),
+                  ),
+                  child: Text(title, maxLines: 1),
+                ),
+                const Gap(5),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 1.5,
+                  ),
+                  decoration: BoxDecoration(
+                    color: isSelected
+                        ? const Color(0xFFFFF1EB)
+                        : const Color(0xFFF1F5F9),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                      color: isSelected
+                          ? const Color(0xFFFFD8CC)
+                          : const Color(0xFFE2E8F0),
+                      width: 0.8,
+                    ),
+                  ),
+                  child: Text(
+                    '$count',
+                    style: GoogleFonts.inter(
+                      fontSize: 10,
+                      fontWeight: isSelected
+                          ? FontWeight.w700
+                          : FontWeight.w600,
+                      color: isSelected
+                          ? const Color(0xFFD45107)
+                          : const Color(0xFF64748B),
+                      height: 1.2,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ),

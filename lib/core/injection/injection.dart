@@ -1,3 +1,6 @@
+import 'package:acadeno_crm/ui/follow_ups/application/follow_ups_cubit.dart';
+import 'package:acadeno_crm/ui/follow_ups/data/repository/follow_ups_repo.dart';
+import 'package:acadeno_crm/ui/follow_ups/data/sources/follow_ups_rds.dart';
 import 'package:acadeno_crm/ui/leads/application/admin_leads_cubit.dart';
 import 'package:acadeno_crm/ui/leads/application/lead_import_cubit.dart';
 import 'package:acadeno_crm/ui/leads/application/leads_cubit.dart';
@@ -35,6 +38,19 @@ GetIt configureDependencies() {
   if (!getIt.isRegistered<LeadImportCubit>()) {
     getIt.registerFactory<LeadImportCubit>(
       () => LeadImportCubit(getIt<LeadsRepository>()),
+    );
+  }
+  if (!getIt.isRegistered<FollowUpsRds>()) {
+    getIt.registerLazySingleton<FollowUpsRds>(FollowUpsRds.new);
+  }
+  if (!getIt.isRegistered<FollowUpsRepository>()) {
+    getIt.registerLazySingleton<FollowUpsRepository>(
+      () => FollowUpsRepository(getIt<FollowUpsRds>()),
+    );
+  }
+  if (!getIt.isRegistered<FollowUpsCubit>()) {
+    getIt.registerFactory<FollowUpsCubit>(
+      () => FollowUpsCubit(getIt<FollowUpsRepository>()),
     );
   }
   return getIt;

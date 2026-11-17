@@ -1,3 +1,8 @@
+import 'package:acadeno_crm/core/injection/injection.dart';
+import 'package:acadeno_crm/ui/follow_ups/data/repository/follow_ups_repo.dart';
+import 'package:acadeno_crm/ui/follow_ups/data/sources/follow_ups_rds.dart';
+import 'package:acadeno_crm/ui/leads/data/repository/leads_repo.dart';
+import 'package:acadeno_crm/ui/leads/data/sources/leads_rds.dart';
 import 'package:acadeno_crm/shared/widgets/acadeno_dropdown.dart';
 import 'dart:ui' show ImageFilter;
 import '../pages/lead_detail_page.dart';
@@ -9,6 +14,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:acadeno_crm/shared/theme/app_images.dart';
 import 'package:acadeno_crm/shared/theme/app_svgs.dart';
 import 'package:acadeno_crm/shared/widgets/college_selector_field.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:acadeno_crm/shared/snackbar_alerts/snack_alert.dart';
@@ -93,8 +99,30 @@ class LeadCallSheets {
     String? course,
     String? fee,
   }) async {
-    final cubit = context.read<LeadsCubit>();
-    final followUpsCubit = context.read<FollowUpsCubit>();
+    final LeadsCubit cubit;
+    LeadsCubit? tempCubit;
+    try {
+      tempCubit = context.read<LeadsCubit>();
+    } catch (_) {
+      try {
+        tempCubit = getIt<LeadsCubit>();
+      } catch (_) {}
+    }
+    cubit = tempCubit ?? LeadsCubit(LeadsRepository(LeadsRds()));
+
+    final FollowUpsCubit followUpsCubit;
+    FollowUpsCubit? tempFollowUpsCubit;
+    try {
+      tempFollowUpsCubit = context.read<FollowUpsCubit>();
+    } catch (_) {
+      try {
+        tempFollowUpsCubit = getIt<FollowUpsCubit>();
+      } catch (_) {}
+    }
+    followUpsCubit =
+        tempFollowUpsCubit ??
+        FollowUpsCubit(FollowUpsRepository(FollowUpsRds()));
+
     HomeCubit? homeCubit;
     try {
       homeCubit = context.read<HomeCubit>();
@@ -587,73 +615,144 @@ class LeadCallSheets {
                                           const Gap(24),
                                         ] else if (selectedOutcome == 'Follow-up') ...[
                                           const Gap(20),
-                                          Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              Text(
-                                                'Follow-up Date & Time',
-                                                style: GoogleFonts.inter(
-                                                  fontSize: 14,
-                                                  fontWeight: FontWeight.w700,
-                                                  color: const Color(0xFF374151),
-                                                ),
-                                              ),
-                                              TextButton.icon(
-                                                onPressed: () async {
-                                                  final now = DateTime.now();
-                                                  final d =
-                                                      await showFigmaCalendarDialog(
-                                                        context: ctx,
-                                                        initialDate: now.add(
-                                                          const Duration(days: 1),
-                                                        ),
-                                                        firstDate: now,
-                                                        lastDate: now.add(
-                                                          const Duration(days: 90),
-                                                        ),
-                                                      );
-                                                  if (d != null && ctx.mounted) {
-                                                    final t =
-                                                        await showTimePicker(
+                                          LayoutBuilder(
+                                            builder: (context, constraints) {
+                                              final dateButton = Material(
+                                                color: Colors.transparent,
+                                                child: InkWell(
+                                                  onTap: () async {
+                                                    final now = DateTime.now();
+                                                    final d =
+                                                        await showFigmaCalendarDialog(
                                                           context: ctx,
-                                                          initialTime:
-                                                              const TimeOfDay(
-                                                                hour: 10,
-                                                                minute: 30,
-                                                              ),
+                                                          initialDate: now.add(
+                                                            const Duration(days: 1),
+                                                          ),
+                                                          firstDate: now,
+                                                          lastDate: now.add(
+                                                            const Duration(days: 90),
+                                                          ),
                                                         );
-                                                    if (t != null) {
-                                                      final dt = DateTime(
-                                                        d.year,
-                                                        d.month,
-                                                        d.day,
-                                                        t.hour,
-                                                        t.minute,
-                                                      );
-                                                      setSheetState(() {
-                                                        selectedFollowUpSlot =
-                                                            LeadDateHelper
-                                                                .formatFollowUp(dt);
-                                                      });
+                                                    if (d != null && ctx.mounted) {
+                                                      final t =
+                                                          await showTimePicker(
+                                                            context: ctx,
+                                                            initialTime:
+                                                                const TimeOfDay(
+                                                                  hour: 10,
+                                                                  minute: 30,
+                                                                ),
+                                                          );
+                                                      if (t != null) {
+                                                        final dt = DateTime(
+                                                          d.year,
+                                                          d.month,
+                                                          d.day,
+                                                          t.hour,
+                                                          t.minute,
+                                                        );
+                                                        setSheetState(() {
+                                                          selectedFollowUpSlot =
+                                                              LeadDateHelper
+                                                                  .formatFollowUp(dt);
+                                                        });
+                                                      }
                                                     }
-                                                  }
-                                                },
-                                                icon: const Icon(
-                                                  Icons.calendar_today_rounded,
-                                                  size: 14,
-                                                  color: Color(0xFFE8612D),
-                                                ),
-                                                label: Text(
-                                                  selectedFollowUpSlot,
-                                                  style: GoogleFonts.inter(
-                                                    fontSize: 13,
-                                                    fontWeight: FontWeight.w600,
-                                                    color: const Color(0xFFE8612D),
+                                                  },
+                                                  borderRadius:
+                                                      BorderRadius.circular(10),
+                                                  child: Container(
+                                                    padding:
+                                                        const EdgeInsets.symmetric(
+                                                          horizontal: 12,
+                                                          vertical: 8,
+                                                        ),
+                                                    decoration: BoxDecoration(
+                                                      color: const Color(0xFFFFF7ED),
+                                                      borderRadius:
+                                                          BorderRadius.circular(10),
+                                                      border: Border.all(
+                                                        color: const Color(0xFFFFEDD5),
+                                                        width: 1,
+                                                      ),
+                                                    ),
+                                                    child: Row(
+                                                      mainAxisSize: MainAxisSize.min,
+                                                      children: [
+                                                        const Icon(
+                                                          Icons.calendar_today_rounded,
+                                                          size: 14,
+                                                          color: Color(0xFFE8612D),
+                                                        ),
+                                                        const Gap(8),
+                                                        Flexible(
+                                                          child: Text(
+                                                            selectedFollowUpSlot,
+                                                            maxLines: 1,
+                                                            overflow:
+                                                                TextOverflow.ellipsis,
+                                                            style: GoogleFonts.inter(
+                                                              fontSize: 13,
+                                                              fontWeight:
+                                                                  FontWeight.w600,
+                                                              color: const Color(
+                                                                0xFFE8612D,
+                                                              ),
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
                                                   ),
                                                 ),
-                                              ),
-                                            ],
+                                              );
+
+                                              final isNarrow =
+                                                  constraints.maxWidth < 360;
+                                              if (isNarrow) {
+                                                return Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Text(
+                                                      'Follow-up Date & Time',
+                                                      style: GoogleFonts.inter(
+                                                        fontSize: 14,
+                                                        fontWeight:
+                                                            FontWeight.w700,
+                                                        color: const Color(
+                                                          0xFF374151,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    const Gap(8),
+                                                    dateButton,
+                                                  ],
+                                                );
+                                              }
+
+                                              return Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.spaceBetween,
+                                                children: [
+                                                  Expanded(
+                                                    child: Text(
+                                                      'Follow-up Date & Time',
+                                                      style: GoogleFonts.inter(
+                                                        fontSize: 14,
+                                                        fontWeight:
+                                                            FontWeight.w700,
+                                                        color: const Color(
+                                                          0xFF374151,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  const Gap(10),
+                                                  Flexible(child: dateButton),
+                                                ],
+                                              );
+                                            },
                                           ),
                                           const Gap(20),
                                         ],
@@ -985,9 +1084,46 @@ class LeadCallSheets {
       if (!allowed) return;
     } catch (_) {}
     if (!context.mounted) return;
-    Navigator.of(
-      context,
-    ).push(MaterialPageRoute(builder: (ctx) => LeadDetailPage(lead: lead)));
+
+    LeadsCubit? leadsCubit;
+    try {
+      leadsCubit = context.read<LeadsCubit>();
+    } catch (_) {
+      try {
+        leadsCubit = getIt<LeadsCubit>();
+      } catch (_) {}
+    }
+
+    FollowUpsCubit? followUpsCubit;
+    try {
+      followUpsCubit = context.read<FollowUpsCubit>();
+    } catch (_) {
+      try {
+        followUpsCubit = getIt<FollowUpsCubit>();
+      } catch (_) {}
+    }
+
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (ctx) {
+          Widget page = LeadDetailPage(lead: lead);
+          if (leadsCubit != null && followUpsCubit != null) {
+            return MultiBlocProvider(
+              providers: [
+                BlocProvider.value(value: leadsCubit),
+                BlocProvider.value(value: followUpsCubit),
+              ],
+              child: page,
+            );
+          } else if (leadsCubit != null) {
+            return BlocProvider.value(value: leadsCubit, child: page);
+          } else if (followUpsCubit != null) {
+            return BlocProvider.value(value: followUpsCubit, child: page);
+          }
+          return page;
+        },
+      ),
+    );
   }
 
   // WhatsApp Templates Quick Action Sheet
@@ -1177,9 +1313,11 @@ class LeadCallSheets {
     final collegeCtrl = TextEditingController(
       text: 'MES College · CSE · 3rd yr',
     );
-    String selectedCampaign = 'Direct Walk-in';
+    final otherSourceCtrl = TextEditingController();
+    String selectedCampaign = 'Social Media';
     String? lookupFeedback;
     bool lookupFoundDuplicate = false;
+    bool isSaving = false;
 
     showDialog(
       context: context,
@@ -1393,7 +1531,7 @@ class LeadCallSheets {
                             color: const Color(0xFF0F172A),
                           ),
                           decoration: InputDecoration(
-                            hintText: 'Student Name *',
+                            hintText: 'Student Name (Optional)',
                             hintStyle: GoogleFonts.inter(
                               fontSize: 13,
                               fontWeight: FontWeight.w400,
@@ -1444,9 +1582,9 @@ class LeadCallSheets {
                       ),
                       const Gap(14),
 
-                      // Source Event / Consent Label
+                      // Source Event Label
                       Text(
-                        'Source Event / Consent',
+                        'Source Event',
                         style: GoogleFonts.inter(
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
@@ -1454,7 +1592,7 @@ class LeadCallSheets {
                         ),
                       ),
                       const Gap(6),
-                      // Source Event Dropdown (Figma 1809:1570)
+                      // Source Event Dropdown
                       Container(
                         height: 47,
                         decoration: BoxDecoration(
@@ -1490,10 +1628,10 @@ class LeadCallSheets {
                               color: const Color(0xFF2E1D44),
                             ),
                             selectedItemBuilder: (context) => [
-                              'Direct Walk-in',
-                              'AI Webinar',
-                              'College visit',
-                              'Campus Drive',
+                              'Social Media',
+                              'Contact',
+                              'Referral',
+                              'Other',
                             ].map((c) => Align(
                               alignment: Alignment.centerLeft,
                               child: Text(
@@ -1507,31 +1645,31 @@ class LeadCallSheets {
                             )).toList(),
                             items: [
                               DropdownMenuItem(
-                                value: 'Direct Walk-in',
+                                value: 'Social Media',
                                 child: AcadenoDropdown.buildMenuItemChild(
-                                  label: 'Direct Walk-in',
-                                  isSelected: selectedCampaign == 'Direct Walk-in',
+                                  label: 'Social Media',
+                                  isSelected: selectedCampaign == 'Social Media',
                                 ),
                               ),
                               DropdownMenuItem(
-                                value: 'AI Webinar',
+                                value: 'Contact',
                                 child: AcadenoDropdown.buildMenuItemChild(
-                                  label: 'AI Webinar',
-                                  isSelected: selectedCampaign == 'AI Webinar',
+                                  label: 'Contact',
+                                  isSelected: selectedCampaign == 'Contact',
                                 ),
                               ),
                               DropdownMenuItem(
-                                value: 'College visit',
+                                value: 'Referral',
                                 child: AcadenoDropdown.buildMenuItemChild(
-                                  label: 'College visit',
-                                  isSelected: selectedCampaign == 'College visit',
+                                  label: 'Referral',
+                                  isSelected: selectedCampaign == 'Referral',
                                 ),
                               ),
                               DropdownMenuItem(
-                                value: 'Campus Drive',
+                                value: 'Other',
                                 child: AcadenoDropdown.buildMenuItemChild(
-                                  label: 'Campus Drive',
-                                  isSelected: selectedCampaign == 'Campus Drive',
+                                  label: 'Other',
+                                  isSelected: selectedCampaign == 'Other',
                                 ),
                               ),
                             ],
@@ -1543,6 +1681,58 @@ class LeadCallSheets {
                           ),
                         ),
                       ),
+                      if (selectedCampaign == 'Other') ...[
+                        const Gap(10),
+                        SizedBox(
+                          width: double.infinity,
+                          height: 54,
+                          child: TextField(
+                            controller: otherSourceCtrl,
+                            textAlignVertical: TextAlignVertical.center,
+                            style: GoogleFonts.inter(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w400,
+                              color: const Color(0xFF0F172A),
+                            ),
+                            decoration: InputDecoration(
+                              hintText: 'Enter source details *',
+                              hintStyle: GoogleFonts.inter(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w400,
+                                color: const Color(0xFF94A3B8),
+                              ),
+                              filled: true,
+                              fillColor: const Color(0xFFF8FAFC),
+                              isDense: true,
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 16,
+                              ),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: const BorderSide(
+                                  color: Color(0xFFE2E8F0),
+                                  width: 1,
+                                ),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: const BorderSide(
+                                  color: Color(0xFFE2E8F0),
+                                  width: 1,
+                                ),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: const BorderSide(
+                                  color: Color(0xFFD45107),
+                                  width: 1.5,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                       const Gap(20),
 
                       // Save Button (Figma spec: width 343, height 44, borderRadius 16, padding-top 14.5, padding-bottom 15.5)
@@ -1550,37 +1740,63 @@ class LeadCallSheets {
                         width: double.infinity,
                         height: 48,
                         child: ElevatedButton(
-                          onPressed: lookupFoundDuplicate
+                          onPressed: (lookupFoundDuplicate || isSaving)
                               ? null
                               : () async {
                                   final phoneErr = LeadPhoneValidator.validate(
                                     phoneCtrl.text,
                                   );
-                                  if (nameCtrl.text.trim().isEmpty ||
-                                      phoneErr != null) {
+                                  if (phoneErr != null) {
                                     setSheetState(() {
-                                      lookupFeedback =
-                                          phoneErr ??
-                                          'Student name is required';
+                                      lookupFeedback = phoneErr;
                                       lookupFoundDuplicate = true;
                                     });
                                     return;
                                   }
-                                  await CollegeSelectorField.saveCollegeIfNew(
-                                    collegeCtrl.text,
-                                  );
-                                  final ok = await cubit.addWalkInLead(
-                                    name: nameCtrl.text,
-                                    phone: phoneCtrl.text,
-                                    collegeBranchYear: collegeCtrl.text,
-                                    campaign: selectedCampaign,
-                                  );
-                                  if (ok && ctx.mounted) {
-                                    Navigator.pop(ctx);
+                                  setSheetState(() {
+                                    isSaving = true;
+                                  });
+                                  try {
+                                    await CollegeSelectorField.saveCollegeIfNew(
+                                      collegeCtrl.text,
+                                    );
+                                    final effectiveCampaign =
+                                        (selectedCampaign == 'Other' &&
+                                                otherSourceCtrl.text
+                                                    .trim()
+                                                    .isNotEmpty)
+                                            ? otherSourceCtrl.text.trim()
+                                            : selectedCampaign;
+                                    final ok = await cubit.addWalkInLead(
+                                      name: nameCtrl.text,
+                                      phone: phoneCtrl.text,
+                                      collegeBranchYear: collegeCtrl.text,
+                                      campaign: effectiveCampaign,
+                                    );
+                                    if (ok && ctx.mounted) {
+                                      Navigator.pop(ctx);
+                                    } else if (ctx.mounted) {
+                                      setSheetState(() {
+                                        isSaving = false;
+                                      });
+                                    }
+                                  } catch (e) {
+                                    if (ctx.mounted) {
+                                      setSheetState(() {
+                                        isSaving = false;
+                                        lookupFeedback = e
+                                            .toString()
+                                            .replaceFirst('Exception: ', '');
+                                        lookupFoundDuplicate = true;
+                                      });
+                                    }
                                   }
                                 },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFFD45107),
+                            disabledBackgroundColor: const Color(
+                              0xFFD45107,
+                            ).withValues(alpha: 0.6),
                             foregroundColor: Colors.white,
                             elevation: 0,
                             padding: const EdgeInsets.only(
@@ -1591,19 +1807,24 @@ class LeadCallSheets {
                               borderRadius: BorderRadius.circular(16),
                             ),
                           ),
-                          child: FittedBox(
-                            fit: BoxFit.scaleDown,
-                            child: Text(
-                              'Save Walk-in Lead',
-                              maxLines: 1,
-                              softWrap: false,
-                              style: GoogleFonts.inter(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w700,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ),
+                          child: isSaving
+                              ? const CupertinoActivityIndicator(
+                                  color: Colors.white,
+                                  radius: 11,
+                                )
+                              : FittedBox(
+                                  fit: BoxFit.scaleDown,
+                                  child: Text(
+                                    'Save Walk-in Lead',
+                                    maxLines: 1,
+                                    softWrap: false,
+                                    style: GoogleFonts.inter(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w700,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ),
                         ),
                       ),
                     ],

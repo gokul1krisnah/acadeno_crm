@@ -73,7 +73,7 @@ class _HomeScaffoldViewState extends State<_HomeScaffoldView> {
   );
 
   Future<void> _performLogout() async {
-    await _authRepository.signOut();
+    await _authRepository.signOut(unbindDevice: true);
     isAdminSession = false;
     if (!mounted) return;
     context.router.replaceAll([const LoginRoute()]);

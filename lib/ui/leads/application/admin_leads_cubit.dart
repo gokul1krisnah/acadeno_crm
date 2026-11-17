@@ -298,6 +298,8 @@ class AdminLeadsCubit extends Cubit<AdminLeadsState> {
     required String source,
     String status = 'New',
     String notes = '',
+    String? studentNotes,
+    String? managerNotes,
     bool autoSelectNewLead = true,
   }) async {
     emit(state.copyWith(isSubmitting: true, clearToast: true));
@@ -309,6 +311,8 @@ class AdminLeadsCubit extends Cubit<AdminLeadsState> {
         source: source,
         status: status,
         notes: notes,
+        studentNotes: studentNotes,
+        managerNotes: managerNotes,
       );
       final nextSelected = Set<String>.from(state.selectedLeadIds);
       if (autoSelectNewLead) {
@@ -352,6 +356,8 @@ class AdminLeadsCubit extends Cubit<AdminLeadsState> {
     required String source,
     required String status,
     String? notes,
+    String? studentNotes,
+    String? managerNotes,
     String? course,
     String? batch,
   }) async {
@@ -365,6 +371,8 @@ class AdminLeadsCubit extends Cubit<AdminLeadsState> {
         source: source,
         status: status,
         notes: notes,
+        studentNotes: studentNotes,
+        managerNotes: managerNotes,
         course: course,
         batch: batch,
       );

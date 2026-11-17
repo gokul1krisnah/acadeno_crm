@@ -112,6 +112,8 @@ class AcadenoDropdown<T> extends StatelessWidget {
   }
 
   /// Builds a DropdownMenuItem styled to match Figma 1809:1576 active & inactive states.
+  /// Uses a Stack with negative horizontal positioning to expand the active background across
+  /// Flutter's internal 16px item inset, giving the orange pill full width with an exact 5px margin.
   static Widget buildMenuItemChild({
     required String label,
     required bool isSelected,
@@ -120,53 +122,67 @@ class AcadenoDropdown<T> extends StatelessWidget {
     Color activeColor = const Color(0xFFD35401),
     Color textColor = const Color(0xFF2E1D44),
   }) {
-    return Container(
-      width: double.infinity,
-      margin: const EdgeInsets.symmetric(horizontal: 2, vertical: 1),
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-      decoration: BoxDecoration(
-        color: isSelected ? activeColor : Colors.transparent,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        children: [
-          if (icon != null) ...[
-            IconTheme(
-              data: IconThemeData(
-                color: isSelected ? Colors.white : const Color(0xFF64748B),
-                size: 16,
-              ),
-              child: icon,
-            ),
-            const Gap(8),
-          ],
-          Expanded(
-            child: Text(
-              label,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: GoogleFonts.inter(
-                fontSize: isSelected ? 13.5 : 14,
-                fontWeight: isSelected ? FontWeight.w500 : FontWeight.w400,
-                color: isSelected ? Colors.white : textColor,
-                letterSpacing: isSelected ? 0.425 : 0,
+    return Stack(
+      clipBehavior: Clip.none,
+      alignment: Alignment.centerLeft,
+      children: [
+        if (isSelected)
+          Positioned(
+            left: -11,
+            right: -11,
+            top: 2,
+            bottom: 2,
+            child: Container(
+              decoration: BoxDecoration(
+                color: activeColor,
+                borderRadius: BorderRadius.circular(12),
               ),
             ),
           ),
-          if (subtitle != null) ...[
-            const Gap(6),
-            Text(
-              subtitle,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: GoogleFonts.inter(
-                fontSize: 11.5,
-                color: isSelected ? Colors.white70 : const Color(0xFF6B7280),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+          child: Row(
+            children: [
+              if (icon != null) ...[
+                IconTheme(
+                  data: IconThemeData(
+                    color: isSelected ? Colors.white : const Color(0xFF64748B),
+                    size: 16,
+                  ),
+                  child: icon,
+                ),
+                const Gap(8),
+              ],
+              Expanded(
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.inter(
+                    fontSize: 14,
+                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                    color: isSelected ? Colors.white : textColor,
+                    letterSpacing: 0,
+                  ),
+                ),
               ),
-            ),
-          ],
-        ],
-      ),
+              if (subtitle != null) ...[
+                const Gap(6),
+                Text(
+                  subtitle,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.inter(
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.w400,
+                    color: isSelected ? Colors.white70 : const Color(0xFF6B7280),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ],
     );
   }
 
@@ -208,7 +224,7 @@ class AcadenoDropdown<T> extends StatelessWidget {
         isExpanded: isExpanded,
         isDense: isDense,
         dropdownColor: dropdownColor ?? const Color(0xFFE2E2E2),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
         elevation: 6,
         menuMaxHeight: 320,
         icon: const Icon(

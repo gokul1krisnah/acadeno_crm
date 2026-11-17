@@ -154,7 +154,7 @@ class _UserManagementViewState extends State<UserManagementView> {
     final newPassCtrl = TextEditingController(
       text: 'Acadeno@${DateTime.now().year}!',
     );
-    int selectedTab = 0; // 0: Reset Link, 1: Set Password Directly
+    int selectedTab = 1; // Default to Tab 1 (Set Password Directly) as highlighted in Figma node 1676:163
     bool isLoading = false;
     bool obscurePassword = false;
     String? directLink;
@@ -168,7 +168,48 @@ class _UserManagementViewState extends State<UserManagementView> {
       builder: (dialogCtx) => StatefulBuilder(
         builder: (ctx, setDialogState) {
           final screenWidth = MediaQuery.of(ctx).size.width;
-          final dialogWidth = (screenWidth - 32).clamp(320.0, 520.0);
+          final dialogWidth = (screenWidth - 32).clamp(320.0, 530.0);
+          final isSmall = screenWidth < 500;
+
+          // Password strength calculation
+          final currentPass = newPassCtrl.text;
+          int strengthScore = 0;
+          String strengthLabel = 'Must be at least 6 characters';
+          Color strengthColor = const Color(0xFFEF4444);
+
+          if (currentPass.isEmpty) {
+            strengthScore = 0;
+            strengthLabel = 'Enter a password';
+            strengthColor = const Color(0xFF9CA3AF);
+          } else if (currentPass.length < 6) {
+            strengthScore = 1;
+            strengthLabel = 'Must be at least 6 characters';
+            strengthColor = const Color(0xFFEF4444);
+          } else {
+            bool hasUpper = RegExp(r'[A-Z]').hasMatch(currentPass);
+            bool hasLower = RegExp(r'[a-z]').hasMatch(currentPass);
+            bool hasDigit = RegExp(r'[0-9]').hasMatch(currentPass);
+            bool hasSpecial = RegExp(r'[^A-Za-z0-9]').hasMatch(currentPass);
+
+            int criteriaMet = (hasUpper ? 1 : 0) +
+                (hasLower ? 1 : 0) +
+                (hasDigit ? 1 : 0) +
+                (hasSpecial ? 1 : 0);
+
+            if (currentPass.length >= 8 && criteriaMet >= 3) {
+              strengthScore = 4;
+              strengthLabel = 'Strong password';
+              strengthColor = const Color(0xFF10B981);
+            } else if (criteriaMet >= 2) {
+              strengthScore = 3;
+              strengthLabel = 'Good password';
+              strengthColor = const Color(0xFF3B82F6);
+            } else {
+              strengthScore = 2;
+              strengthLabel = 'Fair password';
+              strengthColor = const Color(0xFFF59E0B);
+            }
+          }
 
           Future<void> sendResetLink() async {
             setDialogState(() {
@@ -267,73 +308,137 @@ class _UserManagementViewState extends State<UserManagementView> {
             }
           }
 
-          return AlertDialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            contentPadding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
-            titlePadding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
-            title: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF4F46E5).withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: const Icon(
-                    Icons.lock_reset_rounded,
-                    color: Color(0xFF4F46E5),
-                    size: 22,
-                  ),
-                ),
-                const Gap(12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Text(
-                        'Reset Password',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: _textDark,
-                        ),
-                      ),
-                      Text(
-                        '${user.name} · ${user.email}',
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: _textMuted,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-                  ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.close_rounded, size: 20, color: _textMuted),
-                  onPressed: () => Navigator.pop(dialogCtx),
-                ),
-              ],
-            ),
-            content: SizedBox(
+          return Dialog(
+            backgroundColor: Colors.transparent,
+            insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+            child: Container(
               width: dialogWidth,
+              constraints: const BoxConstraints(maxWidth: 530),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: const Color(0xFFE5E7EB), width: 1),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Color(0x1A000000),
+                    blurRadius: 24,
+                    offset: Offset(0, 8),
+                  ),
+                ],
+              ),
+              padding: EdgeInsets.all(isSmall ? 18 : 28),
               child: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    // Segmented Tab Picker
+                    // Header Section (Figma: 1676:166)
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Icon Avatar (Figma: 1676:168)
+                        Container(
+                          width: 44,
+                          height: 44,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFEEF2FF),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: const Color(0xFFE0E7FF), width: 1),
+                          ),
+                          child: const Center(
+                            child: Icon(
+                              Icons.lock_reset_rounded,
+                              color: Color(0xFF4F46E5),
+                              size: 22,
+                            ),
+                          ),
+                        ),
+                        const Gap(14),
+                        // Title & User Context (Figma: 1676:172)
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Reset Password',
+                                style: GoogleFonts.inter(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w700,
+                                  color: const Color(0xFF111827),
+                                  letterSpacing: -0.2,
+                                ),
+                              ),
+                              const Gap(3),
+                              Row(
+                                children: [
+                                  Flexible(
+                                    child: Text(
+                                      user.name,
+                                      style: GoogleFonts.inter(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w500,
+                                        color: const Color(0xFF4B5563),
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                  Text(
+                                    ' · ',
+                                    style: GoogleFonts.inter(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w700,
+                                      color: const Color(0xFF9CA3AF),
+                                    ),
+                                  ),
+                                  Flexible(
+                                    child: Text(
+                                      user.email,
+                                      style: GoogleFonts.inter(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w400,
+                                        color: const Color(0xFF6B7280),
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                        // Top Right Close Button
+                        InkWell(
+                          onTap: () => Navigator.pop(dialogCtx),
+                          borderRadius: BorderRadius.circular(8),
+                          child: Container(
+                            width: 32,
+                            height: 32,
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Icon(
+                              Icons.close_rounded,
+                              size: 20,
+                              color: Color(0xFF9CA3AF),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const Gap(20),
+
+                    // Mode Navigation Tabs (Figma: 1676:185)
                     Container(
+                      height: 38,
                       decoration: BoxDecoration(
-                        color: const Color(0xFFF1F5F9),
+                        color: const Color(0xFFF3F4F6),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       padding: const EdgeInsets.all(3),
                       child: Row(
                         children: [
+                          // Tab 0: Send / Generate Link
                           Expanded(
                             child: InkWell(
                               borderRadius: BorderRadius.circular(8),
@@ -344,39 +449,38 @@ class _UserManagementViewState extends State<UserManagementView> {
                                   statusMessage = null;
                                 });
                               },
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(vertical: 8),
+                              child: AnimatedContainer(
+                                duration: const Duration(milliseconds: 150),
+                                alignment: Alignment.center,
                                 decoration: BoxDecoration(
-                                  color: selectedTab == 0
-                                      ? Colors.white
-                                      : Colors.transparent,
+                                  color: selectedTab == 0 ? Colors.white : Colors.transparent,
                                   borderRadius: BorderRadius.circular(8),
                                   boxShadow: selectedTab == 0
-                                      ? [
+                                      ? const [
                                           BoxShadow(
-                                            color: Colors.black.withValues(alpha: 0.05),
+                                            color: Color(0x0D000000),
                                             blurRadius: 4,
-                                            offset: const Offset(0, 1),
+                                            offset: Offset(0, 1),
                                           ),
                                         ]
                                       : null,
                                 ),
-                                alignment: Alignment.center,
                                 child: Text(
                                   'Send / Generate Link',
-                                  style: TextStyle(
-                                    fontSize: 12.5,
+                                  style: GoogleFonts.inter(
+                                    fontSize: 13,
                                     fontWeight: selectedTab == 0
                                         ? FontWeight.w600
-                                        : FontWeight.normal,
+                                        : FontWeight.w500,
                                     color: selectedTab == 0
                                         ? const Color(0xFF4F46E5)
-                                        : _textMuted,
+                                        : const Color(0xFF6B7280),
                                   ),
                                 ),
                               ),
                             ),
                           ),
+                          // Tab 1: Set Password Directly
                           Expanded(
                             child: InkWell(
                               borderRadius: BorderRadius.circular(8),
@@ -387,35 +491,49 @@ class _UserManagementViewState extends State<UserManagementView> {
                                   statusMessage = null;
                                 });
                               },
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(vertical: 8),
+                              child: AnimatedContainer(
+                                duration: const Duration(milliseconds: 150),
+                                alignment: Alignment.center,
                                 decoration: BoxDecoration(
-                                  color: selectedTab == 1
-                                      ? Colors.white
-                                      : Colors.transparent,
+                                  color: selectedTab == 1 ? Colors.white : Colors.transparent,
                                   borderRadius: BorderRadius.circular(8),
                                   boxShadow: selectedTab == 1
-                                      ? [
+                                      ? const [
                                           BoxShadow(
-                                            color: Colors.black.withValues(alpha: 0.05),
+                                            color: Color(0x0D000000),
                                             blurRadius: 4,
-                                            offset: const Offset(0, 1),
+                                            offset: Offset(0, 1),
                                           ),
                                         ]
                                       : null,
                                 ),
-                                alignment: Alignment.center,
-                                child: Text(
-                                  'Set Password Directly',
-                                  style: TextStyle(
-                                    fontSize: 12.5,
-                                    fontWeight: selectedTab == 1
-                                        ? FontWeight.w600
-                                        : FontWeight.normal,
-                                    color: selectedTab == 1
-                                        ? const Color(0xFF4F46E5)
-                                        : _textMuted,
-                                  ),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      'Set Password Directly',
+                                      style: GoogleFonts.inter(
+                                        fontSize: 13,
+                                        fontWeight: selectedTab == 1
+                                            ? FontWeight.w600
+                                            : FontWeight.w500,
+                                        color: selectedTab == 1
+                                            ? const Color(0xFF4F46E5)
+                                            : const Color(0xFF6B7280),
+                                      ),
+                                    ),
+                                    if (selectedTab == 1) ...[
+                                      const Gap(6),
+                                      Container(
+                                        width: 6,
+                                        height: 6,
+                                        decoration: const BoxDecoration(
+                                          color: Color(0xFF4F46E5),
+                                          shape: BoxShape.circle,
+                                        ),
+                                      ),
+                                    ],
+                                  ],
                                 ),
                               ),
                             ),
@@ -425,39 +543,54 @@ class _UserManagementViewState extends State<UserManagementView> {
                     ),
                     const Gap(16),
 
-                    // TAB 0: Send / Generate Reset Link
-                    if (selectedTab == 0) ...[
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFF8FAFC),
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: const Color(0xFFE2E8F0)),
-                        ),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Icon(
-                              Icons.info_outline_rounded,
-                              size: 18,
-                              color: Color(0xFF64748B),
-                            ),
-                            const Gap(8),
-                            Expanded(
-                              child: Text(
-                                'Generate a direct password reset link for ${user.email}. If emails end up in spam or are delayed, you can copy the link directly and share it over WhatsApp.',
-                                style: const TextStyle(
-                                  fontSize: 12,
-                                  color: Color(0xFF475569),
-                                  height: 1.4,
-                                ),
-                              ),
-                            ),
-                          ],
+                    // Information Callout Banner (Figma: 1676:195)
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                      decoration: BoxDecoration(
+                        color: selectedTab == 1
+                            ? const Color(0xFFEFF6FF)
+                            : const Color(0xFFF8FAFC),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: selectedTab == 1
+                              ? const Color(0xFFDBEAFE)
+                              : const Color(0xFFE2E8F0),
+                          width: 1,
                         ),
                       ),
-                      const Gap(16),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Icon(
+                            Icons.info_outline_rounded,
+                            size: 18,
+                            color: selectedTab == 1
+                                ? const Color(0xFF2563EB)
+                                : const Color(0xFF64748B),
+                          ),
+                          const Gap(10),
+                          Expanded(
+                            child: Text(
+                              selectedTab == 1
+                                  ? 'Directly set a new password in Firebase Authentication. No email confirmation required — the user can log in immediately.'
+                                  : 'Generate a direct password reset link for ${user.email}. If emails end up in spam or are delayed, you can copy the link directly and share it over WhatsApp.',
+                              style: GoogleFonts.inter(
+                                fontSize: 12.5,
+                                height: 1.45,
+                                color: selectedTab == 1
+                                    ? const Color(0xFF1E40AF)
+                                    : const Color(0xFF475569),
+                                fontWeight: FontWeight.w400,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const Gap(16),
 
+                    // TAB 0 CONTENT: Send / Generate Reset Link
+                    if (selectedTab == 0) ...[
                       if (isSuccess) ...[
                         Container(
                           padding: const EdgeInsets.all(14),
@@ -482,16 +615,16 @@ class _UserManagementViewState extends State<UserManagementView> {
                                       directLink != null
                                           ? 'Password Reset Link Ready!'
                                           : 'Reset Email Sent Successfully!',
-                                      style: const TextStyle(
+                                      style: GoogleFonts.inter(
                                         fontSize: 13.5,
                                         fontWeight: FontWeight.w600,
-                                        color: Color(0xFF15803D),
+                                        color: const Color(0xFF15803D),
                                       ),
                                     ),
                                   ),
                                 ],
                               ),
-                              const Gap(8),
+                              const Gap(10),
                               if (directLink != null) ...[
                                 Container(
                                   width: double.infinity,
@@ -526,9 +659,23 @@ class _UserManagementViewState extends State<UserManagementView> {
                                             borderRadius:
                                                 BorderRadius.circular(8),
                                           ),
+                                          side: const BorderSide(
+                                            color: Color(0xFFCBD5E1),
+                                          ),
                                         ),
-                                        icon: const Icon(Icons.copy_rounded, size: 16),
-                                        label: const Text('Copy Link'),
+                                        icon: const Icon(
+                                          Icons.copy_rounded,
+                                          size: 16,
+                                          color: Color(0xFF334155),
+                                        ),
+                                        label: Text(
+                                          'Copy Link',
+                                          style: GoogleFonts.inter(
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.w500,
+                                            color: const Color(0xFF334155),
+                                          ),
+                                        ),
                                         onPressed: () async {
                                           await Clipboard.setData(
                                             ClipboardData(text: directLink!),
@@ -547,7 +694,8 @@ class _UserManagementViewState extends State<UserManagementView> {
                                     Expanded(
                                       child: ElevatedButton.icon(
                                         style: ElevatedButton.styleFrom(
-                                          backgroundColor: const Color(0xFF25D366),
+                                          backgroundColor:
+                                              const Color(0xFF25D366),
                                           foregroundColor: Colors.white,
                                           elevation: 0,
                                           padding: const EdgeInsets.symmetric(
@@ -562,7 +710,13 @@ class _UserManagementViewState extends State<UserManagementView> {
                                           Icons.chat_bubble_outline_rounded,
                                           size: 16,
                                         ),
-                                        label: const Text('WhatsApp'),
+                                        label: Text(
+                                          'WhatsApp',
+                                          style: GoogleFonts.inter(
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
                                         onPressed: () {
                                           shareViaWhatsApp(
                                             'Hi ${user.name},\nHere is your ACADENO CRM password reset link:\n$directLink\n\nOpen this link in your browser to choose a new password.',
@@ -576,9 +730,9 @@ class _UserManagementViewState extends State<UserManagementView> {
                                 Text(
                                   'A reset email has been dispatched to ${user.email}.\n\n'
                                   '⚠️ Important: Please tell ${user.name} to check their Spam / Junk / Promotions folder if it does not appear in their inbox within 1-2 minutes.',
-                                  style: const TextStyle(
+                                  style: GoogleFonts.inter(
                                     fontSize: 12,
-                                    color: Color(0xFF166534),
+                                    color: const Color(0xFF166534),
                                     height: 1.4,
                                   ),
                                 ),
@@ -587,126 +741,168 @@ class _UserManagementViewState extends State<UserManagementView> {
                           ),
                         ),
                       ] else ...[
-                        ElevatedButton.icon(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF4F46E5),
-                            foregroundColor: Colors.white,
-                            elevation: 0,
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
+                        Container(
+                          padding: const EdgeInsets.all(14),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF9FAFB),
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(color: const Color(0xFFE5E7EB)),
                           ),
-                          onPressed: isLoading ? null : sendResetLink,
-                          icon: isLoading
-                              ? const SizedBox(
-                                  width: 16,
-                                  height: 16,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    color: Colors.white,
+                          child: Row(
+                            children: [
+                              const Icon(
+                                Icons.mark_email_read_outlined,
+                                color: Color(0xFF4F46E5),
+                                size: 20,
+                              ),
+                              const Gap(10),
+                              Expanded(
+                                child: Text(
+                                  'Click the button below to generate a secure reset link for ${user.email}.',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 12.5,
+                                    color: const Color(0xFF4B5563),
                                   ),
-                                )
-                              : const Icon(Icons.send_rounded, size: 16),
-                          label: Text(
-                            isLoading
-                                ? 'Generating Link...'
-                                : 'Generate & Send Reset Link',
-                            style: const TextStyle(fontWeight: FontWeight.w600),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ],
                     ],
 
-                    // TAB 1: Set Password Directly
+                    // TAB 1 CONTENT: Set Password Directly (Figma: 1681:2, 1676:201)
                     if (selectedTab == 1) ...[
+                      // Label: New Password (Figma: 1681:2)
+                      Text(
+                        'New Password',
+                        style: GoogleFonts.inter(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: const Color(0xFF374151),
+                        ),
+                      ),
+                      const Gap(6),
+
+                      // Input Container with Integrated Icons (Figma: 1676:205)
                       Container(
-                        padding: const EdgeInsets.all(12),
+                        height: 44,
                         decoration: BoxDecoration(
-                          color: const Color(0xFFF8FAFC),
+                          color: Colors.white,
                           borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: const Color(0xFFE2E8F0)),
+                          border: Border.all(
+                            color: const Color(0xFFD1D5DB),
+                            width: 1,
+                          ),
                         ),
                         child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Icon(
-                              Icons.key_rounded,
-                              size: 18,
-                              color: Color(0xFF64748B),
+                            const Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 12),
+                              child: Icon(
+                                Icons.lock_outline_rounded,
+                                size: 18,
+                                color: Color(0xFF9CA3AF),
+                              ),
                             ),
-                            const Gap(8),
-                            const Expanded(
-                              child: Text(
-                                'Directly set a new password in Firebase Authentication. No email confirmation required — the user can log in immediately.',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: Color(0xFF475569),
-                                  height: 1.4,
+                            Expanded(
+                              child: TextField(
+                                controller: newPassCtrl,
+                                obscureText: obscurePassword,
+                                onChanged: (_) => setDialogState(() {}),
+                                style: GoogleFonts.inter(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                  color: const Color(0xFF111827),
+                                ),
+                                decoration: InputDecoration(
+                                  border: InputBorder.none,
+                                  isDense: true,
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    vertical: 10,
+                                  ),
+                                  hintText: 'Enter new password',
+                                  hintStyle: GoogleFonts.inter(
+                                    fontSize: 13,
+                                    color: const Color(0xFF9CA3AF),
+                                  ),
                                 ),
                               ),
                             ),
+                            // Suffix Action Buttons (Show/Hide + Regenerate) (Figma: 1676:212)
+                            IconButton(
+                              tooltip: obscurePassword
+                                  ? 'Show password'
+                                  : 'Hide password',
+                              splashRadius: 18,
+                              icon: Icon(
+                                obscurePassword
+                                    ? Icons.visibility_outlined
+                                    : Icons.visibility_off_outlined,
+                                size: 18,
+                                color: const Color(0xFF6B7280),
+                              ),
+                              onPressed: () {
+                                setDialogState(() {
+                                  obscurePassword = !obscurePassword;
+                                });
+                              },
+                            ),
+                            IconButton(
+                              tooltip: 'Generate Random Password',
+                              splashRadius: 18,
+                              icon: const Icon(
+                                Icons.refresh_rounded,
+                                size: 18,
+                                color: Color(0xFF4F46E5),
+                              ),
+                              onPressed: () {
+                                setDialogState(() {
+                                  final yr = DateTime.now().year;
+                                  final rnd = (100 +
+                                          DateTime.now().millisecond % 900)
+                                      .toString();
+                                  newPassCtrl.text = 'Acadeno@$yr#$rnd';
+                                });
+                              },
+                            ),
+                            const Gap(4),
                           ],
                         ),
                       ),
+                      const Gap(10),
+
+                      // Password Strength Bar & Indicators (Figma: 1676:219)
+                      Row(
+                        children: [
+                          for (int i = 0; i < 4; i++) ...[
+                            Expanded(
+                              child: Container(
+                                height: 3.5,
+                                decoration: BoxDecoration(
+                                  color: i < strengthScore
+                                      ? strengthColor
+                                      : const Color(0xFFE5E7EB),
+                                  borderRadius: BorderRadius.circular(2),
+                                ),
+                              ),
+                            ),
+                            if (i < 3) const Gap(6),
+                          ],
+                          const Gap(12),
+                          Text(
+                            strengthLabel,
+                            style: GoogleFonts.inter(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                              color: strengthColor,
+                            ),
+                          ),
+                        ],
+                      ),
                       const Gap(14),
 
-                      TextField(
-                        controller: newPassCtrl,
-                        obscureText: obscurePassword,
-                        textAlignVertical: TextAlignVertical.center,
-                        decoration: InputDecoration(
-                          labelText: 'New Password',
-                          labelStyle: const TextStyle(fontSize: 13, color: _textMuted),
-                          prefixIcon: const Icon(
-                            Icons.lock_outline_rounded,
-                            size: 18,
-                            color: _textMuted,
-                          ),
-                          suffixIcon: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              IconButton(
-                                icon: Icon(
-                                  obscurePassword
-                                      ? Icons.visibility_outlined
-                                      : Icons.visibility_off_outlined,
-                                  size: 18,
-                                  color: _textMuted,
-                                ),
-                                onPressed: () {
-                                  setDialogState(() {
-                                    obscurePassword = !obscurePassword;
-                                  });
-                                },
-                              ),
-                              IconButton(
-                                tooltip: 'Generate Random Password',
-                                icon: const Icon(
-                                  Icons.refresh_rounded,
-                                  size: 18,
-                                  color: Color(0xFF4F46E5),
-                                ),
-                                onPressed: () {
-                                  setDialogState(() {
-                                    final yr = DateTime.now().year;
-                                    final rnd = (100 +
-                                            DateTime.now().millisecond % 900)
-                                        .toString();
-                                    newPassCtrl.text = 'Acadeno@$yr#$rnd';
-                                  });
-                                },
-                              ),
-                            ],
-                          ),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            borderSide: const BorderSide(color: _borderColor),
-                          ),
-                        ),
-                      ),
-                      const Gap(16),
-
+                      // Success banner for Tab 1
                       if (isSuccess) ...[
                         Container(
                           padding: const EdgeInsets.all(14),
@@ -718,25 +914,25 @@ class _UserManagementViewState extends State<UserManagementView> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Row(
+                              Row(
                                 children: [
-                                  Icon(
+                                  const Icon(
                                     Icons.check_circle_rounded,
                                     color: Color(0xFF16A34A),
                                     size: 20,
                                   ),
-                                  Gap(8),
+                                  const Gap(8),
                                   Text(
                                     'Password Changed Successfully!',
-                                    style: TextStyle(
+                                    style: GoogleFonts.inter(
                                       fontSize: 13.5,
                                       fontWeight: FontWeight.w600,
-                                      color: Color(0xFF15803D),
+                                      color: const Color(0xFF15803D),
                                     ),
                                   ),
                                 ],
                               ),
-                              const Gap(8),
+                              const Gap(10),
                               Container(
                                 width: double.infinity,
                                 padding: const EdgeInsets.all(10),
@@ -752,18 +948,19 @@ class _UserManagementViewState extends State<UserManagementView> {
                                   children: [
                                     SelectableText(
                                       'Email: ${user.email}',
-                                      style: const TextStyle(
+                                      style: GoogleFonts.inter(
                                         fontSize: 12,
                                         fontWeight: FontWeight.w500,
+                                        color: const Color(0xFF334155),
                                       ),
                                     ),
                                     const Gap(4),
                                     SelectableText(
                                       'Password: ${newPassCtrl.text.trim()}',
-                                      style: const TextStyle(
+                                      style: GoogleFonts.inter(
                                         fontSize: 12,
                                         fontWeight: FontWeight.w600,
-                                        color: Color(0xFF0F172A),
+                                        color: const Color(0xFF0F172A),
                                       ),
                                     ),
                                   ],
@@ -782,9 +979,23 @@ class _UserManagementViewState extends State<UserManagementView> {
                                           borderRadius:
                                               BorderRadius.circular(8),
                                         ),
+                                        side: const BorderSide(
+                                          color: Color(0xFFCBD5E1),
+                                        ),
                                       ),
-                                      icon: const Icon(Icons.copy_rounded, size: 16),
-                                      label: const Text('Copy Credentials'),
+                                      icon: const Icon(
+                                        Icons.copy_rounded,
+                                        size: 16,
+                                        color: Color(0xFF334155),
+                                      ),
+                                      label: Text(
+                                        'Copy Credentials',
+                                        style: GoogleFonts.inter(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w500,
+                                          color: const Color(0xFF334155),
+                                        ),
+                                      ),
                                       onPressed: () async {
                                         final txt =
                                             'ACADENO CRM Login Credentials\nEmail: ${user.email}\nPassword: ${newPassCtrl.text.trim()}';
@@ -805,7 +1016,8 @@ class _UserManagementViewState extends State<UserManagementView> {
                                   Expanded(
                                     child: ElevatedButton.icon(
                                       style: ElevatedButton.styleFrom(
-                                        backgroundColor: const Color(0xFF25D366),
+                                        backgroundColor:
+                                            const Color(0xFF25D366),
                                         foregroundColor: Colors.white,
                                         elevation: 0,
                                         padding: const EdgeInsets.symmetric(
@@ -820,7 +1032,13 @@ class _UserManagementViewState extends State<UserManagementView> {
                                         Icons.chat_bubble_outline_rounded,
                                         size: 16,
                                       ),
-                                      label: const Text('WhatsApp'),
+                                      label: Text(
+                                        'WhatsApp',
+                                        style: GoogleFonts.inter(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
                                       onPressed: () {
                                         shareViaWhatsApp(
                                           'Hi ${user.name},\nYour ACADENO CRM credentials have been updated:\n\nEmail: ${user.email}\nPassword: ${newPassCtrl.text.trim()}\n\nPlease log in and update your password if desired.',
@@ -833,35 +1051,6 @@ class _UserManagementViewState extends State<UserManagementView> {
                             ],
                           ),
                         ),
-                      ] else ...[
-                        ElevatedButton.icon(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF4F46E5),
-                            foregroundColor: Colors.white,
-                            elevation: 0,
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                          ),
-                          onPressed: isLoading ? null : setPasswordDirectly,
-                          icon: isLoading
-                              ? const SizedBox(
-                                  width: 16,
-                                  height: 16,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    color: Colors.white,
-                                  ),
-                                )
-                              : const Icon(Icons.check_circle_rounded, size: 16),
-                          label: Text(
-                            isLoading
-                                ? 'Updating Password...'
-                                : 'Set Password Immediately',
-                            style: const TextStyle(fontWeight: FontWeight.w600),
-                          ),
-                        ),
                       ],
                     ],
 
@@ -869,11 +1058,17 @@ class _UserManagementViewState extends State<UserManagementView> {
                     if (isError && statusMessage != null) ...[
                       const Gap(14),
                       Container(
-                        padding: const EdgeInsets.all(12),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 12,
+                        ),
                         decoration: BoxDecoration(
                           color: const Color(0xFFFEF2F2),
                           borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: const Color(0xFFFECACA)),
+                          border: Border.all(
+                            color: const Color(0xFFFECACA),
+                            width: 1,
+                          ),
                         ),
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -883,14 +1078,15 @@ class _UserManagementViewState extends State<UserManagementView> {
                               color: Color(0xFFDC2626),
                               size: 18,
                             ),
-                            const Gap(8),
+                            const Gap(10),
                             Expanded(
                               child: Text(
                                 statusMessage!,
-                                style: const TextStyle(
-                                  fontSize: 12,
-                                  color: Color(0xFFB91C1C),
-                                  height: 1.3,
+                                style: GoogleFonts.inter(
+                                  fontSize: 12.5,
+                                  color: const Color(0xFFB91C1C),
+                                  height: 1.4,
+                                  fontWeight: FontWeight.w500,
                                 ),
                               ),
                             ),
@@ -898,16 +1094,82 @@ class _UserManagementViewState extends State<UserManagementView> {
                         ),
                       ),
                     ],
+
+                    const Gap(24),
+
+                    // Dialog Main Actions (Figma: 1676:232)
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        // Close / Cancel Button (Figma: 1676:233)
+                        OutlinedButton(
+                          style: OutlinedButton.styleFrom(
+                            minimumSize: const Size(80, 40),
+                            side: const BorderSide(color: Color(0xFFE5E7EB)),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            padding: const EdgeInsets.symmetric(horizontal: 18),
+                          ),
+                          onPressed: () => Navigator.pop(dialogCtx),
+                          child: Text(
+                            'Close',
+                            style: GoogleFonts.inter(
+                              fontSize: 13.5,
+                              fontWeight: FontWeight.w500,
+                              color: const Color(0xFF4B5563),
+                            ),
+                          ),
+                        ),
+                        const Gap(12),
+                        // Submit Primary CTA (Figma: 1676:235)
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF4F46E5),
+                            foregroundColor: Colors.white,
+                            elevation: 0,
+                            shadowColor: const Color(0x334F46E5),
+                            minimumSize: const Size(165, 40),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                          ),
+                          onPressed: isLoading
+                              ? null
+                              : (selectedTab == 0
+                                  ? sendResetLink
+                                  : setPasswordDirectly),
+                          child: isLoading
+                              ? const SizedBox(
+                                  width: 16,
+                                  height: 16,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.white,
+                                  ),
+                                )
+                              : Text(
+                                  selectedTab == 0
+                                      ? (isSuccess
+                                          ? 'Regenerate Link'
+                                          : 'Generate Reset Link')
+                                      : (isSuccess
+                                          ? 'Update Password'
+                                          : 'Reset Password'),
+                                  style: GoogleFonts.inter(
+                                    fontSize: 13.5,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                        ),
+                      ],
+                    ),
                   ],
                 ),
               ),
             ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(dialogCtx),
-                child: const Text('Close'),
-              ),
-            ],
           );
         },
       ),
@@ -1474,7 +1736,7 @@ class _UserManagementViewState extends State<UserManagementView> {
             LayoutBuilder(
               builder: (context, c) {
                 final isMobile =
-                    MediaQuery.of(context).size.width < 768 || c.maxWidth < 680;
+                    MediaQuery.of(context).size.width < 600 || c.maxWidth < 520;
                 final titleCol = Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -1631,144 +1893,193 @@ class _UserManagementViewState extends State<UserManagementView> {
             ),
             const Gap(24),
 
-            // Search & Filter Toolbar (Figma Node 1364:2891)
-            LayoutBuilder(
-              builder: (context, c) {
-                final isNarrow = c.maxWidth < 768;
-                final searchField = Container(
-                  height: 46,
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: const Color(0xFFE2E8F0)),
-                  ),
-                  child: TextField(
-                    textAlignVertical: TextAlignVertical.center,
-                    onChanged: (v) => setState(() => _searchQuery = v),
-                    style: GoogleFonts.inter(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w400,
-                      color: const Color(0xFF0F172A),
-                      height: 20 / 14,
-                    ),
-                    decoration: InputDecoration(
-                      hintText: 'Search by name, email, or UID...',
-                      hintStyle: GoogleFonts.inter(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w400,
-                        color: const Color(0xFF9CA3AF),
-                        height: 20 / 14,
-                      ),
-                      prefixIcon: const Icon(
-                        Icons.search,
-                        size: 16,
-                        color: Color(0xFF9CA3AF),
-                      ),
-                      prefixIconConstraints: const BoxConstraints(
-                        minWidth: 42,
-                        minHeight: 46,
-                      ),
-                      suffixIcon: _searchQuery.isNotEmpty
-                          ? IconButton(
-                              icon: const Icon(Icons.clear, size: 16),
-                              onPressed: () =>
-                                  setState(() => _searchQuery = ''),
-                            )
-                          : null,
-                      suffixIconConstraints: const BoxConstraints(
-                        minWidth: 42,
-                        minHeight: 46,
-                      ),
-                      border: InputBorder.none,
-                      enabledBorder: InputBorder.none,
-                      focusedBorder: InputBorder.none,
-                      isDense: true,
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 14,
-                      ),
-                    ),
-                  ),
-                );
+            // Search & Filter Box (Figma Node 1364:2891)
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.only(top: 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Row 1: Search & Filter Toolbar (Figma Node 1364:2892)
+                  LayoutBuilder(
+                    builder: (context, c) {
+                      final isDesktop = c.maxWidth >= 720;
+                      final isTablet = c.maxWidth >= 480 && c.maxWidth < 720;
 
-                if (isNarrow) {
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      searchField,
-                      const Gap(12),
-                      c.maxWidth < 320
-                          ? Column(
-                              children: [
-                                _buildRoleFilterDropdown(),
-                                const Gap(10),
-                                _buildStatusFilterDropdown(),
-                              ],
-                            )
-                          : Row(
+                      final searchField = Container(
+                        height: 46,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: const Color(0xFFE2E8F0),
+                            width: 1,
+                          ),
+                        ),
+                        child: TextField(
+                          textAlignVertical: TextAlignVertical.center,
+                          onChanged: (v) => setState(() => _searchQuery = v),
+                          style: GoogleFonts.inter(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w400,
+                            color: const Color(0xFF0F172A),
+                            height: 20 / 14,
+                          ),
+                          decoration: InputDecoration(
+                            hintText: 'Search by name, email, or UID...',
+                            hintStyle: GoogleFonts.inter(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w400,
+                              color: const Color(0xFF9CA3AF),
+                              height: 20 / 14,
+                            ),
+                            prefixIcon: const Padding(
+                              padding: EdgeInsets.only(left: 16, right: 12),
+                              child: Icon(
+                                Icons.search,
+                                size: 16,
+                                color: Color(0xFF9CA3AF),
+                              ),
+                            ),
+                            prefixIconConstraints: const BoxConstraints(
+                              minWidth: 44,
+                              minHeight: 46,
+                            ),
+                            suffixIcon: _searchQuery.isNotEmpty
+                                ? IconButton(
+                                    icon: const Icon(
+                                      Icons.clear,
+                                      size: 16,
+                                      color: Color(0xFF9CA3AF),
+                                    ),
+                                    onPressed: () =>
+                                        setState(() => _searchQuery = ''),
+                                  )
+                                : null,
+                            suffixIconConstraints: const BoxConstraints(
+                              minWidth: 42,
+                              minHeight: 46,
+                            ),
+                            border: InputBorder.none,
+                            enabledBorder: InputBorder.none,
+                            focusedBorder: InputBorder.none,
+                            isDense: true,
+                            contentPadding: const EdgeInsets.only(
+                              right: 16,
+                              top: 2,
+                            ),
+                          ),
+                        ),
+                      );
+
+                      if (isDesktop) {
+                        return Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Expanded(child: searchField),
+                            const Gap(16),
+                            SizedBox(
+                              width: 200,
+                              child: _buildRoleFilterDropdown(),
+                            ),
+                            const Gap(16),
+                            SizedBox(
+                              width: 200,
+                              child: _buildStatusFilterDropdown(),
+                            ),
+                          ],
+                        );
+                      } else if (isTablet) {
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            searchField,
+                            const Gap(12),
+                            Row(
                               children: [
                                 Expanded(child: _buildRoleFilterDropdown()),
-                                const Gap(10),
+                                const Gap(12),
                                 Expanded(child: _buildStatusFilterDropdown()),
                               ],
                             ),
-                    ],
-                  );
-                }
-
-                return Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Expanded(child: searchField),
-                    const Gap(16),
-                    SizedBox(width: 200, child: _buildRoleFilterDropdown()),
-                    const Gap(16),
-                    SizedBox(width: 200, child: _buildStatusFilterDropdown()),
-                  ],
-                );
-              },
-            ),
-            const Gap(16),
-
-            // Summary Pill Counters (Figma Node 1364:2920)
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                _pillBadge(
-                  label: 'Total:',
-                  value: '${allUsers.length}',
-                  bg: const Color(0xFFEEF2FF),
-                  labelColor: const Color(0xFF4338CA),
-                  valueColor: const Color(0xFF312E81),
-                ),
-                _pillBadge(
-                  label: 'Active:',
-                  value: '$activeCount',
-                  bg: const Color(0xFFECFDF5),
-                  labelColor: const Color(0xFF047857),
-                  valueColor: const Color(0xFF064E3B),
-                ),
-                _pillBadge(
-                  label: 'Inactive:',
-                  value: '$inactiveCount',
-                  bg: const Color(0xFFFFF1F2),
-                  labelColor: const Color(0xFFBE123C),
-                  valueColor: const Color(0xFF881337),
-                ),
-                if (_searchQuery.isNotEmpty ||
-                    _roleFilter != 'all' ||
-                    _statusFilter != 'all')
-                  _pillBadge(
-                    label: 'Showing:',
-                    value: '${filteredUsers.length}',
-                    bg: const Color(0xFFFEF3C7),
-                    labelColor: const Color(0xFFB45309),
-                    valueColor: const Color(0xFF78350F),
+                          ],
+                        );
+                      } else {
+                        // Mobile
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            searchField,
+                            const Gap(10),
+                            c.maxWidth < 340
+                                ? Column(
+                                    children: [
+                                      _buildRoleFilterDropdown(),
+                                      const Gap(10),
+                                      _buildStatusFilterDropdown(),
+                                    ],
+                                  )
+                                : Row(
+                                    children: [
+                                      Expanded(
+                                        child: _buildRoleFilterDropdown(),
+                                      ),
+                                      const Gap(10),
+                                      Expanded(
+                                        child: _buildStatusFilterDropdown(),
+                                      ),
+                                    ],
+                                  ),
+                          ],
+                        );
+                      }
+                    },
                   ),
-              ],
+                  const Gap(24),
+
+                  // Row 2: Summary Pill Counters (Figma Node 1364:2920)
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      _pillBadge(
+                        label: 'Total:',
+                        value: '${allUsers.length}',
+                        bg: const Color(0xFFEEF2FF),
+                        labelColor: const Color(0xFF4338CA),
+                        valueColor: const Color(0xFF312E81),
+                      ),
+                      _pillBadge(
+                        label: 'Active:',
+                        value: '$activeCount',
+                        bg: const Color(0xFFECFDF5),
+                        labelColor: const Color(0xFF047857),
+                        valueColor: const Color(0xFF064E3B),
+                      ),
+                      _pillBadge(
+                        label: 'Inactive:',
+                        value: '$inactiveCount',
+                        bg: const Color(0xFFFFF1F2),
+                        labelColor: const Color(0xFFBE123C),
+                        valueColor: const Color(0xFF881337),
+                      ),
+                      if (_searchQuery.isNotEmpty ||
+                          _roleFilter != 'all' ||
+                          _statusFilter != 'all')
+                        _pillBadge(
+                          label: 'Showing:',
+                          value: '${filteredUsers.length}',
+                          bg: const Color(0xFFFEF3C7),
+                          labelColor: const Color(0xFFB45309),
+                          valueColor: const Color(0xFF78350F),
+                        ),
+                    ],
+                  ),
+                ],
+              ),
             ),
-            const Gap(24),
+            const Gap(32),
 
             // Team Directory Card (Figma Node 1364:2933)
             Container(
@@ -1901,24 +2212,18 @@ class _UserManagementViewState extends State<UserManagementView> {
                   else
                     LayoutBuilder(
                       builder: (context, constraints) {
-                        final isDesktop = constraints.maxWidth >= 820;
+                        // Fully responsive on all laptops (no right-scrolling needed):
+                        // Fills 100% card width with proportional column sizing.
+                        final isDesktop = constraints.maxWidth >= 680 ||
+                            MediaQuery.of(context).size.width >= 768;
                         if (isDesktop) {
-                          final tableWidth = constraints.maxWidth > 1340
-                              ? constraints.maxWidth
-                              : 1340.0;
                           return SizedBox(
                             width: double.infinity,
-                            child: SingleChildScrollView(
-                              scrollDirection: Axis.horizontal,
-                              child: SizedBox(
-                                width: tableWidth,
-                                child: _buildDesktopTable(
-                                  cubit,
-                                  filteredUsers,
-                                  allUsers,
-                                  myUid,
-                                ),
-                              ),
+                            child: _buildDesktopTable(
+                              cubit,
+                              filteredUsers,
+                              allUsers,
+                              myUid,
                             ),
                           );
                         } else {
@@ -1940,26 +2245,110 @@ class _UserManagementViewState extends State<UserManagementView> {
     );
   }
 
+  Widget _buildFilterDropdown({
+    required String value,
+    required List<AcadenoDropdownItem<String>> items,
+    required ValueChanged<String?> onChanged,
+  }) {
+    return Container(
+      height: 46,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFE2E8F0), width: 1),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 14),
+      alignment: Alignment.center,
+      child: DropdownButtonHideUnderline(
+        child: Theme(
+          data: Theme.of(context).copyWith(
+            hoverColor: Colors.transparent,
+            focusColor: Colors.transparent,
+            splashColor: Colors.transparent,
+            highlightColor: Colors.transparent,
+          ),
+          child: DropdownButton<String>(
+            value: value,
+            focusColor: Colors.transparent,
+            isExpanded: true,
+            isDense: true,
+            dropdownColor: const Color(0xFFE2E2E2),
+            borderRadius: BorderRadius.circular(16),
+            icon: const Icon(
+              Icons.keyboard_arrow_down_rounded,
+              size: 16,
+              color: Color(0xFF64748B),
+            ),
+            style: GoogleFonts.inter(
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+              color: const Color(0xFF2E1D44),
+            ),
+            selectedItemBuilder: (BuildContext context) {
+              return items.map<Widget>((item) {
+                return Row(
+                  children: [
+                    if (item.icon != null) ...[
+                      IconTheme(
+                        data: const IconThemeData(
+                          color: Color(0xFF64748B),
+                          size: 14,
+                        ),
+                        child: item.icon!,
+                      ),
+                      const Gap(8),
+                    ],
+                    Expanded(
+                      child: Text(
+                        item.label,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.inter(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          color: const Color(0xFF2E1D44),
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              }).toList();
+            },
+            items: items.map((item) {
+              final isSelected = item.value == value;
+              return DropdownMenuItem<String>(
+                value: item.value,
+                child: AcadenoDropdown.buildMenuItemChild(
+                  label: item.label,
+                  isSelected: isSelected,
+                  icon: item.icon,
+                  activeColor: const Color(0xFFD35401),
+                  textColor: const Color(0xFF2E1D44),
+                ),
+              );
+            }).toList(),
+            onChanged: onChanged,
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildRoleFilterDropdown() {
-    return AcadenoDropdown<String>(
+    return _buildFilterDropdown(
       value: _roleFilter,
-      borderRadius: 16.0,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
       items: const [
         AcadenoDropdownItem<String>(
           value: 'all',
-          label: 'All Roles',
-          icon: Icon(Icons.work_outline_rounded, size: 14),
+          label: 'All Role',
         ),
         AcadenoDropdownItem<String>(
           value: 'admin',
           label: 'Admin',
-          icon: Icon(Icons.work_outline_rounded, size: 14),
         ),
         AcadenoDropdownItem<String>(
           value: 'hr',
           label: 'HR & Operations',
-          icon: Icon(Icons.work_outline_rounded, size: 14),
         ),
       ],
       onChanged: (v) => setState(() => _roleFilter = v ?? 'all'),
@@ -1967,25 +2356,20 @@ class _UserManagementViewState extends State<UserManagementView> {
   }
 
   Widget _buildStatusFilterDropdown() {
-    return AcadenoDropdown<String>(
+    return _buildFilterDropdown(
       value: _statusFilter,
-      borderRadius: 16.0,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
       items: const [
         AcadenoDropdownItem<String>(
           value: 'all',
-          label: 'All Statuses',
-          icon: Icon(Icons.tune_rounded, size: 14),
+          label: 'All Status',
         ),
         AcadenoDropdownItem<String>(
           value: 'active',
           label: 'Active Only',
-          icon: Icon(Icons.check_circle_outline, size: 14),
         ),
         AcadenoDropdownItem<String>(
           value: 'inactive',
           label: 'Inactive Only',
-          icon: Icon(Icons.cancel_outlined, size: 14),
         ),
       ],
       onChanged: (v) => setState(() => _statusFilter = v ?? 'all'),
@@ -2000,6 +2384,7 @@ class _UserManagementViewState extends State<UserManagementView> {
     required Color valueColor,
   }) {
     return Container(
+      height: 24,
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
       decoration: BoxDecoration(
         color: bg,
@@ -2007,6 +2392,7 @@ class _UserManagementViewState extends State<UserManagementView> {
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Text(
             label,
@@ -2018,7 +2404,7 @@ class _UserManagementViewState extends State<UserManagementView> {
               height: 16 / 12,
             ),
           ),
-          const Gap(4),
+          const Gap(6),
           Text(
             value,
             style: GoogleFonts.inter(
@@ -2092,18 +2478,22 @@ class _UserManagementViewState extends State<UserManagementView> {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(
-            user.roleLabel,
-            style: GoogleFonts.inter(
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-              color: canChangeRole
-                  ? const Color(0xFF334155)
-                  : const Color(0xFF94A3B8),
-              height: 20 / 14,
+          Flexible(
+            child: Text(
+              user.roleLabel,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: GoogleFonts.inter(
+                fontSize: 13.5,
+                fontWeight: FontWeight.w500,
+                color: canChangeRole
+                    ? const Color(0xFF334155)
+                    : const Color(0xFF94A3B8),
+                height: 20 / 14,
+              ),
             ),
           ),
-          const Gap(10),
+          const Gap(6),
           Icon(
             Icons.keyboard_arrow_down_rounded,
             size: 14,
@@ -2208,7 +2598,7 @@ class _UserManagementViewState extends State<UserManagementView> {
         Container(
           width: double.infinity,
           height: 49,
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
           decoration: const BoxDecoration(
             color: Color(0x80F8FAFC),
             border: Border(bottom: BorderSide(color: Color(0xFFF1F5F9))),
@@ -2216,39 +2606,39 @@ class _UserManagementViewState extends State<UserManagementView> {
           child: Row(
             children: [
               Expanded(
-                flex: 267,
+                flex: 26,
                 child: Padding(
-                  padding: const EdgeInsets.only(right: 14),
+                  padding: const EdgeInsets.only(right: 10),
                   child: Text('USER', style: _tblHdr),
                 ),
               ),
               Expanded(
-                flex: 259,
+                flex: 26,
                 child: Padding(
-                  padding: const EdgeInsets.only(right: 14),
+                  padding: const EdgeInsets.only(right: 10),
                   child: Text('EMAIL & UID', style: _tblHdr),
                 ),
               ),
               Expanded(
-                flex: 210,
+                flex: 20,
                 child: Padding(
-                  padding: const EdgeInsets.only(right: 14),
+                  padding: const EdgeInsets.only(right: 10),
                   child: Text('ROLE', style: _tblHdr),
                 ),
               ),
               Expanded(
-                flex: 257,
+                flex: 28,
                 child: Padding(
-                  padding: const EdgeInsets.only(right: 14),
+                  padding: const EdgeInsets.only(right: 10),
                   child: Text('DEVICE SECURITY', style: _tblHdr),
                 ),
               ),
               SizedBox(
-                width: 95,
+                width: 70,
                 child: Center(child: Text('ACTIVE', style: _tblHdr)),
               ),
               SizedBox(
-                width: 127,
+                width: 100,
                 child: Align(
                   alignment: Alignment.centerRight,
                   child: Text('ACTIONS', style: _tblHdr),
@@ -2287,8 +2677,8 @@ class _UserManagementViewState extends State<UserManagementView> {
               return Container(
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 18,
+                  horizontal: 20,
+                  vertical: 16,
                 ),
                 decoration: const BoxDecoration(
                   border: Border(bottom: BorderSide(color: Color(0xFFF1F5F9))),
@@ -2297,29 +2687,29 @@ class _UserManagementViewState extends State<UserManagementView> {
                   children: [
                     // USER Column
                     Expanded(
-                      flex: 267,
+                      flex: 26,
                       child: Padding(
-                        padding: const EdgeInsets.only(right: 14),
+                        padding: const EdgeInsets.only(right: 10),
                         child: Row(
                           children: [
                             Container(
-                              width: 40,
-                              height: 40,
+                              width: 36,
+                              height: 36,
                               decoration: BoxDecoration(
                                 color: avatarBg,
-                                borderRadius: BorderRadius.circular(12),
+                                borderRadius: BorderRadius.circular(10),
                               ),
                               alignment: Alignment.center,
                               child: Text(
                                 initial,
                                 style: GoogleFonts.inter(
-                                  fontSize: 14,
+                                  fontSize: 13.5,
                                   fontWeight: FontWeight.w700,
                                   color: avatarText,
                                 ),
                               ),
                             ),
-                            const Gap(12),
+                            const Gap(10),
                             Expanded(
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
@@ -2336,17 +2726,17 @@ class _UserManagementViewState extends State<UserManagementView> {
                                       overflow: TextOverflow.ellipsis,
                                       style: GoogleFonts.inter(
                                         fontWeight: FontWeight.w700,
-                                        fontSize: 16,
+                                        fontSize: 15,
                                         color: const Color(0xFF0F172A),
-                                        height: 24 / 16,
+                                        height: 22 / 15,
                                       ),
                                     ),
                                   ),
                                   if (isMe) ...[
-                                    const Gap(8),
+                                    const Gap(6),
                                     Container(
                                       padding: const EdgeInsets.symmetric(
-                                        horizontal: 6,
+                                        horizontal: 5,
                                         vertical: 2,
                                       ),
                                       decoration: BoxDecoration(
@@ -2374,9 +2764,9 @@ class _UserManagementViewState extends State<UserManagementView> {
 
                     // EMAIL & UID Column
                     Expanded(
-                      flex: 259,
+                      flex: 26,
                       child: Padding(
-                        padding: const EdgeInsets.only(right: 14),
+                        padding: const EdgeInsets.only(right: 10),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisSize: MainAxisSize.min,
@@ -2387,10 +2777,10 @@ class _UserManagementViewState extends State<UserManagementView> {
                                   : (user.name.contains('@') ? user.name : '—'),
                               maxLines: 1,
                               style: GoogleFonts.inter(
-                                fontSize: 14,
+                                fontSize: 13.5,
                                 fontWeight: FontWeight.w500,
                                 color: const Color(0xFF334155),
-                                height: 20 / 14,
+                                height: 18 / 13.5,
                               ),
                             ),
                             const Gap(2),
@@ -2408,14 +2798,14 @@ class _UserManagementViewState extends State<UserManagementView> {
                                         fontSize: 11,
                                         fontWeight: FontWeight.w400,
                                         color: const Color(0xFF94A3B8),
-                                        height: 16.5 / 11,
+                                        height: 16 / 11,
                                       ),
                                     ),
                                   ),
-                                  const Gap(6),
+                                  const Gap(4),
                                   const Icon(
                                     Icons.copy_rounded,
-                                    size: 12,
+                                    size: 11,
                                     color: Color(0xFF94A3B8),
                                   ),
                                 ],
@@ -2428,9 +2818,9 @@ class _UserManagementViewState extends State<UserManagementView> {
 
                     // ROLE Column (Figma Node 1364:2968)
                     Expanded(
-                      flex: 210,
+                      flex: 20,
                       child: Padding(
-                        padding: const EdgeInsets.only(right: 14),
+                        padding: const EdgeInsets.only(right: 10),
                         child: Align(
                           alignment: Alignment.centerLeft,
                           child: _buildRolePill(
@@ -2444,14 +2834,14 @@ class _UserManagementViewState extends State<UserManagementView> {
 
                     // DEVICE SECURITY Column
                     Expanded(
-                      flex: 257,
+                      flex: 28,
                       child: Padding(
-                        padding: const EdgeInsets.only(right: 14),
+                        padding: const EdgeInsets.only(right: 10),
                         child: Row(
                           children: [
                             Container(
-                              width: 36,
-                              height: 36,
+                              width: 32,
+                              height: 32,
                               decoration: BoxDecoration(
                                 color: user.deviceBound
                                     ? const Color(0xFFECFDF5)
@@ -2463,7 +2853,7 @@ class _UserManagementViewState extends State<UserManagementView> {
                                 user.deviceBound
                                     ? Icons.phone_android_rounded
                                     : Icons.sync_rounded,
-                                size: 16,
+                                size: 15,
                                 color: user.deviceBound
                                     ? const Color(0xFF059669)
                                     : const Color(0xFFD97706),
@@ -2496,6 +2886,8 @@ class _UserManagementViewState extends State<UserManagementView> {
                                     user.deviceBound
                                         ? 'REGISTERED PHONE'
                                         : 'PENDING BINDING',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
                                     style: GoogleFonts.inter(
                                       fontSize: 10,
                                       fontWeight: FontWeight.w700,
@@ -2503,7 +2895,7 @@ class _UserManagementViewState extends State<UserManagementView> {
                                       color: user.deviceBound
                                           ? const Color(0xFF059669)
                                           : const Color(0xFFD97706),
-                                      height: 15 / 10,
+                                      height: 14 / 10,
                                     ),
                                   ),
                                 ],
@@ -2511,26 +2903,27 @@ class _UserManagementViewState extends State<UserManagementView> {
                             ),
                             IconButton(
                               constraints: const BoxConstraints(
-                                minWidth: 28,
-                                minHeight: 28,
-                              ),
-                              icon: const Icon(
-                                Icons.cancel_rounded,
-                                size: 16,
-                                color: Color(0xFF94A3B8),
-                              ),
-                              tooltip: 'Reset Phone Binding',
-                              onPressed: () =>
-                                  _confirmResetDevice(context, cubit, user),
+                              minWidth: 26,
+                              minHeight: 26,
                             ),
-                          ],
-                        ),
+                            padding: EdgeInsets.zero,
+                            icon: const Icon(
+                              Icons.cancel_rounded,
+                              size: 15,
+                              color: Color(0xFF94A3B8),
+                            ),
+                            tooltip: 'Reset Phone Binding',
+                            onPressed: () =>
+                                _confirmResetDevice(context, cubit, user),
+                          ),
+                        ],
                       ),
                     ),
+                  ),
 
                     // ACTIVE Switch Column (Figma Node 1364:2988)
                     SizedBox(
-                      width: 95,
+                      width: 70,
                       child: Center(
                         child: _buildFigmaSwitch(
                           value: user.isActive,
@@ -2556,7 +2949,7 @@ class _UserManagementViewState extends State<UserManagementView> {
 
                     // ACTIONS Column (Figma Node 1364:2951 & 1364:2990)
                     SizedBox(
-                      width: 127,
+                      width: 100,
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.end,
                         crossAxisAlignment: CrossAxisAlignment.center,

@@ -603,6 +603,8 @@ class LeadRecord {
   final DateTime? assignedAt;
   final String followUpTime;
   final String notes;
+  final String studentNotes;
+  final String managerNotes;
   final bool isDone;
   final bool isLocked;
   final String? lockedByUid;
@@ -644,6 +646,8 @@ class LeadRecord {
     this.assignedAt,
     this.followUpTime = '',
     this.notes = '',
+    this.studentNotes = '',
+    this.managerNotes = '',
     this.isDone = false,
     this.isLocked = false,
     this.lockedByUid,
@@ -667,8 +671,9 @@ class LeadRecord {
   /// True if the 10-minute call lock (FR-3.1, RL-2) is currently active.
   bool get isActivelyLocked {
     if (!isLocked) return false;
-    if (lockedAt == null) return isLocked;
-    return DateTime.now().difference(lockedAt!).inMinutes < 10;
+    final lockTime = lockedAt ?? updatedAt;
+    if (lockTime == null) return false;
+    return DateTime.now().difference(lockTime).inMinutes < 10;
   }
 
   String get maskedPhone => LeadPhoneValidator.maskPhone(
@@ -880,6 +885,8 @@ class LeadRecord {
           : (assignedAtField is DateTime ? assignedAtField : null),
       followUpTime: rawFollowUp,
       notes: (data['notes'] ?? '').toString(),
+      studentNotes: (data['studentNotes'] ?? data['notes'] ?? '').toString(),
+      managerNotes: (data['managerNotes'] ?? data['leadManagerNotes'] ?? '').toString(),
       isDone: data['isDone'] == true,
       isLocked: data['isLocked'] == true,
       lockedByUid: data['lockedByUid']?.toString(),
@@ -930,6 +937,8 @@ class LeadRecord {
       'assignedByName': assignedByName,
       if (followUpTime.isNotEmpty) 'followUpTime': followUpTime.trim(),
       'notes': notes,
+      'studentNotes': studentNotes.isNotEmpty ? studentNotes : notes,
+      'managerNotes': managerNotes,
       'isDone': isDone,
       'isLocked': isLocked,
       'lockedByUid': lockedByUid,
@@ -971,6 +980,8 @@ class LeadRecord {
     DateTime? assignedAt,
     String? followUpTime,
     String? notes,
+    String? studentNotes,
+    String? managerNotes,
     bool? isDone,
     bool? isLocked,
     String? lockedByUid,
@@ -1012,6 +1023,8 @@ class LeadRecord {
       assignedAt: assignedAt ?? this.assignedAt,
       followUpTime: followUpTime ?? this.followUpTime,
       notes: notes ?? this.notes,
+      studentNotes: studentNotes ?? this.studentNotes,
+      managerNotes: managerNotes ?? this.managerNotes,
       isDone: isDone ?? this.isDone,
       isLocked: isLocked ?? this.isLocked,
       lockedByUid: lockedByUid ?? this.lockedByUid,
@@ -1270,6 +1283,54 @@ class ExecutiveLeadItem {
     this.batch = '',
     this.fee = '',
   });
+
+  ExecutiveLeadItem copyWith({
+    String? id,
+    String? assignmentId,
+    String? name,
+    String? initials,
+    String? maskedPhone,
+    String? fullPhone,
+    String? collegeInfo,
+    String? statusTag,
+    Color? statusColor,
+    Color? statusBg,
+    String? campaignTag,
+    bool? isLocked,
+    String? lockedByUid,
+    String? lockedMessage,
+    bool? isDone,
+    List<String>? talkingPoints,
+    List<String>? timeline,
+    String? followUpTime,
+    String? course,
+    String? batch,
+    String? fee,
+  }) {
+    return ExecutiveLeadItem(
+      id: id ?? this.id,
+      assignmentId: assignmentId ?? this.assignmentId,
+      name: name ?? this.name,
+      initials: initials ?? this.initials,
+      maskedPhone: maskedPhone ?? this.maskedPhone,
+      fullPhone: fullPhone ?? this.fullPhone,
+      collegeInfo: collegeInfo ?? this.collegeInfo,
+      statusTag: statusTag ?? this.statusTag,
+      statusColor: statusColor ?? this.statusColor,
+      statusBg: statusBg ?? this.statusBg,
+      campaignTag: campaignTag ?? this.campaignTag,
+      isLocked: isLocked ?? this.isLocked,
+      lockedByUid: lockedByUid ?? this.lockedByUid,
+      lockedMessage: lockedMessage ?? this.lockedMessage,
+      isDone: isDone ?? this.isDone,
+      talkingPoints: talkingPoints ?? this.talkingPoints,
+      timeline: timeline ?? this.timeline,
+      followUpTime: followUpTime ?? this.followUpTime,
+      course: course ?? this.course,
+      batch: batch ?? this.batch,
+      fee: fee ?? this.fee,
+    );
+  }
 
   static (Color, Color) statusColorsFor(String status) {
     return switch (status) {

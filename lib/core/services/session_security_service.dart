@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:acadeno_crm/core/services/device_security_service.dart';
 import 'package:gap/gap.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -92,6 +93,16 @@ class SessionSecurityService {
     // 2. Initial state initialization: Capture the existing tokens present on first snapshot
     final serverLogoutToken = data['forceLogoutToken'] as String?;
     final serverLogoutAt = data['forceLogoutAt'] as Timestamp?;
+
+    // If this document is actively registered to THIS physical phone, do not terminate session
+    final currentDevice = await DeviceSecurityService.getDeviceIdentifier();
+    final registeredId =
+        (data['registeredDeviceId'] ?? data['deviceId']) as String?;
+    if (registeredId != null && registeredId == currentDevice.deviceId) {
+      _initialLogoutToken = serverLogoutToken;
+      _initialLogoutAt = serverLogoutAt;
+      return;
+    }
 
     if (_initialLogoutToken == null && _initialLogoutAt == null) {
       _initialLogoutToken = serverLogoutToken;

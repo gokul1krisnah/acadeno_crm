@@ -1,3 +1,4 @@
+import 'package:intl/intl.dart';
 import 'package:acadeno_crm/core/services/firestore_stream_cache.dart';
 import 'package:acadeno_crm/core/services/offline_queue_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -69,14 +70,37 @@ class VisitsRds {
             status.toLowerCase() != 'cancelled' &&
             status.toLowerCase() != 'canceled';
 
+        var dNum = (data['dayNumber'] ?? '').toString().trim();
+        var mShort = (data['monthShort'] ?? '').toString().trim().toUpperCase();
+        if (dNum.isEmpty || mShort.isEmpty) {
+          final dl = (data['dateLabel'] ?? '').toString().trim();
+          if (dl.isNotEmpty) {
+            try {
+              final parsed = DateFormat('d MMM yyyy').parse(dl);
+              dNum = DateFormat('dd').format(parsed);
+              mShort = DateFormat('MMM').format(parsed).toUpperCase();
+            } catch (_) {
+              final parts = dl.split(' ');
+              if (parts.isNotEmpty) dNum = parts[0];
+              if (parts.length > 1) mShort = parts[1].toUpperCase();
+            }
+          }
+        }
+        if (dNum.isEmpty) dNum = DateFormat('dd').format(DateTime.now());
+        if (mShort.isEmpty) mShort = DateFormat('MMM').format(DateTime.now()).toUpperCase();
+
         return ExecutiveCollegeVisit(
           id: doc.id,
-          monthShort: (data['monthShort'] ?? 'OCT').toString(),
-          dayNumber: (data['dayNumber'] ?? '29').toString(),
+          monthShort: mShort,
+          dayNumber: dNum,
           collegeName: (data['collegeName'] ?? '').toString(),
           subtitle: (data['subtitle'] ?? '').toString(),
           statusLabel: status,
           purpose: (data['purpose'] ?? '').toString(),
+          sourceEvent:
+              (data['sourceEvent'] ?? data['source'] ?? '').toString(),
+          content:
+              (data['content'] ?? data['eventContent'] ?? '').toString(),
           staffInitials: staffInitials,
           staffNames: staffNames.isNotEmpty ? staffNames : 'Assigned Staff',
           leadsCollected: (data['leadsCollected'] as num?)?.toInt() ?? 0,
@@ -101,6 +125,8 @@ class VisitsRds {
     required String monthShort,
     required String subtitle,
     required String purpose,
+    String sourceEvent = '',
+    String content = '',
     String assignedStaff = '',
   }) async {
     final uid = _firebaseAuth.currentUser?.uid;
@@ -108,8 +134,11 @@ class VisitsRds {
       'collegeName': collegeName.trim(),
       'dayNumber': dayNumber.trim(),
       'monthShort': monthShort.trim().toUpperCase(),
+      'dateLabel': '${dayNumber.trim()} ${monthShort.trim().toUpperCase()}',
       'subtitle': subtitle.trim(),
       'purpose': purpose.trim(),
+      'sourceEvent': sourceEvent.trim(),
+      'content': content.trim(),
       'status': 'Planned',
       'statusLabel': 'Planned',
       'assignedStaff': assignedStaff.trim(),

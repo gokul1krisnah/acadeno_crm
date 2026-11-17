@@ -6,6 +6,8 @@ class ExecutiveCollegeVisit {
   final String subtitle;
   String statusLabel; // 'Planned', 'Completed', 'Cancelled'
   final String purpose;
+  final String sourceEvent;
+  final String content;
   final List<String> staffInitials;
   final String staffNames;
   int leadsCollected;
@@ -23,6 +25,8 @@ class ExecutiveCollegeVisit {
     required this.subtitle,
     required this.statusLabel,
     this.purpose = '',
+    this.sourceEvent = '',
+    this.content = '',
     this.staffInitials = const ['AR', 'RM'],
     this.staffNames = 'Anjali R, Rahul M',
     this.leadsCollected = 0,
@@ -41,6 +45,8 @@ class ExecutiveCollegeVisit {
     String? subtitle,
     String? statusLabel,
     String? purpose,
+    String? sourceEvent,
+    String? content,
     List<String>? staffInitials,
     String? staffNames,
     int? leadsCollected,
@@ -58,6 +64,8 @@ class ExecutiveCollegeVisit {
       subtitle: subtitle ?? this.subtitle,
       statusLabel: statusLabel ?? this.statusLabel,
       purpose: purpose ?? this.purpose,
+      sourceEvent: sourceEvent ?? this.sourceEvent,
+      content: content ?? this.content,
       staffInitials: staffInitials ?? this.staffInitials,
       staffNames: staffNames ?? this.staffNames,
       leadsCollected: leadsCollected ?? this.leadsCollected,

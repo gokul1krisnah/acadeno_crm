@@ -371,17 +371,18 @@ class LeadsCubit extends Cubit<LeadsState> {
     required String campaign,
   }) async {
     try {
-      await _repository.createLead(
+      final created = await _repository.createLead(
         name: name,
         phone: phone,
         collegeBranch: collegeBranchYear,
         source: campaign,
         assignToSelfAsWalkIn: true,
       );
+      final display = created.name.isNotEmpty ? created.name : name.trim();
       emit(
         state.copyWith(
           showingPendingCalls: true,
-          toastMessage: 'Walk-in lead ${name.trim()} added to Today list',
+          toastMessage: 'Walk-in lead $display added to Today list',
           isToastError: false,
         ),
       );

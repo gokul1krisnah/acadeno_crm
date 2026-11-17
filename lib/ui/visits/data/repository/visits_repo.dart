@@ -17,6 +17,8 @@ class VisitsRepository {
     required String monthShort,
     required String subtitle,
     required String purpose,
+    String sourceEvent = '',
+    String content = '',
     String assignedStaff = '',
   }) => _rds.addCollegeVisit(
     collegeName: collegeName,
@@ -24,6 +26,8 @@ class VisitsRepository {
     monthShort: monthShort,
     subtitle: subtitle,
     purpose: purpose,
+    sourceEvent: sourceEvent,
+    content: content,
     assignedStaff: assignedStaff,
   );
 
