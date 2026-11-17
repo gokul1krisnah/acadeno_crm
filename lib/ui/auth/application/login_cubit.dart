@@ -272,12 +272,10 @@ class LoginCubit extends Cubit<LoginState> {
   Future<void> unbindAndSignIn(LoginRequestModel request) async {
     emit(const LoginState.loading());
     try {
-      final result = await _authRepository.login(request);
-      final user = result.user;
-      if (user == null) {
-        emit(const LoginState.failure(message: 'Authentication failed.'));
-        return;
-      }
+      final user = await _authRepository.signIn(
+        email: request.email,
+        password: request.password,
+      );
 
       // Re-bind to this new phone directly
       await DeviceSecurityService.forceBindCurrentDevice(user);
@@ -293,6 +291,8 @@ class LoginCubit extends Cubit<LoginState> {
         );
         emit(const LoginState.success());
       }
+    } on FirebaseAuthException catch (error) {
+      emit(LoginState.failure(message: _errorMessage(error)));
     } catch (e) {
       emit(LoginState.failure(
         message: e.toString().replaceFirst('Exception: ', ''),
