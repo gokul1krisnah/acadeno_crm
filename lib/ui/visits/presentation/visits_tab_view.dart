@@ -9,6 +9,7 @@ import 'package:acadeno_crm/shared/snackbar_alerts/snack_alert.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 import 'package:acadeno_crm/shared/extensions/build_context_extension.dart';
 import 'package:acadeno_crm/ui/dashboard/presentation/widgets/figma_calendar_dialog.dart';
@@ -2698,10 +2699,10 @@ class _RecentVisitCard extends StatelessWidget {
                                     child: Row(
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
-                                        const Icon(
-                                          Icons.check_circle_rounded,
-                                          size: 13,
-                                          color: Color(0xFF166534),
+                                        SvgPicture.asset(
+                                          'assets/svgs/visit_completed_check.svg',
+                                          width: 12,
+                                          height: 12,
                                         ),
                                         const SizedBox(width: 4),
                                         Text(
@@ -2741,10 +2742,10 @@ class _RecentVisitCard extends StatelessWidget {
                                     child: Row(
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
-                                        const Icon(
-                                          Icons.notes_rounded,
-                                          size: 13,
-                                          color: Color(0xFF2C3370),
+                                        SvgPicture.asset(
+                                          'assets/svgs/visit_outcome_doc.svg',
+                                          width: 12,
+                                          height: 12,
                                         ),
                                         const SizedBox(width: 4),
                                         Text(
@@ -2774,10 +2775,10 @@ class _RecentVisitCard extends StatelessWidget {
                               mainAxisSize: MainAxisSize.min,
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
-                                const Icon(
-                                  Icons.person_outline_rounded,
-                                  size: 19,
-                                  color: Color(0xFF0E142E),
+                                SvgPicture.asset(
+                                  'assets/svgs/visit_leads_count.svg',
+                                  width: 16,
+                                  height: 16,
                                 ),
                                 const SizedBox(width: 8),
                                 Column(
@@ -2821,10 +2822,10 @@ class _RecentVisitCard extends StatelessWidget {
                               mainAxisSize: MainAxisSize.min,
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
-                                const Icon(
-                                  Icons.check_box_outlined,
-                                  size: 18,
-                                  color: Color(0xFF0E142E),
+                                SvgPicture.asset(
+                                  'assets/svgs/visit_interested_clip.svg',
+                                  width: 11,
+                                  height: 12,
                                 ),
                                 const SizedBox(width: 8),
                                 Column(
@@ -2877,12 +2878,12 @@ class _RecentVisitCard extends StatelessWidget {
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Padding(
-                          padding: EdgeInsets.only(top: 1.5),
-                          child: Icon(
-                            Icons.timer_outlined,
-                            size: 14,
-                            color: Color(0xFF0E142E),
+                        Padding(
+                          padding: const EdgeInsets.only(top: 1.5),
+                          child: SvgPicture.asset(
+                            'assets/svgs/visit_met_clock.svg',
+                            width: 14,
+                            height: 15,
                           ),
                         ),
                         const SizedBox(width: 8),
@@ -2922,12 +2923,12 @@ class _RecentVisitCard extends StatelessWidget {
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Padding(
-                          padding: EdgeInsets.only(top: 1.5),
-                          child: Icon(
-                            Icons.skip_next_rounded,
-                            size: 15,
-                            color: Color(0xFF0E142E),
+                        Padding(
+                          padding: const EdgeInsets.only(top: 3.5),
+                          child: SvgPicture.asset(
+                            'assets/svgs/visit_next_step.svg',
+                            width: 10,
+                            height: 10,
                           ),
                         ),
                         const SizedBox(width: 8),
