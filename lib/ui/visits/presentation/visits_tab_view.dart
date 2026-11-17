@@ -136,7 +136,11 @@ class _VisitsTabViewState extends State<VisitsTabView> {
                               height: 38,
                               child: ElevatedButton.icon(
                                 onPressed: () => _showLogVisitModal(context),
-                                icon: const Icon(Icons.add, size: 16, color: Colors.white),
+                                icon: const Icon(
+                                  Icons.add,
+                                  size: 16,
+                                  color: Colors.white,
+                                ),
                                 label: Text(
                                   'Log visit',
                                   style: GoogleFonts.inter(
@@ -174,7 +178,8 @@ class _VisitsTabViewState extends State<VisitsTabView> {
                                 count: state.upcomingCount,
                                 alignment: Alignment.centerLeft,
                                 isSelected:
-                                    state.selectedBucket == VisitStatusBucket.upcoming,
+                                    state.selectedBucket ==
+                                    VisitStatusBucket.upcoming,
                                 onTap: () => _onTabTapped(
                                   cubit,
                                   VisitStatusBucket.upcoming,
@@ -187,7 +192,8 @@ class _VisitsTabViewState extends State<VisitsTabView> {
                                 count: state.completedCount,
                                 alignment: Alignment.center,
                                 isSelected:
-                                    state.selectedBucket == VisitStatusBucket.completed,
+                                    state.selectedBucket ==
+                                    VisitStatusBucket.completed,
                                 onTap: () => _onTabTapped(
                                   cubit,
                                   VisitStatusBucket.completed,
@@ -200,7 +206,8 @@ class _VisitsTabViewState extends State<VisitsTabView> {
                                 count: state.cancelledCount,
                                 alignment: Alignment.centerRight,
                                 isSelected:
-                                    state.selectedBucket == VisitStatusBucket.cancelled,
+                                    state.selectedBucket ==
+                                    VisitStatusBucket.cancelled,
                                 onTap: () => _onTabTapped(
                                   cubit,
                                   VisitStatusBucket.cancelled,
@@ -217,9 +224,11 @@ class _VisitsTabViewState extends State<VisitsTabView> {
                           width: double.infinity,
                           child: AnimatedAlign(
                             alignment: switch (state.selectedBucket) {
-                              VisitStatusBucket.upcoming => Alignment.centerLeft,
+                              VisitStatusBucket.upcoming =>
+                                Alignment.centerLeft,
                               VisitStatusBucket.completed => Alignment.center,
-                              VisitStatusBucket.cancelled => Alignment.centerRight,
+                              VisitStatusBucket.cancelled =>
+                                Alignment.centerRight,
                             },
                             duration: const Duration(milliseconds: 260),
                             curve: Curves.easeInOutCubic,
@@ -355,7 +364,8 @@ class _VisitsTabViewState extends State<VisitsTabView> {
                   32,
                 ),
                 itemCount: items.length,
-                separatorBuilder: (_, _) => const Gap(14), // Strictly >= 10px spacing
+                separatorBuilder: (_, _) =>
+                    const Gap(14), // Strictly >= 10px spacing
                 itemBuilder: (context, index) {
                   final visit = items[index];
                   return Center(
@@ -363,33 +373,30 @@ class _VisitsTabViewState extends State<VisitsTabView> {
                       constraints: const BoxConstraints(maxWidth: 800),
                       child: switch (bucket) {
                         VisitStatusBucket.upcoming => _UpcomingVisitCard(
-                            key: ValueKey(visit.id),
-                            visit: visit,
-                            onDirections: () => _handleDirections(context, visit),
-                            onRecordOutcome: () =>
-                                _showRecordOutcomeSheet(context, visit),
-                            onCancel: () =>
-                                _showCancelVisitDialog(context, visit),
-                            onDelete: () =>
-                                _confirmDeleteVisit(context, visit),
-                          ),
+                          key: ValueKey(visit.id),
+                          visit: visit,
+                          onDirections: () => _handleDirections(context, visit),
+                          onRecordOutcome: () =>
+                              _showRecordOutcomeSheet(context, visit),
+                          onCancel: () =>
+                              _showCancelVisitDialog(context, visit),
+                          onDelete: () => _confirmDeleteVisit(context, visit),
+                        ),
                         VisitStatusBucket.completed => _RecentVisitCard(
-                            key: ValueKey(visit.id),
-                            visit: visit,
-                            onDirections: () => _handleDirections(context, visit),
-                            onRecordOutcome: () =>
-                                _showRecordOutcomeSheet(context, visit),
-                            onDelete: () =>
-                                _confirmDeleteVisit(context, visit),
-                          ),
+                          key: ValueKey(visit.id),
+                          visit: visit,
+                          onDirections: () => _handleDirections(context, visit),
+                          onRecordOutcome: () =>
+                              _showRecordOutcomeSheet(context, visit),
+                          onDelete: () => _confirmDeleteVisit(context, visit),
+                        ),
                         VisitStatusBucket.cancelled => _CancelledVisitCard(
-                            key: ValueKey(visit.id),
-                            visit: visit,
-                            onReschedule: () =>
-                                _showRescheduleDialog(context, visit),
-                            onDelete: () =>
-                                _confirmDeleteVisit(context, visit),
-                          ),
+                          key: ValueKey(visit.id),
+                          visit: visit,
+                          onReschedule: () =>
+                              _showRescheduleDialog(context, visit),
+                          onDelete: () => _confirmDeleteVisit(context, visit),
+                        ),
                       },
                     ),
                   );
@@ -400,32 +407,38 @@ class _VisitsTabViewState extends State<VisitsTabView> {
   }
 
   Widget _buildEmptyState(BuildContext context, VisitStatusBucket bucket) {
-    final (icon, iconColor, iconBg, title, subtitle, showAction) =
-        switch (bucket) {
+    final (
+      icon,
+      iconColor,
+      iconBg,
+      title,
+      subtitle,
+      showAction,
+    ) = switch (bucket) {
       VisitStatusBucket.upcoming => (
-          CupertinoIcons.calendar_today,
-          const Color(0xFF4A3AFF),
-          const Color(0xFFEEEBF6),
-          'No upcoming visits',
-          'You have no college campus visits scheduled right now.\nTap "Log visit" below to schedule a new visit.',
-          true,
-        ),
+        CupertinoIcons.calendar_today,
+        const Color(0xFF4A3AFF),
+        const Color(0xFFEEEBF6),
+        'No upcoming visits',
+        'You have no college campus visits scheduled right now.\nTap "Log visit" below to schedule a new visit.',
+        true,
+      ),
       VisitStatusBucket.completed => (
-          Icons.verified_outlined,
-          const Color(0xFF166534),
-          const Color(0xFFF0FDF4),
-          'No completed visits yet',
-          'Visits you complete will appear here along with collected leads, student interest counts, and follow-up notes.',
-          false,
-        ),
+        Icons.verified_outlined,
+        const Color(0xFF166534),
+        const Color(0xFFF0FDF4),
+        'No completed visits yet',
+        'Visits you complete will appear here along with collected leads, student interest counts, and follow-up notes.',
+        false,
+      ),
       VisitStatusBucket.cancelled => (
-          Icons.event_busy_outlined,
-          const Color(0xFFDC2626),
-          const Color(0xFFFEF2F2),
-          'No cancelled visits',
-          'Any cancelled or discontinued campus visits will be kept here for reference.',
-          false,
-        ),
+        Icons.event_busy_outlined,
+        const Color(0xFFDC2626),
+        const Color(0xFFFEF2F2),
+        'No cancelled visits',
+        'Any cancelled or discontinued campus visits will be kept here for reference.',
+        false,
+      ),
     };
 
     return Container(
@@ -498,7 +511,10 @@ class _VisitsTabViewState extends State<VisitsTabView> {
                   backgroundColor: const Color(0xFFE64A19),
                   foregroundColor: Colors.white,
                   elevation: 0,
-                  padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 10),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 22,
+                    vertical: 10,
+                  ),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(9999),
                   ),
@@ -523,9 +539,7 @@ class _VisitsTabViewState extends State<VisitsTabView> {
       builder: (ctx) => AlertDialog(
         backgroundColor: Colors.white,
         surfaceTintColor: Colors.transparent,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Text(
           'Cancel Visit',
           style: GoogleFonts.inter(
@@ -985,627 +999,632 @@ class _VisitsTabViewState extends State<VisitsTabView> {
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                    Text(
-                      'Record Visit Outcome',
-                      style: GoogleFonts.inter(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w700,
-                        height: 27.5 / 20,
-                        color: const Color(0xFF0F172A),
+                      Text(
+                        'Record Visit Outcome',
+                        style: GoogleFonts.inter(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w700,
+                          height: 27.5 / 20,
+                          color: const Color(0xFF0F172A),
+                        ),
                       ),
-                    ),
-                    const Gap(6),
-                    Text(
-                      '${visit.collegeName} · Outcome & student attendance',
-                      style: GoogleFonts.inter(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w400,
-                        height: 21.13 / 13,
-                        color: const Color(0xFF64748B),
+                      const Gap(6),
+                      Text(
+                        '${visit.collegeName} · Outcome & student attendance',
+                        style: GoogleFonts.inter(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w400,
+                          height: 21.13 / 13,
+                          color: const Color(0xFF64748B),
+                        ),
                       ),
-                    ),
-                    const Gap(18),
+                      const Gap(18),
 
-                    // Modern Segmented Status Toggle (Completed vs Cancelled)
-                    Container(
-                      height: 44,
-                      padding: const EdgeInsets.all(3),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF1F5F9),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: InkWell(
-                              onTap: () {
-                                setSheetState(() {
-                                  isCancelled = false;
-                                  formKey.currentState?.reset();
-                                });
-                              },
-                              borderRadius: BorderRadius.circular(10),
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  color: !isCancelled
-                                      ? Colors.white
-                                      : Colors.transparent,
-                                  borderRadius: BorderRadius.circular(10),
-                                  boxShadow: !isCancelled
-                                      ? const [
-                                          BoxShadow(
-                                            color: Color(0x0D000000),
-                                            blurRadius: 4,
-                                            offset: Offset(0, 1),
-                                          ),
-                                        ]
-                                      : null,
-                                ),
-                                alignment: Alignment.center,
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(
-                                      Icons.check_circle_rounded,
-                                      size: 16,
-                                      color: !isCancelled
-                                          ? const Color(0xFF15803D)
-                                          : const Color(0xFF94A3B8),
-                                    ),
-                                    const Gap(6),
-                                    Text(
-                                      'Completed',
-                                      style: GoogleFonts.inter(
-                                        fontSize: 13,
-                                        fontWeight: !isCancelled
-                                            ? FontWeight.w700
-                                            : FontWeight.w500,
+                      // Modern Segmented Status Toggle (Completed vs Cancelled)
+                      Container(
+                        height: 44,
+                        padding: const EdgeInsets.all(3),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF1F5F9),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: InkWell(
+                                onTap: () {
+                                  setSheetState(() {
+                                    isCancelled = false;
+                                    formKey.currentState?.reset();
+                                  });
+                                },
+                                borderRadius: BorderRadius.circular(10),
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: !isCancelled
+                                        ? Colors.white
+                                        : Colors.transparent,
+                                    borderRadius: BorderRadius.circular(10),
+                                    boxShadow: !isCancelled
+                                        ? const [
+                                            BoxShadow(
+                                              color: Color(0x0D000000),
+                                              blurRadius: 4,
+                                              offset: Offset(0, 1),
+                                            ),
+                                          ]
+                                        : null,
+                                  ),
+                                  alignment: Alignment.center,
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        Icons.check_circle_rounded,
+                                        size: 16,
                                         color: !isCancelled
-                                            ? const Color(0xFF0F172A)
-                                            : const Color(0xFF64748B),
+                                            ? const Color(0xFF15803D)
+                                            : const Color(0xFF94A3B8),
                                       ),
-                                    ),
-                                  ],
+                                      const Gap(6),
+                                      Text(
+                                        'Completed',
+                                        style: GoogleFonts.inter(
+                                          fontSize: 13,
+                                          fontWeight: !isCancelled
+                                              ? FontWeight.w700
+                                              : FontWeight.w500,
+                                          color: !isCancelled
+                                              ? const Color(0xFF0F172A)
+                                              : const Color(0xFF64748B),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                          Expanded(
-                            child: InkWell(
-                              onTap: () {
-                                setSheetState(() {
-                                  isCancelled = true;
-                                  formKey.currentState?.reset();
-                                });
-                              },
-                              borderRadius: BorderRadius.circular(10),
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  color: isCancelled
-                                      ? Colors.white
-                                      : Colors.transparent,
-                                  borderRadius: BorderRadius.circular(10),
-                                  boxShadow: isCancelled
-                                      ? const [
-                                          BoxShadow(
-                                            color: Color(0x0D000000),
-                                            blurRadius: 4,
-                                            offset: Offset(0, 1),
-                                          ),
-                                        ]
-                                      : null,
-                                ),
-                                alignment: Alignment.center,
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(
-                                      Icons.cancel_rounded,
-                                      size: 16,
-                                      color: isCancelled
-                                          ? const Color(0xFFDC2626)
-                                          : const Color(0xFF94A3B8),
-                                    ),
-                                    const Gap(6),
-                                    Text(
-                                      'Cancelled',
-                                      style: GoogleFonts.inter(
-                                        fontSize: 13,
-                                        fontWeight: isCancelled
-                                            ? FontWeight.w700
-                                            : FontWeight.w500,
+                            Expanded(
+                              child: InkWell(
+                                onTap: () {
+                                  setSheetState(() {
+                                    isCancelled = true;
+                                    formKey.currentState?.reset();
+                                  });
+                                },
+                                borderRadius: BorderRadius.circular(10),
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: isCancelled
+                                        ? Colors.white
+                                        : Colors.transparent,
+                                    borderRadius: BorderRadius.circular(10),
+                                    boxShadow: isCancelled
+                                        ? const [
+                                            BoxShadow(
+                                              color: Color(0x0D000000),
+                                              blurRadius: 4,
+                                              offset: Offset(0, 1),
+                                            ),
+                                          ]
+                                        : null,
+                                  ),
+                                  alignment: Alignment.center,
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        Icons.cancel_rounded,
+                                        size: 16,
                                         color: isCancelled
-                                            ? const Color(0xFF0F172A)
-                                            : const Color(0xFF64748B),
+                                            ? const Color(0xFFDC2626)
+                                            : const Color(0xFF94A3B8),
                                       ),
-                                    ),
-                                  ],
+                                      const Gap(6),
+                                      Text(
+                                        'Cancelled',
+                                        style: GoogleFonts.inter(
+                                          fontSize: 13,
+                                          fontWeight: isCancelled
+                                              ? FontWeight.w700
+                                              : FontWeight.w500,
+                                          color: isCancelled
+                                              ? const Color(0xFF0F172A)
+                                              : const Color(0xFF64748B),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
-                    const Gap(14),
+                      const Gap(14),
 
-                    // Inputs matching Log Visit Figma styling with Native Form Validation
-                    if (!isCancelled) ...[
-                      TextFormField(
-                        key: const ValueKey('completed_persons_met'),
-                        controller: metCtrl,
-                        textAlignVertical: TextAlignVertical.center,
-                        validator: (v) {
-                          if (isCancelled) return null;
-                          if (v == null || v.trim().isEmpty) {
-                            return 'Please enter persons met';
-                          }
-                          return null;
-                        },
-                        style: GoogleFonts.inter(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w400,
-                          color: const Color(0xFF0F172A),
-                        ),
-                        decoration: InputDecoration(
-                          hintText: 'Persons met (HOD / Faculty) *',
-                          hintStyle: GoogleFonts.inter(
-                            color: const Color(0xFF94A3B8),
+                      // Inputs matching Log Visit Figma styling with Native Form Validation
+                      if (!isCancelled) ...[
+                        TextFormField(
+                          key: const ValueKey('completed_persons_met'),
+                          controller: metCtrl,
+                          textAlignVertical: TextAlignVertical.center,
+                          validator: (v) {
+                            if (isCancelled) return null;
+                            if (v == null || v.trim().isEmpty) {
+                              return 'Please enter persons met';
+                            }
+                            return null;
+                          },
+                          style: GoogleFonts.inter(
                             fontSize: 13,
+                            fontWeight: FontWeight.w400,
+                            color: const Color(0xFF0F172A),
                           ),
-                          filled: true,
-                          fillColor: const Color(0xFFF8FAFC),
-                          prefixIcon: const Icon(
-                            Icons.people_outline_rounded,
-                            size: 19,
-                            color: Color(0xFF64748B),
-                          ),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(
-                              color: Color(0xFFE2E8F0),
-                              width: 1,
+                          decoration: InputDecoration(
+                            hintText: 'Persons met (HOD / Faculty) *',
+                            hintStyle: GoogleFonts.inter(
+                              color: const Color(0xFF94A3B8),
+                              fontSize: 13,
                             ),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(
-                              color: Color(0xFFE2E8F0),
-                              width: 1,
+                            filled: true,
+                            fillColor: const Color(0xFFF8FAFC),
+                            prefixIcon: const Icon(
+                              Icons.people_outline_rounded,
+                              size: 19,
+                              color: Color(0xFF64748B),
                             ),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(
-                              color: Color(0xFFD45107),
-                              width: 1.5,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(
+                                color: Color(0xFFE2E8F0),
+                                width: 1,
+                              ),
                             ),
-                          ),
-                          errorBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(
-                              color: Color(0xFFEF4444),
-                              width: 1,
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(
+                                color: Color(0xFFE2E8F0),
+                                width: 1,
+                              ),
                             ),
-                          ),
-                          focusedErrorBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(
-                              color: Color(0xFFEF4444),
-                              width: 1.5,
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(
+                                color: Color(0xFFD45107),
+                                width: 1.5,
+                              ),
                             ),
-                          ),
-                          errorStyle: GoogleFonts.inter(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w500,
-                            color: const Color(0xFFEF4444),
-                          ),
-                          isDense: true,
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 16,
+                            errorBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(
+                                color: Color(0xFFEF4444),
+                                width: 1,
+                              ),
+                            ),
+                            focusedErrorBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(
+                                color: Color(0xFFEF4444),
+                                width: 1.5,
+                              ),
+                            ),
+                            errorStyle: GoogleFonts.inter(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w500,
+                              color: const Color(0xFFEF4444),
+                            ),
+                            isDense: true,
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 16,
+                            ),
                           ),
                         ),
-                      ),
-                      const Gap(14),
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Expanded(
-                            child: TextFormField(
-                              key: const ValueKey('completed_leads_collected'),
-                              controller: leadsCtrl,
-                              keyboardType: TextInputType.number,
-                              textAlignVertical: TextAlignVertical.center,
-                              validator: (v) {
-                                if (isCancelled) return null;
-                                if (v == null || v.trim().isEmpty) {
-                                  return 'Enter count';
-                                }
-                                final n = int.tryParse(v.trim());
-                                if (n == null || n < 0) {
-                                  return 'Invalid count';
-                                }
-                                return null;
-                              },
-                              style: GoogleFonts.inter(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w400,
-                                color: const Color(0xFF0F172A),
-                              ),
-                              decoration: InputDecoration(
-                                hintText: 'Leads collected *',
-                                hintStyle: GoogleFonts.inter(
-                                  color: const Color(0xFF94A3B8),
+                        const Gap(14),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              child: TextFormField(
+                                key: const ValueKey(
+                                  'completed_leads_collected',
+                                ),
+                                controller: leadsCtrl,
+                                keyboardType: TextInputType.number,
+                                textAlignVertical: TextAlignVertical.center,
+                                validator: (v) {
+                                  if (isCancelled) return null;
+                                  if (v == null || v.trim().isEmpty) {
+                                    return 'Enter count';
+                                  }
+                                  final n = int.tryParse(v.trim());
+                                  if (n == null || n < 0) {
+                                    return 'Invalid count';
+                                  }
+                                  return null;
+                                },
+                                style: GoogleFonts.inter(
                                   fontSize: 13,
+                                  fontWeight: FontWeight.w400,
+                                  color: const Color(0xFF0F172A),
                                 ),
-                                filled: true,
-                                fillColor: const Color(0xFFF8FAFC),
-                                prefixIcon: const Icon(
-                                  Icons.how_to_reg_outlined,
-                                  size: 19,
-                                  color: Color(0xFF64748B),
-                                ),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide: const BorderSide(
-                                    color: Color(0xFFE2E8F0),
-                                    width: 1,
+                                decoration: InputDecoration(
+                                  hintText: 'Leads collected *',
+                                  hintStyle: GoogleFonts.inter(
+                                    color: const Color(0xFF94A3B8),
+                                    fontSize: 13,
                                   ),
-                                ),
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide: const BorderSide(
-                                    color: Color(0xFFE2E8F0),
-                                    width: 1,
+                                  filled: true,
+                                  fillColor: const Color(0xFFF8FAFC),
+                                  prefixIcon: const Icon(
+                                    Icons.how_to_reg_outlined,
+                                    size: 19,
+                                    color: Color(0xFF64748B),
                                   ),
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide: const BorderSide(
-                                    color: Color(0xFFD45107),
-                                    width: 1.5,
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: const BorderSide(
+                                      color: Color(0xFFE2E8F0),
+                                      width: 1,
+                                    ),
                                   ),
-                                ),
-                                errorBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide: const BorderSide(
-                                    color: Color(0xFFEF4444),
-                                    width: 1,
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: const BorderSide(
+                                      color: Color(0xFFE2E8F0),
+                                      width: 1,
+                                    ),
                                   ),
-                                ),
-                                focusedErrorBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide: const BorderSide(
-                                    color: Color(0xFFEF4444),
-                                    width: 1.5,
+                                  focusedBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: const BorderSide(
+                                      color: Color(0xFFD45107),
+                                      width: 1.5,
+                                    ),
                                   ),
-                                ),
-                                errorStyle: GoogleFonts.inter(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w500,
-                                  color: const Color(0xFFEF4444),
-                                ),
-                                isDense: true,
-                                contentPadding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                  vertical: 16,
+                                  errorBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: const BorderSide(
+                                      color: Color(0xFFEF4444),
+                                      width: 1,
+                                    ),
+                                  ),
+                                  focusedErrorBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: const BorderSide(
+                                      color: Color(0xFFEF4444),
+                                      width: 1.5,
+                                    ),
+                                  ),
+                                  errorStyle: GoogleFonts.inter(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w500,
+                                    color: const Color(0xFFEF4444),
+                                  ),
+                                  isDense: true,
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 16,
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                          const Gap(10),
-                          Expanded(
-                            child: TextFormField(
-                              key: const ValueKey('completed_interested_count'),
-                              controller: interestedCtrl,
-                              keyboardType: TextInputType.number,
-                              textAlignVertical: TextAlignVertical.center,
-                              validator: (v) {
-                                if (isCancelled) return null;
-                                if (v == null || v.trim().isEmpty) {
-                                  return 'Enter count';
-                                }
-                                final n = int.tryParse(v.trim());
-                                if (n == null || n < 0) {
-                                  return 'Invalid count';
-                                }
-                                return null;
-                              },
-                              style: GoogleFonts.inter(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w400,
-                                color: const Color(0xFF0F172A),
-                              ),
-                              decoration: InputDecoration(
-                                hintText: 'Interested *',
-                                hintStyle: GoogleFonts.inter(
-                                  color: const Color(0xFF94A3B8),
+                            const Gap(10),
+                            Expanded(
+                              child: TextFormField(
+                                key: const ValueKey(
+                                  'completed_interested_count',
+                                ),
+                                controller: interestedCtrl,
+                                keyboardType: TextInputType.number,
+                                textAlignVertical: TextAlignVertical.center,
+                                validator: (v) {
+                                  if (isCancelled) return null;
+                                  if (v == null || v.trim().isEmpty) {
+                                    return 'Enter count';
+                                  }
+                                  final n = int.tryParse(v.trim());
+                                  if (n == null || n < 0) {
+                                    return 'Invalid count';
+                                  }
+                                  return null;
+                                },
+                                style: GoogleFonts.inter(
                                   fontSize: 13,
+                                  fontWeight: FontWeight.w400,
+                                  color: const Color(0xFF0F172A),
                                 ),
-                                filled: true,
-                                fillColor: const Color(0xFFF8FAFC),
-                                prefixIcon: const Icon(
-                                  Icons.thumb_up_alt_outlined,
-                                  size: 19,
-                                  color: Color(0xFF64748B),
-                                ),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide: const BorderSide(
-                                    color: Color(0xFFE2E8F0),
-                                    width: 1,
+                                decoration: InputDecoration(
+                                  hintText: 'Interested *',
+                                  hintStyle: GoogleFonts.inter(
+                                    color: const Color(0xFF94A3B8),
+                                    fontSize: 13,
                                   ),
-                                ),
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide: const BorderSide(
-                                    color: Color(0xFFE2E8F0),
-                                    width: 1,
+                                  filled: true,
+                                  fillColor: const Color(0xFFF8FAFC),
+                                  prefixIcon: const Icon(
+                                    Icons.thumb_up_alt_outlined,
+                                    size: 19,
+                                    color: Color(0xFF64748B),
                                   ),
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide: const BorderSide(
-                                    color: Color(0xFFD45107),
-                                    width: 1.5,
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: const BorderSide(
+                                      color: Color(0xFFE2E8F0),
+                                      width: 1,
+                                    ),
                                   ),
-                                ),
-                                errorBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide: const BorderSide(
-                                    color: Color(0xFFEF4444),
-                                    width: 1,
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: const BorderSide(
+                                      color: Color(0xFFE2E8F0),
+                                      width: 1,
+                                    ),
                                   ),
-                                ),
-                                focusedErrorBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide: const BorderSide(
-                                    color: Color(0xFFEF4444),
-                                    width: 1.5,
+                                  focusedBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: const BorderSide(
+                                      color: Color(0xFFD45107),
+                                      width: 1.5,
+                                    ),
                                   ),
-                                ),
-                                errorStyle: GoogleFonts.inter(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w500,
-                                  color: const Color(0xFFEF4444),
-                                ),
-                                isDense: true,
-                                contentPadding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                  vertical: 16,
+                                  errorBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: const BorderSide(
+                                      color: Color(0xFFEF4444),
+                                      width: 1,
+                                    ),
+                                  ),
+                                  focusedErrorBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: const BorderSide(
+                                      color: Color(0xFFEF4444),
+                                      width: 1.5,
+                                    ),
+                                  ),
+                                  errorStyle: GoogleFonts.inter(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w500,
+                                    color: const Color(0xFFEF4444),
+                                  ),
+                                  isDense: true,
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 16,
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                        ],
-                      ),
-                      const Gap(14),
-                      TextFormField(
-                        key: const ValueKey('completed_next_action'),
-                        controller: nextCtrl,
-                        textAlignVertical: TextAlignVertical.center,
-                        validator: (v) {
-                          if (isCancelled) return null;
-                          if (v == null || v.trim().isEmpty) {
-                            return 'Please enter next action & follow-up';
-                          }
-                          return null;
-                        },
-                        style: GoogleFonts.inter(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w400,
-                          color: const Color(0xFF0F172A),
+                          ],
                         ),
-                        decoration: InputDecoration(
-                          hintText: 'Next action & follow-up *',
-                          hintStyle: GoogleFonts.inter(
-                            color: const Color(0xFF94A3B8),
+                        const Gap(14),
+                        TextFormField(
+                          key: const ValueKey('completed_next_action'),
+                          controller: nextCtrl,
+                          textAlignVertical: TextAlignVertical.center,
+                          validator: (v) {
+                            if (isCancelled) return null;
+                            if (v == null || v.trim().isEmpty) {
+                              return 'Please enter next action & follow-up';
+                            }
+                            return null;
+                          },
+                          style: GoogleFonts.inter(
                             fontSize: 13,
+                            fontWeight: FontWeight.w400,
+                            color: const Color(0xFF0F172A),
                           ),
-                          filled: true,
-                          fillColor: const Color(0xFFF8FAFC),
-                          prefixIcon: const Icon(
-                            Icons.event_note_outlined,
-                            size: 19,
-                            color: Color(0xFF64748B),
-                          ),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(
-                              color: Color(0xFFE2E8F0),
-                              width: 1,
+                          decoration: InputDecoration(
+                            hintText: 'Next action & follow-up *',
+                            hintStyle: GoogleFonts.inter(
+                              color: const Color(0xFF94A3B8),
+                              fontSize: 13,
                             ),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(
-                              color: Color(0xFFE2E8F0),
-                              width: 1,
+                            filled: true,
+                            fillColor: const Color(0xFFF8FAFC),
+                            prefixIcon: const Icon(
+                              Icons.event_note_outlined,
+                              size: 19,
+                              color: Color(0xFF64748B),
                             ),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(
-                              color: Color(0xFFD45107),
-                              width: 1.5,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(
+                                color: Color(0xFFE2E8F0),
+                                width: 1,
+                              ),
                             ),
-                          ),
-                          errorBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(
-                              color: Color(0xFFEF4444),
-                              width: 1,
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(
+                                color: Color(0xFFE2E8F0),
+                                width: 1,
+                              ),
                             ),
-                          ),
-                          focusedErrorBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(
-                              color: Color(0xFFEF4444),
-                              width: 1.5,
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(
+                                color: Color(0xFFD45107),
+                                width: 1.5,
+                              ),
                             ),
-                          ),
-                          errorStyle: GoogleFonts.inter(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w500,
-                            color: const Color(0xFFEF4444),
-                          ),
-                          isDense: true,
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 16,
+                            errorBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(
+                                color: Color(0xFFEF4444),
+                                width: 1,
+                              ),
+                            ),
+                            focusedErrorBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(
+                                color: Color(0xFFEF4444),
+                                width: 1.5,
+                              ),
+                            ),
+                            errorStyle: GoogleFonts.inter(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w500,
+                              color: const Color(0xFFEF4444),
+                            ),
+                            isDense: true,
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 16,
+                            ),
                           ),
                         ),
-                      ),
-                    ] else ...[
-                      TextFormField(
-                        key: const ValueKey('cancelled_reason_notes'),
-                        controller: cancelReasonCtrl,
-                        textAlignVertical: TextAlignVertical.center,
-                        validator: (v) {
-                          if (!isCancelled) return null;
-                          if (v == null || v.trim().isEmpty) {
-                            return 'Please enter cancellation reason & notes';
-                          }
-                          return null;
-                        },
-                        style: GoogleFonts.inter(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w400,
-                          color: const Color(0xFF0F172A),
-                        ),
-                        decoration: InputDecoration(
-                          hintText: 'Cancellation reason & notes *',
-                          hintStyle: GoogleFonts.inter(
-                            color: const Color(0xFF94A3B8),
+                      ] else ...[
+                        TextFormField(
+                          key: const ValueKey('cancelled_reason_notes'),
+                          controller: cancelReasonCtrl,
+                          textAlignVertical: TextAlignVertical.center,
+                          validator: (v) {
+                            if (!isCancelled) return null;
+                            if (v == null || v.trim().isEmpty) {
+                              return 'Please enter cancellation reason & notes';
+                            }
+                            return null;
+                          },
+                          style: GoogleFonts.inter(
                             fontSize: 13,
+                            fontWeight: FontWeight.w400,
+                            color: const Color(0xFF0F172A),
                           ),
-                          filled: true,
-                          fillColor: const Color(0xFFF8FAFC),
-                          prefixIcon: const Icon(
-                            Icons.report_problem_outlined,
-                            size: 19,
-                            color: Color(0xFF64748B),
-                          ),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(
-                              color: Color(0xFFE2E8F0),
-                              width: 1,
+                          decoration: InputDecoration(
+                            hintText: 'Cancellation reason & notes *',
+                            hintStyle: GoogleFonts.inter(
+                              color: const Color(0xFF94A3B8),
+                              fontSize: 13,
+                            ),
+                            filled: true,
+                            fillColor: const Color(0xFFF8FAFC),
+                            prefixIcon: const Icon(
+                              Icons.report_problem_outlined,
+                              size: 19,
+                              color: Color(0xFF64748B),
+                            ),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(
+                                color: Color(0xFFE2E8F0),
+                                width: 1,
+                              ),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(
+                                color: Color(0xFFE2E8F0),
+                                width: 1,
+                              ),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(
+                                color: Color(0xFFD45107),
+                                width: 1.5,
+                              ),
+                            ),
+                            errorBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(
+                                color: Color(0xFFEF4444),
+                                width: 1,
+                              ),
+                            ),
+                            focusedErrorBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(
+                                color: Color(0xFFEF4444),
+                                width: 1.5,
+                              ),
+                            ),
+                            errorStyle: GoogleFonts.inter(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w500,
+                              color: const Color(0xFFEF4444),
+                            ),
+                            isDense: true,
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 16,
                             ),
                           ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(
-                              color: Color(0xFFE2E8F0),
-                              width: 1,
+                        ),
+                      ],
+                      const Gap(20),
+
+                      // Primary Action Button (Same as Log Visit)
+                      SizedBox(
+                        width: double.infinity,
+                        height: 48,
+                        child: ElevatedButton(
+                          onPressed: () {
+                            if (!formKey.currentState!.validate()) return;
+                            if (isCancelled) {
+                              cubit.cancelCollegeVisit(
+                                visitId: visit.id,
+                                reason: cancelReasonCtrl.text.trim().isNotEmpty
+                                    ? cancelReasonCtrl.text.trim()
+                                    : metCtrl.text.trim(),
+                              );
+                            } else {
+                              cubit.recordVisitOutcome(
+                                visitId: visit.id,
+                                metPeople: metCtrl.text.trim(),
+                                nextAction: nextCtrl.text.trim(),
+                                leadsCollected:
+                                    int.tryParse(leadsCtrl.text.trim()) ?? 0,
+                                interestedCount:
+                                    int.tryParse(interestedCtrl.text.trim()) ??
+                                    0,
+                              );
+                            }
+                            Navigator.pop(ctx);
+                            if (context.mounted) {
+                              SnackBarAlert.showToast(
+                                context: context,
+                                message: isCancelled
+                                    ? 'Visit marked as cancelled'
+                                    : 'Visit outcome saved for ${visit.collegeName}',
+                              );
+                            }
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFFD45107),
+                            foregroundColor: Colors.white,
+                            elevation: 0,
+                            padding: const EdgeInsets.only(
+                              top: 14.5,
+                              bottom: 15.5,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
                             ),
                           ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(
-                              color: Color(0xFFD45107),
-                              width: 1.5,
+                          child: Text(
+                            isCancelled
+                                ? 'Save as Cancelled'
+                                : 'Save Visit Outcome',
+                            style: GoogleFonts.inter(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white,
                             ),
-                          ),
-                          errorBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(
-                              color: Color(0xFFEF4444),
-                              width: 1,
-                            ),
-                          ),
-                          focusedErrorBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(
-                              color: Color(0xFFEF4444),
-                              width: 1.5,
-                            ),
-                          ),
-                          errorStyle: GoogleFonts.inter(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w500,
-                            color: const Color(0xFFEF4444),
-                          ),
-                          isDense: true,
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 16,
                           ),
                         ),
                       ),
                     ],
-                    const Gap(20),
-
-                    // Primary Action Button (Same as Log Visit)
-                    SizedBox(
-                      width: double.infinity,
-                      height: 48,
-                      child: ElevatedButton(
-                        onPressed: () {
-                          if (!formKey.currentState!.validate()) return;
-                          if (isCancelled) {
-                            cubit.cancelCollegeVisit(
-                              visitId: visit.id,
-                              reason: cancelReasonCtrl.text.trim().isNotEmpty
-                                  ? cancelReasonCtrl.text.trim()
-                                  : metCtrl.text.trim(),
-                            );
-                          } else {
-                            cubit.recordVisitOutcome(
-                              visitId: visit.id,
-                              metPeople: metCtrl.text.trim(),
-                              nextAction: nextCtrl.text.trim(),
-                              leadsCollected:
-                                  int.tryParse(leadsCtrl.text.trim()) ?? 0,
-                              interestedCount:
-                                  int.tryParse(interestedCtrl.text.trim()) ?? 0,
-                            );
-                          }
-                          Navigator.pop(ctx);
-                          if (context.mounted) {
-                            SnackBarAlert.showToast(
-                              context: context,
-                              message: isCancelled
-                                  ? 'Visit marked as cancelled'
-                                  : 'Visit outcome saved for ${visit.collegeName}',
-                            );
-                          }
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFD45107),
-                          foregroundColor: Colors.white,
-                          elevation: 0,
-                          padding: const EdgeInsets.only(
-                            top: 14.5,
-                            bottom: 15.5,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                        ),
-                        child: Text(
-                          isCancelled
-                              ? 'Save as Cancelled'
-                              : 'Save Visit Outcome',
-                          style: GoogleFonts.inter(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
               ),
             ),
           ),
         ),
       ),
-    ),
-  );
-}
+    );
+  }
 
   void _showLogVisitModal(BuildContext context) {
     final cubit = context.read<VisitsCubit>();
@@ -1986,7 +2005,9 @@ class _VisitsTabViewState extends State<VisitsTabView> {
                             CollegeSelectorField.saveCollegeIfNew(
                               collegeCtrl.text.trim(),
                             );
-                            final dayNum = DateFormat('dd').format(selectedDate);
+                            final dayNum = DateFormat(
+                              'dd',
+                            ).format(selectedDate);
                             final month = DateFormat(
                               'MMM',
                             ).format(selectedDate).toUpperCase();
@@ -2059,8 +2080,18 @@ class _UpcomingVisitCard extends StatelessWidget {
     try {
       final now = DateTime.now();
       const months = [
-        'jan', 'feb', 'mar', 'apr', 'may', 'jun',
-        'jul', 'aug', 'sep', 'oct', 'nov', 'dec'
+        'jan',
+        'feb',
+        'mar',
+        'apr',
+        'may',
+        'jun',
+        'jul',
+        'aug',
+        'sep',
+        'oct',
+        'nov',
+        'dec',
       ];
       final mIdx = months.indexOf(month.toLowerCase().trim());
       if (mIdx != -1) {
@@ -2085,7 +2116,8 @@ class _UpcomingVisitCard extends StatelessWidget {
                     .join()
               : 'AT');
 
-    final month = (visit.monthShort.isNotEmpty ? visit.monthShort : 'NOV').toUpperCase();
+    final month = (visit.monthShort.isNotEmpty ? visit.monthShort : 'NOV')
+        .toUpperCase();
     final day = visit.dayNumber.isNotEmpty ? visit.dayNumber : '11';
     final weekday = _resolveWeekday(visit.monthShort, visit.dayNumber);
 
@@ -2137,7 +2169,10 @@ class _UpcomingVisitCard extends StatelessWidget {
                   color: const Color(0xFFECF1FE),
                   borderRadius: BorderRadius.circular(16),
                 ),
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 8,
+                  vertical: 10,
+                ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.center,
@@ -2298,10 +2333,7 @@ class _UpcomingVisitCard extends StatelessWidget {
             padding: const EdgeInsets.only(top: 13),
             decoration: const BoxDecoration(
               border: Border(
-                top: BorderSide(
-                  color: Color(0xFFF8FAFC),
-                  width: 1,
-                ),
+                top: BorderSide(color: Color(0xFFF8FAFC), width: 1),
               ),
             ),
             child: LayoutBuilder(
@@ -2505,8 +2537,18 @@ class _RecentVisitCard extends StatelessWidget {
     try {
       final now = DateTime.now();
       const months = [
-        'jan', 'feb', 'mar', 'apr', 'may', 'jun',
-        'jul', 'aug', 'sep', 'oct', 'nov', 'dec'
+        'jan',
+        'feb',
+        'mar',
+        'apr',
+        'may',
+        'jun',
+        'jul',
+        'aug',
+        'sep',
+        'oct',
+        'nov',
+        'dec',
       ];
       final mIdx = months.indexOf(month.toLowerCase().trim());
       if (mIdx != -1) {
@@ -2560,7 +2602,8 @@ class _RecentVisitCard extends StatelessWidget {
             : (matchedInterested.isNotEmpty ? matchedInterested.length : 0);
 
         final isCancelled = visit.statusLabel.toLowerCase() == 'cancelled';
-        final month = (visit.monthShort.isNotEmpty ? visit.monthShort : 'NOV').toUpperCase();
+        final month = (visit.monthShort.isNotEmpty ? visit.monthShort : 'NOV')
+            .toUpperCase();
         final day = visit.dayNumber.isNotEmpty
             ? (visit.dayNumber.length == 1
                   ? '0${visit.dayNumber}'
@@ -2619,7 +2662,10 @@ class _RecentVisitCard extends StatelessWidget {
                       color: const Color(0xFFE3F4E8),
                       borderRadius: BorderRadius.circular(16),
                     ),
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 10,
+                    ),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.center,
@@ -2700,7 +2746,7 @@ class _RecentVisitCard extends StatelessWidget {
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
                                         SvgPicture.asset(
-                                          'assets/svgs/visit_completed_check.svg',
+                                          'assets/svgs/completed.svg',
                                           width: 12,
                                           height: 12,
                                         ),
@@ -2709,8 +2755,8 @@ class _RecentVisitCard extends StatelessWidget {
                                           visit.statusLabel.isNotEmpty
                                               ? visit.statusLabel
                                               : (isCancelled
-                                                  ? 'Cancelled'
-                                                  : 'Completed'),
+                                                    ? 'Cancelled'
+                                                    : 'Completed'),
                                           style: GoogleFonts.inter(
                                             fontSize: 11,
                                             fontWeight: FontWeight.w700,
@@ -2989,8 +3035,18 @@ class _CancelledVisitCard extends StatelessWidget {
     try {
       final now = DateTime.now();
       const months = [
-        'jan', 'feb', 'mar', 'apr', 'may', 'jun',
-        'jul', 'aug', 'sep', 'oct', 'nov', 'dec'
+        'jan',
+        'feb',
+        'mar',
+        'apr',
+        'may',
+        'jun',
+        'jul',
+        'aug',
+        'sep',
+        'oct',
+        'nov',
+        'dec',
       ];
       final mIdx = months.indexOf(month.toLowerCase().trim());
       if (mIdx != -1) {
@@ -3004,21 +3060,26 @@ class _CancelledVisitCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final month = (visit.monthShort.isNotEmpty ? visit.monthShort : 'OCT').toUpperCase();
+    final month = (visit.monthShort.isNotEmpty ? visit.monthShort : 'OCT')
+        .toUpperCase();
     final day = visit.dayNumber.isNotEmpty
-        ? (visit.dayNumber.length == 1 ? '0${visit.dayNumber}' : visit.dayNumber)
+        ? (visit.dayNumber.length == 1
+              ? '0${visit.dayNumber}'
+              : visit.dayNumber)
         : '28';
     final weekday = _resolveWeekday(visit.monthShort, visit.dayNumber);
 
     final collegeName = visit.collegeName.isNotEmpty
         ? visit.collegeName
         : "St. Joseph's Engineering College";
-    final location = visit.subtitle.isNotEmpty ? visit.subtitle : 'Kochi, Kerala';
+    final location = visit.subtitle.isNotEmpty
+        ? visit.subtitle
+        : 'Kochi, Kerala';
     final reason = visit.cancelReason.isNotEmpty
         ? visit.cancelReason
         : (visit.metSummary.isNotEmpty
-            ? visit.metSummary
-            : 'Postponed due to internal exams.');
+              ? visit.metSummary
+              : 'Postponed due to internal exams.');
 
     return Container(
       width: double.infinity,
@@ -3057,7 +3118,10 @@ class _CancelledVisitCard extends StatelessWidget {
                   color: const Color(0x99FFDAD6), // rgba(255, 218, 214, 0.6)
                   borderRadius: BorderRadius.circular(16),
                 ),
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 8,
+                  vertical: 10,
+                ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.center,
@@ -3131,7 +3195,10 @@ class _CancelledVisitCard extends StatelessWidget {
                                 onTap: onDelete,
                                 borderRadius: BorderRadius.circular(4),
                                 child: Padding(
-                                  padding: const EdgeInsets.only(bottom: 6, left: 4),
+                                  padding: const EdgeInsets.only(
+                                    bottom: 6,
+                                    left: 4,
+                                  ),
                                   child: SvgPicture.asset(
                                     'assets/svgs/visit_cancel_delete.svg',
                                     width: 10.5,
@@ -3333,7 +3400,9 @@ class _VisitTabItem extends StatelessWidget {
                     '$count',
                     style: GoogleFonts.inter(
                       fontSize: 10,
-                      fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+                      fontWeight: isSelected
+                          ? FontWeight.w700
+                          : FontWeight.w600,
                       color: isSelected
                           ? const Color(0xFFD45107)
                           : const Color(0xFF64748B),
