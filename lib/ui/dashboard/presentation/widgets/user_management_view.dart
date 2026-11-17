@@ -1893,144 +1893,193 @@ class _UserManagementViewState extends State<UserManagementView> {
             ),
             const Gap(24),
 
-            // Search & Filter Toolbar (Figma Node 1364:2891)
-            LayoutBuilder(
-              builder: (context, c) {
-                final isNarrow = c.maxWidth < 768;
-                final searchField = Container(
-                  height: 46,
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: const Color(0xFFE2E8F0)),
-                  ),
-                  child: TextField(
-                    textAlignVertical: TextAlignVertical.center,
-                    onChanged: (v) => setState(() => _searchQuery = v),
-                    style: GoogleFonts.inter(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w400,
-                      color: const Color(0xFF0F172A),
-                      height: 20 / 14,
-                    ),
-                    decoration: InputDecoration(
-                      hintText: 'Search by name, email, or UID...',
-                      hintStyle: GoogleFonts.inter(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w400,
-                        color: const Color(0xFF9CA3AF),
-                        height: 20 / 14,
-                      ),
-                      prefixIcon: const Icon(
-                        Icons.search,
-                        size: 16,
-                        color: Color(0xFF9CA3AF),
-                      ),
-                      prefixIconConstraints: const BoxConstraints(
-                        minWidth: 42,
-                        minHeight: 46,
-                      ),
-                      suffixIcon: _searchQuery.isNotEmpty
-                          ? IconButton(
-                              icon: const Icon(Icons.clear, size: 16),
-                              onPressed: () =>
-                                  setState(() => _searchQuery = ''),
-                            )
-                          : null,
-                      suffixIconConstraints: const BoxConstraints(
-                        minWidth: 42,
-                        minHeight: 46,
-                      ),
-                      border: InputBorder.none,
-                      enabledBorder: InputBorder.none,
-                      focusedBorder: InputBorder.none,
-                      isDense: true,
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 14,
-                      ),
-                    ),
-                  ),
-                );
+            // Search & Filter Box (Figma Node 1364:2891)
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.only(top: 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Row 1: Search & Filter Toolbar (Figma Node 1364:2892)
+                  LayoutBuilder(
+                    builder: (context, c) {
+                      final isDesktop = c.maxWidth >= 840;
+                      final isTablet = c.maxWidth >= 540 && c.maxWidth < 840;
 
-                if (isNarrow) {
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      searchField,
-                      const Gap(12),
-                      c.maxWidth < 320
-                          ? Column(
-                              children: [
-                                _buildRoleFilterDropdown(),
-                                const Gap(10),
-                                _buildStatusFilterDropdown(),
-                              ],
-                            )
-                          : Row(
+                      final searchField = Container(
+                        height: 46,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: const Color(0xFFE2E8F0),
+                            width: 1,
+                          ),
+                        ),
+                        child: TextField(
+                          textAlignVertical: TextAlignVertical.center,
+                          onChanged: (v) => setState(() => _searchQuery = v),
+                          style: GoogleFonts.inter(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w400,
+                            color: const Color(0xFF0F172A),
+                            height: 20 / 14,
+                          ),
+                          decoration: InputDecoration(
+                            hintText: 'Search by name, email, or UID...',
+                            hintStyle: GoogleFonts.inter(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w400,
+                              color: const Color(0xFF9CA3AF),
+                              height: 20 / 14,
+                            ),
+                            prefixIcon: const Padding(
+                              padding: EdgeInsets.only(left: 16, right: 12),
+                              child: Icon(
+                                Icons.search,
+                                size: 16,
+                                color: Color(0xFF9CA3AF),
+                              ),
+                            ),
+                            prefixIconConstraints: const BoxConstraints(
+                              minWidth: 44,
+                              minHeight: 46,
+                            ),
+                            suffixIcon: _searchQuery.isNotEmpty
+                                ? IconButton(
+                                    icon: const Icon(
+                                      Icons.clear,
+                                      size: 16,
+                                      color: Color(0xFF9CA3AF),
+                                    ),
+                                    onPressed: () =>
+                                        setState(() => _searchQuery = ''),
+                                  )
+                                : null,
+                            suffixIconConstraints: const BoxConstraints(
+                              minWidth: 42,
+                              minHeight: 46,
+                            ),
+                            border: InputBorder.none,
+                            enabledBorder: InputBorder.none,
+                            focusedBorder: InputBorder.none,
+                            isDense: true,
+                            contentPadding: const EdgeInsets.only(
+                              right: 16,
+                              top: 2,
+                            ),
+                          ),
+                        ),
+                      );
+
+                      if (isDesktop) {
+                        return Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Expanded(child: searchField),
+                            const Gap(16),
+                            SizedBox(
+                              width: 200,
+                              child: _buildRoleFilterDropdown(),
+                            ),
+                            const Gap(16),
+                            SizedBox(
+                              width: 200,
+                              child: _buildStatusFilterDropdown(),
+                            ),
+                          ],
+                        );
+                      } else if (isTablet) {
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            searchField,
+                            const Gap(12),
+                            Row(
                               children: [
                                 Expanded(child: _buildRoleFilterDropdown()),
-                                const Gap(10),
+                                const Gap(12),
                                 Expanded(child: _buildStatusFilterDropdown()),
                               ],
                             ),
-                    ],
-                  );
-                }
-
-                return Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Expanded(child: searchField),
-                    const Gap(16),
-                    SizedBox(width: 200, child: _buildRoleFilterDropdown()),
-                    const Gap(16),
-                    SizedBox(width: 200, child: _buildStatusFilterDropdown()),
-                  ],
-                );
-              },
-            ),
-            const Gap(16),
-
-            // Summary Pill Counters (Figma Node 1364:2920)
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                _pillBadge(
-                  label: 'Total:',
-                  value: '${allUsers.length}',
-                  bg: const Color(0xFFEEF2FF),
-                  labelColor: const Color(0xFF4338CA),
-                  valueColor: const Color(0xFF312E81),
-                ),
-                _pillBadge(
-                  label: 'Active:',
-                  value: '$activeCount',
-                  bg: const Color(0xFFECFDF5),
-                  labelColor: const Color(0xFF047857),
-                  valueColor: const Color(0xFF064E3B),
-                ),
-                _pillBadge(
-                  label: 'Inactive:',
-                  value: '$inactiveCount',
-                  bg: const Color(0xFFFFF1F2),
-                  labelColor: const Color(0xFFBE123C),
-                  valueColor: const Color(0xFF881337),
-                ),
-                if (_searchQuery.isNotEmpty ||
-                    _roleFilter != 'all' ||
-                    _statusFilter != 'all')
-                  _pillBadge(
-                    label: 'Showing:',
-                    value: '${filteredUsers.length}',
-                    bg: const Color(0xFFFEF3C7),
-                    labelColor: const Color(0xFFB45309),
-                    valueColor: const Color(0xFF78350F),
+                          ],
+                        );
+                      } else {
+                        // Mobile
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            searchField,
+                            const Gap(10),
+                            c.maxWidth < 340
+                                ? Column(
+                                    children: [
+                                      _buildRoleFilterDropdown(),
+                                      const Gap(10),
+                                      _buildStatusFilterDropdown(),
+                                    ],
+                                  )
+                                : Row(
+                                    children: [
+                                      Expanded(
+                                        child: _buildRoleFilterDropdown(),
+                                      ),
+                                      const Gap(10),
+                                      Expanded(
+                                        child: _buildStatusFilterDropdown(),
+                                      ),
+                                    ],
+                                  ),
+                          ],
+                        );
+                      }
+                    },
                   ),
-              ],
+                  const Gap(24),
+
+                  // Row 2: Summary Pill Counters (Figma Node 1364:2920)
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      _pillBadge(
+                        label: 'Total:',
+                        value: '${allUsers.length}',
+                        bg: const Color(0xFFEEF2FF),
+                        labelColor: const Color(0xFF4338CA),
+                        valueColor: const Color(0xFF312E81),
+                      ),
+                      _pillBadge(
+                        label: 'Active:',
+                        value: '$activeCount',
+                        bg: const Color(0xFFECFDF5),
+                        labelColor: const Color(0xFF047857),
+                        valueColor: const Color(0xFF064E3B),
+                      ),
+                      _pillBadge(
+                        label: 'Inactive:',
+                        value: '$inactiveCount',
+                        bg: const Color(0xFFFFF1F2),
+                        labelColor: const Color(0xFFBE123C),
+                        valueColor: const Color(0xFF881337),
+                      ),
+                      if (_searchQuery.isNotEmpty ||
+                          _roleFilter != 'all' ||
+                          _statusFilter != 'all')
+                        _pillBadge(
+                          label: 'Showing:',
+                          value: '${filteredUsers.length}',
+                          bg: const Color(0xFFFEF3C7),
+                          labelColor: const Color(0xFFB45309),
+                          valueColor: const Color(0xFF78350F),
+                        ),
+                    ],
+                  ),
+                ],
+              ),
             ),
-            const Gap(24),
+            const Gap(32),
 
             // Team Directory Card (Figma Node 1364:2933)
             Container(
@@ -2202,11 +2251,98 @@ class _UserManagementViewState extends State<UserManagementView> {
     );
   }
 
+  Widget _buildFilterDropdown({
+    required String value,
+    required List<AcadenoDropdownItem<String>> items,
+    required ValueChanged<String?> onChanged,
+  }) {
+    return Container(
+      height: 46,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFE2E8F0), width: 1),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 14),
+      alignment: Alignment.center,
+      child: DropdownButtonHideUnderline(
+        child: Theme(
+          data: Theme.of(context).copyWith(
+            hoverColor: Colors.transparent,
+            focusColor: Colors.transparent,
+            splashColor: Colors.transparent,
+            highlightColor: Colors.transparent,
+          ),
+          child: DropdownButton<String>(
+            value: value,
+            focusColor: Colors.transparent,
+            isExpanded: true,
+            isDense: true,
+            dropdownColor: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            icon: const Icon(
+              Icons.keyboard_arrow_down_rounded,
+              size: 16,
+              color: Color(0xFF64748B),
+            ),
+            style: GoogleFonts.inter(
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+              color: const Color(0xFF334155),
+            ),
+            selectedItemBuilder: (BuildContext context) {
+              return items.map<Widget>((item) {
+                return Row(
+                  children: [
+                    if (item.icon != null) ...[
+                      IconTheme(
+                        data: const IconThemeData(
+                          color: Color(0xFF64748B),
+                          size: 14,
+                        ),
+                        child: item.icon!,
+                      ),
+                      const Gap(8),
+                    ],
+                    Expanded(
+                      child: Text(
+                        item.label,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.inter(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          color: const Color(0xFF334155),
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              }).toList();
+            },
+            items: items.map((item) {
+              final isSelected = item.value == value;
+              return DropdownMenuItem<String>(
+                value: item.value,
+                child: AcadenoDropdown.buildMenuItemChild(
+                  label: item.label,
+                  isSelected: isSelected,
+                  icon: item.icon,
+                  activeColor: const Color(0xFFEF8144),
+                  textColor: const Color(0xFF334155),
+                ),
+              );
+            }).toList(),
+            onChanged: onChanged,
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildRoleFilterDropdown() {
-    return AcadenoDropdown<String>(
+    return _buildFilterDropdown(
       value: _roleFilter,
-      borderRadius: 16.0,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
       items: const [
         AcadenoDropdownItem<String>(
           value: 'all',
@@ -2216,12 +2352,12 @@ class _UserManagementViewState extends State<UserManagementView> {
         AcadenoDropdownItem<String>(
           value: 'admin',
           label: 'Admin',
-          icon: Icon(Icons.work_outline_rounded, size: 14),
+          icon: Icon(Icons.shield_outlined, size: 14),
         ),
         AcadenoDropdownItem<String>(
           value: 'hr',
           label: 'HR & Operations',
-          icon: Icon(Icons.work_outline_rounded, size: 14),
+          icon: Icon(Icons.badge_outlined, size: 14),
         ),
       ],
       onChanged: (v) => setState(() => _roleFilter = v ?? 'all'),
@@ -2229,10 +2365,8 @@ class _UserManagementViewState extends State<UserManagementView> {
   }
 
   Widget _buildStatusFilterDropdown() {
-    return AcadenoDropdown<String>(
+    return _buildFilterDropdown(
       value: _statusFilter,
-      borderRadius: 16.0,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
       items: const [
         AcadenoDropdownItem<String>(
           value: 'all',
@@ -2262,6 +2396,7 @@ class _UserManagementViewState extends State<UserManagementView> {
     required Color valueColor,
   }) {
     return Container(
+      height: 24,
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
       decoration: BoxDecoration(
         color: bg,
@@ -2269,6 +2404,7 @@ class _UserManagementViewState extends State<UserManagementView> {
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Text(
             label,
@@ -2280,7 +2416,7 @@ class _UserManagementViewState extends State<UserManagementView> {
               height: 16 / 12,
             ),
           ),
-          const Gap(4),
+          const Gap(6),
           Text(
             value,
             style: GoogleFonts.inter(
