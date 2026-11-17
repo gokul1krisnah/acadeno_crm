@@ -51,6 +51,8 @@ class VisitsCubit extends Cubit<VisitsState> {
     required String monthShort,
     required String subtitle,
     required String purpose,
+    String sourceEvent = '',
+    String content = '',
     String assignedStaff = 'Assigned Team',
   }) async {
     try {
@@ -60,6 +62,8 @@ class VisitsCubit extends Cubit<VisitsState> {
         monthShort: monthShort,
         subtitle: subtitle,
         purpose: purpose,
+        sourceEvent: sourceEvent,
+        content: content,
         assignedStaff: assignedStaff,
       );
       if (!isClosed) {

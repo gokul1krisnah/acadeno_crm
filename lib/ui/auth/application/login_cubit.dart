@@ -144,7 +144,11 @@ class LoginCubit extends Cubit<LoginState> {
   /// Applies role-based access rules to an authenticated [user] and sets
   /// [isAdmin]. Returns a failure message if access is denied (the user is
   /// signed out and the persisted session cleared), or null if allowed.
-  Future<String?> _authorize(User user, {bool offline = false}) async {
+  Future<String?> _authorize(
+    User user, {
+    bool offline = false,
+    bool skipDeviceCheck = false,
+  }) async {
     // 1. If offline was detected, immediately trust cached Hive session without waiting
     if (offline) {
       final saved = _authRepository.savedSession;
@@ -167,34 +171,44 @@ class LoginCubit extends Cubit<LoginState> {
 
     DocumentSnapshot<Map<String, dynamic>>? doc;
     try {
-      doc = await FirestoreStreamCache.instance
-          .getDoc('users', user.uid)
-          .timeout(const Duration(milliseconds: 1200));
-    } catch (e) {
-      // Backend unreachable or timed out: trust cached session from Hive
-      final saved = _authRepository.savedSession;
-      if (saved != null && saved.uid == user.uid) {
-        final isOfflineAdmin =
-            saved.isAdmin ||
-            user.uid == _kAdminUid ||
-            _kAdminRoles.contains(saved.role?.toLowerCase());
-        if (isOfflineAdmin) {
+      doc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .get(const GetOptions(source: Source.server))
+          .timeout(const Duration(seconds: 4));
+    } catch (_) {
+      try {
+        doc = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid)
+            .get()
+            .timeout(const Duration(seconds: 4));
+      } catch (e) {
+        // Backend unreachable or timed out: trust cached session from Hive
+        final saved = _authRepository.savedSession;
+        if (saved != null && saved.uid == user.uid) {
+          final isOfflineAdmin =
+              saved.isAdmin ||
+              user.uid == _kAdminUid ||
+              _kAdminRoles.contains(saved.role?.toLowerCase());
+          if (isOfflineAdmin) {
+            isAdmin = true;
+            isAdminSession = true;
+            currentRole = saved.role ?? 'admin';
+          } else {
+            _resetRole();
+            currentRole = saved.role ?? 'executive';
+          }
+          return null;
+        }
+        if (user.uid == _kAdminUid) {
           isAdmin = true;
           isAdminSession = true;
-          currentRole = saved.role ?? 'admin';
-        } else {
-          _resetRole();
-          currentRole = saved.role ?? 'executive';
+          currentRole = 'admin';
+          return null;
         }
-        return null;
+        return 'Offline: unable to verify session';
       }
-      if (user.uid == _kAdminUid) {
-        isAdmin = true;
-        isAdminSession = true;
-        currentRole = 'admin';
-        return null;
-      }
-      return 'Offline: unable to verify session';
     }
 
     if (!doc.exists) {
@@ -230,14 +244,14 @@ class LoginCubit extends Cubit<LoginState> {
       currentRole = role;
 
       // Enforce single-phone hardware binding and integrity for Sales Executives
-      if (!offline) {
+      if (!offline && !skipDeviceCheck) {
         final deviceCheckResult =
             await DeviceSecurityService.verifyDeviceBinding(
               user: user,
               userData: data,
             );
         if (deviceCheckResult != null) {
-          await _authRepository.signOut();
+          await _authRepository.signOut(unbindDevice: false);
           _resetRole();
           return deviceCheckResult;
         }
@@ -252,6 +266,38 @@ class LoginCubit extends Cubit<LoginState> {
     );
 
     return null;
+  }
+
+  /// Forces unbinding of previous hardware device and activates current phone.
+  Future<void> unbindAndSignIn(LoginRequestModel request) async {
+    emit(const LoginState.loading());
+    try {
+      final result = await _authRepository.login(request);
+      final user = result.user;
+      if (user == null) {
+        emit(const LoginState.failure(message: 'Authentication failed.'));
+        return;
+      }
+
+      // Re-bind to this new phone directly
+      await DeviceSecurityService.forceBindCurrentDevice(user);
+
+      final error = await _authorize(user, skipDeviceCheck: true);
+      if (error != null) {
+        emit(LoginState.failure(message: error));
+      } else {
+        await _authRepository.saveSession(
+          user,
+          role: currentRole,
+          isAdmin: isAdmin,
+        );
+        emit(const LoginState.success());
+      }
+    } catch (e) {
+      emit(LoginState.failure(
+        message: e.toString().replaceFirst('Exception: ', ''),
+      ));
+    }
   }
 
   Future<void> register(LoginRequestModel request) async {

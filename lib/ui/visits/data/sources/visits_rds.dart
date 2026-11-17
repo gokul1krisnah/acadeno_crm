@@ -77,6 +77,10 @@ class VisitsRds {
           subtitle: (data['subtitle'] ?? '').toString(),
           statusLabel: status,
           purpose: (data['purpose'] ?? '').toString(),
+          sourceEvent:
+              (data['sourceEvent'] ?? data['source'] ?? '').toString(),
+          content:
+              (data['content'] ?? data['eventContent'] ?? '').toString(),
           staffInitials: staffInitials,
           staffNames: staffNames.isNotEmpty ? staffNames : 'Assigned Staff',
           leadsCollected: (data['leadsCollected'] as num?)?.toInt() ?? 0,
@@ -101,6 +105,8 @@ class VisitsRds {
     required String monthShort,
     required String subtitle,
     required String purpose,
+    String sourceEvent = '',
+    String content = '',
     String assignedStaff = '',
   }) async {
     final uid = _firebaseAuth.currentUser?.uid;
@@ -110,6 +116,8 @@ class VisitsRds {
       'monthShort': monthShort.trim().toUpperCase(),
       'subtitle': subtitle.trim(),
       'purpose': purpose.trim(),
+      'sourceEvent': sourceEvent.trim(),
+      'content': content.trim(),
       'status': 'Planned',
       'statusLabel': 'Planned',
       'assignedStaff': assignedStaff.trim(),

@@ -1,4 +1,5 @@
 import 'package:acadeno_crm/core/services/firestore_stream_cache.dart';
+import 'package:acadeno_crm/shared/widgets/acadeno_dropdown.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:gap/gap.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -19,6 +20,10 @@ class _CollegeVisit {
 
   final String purpose;
 
+  final String sourceEvent;
+
+  final String content;
+
   final String assignedStaff;
 
   String status;
@@ -31,21 +36,15 @@ class _CollegeVisit {
 
   _CollegeVisit({
     required this.id,
-
     required this.collegeName,
-
     required this.dateLabel,
-
     required this.purpose,
-
+    this.sourceEvent = '',
+    this.content = '',
     required this.assignedStaff,
-
     required this.status,
-
     required this.outcomeNotes,
-
     required this.leadsCollected,
-
     required this.conversions,
   });
 }
@@ -68,27 +67,33 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
     final dateCtrl = TextEditingController(
       text: DateFormat('dd MMM yyyy').format(DateTime.now()),
     );
-    final purposeCtrl = TextEditingController();
+    String selectedPurpose = 'Campus outreach & seminar';
+    final otherPurposeCtrl = TextEditingController();
+    String selectedSourceEvent = 'Direct Walk-in';
+    final otherSourceCtrl = TextEditingController();
+    String selectedContent = 'AI & Machine Learning Workshop';
+    final otherContentCtrl = TextEditingController();
     final staffCtrl = TextEditingController();
 
     showDialog(
       context: context,
-      builder: (ctx) => Dialog(
-        backgroundColor: Colors.white,
-        insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 420),
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
-            child: SingleChildScrollView(
-              child: Form(
-                key: formKey,
-                autovalidateMode: AutovalidateMode.onUserInteraction,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) => Dialog(
+          backgroundColor: Colors.white,
+          insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 420),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
+              child: SingleChildScrollView(
+                child: Form(
+                  key: formKey,
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
                     Text(
                       'Plan College Visit',
                       style: GoogleFonts.inter(
@@ -252,80 +257,241 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
                       ),
                     ),
                     const Gap(14),
-                    TextFormField(
-                      controller: purposeCtrl,
-                      textAlignVertical: TextAlignVertical.center,
-                      validator: (v) {
-                        if (v == null || v.trim().isEmpty) {
-                          return 'Please enter purpose / event';
-                        }
-                        return null;
-                      },
+                    Text(
+                      'Purpose',
                       style: GoogleFonts.inter(
                         fontSize: 13,
-                        fontWeight: FontWeight.w400,
-                        color: const Color(0xFF0F172A),
-                      ),
-                      decoration: InputDecoration(
-                        hintText: 'Purpose / Event *',
-                        hintStyle: GoogleFonts.inter(
-                          color: const Color(0xFF94A3B8),
-                          fontSize: 13,
-                        ),
-                        filled: true,
-                        fillColor: const Color(0xFFF8FAFC),
-                        prefixIcon: const Icon(
-                          Icons.assignment_outlined,
-                          size: 19,
-                          color: Color(0xFF64748B),
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(
-                            color: Color(0xFFE2E8F0),
-                            width: 1,
-                          ),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(
-                            color: Color(0xFFE2E8F0),
-                            width: 1,
-                          ),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(
-                            color: Color(0xFFD45107),
-                            width: 1.5,
-                          ),
-                        ),
-                        errorBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(
-                            color: Color(0xFFEF4444),
-                            width: 1,
-                          ),
-                        ),
-                        focusedErrorBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(
-                            color: Color(0xFFEF4444),
-                            width: 1.5,
-                          ),
-                        ),
-                        errorStyle: GoogleFonts.inter(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w500,
-                          color: const Color(0xFFEF4444),
-                        ),
-                        isDense: true,
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 16,
-                        ),
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFF334155),
                       ),
                     ),
+                    const Gap(6),
+                    AcadenoDropdown.strings(
+                      value: selectedPurpose,
+                      borderRadius: 16.0,
+                      items: const [
+                        'Campus outreach & seminar',
+                        'Workshop / Technical Talk',
+                        'Placement & Internship Drive',
+                        'Faculty Meeting & MoU',
+                        'Course Awareness & Admissions',
+                        'Other',
+                      ],
+                      onChanged: (v) {
+                        if (v != null) {
+                          setDialogState(() => selectedPurpose = v);
+                        }
+                      },
+                    ),
+                    if (selectedPurpose == 'Other') ...[
+                      const Gap(10),
+                      TextFormField(
+                        controller: otherPurposeCtrl,
+                        textAlignVertical: TextAlignVertical.center,
+                        style: GoogleFonts.inter(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w400,
+                          color: const Color(0xFF0F172A),
+                        ),
+                        decoration: InputDecoration(
+                          hintText: 'Enter purpose details *',
+                          hintStyle: GoogleFonts.inter(
+                            color: const Color(0xFF94A3B8),
+                            fontSize: 13,
+                          ),
+                          filled: true,
+                          fillColor: const Color(0xFFF8FAFC),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFE2E8F0),
+                              width: 1,
+                            ),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFE2E8F0),
+                              width: 1,
+                            ),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFD45107),
+                              width: 1.5,
+                            ),
+                          ),
+                          isDense: true,
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 16,
+                          ),
+                        ),
+                        validator: (v) => (selectedPurpose == 'Other' &&
+                                (v == null || v.trim().isEmpty))
+                            ? 'Please enter purpose details'
+                            : null,
+                      ),
+                    ],
+                    const Gap(14),
+                    Text(
+                      'Source Event',
+                      style: GoogleFonts.inter(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFF334155),
+                      ),
+                    ),
+                    const Gap(6),
+                    AcadenoDropdown.strings(
+                      value: selectedSourceEvent,
+                      borderRadius: 16.0,
+                      items: const [
+                        'Direct Walk-in',
+                        'AI Webinar',
+                        'College visit',
+                        'Campus Drive',
+                        'Python workshop',
+                        'Add-on course',
+                        'Other',
+                      ],
+                      onChanged: (v) {
+                        if (v != null) {
+                          setDialogState(() => selectedSourceEvent = v);
+                        }
+                      },
+                    ),
+                    if (selectedSourceEvent == 'Other') ...[
+                      const Gap(10),
+                      TextFormField(
+                        controller: otherSourceCtrl,
+                        textAlignVertical: TextAlignVertical.center,
+                        style: GoogleFonts.inter(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w400,
+                          color: const Color(0xFF0F172A),
+                        ),
+                        decoration: InputDecoration(
+                          hintText: 'Enter source details *',
+                          hintStyle: GoogleFonts.inter(
+                            color: const Color(0xFF94A3B8),
+                            fontSize: 13,
+                          ),
+                          filled: true,
+                          fillColor: const Color(0xFFF8FAFC),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFE2E8F0),
+                              width: 1,
+                            ),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFE2E8F0),
+                              width: 1,
+                            ),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFD45107),
+                              width: 1.5,
+                            ),
+                          ),
+                          isDense: true,
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 16,
+                          ),
+                        ),
+                        validator: (v) => (selectedSourceEvent == 'Other' &&
+                                (v == null || v.trim().isEmpty))
+                            ? 'Please enter source details'
+                            : null,
+                      ),
+                    ],
+                    const Gap(14),
+                    Text(
+                      'Content',
+                      style: GoogleFonts.inter(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFF334155),
+                      ),
+                    ),
+                    const Gap(6),
+                    AcadenoDropdown.strings(
+                      value: selectedContent,
+                      borderRadius: 16.0,
+                      items: const [
+                        'AI & Machine Learning Workshop',
+                        'Python & Data Science Bootcamp',
+                        'Full-Stack Web Development',
+                        'Cybersecurity & Cloud Computing',
+                        'Career Guidance & Placement',
+                        'General Awareness',
+                        'Other',
+                      ],
+                      onChanged: (v) {
+                        if (v != null) {
+                          setDialogState(() => selectedContent = v);
+                        }
+                      },
+                    ),
+                    if (selectedContent == 'Other') ...[
+                      const Gap(10),
+                      TextFormField(
+                        controller: otherContentCtrl,
+                        textAlignVertical: TextAlignVertical.center,
+                        style: GoogleFonts.inter(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w400,
+                          color: const Color(0xFF0F172A),
+                        ),
+                        decoration: InputDecoration(
+                          hintText: 'Enter content details *',
+                          hintStyle: GoogleFonts.inter(
+                            color: const Color(0xFF94A3B8),
+                            fontSize: 13,
+                          ),
+                          filled: true,
+                          fillColor: const Color(0xFFF8FAFC),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFE2E8F0),
+                              width: 1,
+                            ),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFE2E8F0),
+                              width: 1,
+                            ),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFD45107),
+                              width: 1.5,
+                            ),
+                          ),
+                          isDense: true,
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 16,
+                          ),
+                        ),
+                        validator: (v) => (selectedContent == 'Other' &&
+                                (v == null || v.trim().isEmpty))
+                            ? 'Please enter content details'
+                            : null,
+                      ),
+                    ],
                     const Gap(14),
                     TextFormField(
                       controller: staffCtrl,
@@ -452,14 +618,27 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
                                     ? 'NOV'
                                     : (dText.contains('Dec') ? 'DEC' : 'OCT');
 
+                                final effPurpose = selectedPurpose == 'Other' &&
+                                        otherPurposeCtrl.text.trim().isNotEmpty
+                                    ? otherPurposeCtrl.text.trim()
+                                    : selectedPurpose;
+                                final effSource = selectedSourceEvent == 'Other' &&
+                                        otherSourceCtrl.text.trim().isNotEmpty
+                                    ? otherSourceCtrl.text.trim()
+                                    : selectedSourceEvent;
+                                final effContent = selectedContent == 'Other' &&
+                                        otherContentCtrl.text.trim().isNotEmpty
+                                    ? otherContentCtrl.text.trim()
+                                    : selectedContent;
+
                                 await _visitsCollection.add({
                                   'collegeName': collegeCtrl.text.trim(),
                                   'dateLabel': dText,
                                   'dayNumber': dayNum,
                                   'monthShort': month,
-                                  'purpose': purposeCtrl.text.trim().isEmpty
-                                      ? 'Campus outreach & seminar'
-                                      : purposeCtrl.text.trim(),
+                                  'purpose': effPurpose,
+                                  'sourceEvent': effSource,
+                                  'content': effContent,
                                   'assignedStaff': staffCtrl.text.trim(),
                                   'staffNames': staffCtrl.text.trim(),
                                   'staffInitials': staffCtrl.text
@@ -508,6 +687,7 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
           ),
         ),
       ),
+      )
     );
   }
 
@@ -1073,6 +1253,10 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
                           DateFormat('d MMM yyyy').format(DateTime.now()))
                       .toString(),
               purpose: (d['purpose'] ?? '').toString(),
+              sourceEvent:
+                  (d['sourceEvent'] ?? d['source'] ?? '').toString(),
+              content:
+                  (d['content'] ?? d['eventContent'] ?? '').toString(),
               assignedStaff: (d['assignedStaff'] ?? d['staffNames'] ?? 'Team')
                   .toString(),
               status: (d['status'] ?? d['statusLabel'] ?? 'Planned').toString(),

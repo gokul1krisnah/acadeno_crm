@@ -88,7 +88,7 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                       const Padding(
                         padding: EdgeInsets.symmetric(horizontal: 24),
                         child: Text(
-                          'Are you sure you want to end your current session?',
+                          'Are you sure you want to log out? This phone will be unbinded so you can sign in from another phone anytime.',
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontFamily: 'Inter',

@@ -461,7 +461,8 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
     final phoneC = TextEditingController();
     final collegeC = TextEditingController(text: 'NIT Calicut · CSE · 3');
     final notesC = TextEditingController();
-    String source = 'Direct visit';
+    final otherSourceC = TextEditingController();
+    String source = 'Social Media';
     String? backendError;
     bool saving = false;
 
@@ -659,7 +660,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                         ),
                         const Gap(14),
                         Text(
-                          'Source Event / Consent',
+                          'Source Event',
                           style: GoogleFonts.inter(
                             fontSize: 13,
                             fontWeight: FontWeight.w600,
@@ -671,11 +672,10 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                           value: source,
                           borderRadius: 16.0,
                           items: const [
-                            'Direct visit',
-                            'AI Webinar',
-                            'Python workshop',
-                            'College visit',
-                            'Add-on course',
+                            'Social Media',
+                            'Contact',
+                            'Referral',
+                            'Other',
                           ],
                           onChanged: (v) {
                             if (v != null) {
@@ -683,6 +683,57 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                             }
                           },
                         ),
+                        if (source == 'Other') ...[
+                          const Gap(10),
+                          TextFormField(
+                            controller: otherSourceC,
+                            textAlignVertical: TextAlignVertical.center,
+                            style: GoogleFonts.inter(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w400,
+                              color: const Color(0xFF0F172A),
+                            ),
+                            decoration: InputDecoration(
+                              hintText: 'Enter source details *',
+                              hintStyle: GoogleFonts.inter(
+                                color: const Color(0xFF94A3B8),
+                                fontSize: 13,
+                              ),
+                              filled: true,
+                              fillColor: const Color(0xFFF8FAFC),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: const BorderSide(
+                                  color: Color(0xFFE2E8F0),
+                                  width: 1,
+                                ),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: const BorderSide(
+                                  color: Color(0xFFE2E8F0),
+                                  width: 1,
+                                ),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: const BorderSide(
+                                  color: Color(0xFFD45107),
+                                  width: 1.5,
+                                ),
+                              ),
+                              isDense: true,
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 16,
+                              ),
+                            ),
+                            validator: (v) =>
+                                (source == 'Other' && (v == null || v.trim().isEmpty))
+                                    ? 'Please enter source details'
+                                    : null,
+                          ),
+                        ],
                         const Gap(20),
                         Row(
                           children: [
@@ -744,13 +795,19 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                                             await CollegeSelectorField.saveCollegeIfNew(
                                               collegeC.text,
                                             );
+                                            final effSource = (source == 'Other' &&
+                                                    otherSourceC.text
+                                                        .trim()
+                                                        .isNotEmpty)
+                                                ? otherSourceC.text.trim()
+                                                : source;
                                             final created = await cubit
                                                 .createLead(
                                                   name: nameC.text.trim(),
                                                   phone: phoneC.text.trim(),
                                                   collegeBranch: collegeC.text
                                                       .trim(),
-                                                  source: source,
+                                                  source: effSource,
                                                   notes: notesC.text.trim(),
                                                 );
                                             if (!dCtx.mounted) return;
@@ -758,7 +815,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                                             if (created != null) {
                                               _tryDashboardCubit()?.recordAudit(
                                                 action:
-                                                    'Added walk-in lead ($source)',
+                                                    'Added walk-in lead ($effSource)',
                                                 target:
                                                     '${created.name} · ${created.phone}',
                                                 category: 'lead_create',

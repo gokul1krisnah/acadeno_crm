@@ -1313,7 +1313,8 @@ class LeadCallSheets {
     final collegeCtrl = TextEditingController(
       text: 'MES College · CSE · 3rd yr',
     );
-    String selectedCampaign = 'Direct Walk-in';
+    final otherSourceCtrl = TextEditingController();
+    String selectedCampaign = 'Social Media';
     String? lookupFeedback;
     bool lookupFoundDuplicate = false;
     bool isSaving = false;
@@ -1581,9 +1582,9 @@ class LeadCallSheets {
                       ),
                       const Gap(14),
 
-                      // Source Event / Consent Label
+                      // Source Event Label
                       Text(
-                        'Source Event / Consent',
+                        'Source Event',
                         style: GoogleFonts.inter(
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
@@ -1591,7 +1592,7 @@ class LeadCallSheets {
                         ),
                       ),
                       const Gap(6),
-                      // Source Event Dropdown (Figma 1809:1570)
+                      // Source Event Dropdown
                       Container(
                         height: 47,
                         decoration: BoxDecoration(
@@ -1627,10 +1628,10 @@ class LeadCallSheets {
                               color: const Color(0xFF2E1D44),
                             ),
                             selectedItemBuilder: (context) => [
-                              'Direct Walk-in',
-                              'AI Webinar',
-                              'College visit',
-                              'Campus Drive',
+                              'Social Media',
+                              'Contact',
+                              'Referral',
+                              'Other',
                             ].map((c) => Align(
                               alignment: Alignment.centerLeft,
                               child: Text(
@@ -1644,31 +1645,31 @@ class LeadCallSheets {
                             )).toList(),
                             items: [
                               DropdownMenuItem(
-                                value: 'Direct Walk-in',
+                                value: 'Social Media',
                                 child: AcadenoDropdown.buildMenuItemChild(
-                                  label: 'Direct Walk-in',
-                                  isSelected: selectedCampaign == 'Direct Walk-in',
+                                  label: 'Social Media',
+                                  isSelected: selectedCampaign == 'Social Media',
                                 ),
                               ),
                               DropdownMenuItem(
-                                value: 'AI Webinar',
+                                value: 'Contact',
                                 child: AcadenoDropdown.buildMenuItemChild(
-                                  label: 'AI Webinar',
-                                  isSelected: selectedCampaign == 'AI Webinar',
+                                  label: 'Contact',
+                                  isSelected: selectedCampaign == 'Contact',
                                 ),
                               ),
                               DropdownMenuItem(
-                                value: 'College visit',
+                                value: 'Referral',
                                 child: AcadenoDropdown.buildMenuItemChild(
-                                  label: 'College visit',
-                                  isSelected: selectedCampaign == 'College visit',
+                                  label: 'Referral',
+                                  isSelected: selectedCampaign == 'Referral',
                                 ),
                               ),
                               DropdownMenuItem(
-                                value: 'Campus Drive',
+                                value: 'Other',
                                 child: AcadenoDropdown.buildMenuItemChild(
-                                  label: 'Campus Drive',
-                                  isSelected: selectedCampaign == 'Campus Drive',
+                                  label: 'Other',
+                                  isSelected: selectedCampaign == 'Other',
                                 ),
                               ),
                             ],
@@ -1680,6 +1681,58 @@ class LeadCallSheets {
                           ),
                         ),
                       ),
+                      if (selectedCampaign == 'Other') ...[
+                        const Gap(10),
+                        SizedBox(
+                          width: double.infinity,
+                          height: 54,
+                          child: TextField(
+                            controller: otherSourceCtrl,
+                            textAlignVertical: TextAlignVertical.center,
+                            style: GoogleFonts.inter(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w400,
+                              color: const Color(0xFF0F172A),
+                            ),
+                            decoration: InputDecoration(
+                              hintText: 'Enter source details *',
+                              hintStyle: GoogleFonts.inter(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w400,
+                                color: const Color(0xFF94A3B8),
+                              ),
+                              filled: true,
+                              fillColor: const Color(0xFFF8FAFC),
+                              isDense: true,
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 16,
+                              ),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: const BorderSide(
+                                  color: Color(0xFFE2E8F0),
+                                  width: 1,
+                                ),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: const BorderSide(
+                                  color: Color(0xFFE2E8F0),
+                                  width: 1,
+                                ),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: const BorderSide(
+                                  color: Color(0xFFD45107),
+                                  width: 1.5,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                       const Gap(20),
 
                       // Save Button (Figma spec: width 343, height 44, borderRadius 16, padding-top 14.5, padding-bottom 15.5)
@@ -1710,11 +1763,18 @@ class LeadCallSheets {
                                     await CollegeSelectorField.saveCollegeIfNew(
                                       collegeCtrl.text,
                                     );
+                                    final effectiveCampaign =
+                                        (selectedCampaign == 'Other' &&
+                                                otherSourceCtrl.text
+                                                    .trim()
+                                                    .isNotEmpty)
+                                            ? otherSourceCtrl.text.trim()
+                                            : selectedCampaign;
                                     final ok = await cubit.addWalkInLead(
                                       name: nameCtrl.text,
                                       phone: phoneCtrl.text,
                                       collegeBranchYear: collegeCtrl.text,
-                                      campaign: selectedCampaign,
+                                      campaign: effectiveCampaign,
                                     );
                                     if (ok && ctx.mounted) {
                                       Navigator.pop(ctx);

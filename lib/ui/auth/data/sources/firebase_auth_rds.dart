@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 import '../../../../core/services/app_notification_service.dart';
@@ -37,7 +38,22 @@ class FirebaseAuthRds {
     );
   }
 
-  Future<void> signOut() async {
+  Future<void> signOut({bool unbindDevice = true}) async {
+    try {
+      final currentUid = _firebaseAuth.currentUser?.uid;
+      if (unbindDevice && currentUid != null) {
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(currentUid)
+            .set({
+              'deviceBound': false,
+              'registeredDeviceId': null,
+              'deviceId': null,
+              'deviceName': 'Pending new phone binding',
+              'lastUnboundAt': FieldValue.serverTimestamp(),
+            }, SetOptions(merge: true));
+      }
+    } catch (_) {}
     await OfflineQueueService.instance.clearAll();
     await AuthSessionLocalDs().clear();
     FirestoreStreamCache.instance.clearAll();

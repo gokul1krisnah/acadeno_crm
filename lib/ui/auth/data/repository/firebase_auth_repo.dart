@@ -35,9 +35,9 @@ class AuthRepository {
   }
 
   /// Signs out from Firebase Auth and clears persisted session metadata from Hive.
-  Future<void> signOut() async {
+  Future<void> signOut({bool unbindDevice = true}) async {
     await clearSession();
-    await _authRds.signOut();
+    await _authRds.signOut(unbindDevice: unbindDevice);
   }
 
   /// Persists non-sensitive session metadata in Hive after a successful login.
