@@ -1172,27 +1172,24 @@ class _CampaignsViewState extends State<CampaignsView> {
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(color: const Color(0xFFE2E8F0), width: 1.0),
                   ),
-                  child: Center(
-                    child: SizedBox(
-                      height: 24,
-                      child: TextField(
-                        controller: _splitCountController,
-                        maxLines: 1,
-                        keyboardType: TextInputType.number,
-                        textAlign: TextAlign.center,
-                        textAlignVertical: TextAlignVertical.center,
-                        onChanged: (_) => setState(() {}),
-                        style: GoogleFonts.inter(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w700,
-                          color: const Color(0xFF0F172A),
-                        ),
-                        decoration: const InputDecoration(
-                          border: InputBorder.none,
-                          isCollapsed: true,
-                          contentPadding: EdgeInsets.zero,
-                        ),
-                      ),
+                  child: TextField(
+                    controller: _splitCountController,
+                    maxLines: 1,
+                    keyboardType: TextInputType.number,
+                    textAlign: TextAlign.center,
+                    textAlignVertical: TextAlignVertical.center,
+                    onChanged: (_) => setState(() {}),
+                    style: GoogleFonts.inter(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: const Color(0xFF0F172A),
+                      height: 1.0,
+                      letterSpacing: 0.0,
+                    ),
+                    decoration: const InputDecoration(
+                      border: InputBorder.none,
+                      isDense: true,
+                      contentPadding: EdgeInsets.only(top: 9, bottom: 9),
                     ),
                   ),
                 );
