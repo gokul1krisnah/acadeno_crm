@@ -496,19 +496,14 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
                     TextFormField(
                       controller: staffCtrl,
                       textAlignVertical: TextAlignVertical.center,
-                      validator: (v) {
-                        if (v == null || v.trim().isEmpty) {
-                          return 'Please enter assigned staff';
-                        }
-                        return null;
-                      },
+                      validator: null,
                       style: GoogleFonts.inter(
                         fontSize: 13,
                         fontWeight: FontWeight.w400,
                         color: const Color(0xFF0F172A),
                       ),
                       decoration: InputDecoration(
-                        hintText: 'Assigned Staff *',
+                        hintText: 'Assigned Staff (optional)', 
                         hintStyle: GoogleFonts.inter(
                           color: const Color(0xFF94A3B8),
                           fontSize: 13,
@@ -610,62 +605,82 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
                               ),
                               onPressed: () async {
                                 if (!formKey.currentState!.validate()) return;
-                                final dText = dateCtrl.text.trim();
-                                final dayNum =
-                                    RegExp(r'\d+').firstMatch(dText)?.group(0) ??
-                                    '29';
-                                final month = dText.contains('Nov')
-                                    ? 'NOV'
-                                    : (dText.contains('Dec') ? 'DEC' : 'OCT');
+                                try {
+                                  final dText = dateCtrl.text.trim();
+                                  DateTime parsedDate;
+                                  try {
+                                    parsedDate = DateFormat('dd MMM yyyy').parse(dText);
+                                  } catch (_) {
+                                    try {
+                                      parsedDate = DateFormat('d MMM yyyy').parse(dText);
+                                    } catch (_) {
+                                      parsedDate = DateTime.now();
+                                    }
+                                  }
+                                  final dayNum = DateFormat('dd').format(parsedDate);
+                                  final month = DateFormat('MMM').format(parsedDate).toUpperCase();
 
-                                final effPurpose = selectedPurpose == 'Other' &&
-                                        otherPurposeCtrl.text.trim().isNotEmpty
-                                    ? otherPurposeCtrl.text.trim()
-                                    : selectedPurpose;
-                                final effSource = selectedSourceEvent == 'Other' &&
-                                        otherSourceCtrl.text.trim().isNotEmpty
-                                    ? otherSourceCtrl.text.trim()
-                                    : selectedSourceEvent;
-                                final effContent = selectedContent == 'Other' &&
-                                        otherContentCtrl.text.trim().isNotEmpty
-                                    ? otherContentCtrl.text.trim()
-                                    : selectedContent;
+                                  final effPurpose = selectedPurpose == 'Other' &&
+                                          otherPurposeCtrl.text.trim().isNotEmpty
+                                      ? otherPurposeCtrl.text.trim()
+                                      : selectedPurpose;
+                                  final effSource = selectedSourceEvent == 'Other' &&
+                                          otherSourceCtrl.text.trim().isNotEmpty
+                                      ? otherSourceCtrl.text.trim()
+                                      : selectedSourceEvent;
+                                  final effContent = selectedContent == 'Other' &&
+                                          otherContentCtrl.text.trim().isNotEmpty
+                                      ? otherContentCtrl.text.trim()
+                                      : selectedContent;
+                                  final effStaff = staffCtrl.text.trim().isNotEmpty
+                                      ? staffCtrl.text.trim()
+                                      : 'Team';
 
-                                await _visitsCollection.add({
-                                  'collegeName': collegeCtrl.text.trim(),
-                                  'dateLabel': dText,
-                                  'dayNumber': dayNum,
-                                  'monthShort': month,
-                                  'purpose': effPurpose,
-                                  'sourceEvent': effSource,
-                                  'content': effContent,
-                                  'assignedStaff': staffCtrl.text.trim(),
-                                  'staffNames': staffCtrl.text.trim(),
-                                  'staffInitials': staffCtrl.text
-                                      .trim()
-                                      .split(',')
-                                      .map((s) => s.trim())
-                                      .where((s) => s.isNotEmpty)
-                                      .map(
-                                        (s) => s
-                                            .split(' ')
-                                            .where((p) => p.isNotEmpty)
-                                            .map((p) => p[0].toUpperCase())
-                                            .join(),
-                                      )
-                                      .where((s) => s.isNotEmpty)
-                                      .toList(),
-                                  'status': 'Planned',
-                                  'statusLabel': 'Planned',
-                                  'outcomeNotes': 'Scheduled campus visit.',
-                                  'leadsCollected': 0,
-                                  'conversions': 0,
-                                  'createdByUid':
-                                      FirebaseAuth.instance.currentUser?.uid,
-                                  'createdAt': FieldValue.serverTimestamp(),
-                                  'updatedAt': FieldValue.serverTimestamp(),
-                                });
-                                if (ctx.mounted) Navigator.pop(ctx);
+                                  await _visitsCollection.add({
+                                    'collegeName': collegeCtrl.text.trim(),
+                                    'dateLabel': dText,
+                                    'dayNumber': dayNum,
+                                    'monthShort': month,
+                                    'subtitle': effPurpose,
+                                    'purpose': effPurpose,
+                                    'sourceEvent': effSource,
+                                    'content': effContent,
+                                    'assignedStaff': effStaff,
+                                    'staffNames': effStaff,
+                                    'staffInitials': effStaff
+                                        .split(',')
+                                        .map((s) => s.trim())
+                                        .where((s) => s.isNotEmpty)
+                                        .map(
+                                          (s) => s
+                                              .split(' ')
+                                              .where((p) => p.isNotEmpty)
+                                              .map((p) => p[0].toUpperCase())
+                                              .join(),
+                                        )
+                                        .where((s) => s.isNotEmpty)
+                                        .toList(),
+                                    'status': 'Planned',
+                                    'statusLabel': 'Planned',
+                                    'outcomeNotes': 'Scheduled campus visit.',
+                                    'leadsCollected': 0,
+                                    'conversions': 0,
+                                    'createdByUid':
+                                        FirebaseAuth.instance.currentUser?.uid,
+                                    'createdAt': FieldValue.serverTimestamp(),
+                                    'updatedAt': FieldValue.serverTimestamp(),
+                                  });
+                                  if (ctx.mounted) Navigator.pop(ctx);
+                                } catch (e) {
+                                  if (mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text('Failed to save visit: $e'),
+                                        backgroundColor: const Color(0xFFEF4444),
+                                      ),
+                                    );
+                                  }
+                                }
                               },
                               child: Text(
                                 'Save Visit',
@@ -1248,10 +1263,11 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
             return _CollegeVisit(
               id: doc.id,
               collegeName: (d['collegeName'] ?? 'College').toString(),
-              dateLabel:
-                  (d['dateLabel'] ??
-                          DateFormat('d MMM yyyy').format(DateTime.now()))
-                      .toString(),
+              dateLabel: (d['dateLabel'] != null && d['dateLabel'].toString().trim().isNotEmpty)
+                  ? d['dateLabel'].toString().trim()
+                  : ((d['dayNumber'] != null && d['monthShort'] != null)
+                      ? '${d['dayNumber']} ${d['monthShort']}'
+                      : DateFormat('d MMM yyyy').format(DateTime.now())),
               purpose: (d['purpose'] ?? '').toString(),
               sourceEvent:
                   (d['sourceEvent'] ?? d['source'] ?? '').toString(),
@@ -1718,6 +1734,38 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
                                       color: const Color(0xFF64748B),
                                     ),
                                   ),
+                                  if (visit.sourceEvent.isNotEmpty) ...[
+                                    TextSpan(
+                                      text: '  •  Source: ',
+                                      style: GoogleFonts.poppins(
+                                        color: const Color(0xFF334155),
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                    TextSpan(
+                                      text: visit.sourceEvent,
+                                      style: GoogleFonts.poppins(
+                                        color: const Color(0xFF64748B),
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ],
+                                  if (visit.content.isNotEmpty) ...[
+                                    TextSpan(
+                                      text: '  •  Content: ',
+                                      style: GoogleFonts.poppins(
+                                        color: const Color(0xFF334155),
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                    TextSpan(
+                                      text: visit.content,
+                                      style: GoogleFonts.poppins(
+                                        color: const Color(0xFF64748B),
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ],
                                   TextSpan(
                                     text: '  •  ',
                                     style: GoogleFonts.poppins(
