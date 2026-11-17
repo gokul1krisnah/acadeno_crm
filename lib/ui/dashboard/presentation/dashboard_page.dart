@@ -181,11 +181,7 @@ class _SidebarNavItemState extends State<_SidebarNavItem> {
     final item = widget.item;
     final compact = widget.compact;
 
-    // Hover & selected background fill; no click splash on nav bar items
-    final Color bgColor = isSelected
-        ? const Color(0xFFFFEDE2)
-        : (_isHovered ? const Color(0xFFFFF6F0) : Colors.transparent);
-
+    // Hover & selected colors
     final Color contentColor = isSelected
         ? _orangeAccent
         : (_isHovered ? _orangeAccent : const Color(0xFF475569));
@@ -194,12 +190,11 @@ class _SidebarNavItemState extends State<_SidebarNavItem> {
         ? _orangeAccent
         : (_isHovered ? _orangeAccent : const Color(0xFF64748B));
 
-    // Exact Figma Specs:
-    // width: 223 (in 240px sidebar: 8.5px horizontal margin on each side)
-    // height: 44
-    // border-radius: 12px
-    // border-right-width: 4px
-    // padding: 12px vertical, 16px horizontal
+    // Dynamic 3D Matrix Translation & Elevation
+    final Matrix4 transform = (_isHovered && !isSelected)
+        ? Matrix4.translationValues(3.0, -1.5, 0.0)
+        : Matrix4.identity();
+
     return Padding(
       padding: EdgeInsets.symmetric(
         horizontal: compact ? 6.0 : 8.5,
@@ -215,10 +210,62 @@ class _SidebarNavItemState extends State<_SidebarNavItem> {
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 180),
             curve: Curves.easeOutCubic,
+            transform: transform,
             height: compact ? 40 : 44,
             decoration: BoxDecoration(
-              color: bgColor,
+              gradient: _isHovered && !isSelected
+                  ? const LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        Color(0xFFFFFFFF),
+                        Color(0xFFFFF9F5),
+                        Color(0xFFFFF2E8),
+                      ],
+                    )
+                  : null,
+              color: isSelected
+                  ? const Color(0xFFFFEDE2)
+                  : (_isHovered ? null : Colors.transparent),
               borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: isSelected
+                    ? const Color(0xFFFFD1B8)
+                    : (_isHovered
+                        ? const Color(0xFFFFD4BE)
+                        : Colors.transparent),
+                width: 1.0,
+              ),
+              boxShadow: _isHovered && !isSelected
+                  ? [
+                      const BoxShadow(
+                        color: Color(0x140F172A),
+                        offset: Offset(0, 5),
+                        blurRadius: 12,
+                        spreadRadius: -1,
+                      ),
+                      BoxShadow(
+                        color: _orangeAccent.withValues(alpha: 0.16),
+                        offset: const Offset(2, 4),
+                        blurRadius: 10,
+                        spreadRadius: -1,
+                      ),
+                      const BoxShadow(
+                        color: Color(0x08000000),
+                        offset: Offset(0, 1),
+                        blurRadius: 2,
+                      ),
+                    ]
+                  : (isSelected
+                      ? [
+                          BoxShadow(
+                            color: _orangeAccent.withValues(alpha: 0.20),
+                            offset: const Offset(0, 3),
+                            blurRadius: 8,
+                            spreadRadius: -1,
+                          ),
+                        ]
+                      : null),
             ),
             child: CustomPaint(
               foregroundPainter: _FigmaRightBorderPainter(
@@ -228,30 +275,55 @@ class _SidebarNavItemState extends State<_SidebarNavItem> {
               ),
               child: Padding(
                 padding: EdgeInsets.fromLTRB(
-                  compact ? 12 : 16,
                   compact ? 10 : 12,
-                  compact ? 10 : 16,
-                  compact ? 10 : 12,
+                  compact ? 6 : 7,
+                  compact ? 8 : 12,
+                  compact ? 6 : 7,
                 ),
                 child: Row(
                   children: [
-                    SizedBox(
-                      width: compact ? 18 : 20,
-                      height: compact ? 18 : 20,
+                    // 3D Elevated Icon Container
+                    AnimatedContainer(
+                      duration: const Duration(milliseconds: 180),
+                      curve: Curves.easeOutCubic,
+                      width: compact ? 26 : 28,
+                      height: compact ? 26 : 28,
+                      decoration: BoxDecoration(
+                        color: isSelected
+                            ? _orangeAccent.withValues(alpha: 0.14)
+                            : (_isHovered
+                                ? const Color(0xFFFFE8DC)
+                                : Colors.transparent),
+                        borderRadius: BorderRadius.circular(7),
+                        boxShadow: _isHovered && !isSelected
+                            ? [
+                                BoxShadow(
+                                  color: _orangeAccent.withValues(alpha: 0.15),
+                                  offset: const Offset(0, 2),
+                                  blurRadius: 4,
+                                ),
+                              ]
+                            : null,
+                      ),
                       child: Center(
-                        child: SvgPicture.asset(
-                          item.svgAsset,
-                          width: compact ? 16 : 18,
-                          height: compact ? 16 : 18,
-                          fit: BoxFit.contain,
-                          colorFilter: ColorFilter.mode(
-                            iconColor,
-                            BlendMode.srcIn,
+                        child: AnimatedScale(
+                          scale: _isHovered ? 1.10 : 1.0,
+                          duration: const Duration(milliseconds: 180),
+                          curve: Curves.easeOutCubic,
+                          child: SvgPicture.asset(
+                            item.svgAsset,
+                            width: compact ? 16 : 18,
+                            height: compact ? 16 : 18,
+                            fit: BoxFit.contain,
+                            colorFilter: ColorFilter.mode(
+                              iconColor,
+                              BlendMode.srcIn,
+                            ),
                           ),
                         ),
                       ),
                     ),
-                    Gap(compact ? 9 : 12),
+                    Gap(compact ? 8 : 10),
                     Expanded(
                       child: Text(
                         item.label,
@@ -262,10 +334,28 @@ class _SidebarNavItemState extends State<_SidebarNavItem> {
                           fontWeight: isSelected
                               ? FontWeight.w700
                               : (_isHovered
-                                    ? FontWeight.w600
-                                    : FontWeight.w500),
+                                  ? FontWeight.w600
+                                  : FontWeight.w500),
                           color: contentColor,
                           letterSpacing: -0.2,
+                        ),
+                      ),
+                    ),
+                    // 3D subtle chevron indicator on hover
+                    AnimatedOpacity(
+                      opacity: (_isHovered && !isSelected) ? 0.75 : 0.0,
+                      duration: const Duration(milliseconds: 150),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 180),
+                        transform: Matrix4.translationValues(
+                          (_isHovered && !isSelected) ? 0.0 : -4.0,
+                          0.0,
+                          0.0,
+                        ),
+                        child: const Icon(
+                          Icons.chevron_right_rounded,
+                          size: 16,
+                          color: _orangeAccent,
                         ),
                       ),
                     ),
