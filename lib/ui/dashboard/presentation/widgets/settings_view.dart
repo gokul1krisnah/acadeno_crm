@@ -1149,8 +1149,10 @@ class _SettingsViewState extends State<SettingsView>
       padding: const EdgeInsets.only(bottom: 40),
       child: LayoutBuilder(
         builder: (context, constraints) {
-          final isDesktopTwoCol = constraints.maxWidth >= 840;
-          final isNarrowCard = constraints.maxWidth < 600;
+          final isDesktopTwoCol = constraints.maxWidth >= 520 ||
+              MediaQuery.of(context).size.width >= 600;
+          final isNarrowCard = constraints.maxWidth < 520 &&
+              MediaQuery.of(context).size.width < 600;
 
           if (isDesktopTwoCol) {
             return IntrinsicHeight(
@@ -1202,8 +1204,10 @@ class _SettingsViewState extends State<SettingsView>
       padding: const EdgeInsets.only(bottom: 40),
       child: LayoutBuilder(
         builder: (context, constraints) {
-          final isWide = constraints.maxWidth >= 840;
-          final isMobile = constraints.maxWidth < 600;
+          final isWide = constraints.maxWidth >= 520 ||
+              MediaQuery.of(context).size.width >= 600;
+          final isMobile = constraints.maxWidth < 520 &&
+              MediaQuery.of(context).size.width < 600;
 
           final orgProfileCard = _buildFigmaOrgCard(
             isMobile: isMobile,
@@ -1580,8 +1584,10 @@ class _SettingsViewState extends State<SettingsView>
       padding: const EdgeInsets.only(bottom: 40),
       child: LayoutBuilder(
         builder: (context, constraints) {
-          final isWide = constraints.maxWidth >= 840;
-          final isMobile = constraints.maxWidth < 600;
+          final isWide = constraints.maxWidth >= 520 ||
+              MediaQuery.of(context).size.width >= 600;
+          final isMobile = constraints.maxWidth < 520 &&
+              MediaQuery.of(context).size.width < 600;
 
           final pushCard = _buildFigmaSystemCard(
             isMobile: isMobile,

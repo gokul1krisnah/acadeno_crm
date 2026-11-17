@@ -1736,7 +1736,7 @@ class _UserManagementViewState extends State<UserManagementView> {
             LayoutBuilder(
               builder: (context, c) {
                 final isMobile =
-                    MediaQuery.of(context).size.width < 768 || c.maxWidth < 680;
+                    MediaQuery.of(context).size.width < 600 || c.maxWidth < 520;
                 final titleCol = Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -1903,8 +1903,8 @@ class _UserManagementViewState extends State<UserManagementView> {
                   // Row 1: Search & Filter Toolbar (Figma Node 1364:2892)
                   LayoutBuilder(
                     builder: (context, c) {
-                      final isDesktop = c.maxWidth >= 840;
-                      final isTablet = c.maxWidth >= 540 && c.maxWidth < 840;
+                      final isDesktop = c.maxWidth >= 720;
+                      final isTablet = c.maxWidth >= 480 && c.maxWidth < 720;
 
                       final searchField = Container(
                         height: 46,
@@ -2212,11 +2212,14 @@ class _UserManagementViewState extends State<UserManagementView> {
                   else
                     LayoutBuilder(
                       builder: (context, constraints) {
-                        final isDesktop = constraints.maxWidth >= 820;
-                        if (isDesktop) {
-                          final tableWidth = constraints.maxWidth > 1340
+                        // Tablet (520px+) to Laptop (1024px) to Large Laptop (1440px+)
+                        // all share the same large laptop table view with horizontal responsiveness
+                        final isTableLayout = constraints.maxWidth >= 520 ||
+                            MediaQuery.of(context).size.width >= 600;
+                        if (isTableLayout) {
+                          final tableWidth = constraints.maxWidth > 1260
                               ? constraints.maxWidth
-                              : 1340.0;
+                              : 1260.0;
                           return SizedBox(
                             width: double.infinity,
                             child: SingleChildScrollView(

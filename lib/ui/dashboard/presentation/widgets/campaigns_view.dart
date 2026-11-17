@@ -951,8 +951,8 @@ class _CampaignsViewState extends State<CampaignsView> {
     return LayoutBuilder(
       builder: (context, constraints) {
         final isMobile =
-            MediaQuery.of(context).size.width < 768 ||
-            constraints.maxWidth < 800;
+            MediaQuery.of(context).size.width < 600 ||
+            constraints.maxWidth < 520;
 
         if (_showAllCampaigns) {
           return _buildAllCampaignsList(isMobile);

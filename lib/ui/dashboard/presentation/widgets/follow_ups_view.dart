@@ -842,7 +842,7 @@ class _FollowUpsViewState extends State<FollowUpsView> {
     List<String> executives,
   ) {
     final isOverdue = item.isOverdue;
-    final isCompact = maxWidth < 820;
+    final isCompact = maxWidth < 600;
 
     // Left Icon Container (48x48, rounded 12)
     final iconWidget = Container(

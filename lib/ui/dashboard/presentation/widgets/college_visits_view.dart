@@ -1286,7 +1286,7 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
               LayoutBuilder(
                 builder: (context, c) {
                   final isMobile =
-                      MediaQuery.of(context).size.width < 768 || c.maxWidth < 680;
+                      MediaQuery.of(context).size.width < 600 || c.maxWidth < 520;
                   final titleCol = Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -1451,8 +1451,8 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
                   return LayoutBuilder(
                     builder: (context, cardConstraints) {
                       final isMobile =
-                          MediaQuery.of(context).size.width < 768 ||
-                          cardConstraints.maxWidth < 680;
+                          MediaQuery.of(context).size.width < 600 ||
+                          cardConstraints.maxWidth < 520;
 
                       Color badgeBg;
                       Color badgeBorder;
