@@ -2056,29 +2056,22 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
       children: [
         Text(
           label.toUpperCase(),
-          style: GoogleFonts.poppins(
+          style: GoogleFonts.inter(
             fontSize: 12,
-            fontWeight: FontWeight.w600,
+            fontWeight: FontWeight.w700,
             color: const Color(0xFF374151),
-            letterSpacing: 0.3,
+            letterSpacing: 0.5,
             height: 16 / 12,
           ),
         ),
         const Gap(8),
         Container(
-          height: 47,
-          padding: const EdgeInsets.symmetric(horizontal: 16),
+          height: 38,
+          padding: const EdgeInsets.symmetric(horizontal: 14),
           decoration: BoxDecoration(
-            color: const Color(0xFFF5F5F5),
-            borderRadius: BorderRadius.circular(16),
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(8),
             border: Border.all(color: const Color(0xFFE5E7EB), width: 1),
-            boxShadow: const [
-              BoxShadow(
-                color: Color(0x0D764BA2),
-                blurRadius: 5,
-                offset: Offset(0, 2),
-              ),
-            ],
           ),
           alignment: Alignment.center,
           child: DropdownButtonHideUnderline(
@@ -2094,17 +2087,17 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                 focusColor: Colors.transparent,
                 isExpanded: true,
                 isDense: true,
-                dropdownColor: const Color(0xFFE2E2E2),
-                borderRadius: BorderRadius.circular(12),
+                dropdownColor: Colors.white,
+                borderRadius: BorderRadius.circular(8),
                 icon: const Icon(
                   Icons.keyboard_arrow_down_rounded,
-                  size: 20,
-                  color: Color(0xFF2E1D44),
+                  size: 18,
+                  color: Color(0xFF6B7280),
                 ),
                 style: GoogleFonts.inter(
-                  fontSize: 14,
+                  fontSize: 13,
                   fontWeight: FontWeight.w500,
-                  color: const Color(0xFF2E1D44),
+                  color: const Color(0xFF111827),
                 ),
                 selectedItemBuilder: (context) => safeItems
                     .map(
@@ -2114,9 +2107,9 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                           e,
                           overflow: TextOverflow.ellipsis,
                           style: GoogleFonts.inter(
-                            fontSize: 14,
+                            fontSize: 13,
                             fontWeight: FontWeight.w500,
-                            color: const Color(0xFF2E1D44),
+                            color: const Color(0xFF111827),
                           ),
                         ),
                       ),
@@ -2129,6 +2122,8 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                         child: AcadenoDropdown.buildMenuItemChild(
                           label: e,
                           isSelected: e == value,
+                          activeColor: const Color(0xFFEF8144),
+                          textColor: const Color(0xFF374151),
                         ),
                       ),
                     )
@@ -2414,206 +2409,266 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
             ),
             const Gap(24),
 
-            // Filter Bar Card
-            Container(
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: const Color(0xFFF3F4F6), width: 1),
-                boxShadow: const [
-                  BoxShadow(
-                    color: Color(0x0D000000),
-                    blurRadius: 1,
-                    offset: Offset(0, 1),
+            // Filter Bar Card (Figma node: 1706:134)
+            LayoutBuilder(
+              builder: (context, c) {
+                final totalW = math.max(0.0, c.maxWidth);
+                if (totalW <= 0) return const SizedBox.shrink();
+
+                final isDesktop = totalW >= 1040;
+                final isTablet = totalW >= 680 && totalW < 1040;
+                final isSmallMobile = totalW < 380;
+                final padding = isDesktop
+                    ? 25.0
+                    : (isTablet ? 20.0 : (isSmallMobile ? 12.0 : 16.0));
+
+                final searchField = Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'SEARCH',
+                      style: GoogleFonts.inter(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFF374151),
+                        letterSpacing: 0.5,
+                        height: 16 / 12,
+                      ),
+                    ),
+                    const Gap(8),
+                    SizedBox(
+                      height: 38,
+                      child: TextField(
+                        controller: _searchC,
+                        textAlignVertical: TextAlignVertical.center,
+                        onChanged: cubit.setSearchQuery,
+                        style: GoogleFonts.inter(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                          color: const Color(0xFF111827),
+                        ),
+                        decoration: InputDecoration(
+                          isDense: true,
+                          hintText: 'Name, phone or college',
+                          hintStyle: GoogleFonts.inter(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w400,
+                            color: const Color(0xFF9CA3AF),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 9,
+                          ),
+                          filled: true,
+                          fillColor: Colors.white,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFE5E7EB),
+                              width: 1,
+                            ),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFE5E7EB),
+                              width: 1,
+                            ),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFEF8144),
+                              width: 1.2,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+
+                final fSource = _filterDropdown(
+                  label: 'Source',
+                  value: state.sourceFilter,
+                  items: const [
+                    'All sources',
+                    'Direct visit',
+                    'AI Webinar',
+                    'Python workshop',
+                    'Industrial visit',
+                    'Add-on course',
+                    'College visit',
+                    'Workshop',
+                  ],
+                  onChanged: cubit.setSourceFilter,
+                );
+                final fCollege = _filterDropdown(
+                  label: 'College',
+                  value: state.collegeFilter,
+                  items: const [
+                    'All colleges',
+                    'KMCT',
+                    'MES College',
+                    'NIT Calicut',
+                    'GEC Kozhikode',
+                    'Farook College',
+                    'Providence',
+                  ],
+                  onChanged: cubit.setCollegeFilter,
+                );
+                final fBranch = _filterDropdown(
+                  label: 'Branch',
+                  value: state.branchFilter,
+                  items: const [
+                    'All branches',
+                    'CSE, ECE',
+                    'CSE',
+                    'ECE',
+                    'MECH',
+                    'BCA',
+                    'BSc CS',
+                    'EEE',
+                    'IT',
+                  ],
+                  onChanged: cubit.setBranchFilter,
+                );
+                final fYear = _filterDropdown(
+                  label: 'Year',
+                  value: state.yearFilter,
+                  items: const [
+                    'Any year',
+                    '1st yr',
+                    '2nd yr',
+                    '3rd yr',
+                    '4th yr',
+                  ],
+                  onChanged: cubit.setYearFilter,
+                );
+                final fStatus = _filterDropdown(
+                  label: 'Status',
+                  value: state.statusFilter,
+                  items: const [
+                    'All statuses',
+                    'New, No answer',
+                    'New',
+                    'Assigned',
+                    'Follow-up',
+                    'No answer',
+                    'Interested',
+                    'Not interested',
+                    'Converted',
+                  ],
+                  onChanged: cubit.setStatusFilter,
+                );
+
+                Widget content;
+                if (isDesktop) {
+                  content = Row(
+                    children: [
+                      Expanded(child: searchField),
+                      const Gap(16),
+                      Expanded(child: fSource),
+                      const Gap(16),
+                      Expanded(child: fCollege),
+                      const Gap(16),
+                      Expanded(child: fBranch),
+                      const Gap(16),
+                      Expanded(child: fYear),
+                      const Gap(16),
+                      Expanded(child: fStatus),
+                    ],
+                  );
+                } else if (isTablet) {
+                  content = Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(child: searchField),
+                          const Gap(16),
+                          Expanded(child: fSource),
+                          const Gap(16),
+                          Expanded(child: fCollege),
+                        ],
+                      ),
+                      const Gap(16),
+                      Row(
+                        children: [
+                          Expanded(child: fBranch),
+                          const Gap(16),
+                          Expanded(child: fYear),
+                          const Gap(16),
+                          Expanded(child: fStatus),
+                        ],
+                      ),
+                    ],
+                  );
+                } else if (isSmallMobile) {
+                  content = Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      searchField,
+                      const Gap(12),
+                      fSource,
+                      const Gap(12),
+                      fCollege,
+                      const Gap(12),
+                      fBranch,
+                      const Gap(12),
+                      fYear,
+                      const Gap(12),
+                      fStatus,
+                    ],
+                  );
+                } else {
+                  content = Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      searchField,
+                      const Gap(12),
+                      Row(
+                        children: [
+                          Expanded(child: fSource),
+                          const Gap(12),
+                          Expanded(child: fCollege),
+                        ],
+                      ),
+                      const Gap(12),
+                      Row(
+                        children: [
+                          Expanded(child: fBranch),
+                          const Gap(12),
+                          Expanded(child: fYear),
+                        ],
+                      ),
+                      const Gap(12),
+                      fStatus,
+                    ],
+                  );
+                }
+
+                return Container(
+                  width: double.infinity,
+                  padding: EdgeInsets.all(padding),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: const Color(0xFFE5E7EB),
+                      width: 1,
+                    ),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Color(0x0A000000),
+                        blurRadius: 4,
+                        offset: Offset(0, 1),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-              child: LayoutBuilder(
-                builder: (context, c) {
-                  final searchField = Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'SEARCH',
-                        style: GoogleFonts.poppins(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: const Color(0xFF374151),
-                          letterSpacing: 0.3,
-                          height: 16 / 12,
-                        ),
-                      ),
-                      const Gap(8),
-                      SizedBox(
-                        height: 42,
-                        child: TextField(
-                          controller: _searchC,
-                          textAlignVertical: TextAlignVertical.center,
-                          onChanged: cubit.setSearchQuery,
-                          style: GoogleFonts.poppins(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                            color: const Color(0xFF111827),
-                            height: 20 / 14,
-                          ),
-                          decoration: InputDecoration(
-                            isDense: true,
-                            hintText: 'Name, phone or college',
-                            hintStyle: GoogleFonts.poppins(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                              color: const Color(0xFF9CA3AF),
-                              height: 20 / 14,
-                            ),
-                            contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 10,
-                            ),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide: const BorderSide(
-                                color: Color(0xFFE5E7EB),
-                                width: 1,
-                              ),
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide: const BorderSide(
-                                color: Color(0xFFE5E7EB),
-                                width: 1,
-                              ),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide: const BorderSide(
-                                color: Color(0xFFEF8144),
-                                width: 1,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  );
-
-                  final fSource = _filterDropdown(
-                    label: 'Source',
-                    value: state.sourceFilter,
-                    items: const [
-                      'All sources',
-                      'Direct visit',
-                      'AI Webinar',
-                      'Python workshop',
-                      'Industrial visit',
-                      'Add-on course',
-                      'College visit',
-                      'Workshop',
-                    ],
-                    onChanged: cubit.setSourceFilter,
-                  );
-                  final fCollege = _filterDropdown(
-                    label: 'College',
-                    value: state.collegeFilter,
-                    items: const [
-                      'All colleges',
-                      'KMCT',
-                      'MES College',
-                      'NIT Calicut',
-                      'GEC Kozhikode',
-                      'Farook College',
-                      'Providence',
-                    ],
-                    onChanged: cubit.setCollegeFilter,
-                  );
-                  final fBranch = _filterDropdown(
-                    label: 'Branch',
-                    value: state.branchFilter,
-                    items: const [
-                      'All branches',
-                      'CSE, ECE',
-                      'CSE',
-                      'ECE',
-                      'MECH',
-                      'BCA',
-                      'BSc CS',
-                      'EEE',
-                      'IT',
-                    ],
-                    onChanged: cubit.setBranchFilter,
-                  );
-                  final fYear = _filterDropdown(
-                    label: 'Year',
-                    value: state.yearFilter,
-                    items: const [
-                      'Any year',
-                      '1st yr',
-                      '2nd yr',
-                      '3rd yr',
-                      '4th yr',
-                    ],
-                    onChanged: cubit.setYearFilter,
-                  );
-                  final fStatus = _filterDropdown(
-                    label: 'Status',
-                    value: state.statusFilter,
-                    items: const [
-                      'All statuses',
-                      'New, No answer',
-                      'New',
-                      'Assigned',
-                      'Follow-up',
-                      'No answer',
-                      'Interested',
-                      'Not interested',
-                      'Converted',
-                    ],
-                    onChanged: cubit.setStatusFilter,
-                  );
-
-                  final availableW = math.max(0.0, c.maxWidth);
-                  if (availableW <= 0) return const SizedBox.shrink();
-
-                  if (availableW >= 900) {
-                    return Row(
-                      children: [
-                        Expanded(flex: 3, child: searchField),
-                        const Gap(10),
-                        Expanded(flex: 2, child: fSource),
-                        const Gap(10),
-                        Expanded(flex: 2, child: fCollege),
-                        const Gap(10),
-                        Expanded(flex: 2, child: fBranch),
-                        const Gap(10),
-                        Expanded(flex: 2, child: fYear),
-                        const Gap(10),
-                        Expanded(flex: 2, child: fStatus),
-                      ],
-                    );
-                  }
-
-                  final colW = availableW >= 560
-                      ? math.max(100.0, (availableW - 20) / 3)
-                      : (availableW >= 360
-                            ? math.max(100.0, (availableW - 10) / 2)
-                            : availableW);
-                  return Wrap(
-                    spacing: 10,
-                    runSpacing: 10,
-                    children: [
-                      SizedBox(width: availableW, child: searchField),
-                      SizedBox(width: colW, child: fSource),
-                      SizedBox(width: colW, child: fCollege),
-                      SizedBox(width: colW, child: fBranch),
-                      SizedBox(width: colW, child: fYear),
-                      SizedBox(
-                        width: availableW >= 560 ? colW : availableW,
-                        child: fStatus,
-                      ),
-                    ],
-                  );
-                },
-              ),
+                  child: content,
+                );
+              },
             ),
             const Gap(
               16,
