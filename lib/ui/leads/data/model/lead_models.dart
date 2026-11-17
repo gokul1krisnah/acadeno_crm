@@ -1271,6 +1271,54 @@ class ExecutiveLeadItem {
     this.fee = '',
   });
 
+  ExecutiveLeadItem copyWith({
+    String? id,
+    String? assignmentId,
+    String? name,
+    String? initials,
+    String? maskedPhone,
+    String? fullPhone,
+    String? collegeInfo,
+    String? statusTag,
+    Color? statusColor,
+    Color? statusBg,
+    String? campaignTag,
+    bool? isLocked,
+    String? lockedByUid,
+    String? lockedMessage,
+    bool? isDone,
+    List<String>? talkingPoints,
+    List<String>? timeline,
+    String? followUpTime,
+    String? course,
+    String? batch,
+    String? fee,
+  }) {
+    return ExecutiveLeadItem(
+      id: id ?? this.id,
+      assignmentId: assignmentId ?? this.assignmentId,
+      name: name ?? this.name,
+      initials: initials ?? this.initials,
+      maskedPhone: maskedPhone ?? this.maskedPhone,
+      fullPhone: fullPhone ?? this.fullPhone,
+      collegeInfo: collegeInfo ?? this.collegeInfo,
+      statusTag: statusTag ?? this.statusTag,
+      statusColor: statusColor ?? this.statusColor,
+      statusBg: statusBg ?? this.statusBg,
+      campaignTag: campaignTag ?? this.campaignTag,
+      isLocked: isLocked ?? this.isLocked,
+      lockedByUid: lockedByUid ?? this.lockedByUid,
+      lockedMessage: lockedMessage ?? this.lockedMessage,
+      isDone: isDone ?? this.isDone,
+      talkingPoints: talkingPoints ?? this.talkingPoints,
+      timeline: timeline ?? this.timeline,
+      followUpTime: followUpTime ?? this.followUpTime,
+      course: course ?? this.course,
+      batch: batch ?? this.batch,
+      fee: fee ?? this.fee,
+    );
+  }
+
   static (Color, Color) statusColorsFor(String status) {
     return switch (status) {
       'Interested' ||

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../../../core/injection/injection.dart';
 import '../../../../core/services/app_phone_call_service.dart';
 import '../../../../core/services/firestore_stream_cache.dart';
 import '../../../../shared/widgets/staff_watermark_overlay.dart';
@@ -71,7 +72,15 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
         } catch (_) {}
 
         if (mounted) {
-          context.read<FollowUpsCubit>().addFromCallOutcome(
+          FollowUpsCubit? fuCubit;
+          try {
+            fuCubit = context.read<FollowUpsCubit>();
+          } catch (_) {
+            try {
+              fuCubit = getIt<FollowUpsCubit>();
+            } catch (_) {}
+          }
+          fuCubit?.addFromCallOutcome(
             leadName: widget.lead.name,
             collegeInfo: widget.lead.collegeInfo,
             outcome: 'Follow-up',
@@ -493,9 +502,34 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
                                   height: 46,
                                   child: ElevatedButton.icon(
                                     onPressed: () {
+                                      final callingLead = lead.copyWith(
+                                        fullPhone: effectivePhone,
+                                        maskedPhone:
+                                            lead.maskedPhone.isNotEmpty
+                                                ? lead.maskedPhone
+                                                : effectivePhone,
+                                        collegeInfo: effectiveCollegeInfo,
+                                        campaignTag: effectiveCampaign,
+                                        statusTag: effectiveStatus,
+                                        followUpTime: effectiveFollowUp,
+                                        course:
+                                            liveCourse.isNotEmpty
+                                                ? liveCourse
+                                                : lead.course,
+                                        batch:
+                                            liveBatch.isNotEmpty
+                                                ? liveBatch
+                                                : lead.batch,
+                                        fee:
+                                            (snapData != null
+                                                    ? (snapData['fee'] ?? '')
+                                                    : lead.fee)
+                                                .toString()
+                                                .trim(),
+                                      );
                                       AppPhoneCallService.instance.dialLead(
                                         context,
-                                        lead,
+                                        callingLead,
                                       );
                                     },
                                     icon: const Icon(

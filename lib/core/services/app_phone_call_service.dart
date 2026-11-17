@@ -30,6 +30,7 @@ class AppPhoneCallService with WidgetsBindingObserver {
   ExecutiveLeadItem? _activeLead;
   int _dialStartTimeMs = 0;
   bool _isWaitingForCallReturn = false;
+  bool _hasLeftApp = false;
   BuildContext? _activeContext;
   GlobalKey<NavigatorState>? _navigatorKey;
 
@@ -113,6 +114,7 @@ class AppPhoneCallService with WidgetsBindingObserver {
     _activeContext = context;
     _dialStartTimeMs = DateTime.now().millisecondsSinceEpoch;
     _isWaitingForCallReturn = true;
+    _hasLeftApp = false;
 
     if (kIsWeb) {
       // 1. Web browser: Trigger system dialer pad via tel: URI
@@ -136,11 +138,27 @@ class AppPhoneCallService with WidgetsBindingObserver {
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed &&
-        _isWaitingForCallReturn &&
-        _activeLead != null) {
-      _isWaitingForCallReturn = false;
-      _handleCallReturn();
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.inactive ||
+        state == AppLifecycleState.hidden) {
+      if (_isWaitingForCallReturn) {
+        _hasLeftApp = true;
+      }
+    } else if (state == AppLifecycleState.resumed) {
+      if (_isWaitingForCallReturn && _activeLead != null) {
+        final elapsed =
+            DateTime.now().millisecondsSinceEpoch - _dialStartTimeMs;
+        // If app hasn't actually left/paused yet and elapsed < 1200ms, ignore transient resume
+        if (!_hasLeftApp && elapsed < 1200) {
+          debugPrint(
+            '[AppPhoneCallService] Ignoring transient resume before app left ($elapsed ms)',
+          );
+          return;
+        }
+        _isWaitingForCallReturn = false;
+        _hasLeftApp = false;
+        _handleCallReturn();
+      }
     }
   }
 
@@ -151,15 +169,11 @@ class AppPhoneCallService with WidgetsBindingObserver {
     _activeLead = null;
     _activeContext = null;
 
-    final targetContext = (context != null && context.mounted)
-        ? context
-        : _navigatorKey?.currentContext;
-
-    if (lead == null || targetContext == null || !targetContext.mounted) return;
-
     final elapsedMs = DateTime.now().millisecondsSinceEpoch - startMs;
     // Debounce accidental same-frame re-entry (< 150ms)
     if (elapsedMs < 150) return;
+
+    if (lead == null) return;
 
     final cleanPhone =
         (lead.fullPhone.isNotEmpty ? lead.fullPhone : lead.maskedPhone)
@@ -201,25 +215,40 @@ class AppPhoneCallService with WidgetsBindingObserver {
     // Duration is pre-filled from CallLog when Android permits, or editable manually.
     final formattedDuration = _formatDuration(durationSeconds);
 
-    // Immediately open Call Outcome sheet with zero delay
-    if (targetContext.mounted) {
-      final saved = await LeadCallSheets.showCallAndOutcomeSheet(
-        targetContext,
-        leadId: lead.id,
-        leadName: lead.name,
-        maskedPhone: lead.maskedPhone,
-        collegeInfo: lead.collegeInfo,
-        campaignTag: lead.campaignTag,
-        initialDuration: formattedDuration,
-        course: lead.course,
-        fee: lead.fee,
-      );
-      if (!saved && lead.id.isNotEmpty) {
-        unawaited(LeadsRds().releaseLeadLock(lead.id));
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final targetContext = (context != null && context.mounted)
+          ? context
+          : _navigatorKey?.currentContext;
+
+      if (targetContext == null || !targetContext.mounted) {
+        if (lead.id.isNotEmpty) {
+          unawaited(LeadsRds().releaseLeadLock(lead.id));
+        }
+        return;
       }
-    } else if (lead.id.isNotEmpty) {
-      unawaited(LeadsRds().releaseLeadLock(lead.id));
-    }
+
+      try {
+        final saved = await LeadCallSheets.showCallAndOutcomeSheet(
+          targetContext,
+          leadId: lead.id,
+          leadName: lead.name,
+          maskedPhone: lead.maskedPhone,
+          collegeInfo: lead.collegeInfo,
+          campaignTag: lead.campaignTag,
+          initialDuration: formattedDuration,
+          course: lead.course,
+          fee: lead.fee,
+        );
+        if (!saved && lead.id.isNotEmpty) {
+          unawaited(LeadsRds().releaseLeadLock(lead.id));
+        }
+      } catch (e) {
+        debugPrint('[AppPhoneCallService] Error showing outcome sheet: $e');
+        if (lead.id.isNotEmpty) {
+          unawaited(LeadsRds().releaseLeadLock(lead.id));
+        }
+      }
+    });
   }
 
   String _formatDuration(int seconds) {

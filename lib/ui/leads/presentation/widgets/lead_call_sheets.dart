@@ -1,3 +1,8 @@
+import 'package:acadeno_crm/core/injection/injection.dart';
+import 'package:acadeno_crm/ui/follow_ups/data/repository/follow_ups_repo.dart';
+import 'package:acadeno_crm/ui/follow_ups/data/sources/follow_ups_rds.dart';
+import 'package:acadeno_crm/ui/leads/data/repository/leads_repo.dart';
+import 'package:acadeno_crm/ui/leads/data/sources/leads_rds.dart';
 import 'package:acadeno_crm/shared/widgets/acadeno_dropdown.dart';
 import 'dart:ui' show ImageFilter;
 import '../pages/lead_detail_page.dart';
@@ -93,8 +98,30 @@ class LeadCallSheets {
     String? course,
     String? fee,
   }) async {
-    final cubit = context.read<LeadsCubit>();
-    final followUpsCubit = context.read<FollowUpsCubit>();
+    final LeadsCubit cubit;
+    LeadsCubit? tempCubit;
+    try {
+      tempCubit = context.read<LeadsCubit>();
+    } catch (_) {
+      try {
+        tempCubit = getIt<LeadsCubit>();
+      } catch (_) {}
+    }
+    cubit = tempCubit ?? LeadsCubit(LeadsRepository(LeadsRds()));
+
+    final FollowUpsCubit followUpsCubit;
+    FollowUpsCubit? tempFollowUpsCubit;
+    try {
+      tempFollowUpsCubit = context.read<FollowUpsCubit>();
+    } catch (_) {
+      try {
+        tempFollowUpsCubit = getIt<FollowUpsCubit>();
+      } catch (_) {}
+    }
+    followUpsCubit =
+        tempFollowUpsCubit ??
+        FollowUpsCubit(FollowUpsRepository(FollowUpsRds()));
+
     HomeCubit? homeCubit;
     try {
       homeCubit = context.read<HomeCubit>();
@@ -985,9 +1012,46 @@ class LeadCallSheets {
       if (!allowed) return;
     } catch (_) {}
     if (!context.mounted) return;
-    Navigator.of(
-      context,
-    ).push(MaterialPageRoute(builder: (ctx) => LeadDetailPage(lead: lead)));
+
+    LeadsCubit? leadsCubit;
+    try {
+      leadsCubit = context.read<LeadsCubit>();
+    } catch (_) {
+      try {
+        leadsCubit = getIt<LeadsCubit>();
+      } catch (_) {}
+    }
+
+    FollowUpsCubit? followUpsCubit;
+    try {
+      followUpsCubit = context.read<FollowUpsCubit>();
+    } catch (_) {
+      try {
+        followUpsCubit = getIt<FollowUpsCubit>();
+      } catch (_) {}
+    }
+
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (ctx) {
+          Widget page = LeadDetailPage(lead: lead);
+          if (leadsCubit != null && followUpsCubit != null) {
+            return MultiBlocProvider(
+              providers: [
+                BlocProvider.value(value: leadsCubit),
+                BlocProvider.value(value: followUpsCubit),
+              ],
+              child: page,
+            );
+          } else if (leadsCubit != null) {
+            return BlocProvider.value(value: leadsCubit, child: page);
+          } else if (followUpsCubit != null) {
+            return BlocProvider.value(value: followUpsCubit, child: page);
+          }
+          return page;
+        },
+      ),
+    );
   }
 
   // WhatsApp Templates Quick Action Sheet
