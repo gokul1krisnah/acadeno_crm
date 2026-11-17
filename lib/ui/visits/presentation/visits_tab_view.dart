@@ -2283,7 +2283,7 @@ class _UpcomingVisitCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         SvgPicture.asset(
-                          'assets/svgs/visit_location_pin.svg',
+                          'assets/svgs/location.svg',
                           width: 14,
                           height: 14,
                         ),
@@ -2789,7 +2789,7 @@ class _RecentVisitCard extends StatelessWidget {
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
                                         SvgPicture.asset(
-                                          'assets/svgs/visit_outcome_doc.svg',
+                                          'assets/svgs/outcome.svg',
                                           width: 12,
                                           height: 12,
                                         ),
@@ -2927,7 +2927,7 @@ class _RecentVisitCard extends StatelessWidget {
                         Padding(
                           padding: const EdgeInsets.only(top: 1.5),
                           child: SvgPicture.asset(
-                            'assets/svgs/visit_met_clock.svg',
+                            'assets/svgs/clock.svg',
                             width: 14,
                             height: 15,
                           ),
@@ -2972,7 +2972,7 @@ class _RecentVisitCard extends StatelessWidget {
                         Padding(
                           padding: const EdgeInsets.only(top: 3.5),
                           child: SvgPicture.asset(
-                            'assets/svgs/visit_next_step.svg',
+                            'assets/svgs/next.svg',
                             width: 10,
                             height: 10,
                           ),
@@ -3253,10 +3253,10 @@ class _CancelledVisitCard extends StatelessWidget {
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        const Icon(
-                          Icons.place_outlined,
-                          size: 14,
-                          color: Color(0xFF647196),
+                        SvgPicture.asset(
+                          'assets/svgs/location.svg',
+                          width: 14,
+                          height: 14,
                         ),
                         const SizedBox(width: 4),
                         Expanded(
@@ -3293,7 +3293,7 @@ class _CancelledVisitCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 SvgPicture.asset(
-                  'assets/svgs/visit_reason_question.svg',
+                  'assets/svgs/question.svg',
                   width: 14,
                   height: 14,
                 ),
