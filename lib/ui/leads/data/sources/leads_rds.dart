@@ -468,14 +468,12 @@ class FirestoreLeadsBackend implements LeadsBackend {
     }
 
     final rawRole = (data['role'] ?? 'executive').toString().trim();
-    final effectiveRole =
-        isAdminSession && !_isAdminOrManagerRole(rawRole)
+    final effectiveRole = isAdminSession && !_isAdminOrManagerRole(rawRole)
         ? 'super_admin'
         : rawRole;
     final rawName = (data['name'] ?? currentUserDisplayName).toString().trim();
 
-    if (requireAdminOrManager &&
-        !_isAdminOrManagerRole(effectiveRole)) {
+    if (requireAdminOrManager && !_isAdminOrManagerRole(effectiveRole)) {
       throw const LeadPermissionException(
         'Only authorized Admins and Managers can perform this action.',
       );
@@ -605,7 +603,10 @@ class FirestoreLeadsBackend implements LeadsBackend {
         int maxNum = 0;
         for (final doc in lDocs.docs) {
           final docName = (doc.data()['name'] ?? '').toString().trim();
-          final match = RegExp(r'^L0*(\d+)$', caseSensitive: false).firstMatch(docName);
+          final match = RegExp(
+            r'^L0*(\d+)$',
+            caseSensitive: false,
+          ).firstMatch(docName);
           if (match != null) {
             final parsed = int.tryParse(match.group(1) ?? '0') ?? 0;
             if (parsed > maxNum) maxNum = parsed;
@@ -827,7 +828,10 @@ class FirestoreLeadsBackend implements LeadsBackend {
         int maxNum = 0;
         for (final doc in lDocs.docs) {
           final docName = (doc.data()['name'] ?? '').toString().trim();
-          final match = RegExp(r'^L0*(\d+)$', caseSensitive: false).firstMatch(docName);
+          final match = RegExp(
+            r'^L0*(\d+)$',
+            caseSensitive: false,
+          ).firstMatch(docName);
           if (match != null) {
             final parsed = int.tryParse(match.group(1) ?? '0') ?? 0;
             if (parsed > maxNum) maxNum = parsed;
@@ -935,11 +939,15 @@ class FirestoreLeadsBackend implements LeadsBackend {
         source: isAdminOrManager ? source.trim() : current.source,
         status: status.trim(),
         notes: (studentNotes != null || managerNotes != null)
-            ? ((studentNotes != null && studentNotes.isNotEmpty) ? studentNotes : current.notes)
+            ? ((studentNotes != null && studentNotes.isNotEmpty)
+                  ? studentNotes
+                  : current.notes)
             : (notes ?? current.notes),
         studentNotes: (studentNotes != null && studentNotes.isNotEmpty)
             ? studentNotes
-            : (current.studentNotes.isNotEmpty ? current.studentNotes : (notes ?? current.notes)),
+            : (current.studentNotes.isNotEmpty
+                  ? current.studentNotes
+                  : (notes ?? current.notes)),
         managerNotes: managerNotes ?? current.managerNotes,
         course: course ?? current.course,
         batch: batch ?? current.batch,
@@ -1012,8 +1020,11 @@ class FirestoreLeadsBackend implements LeadsBackend {
 
   @override
   Future<int> deleteMultipleLeads(List<String> leadIds) async {
-    final cleanIds =
-        leadIds.map((e) => e.trim()).where((e) => e.isNotEmpty).toSet().toList();
+    final cleanIds = leadIds
+        .map((e) => e.trim())
+        .where((e) => e.isNotEmpty)
+        .toSet()
+        .toList();
     if (cleanIds.isEmpty) return 0;
     final actor = await _verifyCurrentActor(requireAdminOrManager: true);
 
@@ -1181,7 +1192,8 @@ class FirestoreLeadsBackend implements LeadsBackend {
             prevExecUid = existingAssign.executiveUid;
             prevExecName = existingAssign.executiveName;
             isReassignment = false;
-          } else if (existingAssign.executiveUid != executive.uid && !allowReassign) {
+          } else if (existingAssign.executiveUid != executive.uid &&
+              !allowReassign) {
             throw AssignmentConflictException(
               '${lead.name} is already assigned to ${existingAssign.executiveName} for $dateLabel. Confirm reassignment to proceed.',
             );
@@ -1258,7 +1270,8 @@ class FirestoreLeadsBackend implements LeadsBackend {
 
         final updatedTimeline = <String>[timelineEntry, ...lead.timeline];
 
-        final effectiveStatus = (nextLeadStatus == 'overdue' || nextLeadStatus == 'New')
+        final effectiveStatus =
+            (nextLeadStatus == 'overdue' || nextLeadStatus == 'New')
             ? 'Assigned'
             : nextLeadStatus;
         final formattedFollowUp = '$dateLabel · 10:00 AM';
@@ -1419,8 +1432,9 @@ class FirestoreLeadsBackend implements LeadsBackend {
             if (isOptedOut) continue;
 
             final aDateKey = (data['assignedDateKey'] ?? '').toString().trim();
-            final aDateLabel =
-                (data['assignedDateLabel'] ?? '').toString().toLowerCase();
+            final aDateLabel = (data['assignedDateLabel'] ?? '')
+                .toString()
+                .toLowerCase();
 
             bool isForTargetDate = false;
             if (aDateKey.isNotEmpty) {
@@ -1465,36 +1479,34 @@ class FirestoreLeadsBackend implements LeadsBackend {
           'call_logs:executiveUid:$uid',
           () => _callLogs.where('executiveUid', isEqualTo: uid),
         )
-        .map((
-      snap,
-    ) {
-      final records = snap.docs
-          .map((d) => CallHistoryRecord.fromMap(d.id, d.data()))
-          .toList();
+        .map((snap) {
+          final records = snap.docs
+              .map((d) => CallHistoryRecord.fromMap(d.id, d.data()))
+              .toList();
 
-      // Merge locally queued calls so the executive sees them in My Record immediately (RL-5, RL-6)
-      final queued = OfflineQueueService.instance.getQueuedCalls();
-      for (final q in queued) {
-        if (!records.any((r) => r.id == q.clientId)) {
-          records.insert(
-            0,
-            CallHistoryRecord(
-              id: q.clientId,
-              leadName: q.leadName,
-              collegeInfo: '—',
-              campaign: 'Direct visit',
-              outcome: q.outcome,
-              duration: q.duration,
-              timestamp: 'Today · Pending sync',
-              notes: q.notes,
-            ),
-          );
-        }
-      }
+          // Merge locally queued calls so the executive sees them in My Record immediately (RL-5, RL-6)
+          final queued = OfflineQueueService.instance.getQueuedCalls();
+          for (final q in queued) {
+            if (!records.any((r) => r.id == q.clientId)) {
+              records.insert(
+                0,
+                CallHistoryRecord(
+                  id: q.clientId,
+                  leadName: q.leadName,
+                  collegeInfo: '—',
+                  campaign: 'Direct visit',
+                  outcome: q.outcome,
+                  duration: q.duration,
+                  timestamp: 'Today · Pending sync',
+                  notes: q.notes,
+                ),
+              );
+            }
+          }
 
-      records.sort((a, b) => b.id.compareTo(a.id));
-      return records;
-    });
+          records.sort((a, b) => b.id.compareTo(a.id));
+          return records;
+        });
   }
 
   @override
@@ -1866,8 +1878,7 @@ class FirestoreLeadsBackend implements LeadsBackend {
   }) async {
     final actor = await _verifyCurrentActor();
     final stamp = LeadDateHelper.timelineStamp();
-    final entry =
-        '$stamp · WhatsApp sent ("$templateTitle") by ${actor.name}';
+    final entry = '$stamp · WhatsApp sent ("$templateTitle") by ${actor.name}';
     if (leadId.trim().isNotEmpty) {
       try {
         await _leads.doc(leadId).update({
@@ -1879,8 +1890,7 @@ class FirestoreLeadsBackend implements LeadsBackend {
       } catch (_) {}
     }
     try {
-      final docId =
-          'wa_${leadId}_${DateTime.now().millisecondsSinceEpoch}';
+      final docId = 'wa_${leadId}_${DateTime.now().millisecondsSinceEpoch}';
       await _callLogs.doc(docId).set({
         'leadId': leadId,
         'leadName': leadName,
