@@ -49,6 +49,8 @@ class _SettingsViewState extends State<SettingsView>
   String _overdueEscalationHours = '24';
   bool _autoAssignWalkIns = true;
   bool _enableBiometricLock = true;
+  late TextEditingController _dailyCallsTargetController;
+  late TextEditingController _escalationThresholdController;
 
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -69,6 +71,12 @@ class _SettingsViewState extends State<SettingsView>
       text: initialName.isNotEmpty ? initialName : 'Admin',
     );
     _emailController.text = currentUser?.email ?? '';
+    _dailyCallsTargetController = TextEditingController(
+      text: _defaultCallsTarget,
+    );
+    _escalationThresholdController = TextEditingController(
+      text: _overdueEscalationHours,
+    );
 
     _loadOrgSettings();
   }
@@ -91,12 +99,14 @@ class _SettingsViewState extends State<SettingsView>
       if (!mounted) return;
       setState(() {
         if (savedCallsTarget != null &&
-            const ['25', '40', '50', '75', '100'].contains(savedCallsTarget)) {
-          _defaultCallsTarget = savedCallsTarget;
+            savedCallsTarget.toString().trim().isNotEmpty) {
+          _defaultCallsTarget = savedCallsTarget.toString().trim();
+          _dailyCallsTargetController.text = _defaultCallsTarget;
         }
         if (savedEscalation != null &&
-            const ['12', '24', '48', '72'].contains(savedEscalation)) {
-          _overdueEscalationHours = savedEscalation;
+            savedEscalation.toString().trim().isNotEmpty) {
+          _overdueEscalationHours = savedEscalation.toString().trim();
+          _escalationThresholdController.text = _overdueEscalationHours;
         }
         if (savedAutoAssign is bool) {
           _autoAssignWalkIns = savedAutoAssign;
@@ -128,6 +138,8 @@ class _SettingsViewState extends State<SettingsView>
     _currentPasswordController.dispose();
     _newPasswordController.dispose();
     _confirmPasswordController.dispose();
+    _dailyCallsTargetController.dispose();
+    _escalationThresholdController.dispose();
     super.dispose();
   }
 
@@ -616,7 +628,8 @@ class _SettingsViewState extends State<SettingsView>
       isDense: true,
       filled: true,
       fillColor: Colors.white,
-      contentPadding: contentPadding ??
+      contentPadding:
+          contentPadding ??
           EdgeInsets.fromLTRB(14, 12, suffixIcon != null ? 4 : 14, 12),
       suffixIcon: suffixIcon,
       border: OutlineInputBorder(
@@ -644,9 +657,7 @@ class _SettingsViewState extends State<SettingsView>
       padding: EdgeInsets.zero,
       constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
       icon: Icon(
-        obscureText
-            ? Icons.visibility_off_outlined
-            : Icons.visibility_outlined,
+        obscureText ? Icons.visibility_off_outlined : Icons.visibility_outlined,
         color: const Color(0xFF5A5F73),
         size: 20,
       ),
@@ -1237,40 +1248,118 @@ class _SettingsViewState extends State<SettingsView>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                AcadenoDropdown.strings(
-                  label: 'Daily Target Calls per Sales Executive',
-                  value: _defaultCallsTarget,
-                  items: const ['25', '40', '50', '75', '100'],
-                  borderRadius: 10.4,
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 8,
+                Text(
+                  'Daily Target Calls per Sales Executive',
+                  style: GoogleFonts.inter(
+                    fontSize: 13.5,
+                    fontWeight: FontWeight.w700,
+                    color: const Color(0xFF0F172A),
+                  ),
+                ),
+                const Gap(8),
+                TextField(
+                  controller: _dailyCallsTargetController,
+                  keyboardType: TextInputType.number,
+                  style: GoogleFonts.inter(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w400,
+                    color: const Color(0xFF0F172A),
+                  ),
+                  decoration: InputDecoration(
+                    isDense: true,
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 12,
+                    ),
+                    filled: true,
+                    fillColor: Colors.white,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(
+                        color: Color(0xFFE2E8F0),
+                        width: 1,
+                      ),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(
+                        color: Color(0xFFE2E8F0),
+                        width: 1,
+                      ),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(
+                        color: Color(0xFF1E159D),
+                        width: 1.5,
+                      ),
+                    ),
                   ),
                   onChanged: (val) {
-                    if (val != null) {
-                      setState(() => _defaultCallsTarget = val);
-                      _saveOrgSetting('defaultCallsTarget', val);
+                    final trimmed = val.trim();
+                    if (trimmed.isNotEmpty) {
+                      setState(() => _defaultCallsTarget = trimmed);
+                      _saveOrgSetting('defaultCallsTarget', trimmed);
                     }
                   },
                 ),
-                const Gap(20),
-                AcadenoDropdown.strings(
-                  label: 'Overdue Follow-up Escalation Threshold',
-                  value: _overdueEscalationHours,
-                  items: const ['12', '24', '48', '72'],
-                  borderRadius: 10.4,
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 8,
+                const Gap(16),
+                Text(
+                  'Overdue Follow-up Escalation Threshold',
+                  style: GoogleFonts.inter(
+                    fontSize: 13.5,
+                    fontWeight: FontWeight.w700,
+                    color: const Color(0xFF0F172A),
+                  ),
+                ),
+                const Gap(8),
+                TextField(
+                  controller: _escalationThresholdController,
+                  keyboardType: TextInputType.number,
+                  style: GoogleFonts.inter(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w400,
+                    color: const Color(0xFF0F172A),
+                  ),
+                  decoration: InputDecoration(
+                    isDense: true,
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 12,
+                    ),
+                    filled: true,
+                    fillColor: Colors.white,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(
+                        color: Color(0xFFE2E8F0),
+                        width: 1,
+                      ),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(
+                        color: Color(0xFFE2E8F0),
+                        width: 1,
+                      ),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(
+                        color: Color(0xFF1E159D),
+                        width: 1.5,
+                      ),
+                    ),
                   ),
                   onChanged: (val) {
-                    if (val != null) {
-                      setState(() => _overdueEscalationHours = val);
-                      _saveOrgSetting('overdueEscalationHours', val);
+                    final trimmed = val.trim();
+                    if (trimmed.isNotEmpty) {
+                      setState(() => _overdueEscalationHours = trimmed);
+                      _saveOrgSetting('overdueEscalationHours', trimmed);
                     }
                   },
                 ),
-                const Gap(20),
+                const Gap(22),
                 _buildFigmaOrgToggleRow(
                   label: 'Auto-assign Walk-in Leads to Creator',
                   value: _autoAssignWalkIns,
@@ -1279,7 +1368,11 @@ class _SettingsViewState extends State<SettingsView>
                     _saveOrgSetting('autoAssignWalkIns', v);
                   },
                 ),
-                const Divider(height: 24, color: Color(0xFFF1F5F9)),
+                const Divider(
+                  height: 24,
+                  thickness: 1,
+                  color: Color(0xFFF1F5F9),
+                ),
                 _buildFigmaOrgToggleRow(
                   label: 'Biometric / PIN Screen Lock',
                   value: _enableBiometricLock,
@@ -1296,13 +1389,15 @@ class _SettingsViewState extends State<SettingsView>
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               if (isWide)
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(child: orgProfileCard),
-                    const Gap(24),
-                    Expanded(child: leadMgmtCard),
-                  ],
+                IntrinsicHeight(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Expanded(child: orgProfileCard),
+                      const Gap(24),
+                      Expanded(child: leadMgmtCard),
+                    ],
+                  ),
                 )
               else ...[
                 orgProfileCard,
@@ -1329,13 +1424,17 @@ class _SettingsViewState extends State<SettingsView>
       padding: EdgeInsets.all(isMobile ? 20 : 28),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE2E8F0), width: 1),
+        borderRadius: BorderRadius.circular(20),
         boxShadow: const [
           BoxShadow(
-            color: Color.fromRGBO(0, 0, 0, 0.03),
+            color: Color(0x0A000000),
+            blurRadius: 16,
+            offset: Offset(0, 4),
+          ),
+          BoxShadow(
+            color: Color(0x05000000),
             blurRadius: 4,
-            offset: Offset(0, 2),
+            offset: Offset(0, 1),
           ),
         ],
       ),
@@ -1345,18 +1444,19 @@ class _SettingsViewState extends State<SettingsView>
           Text(
             title,
             style: GoogleFonts.inter(
-              fontSize: 16,
+              fontSize: 18,
               fontWeight: FontWeight.w700,
-              letterSpacing: -0.4,
+              letterSpacing: -0.3,
               color: const Color(0xFF0F172A),
             ),
           ),
-          const Gap(4),
+          const Gap(6),
           Text(
             subtitle,
             style: GoogleFonts.inter(
-              fontSize: 12.5,
-              height: 1.5,
+              fontSize: 13,
+              fontWeight: FontWeight.w400,
+              height: 1.45,
               color: const Color(0xFF64748B),
             ),
           ),
@@ -1378,19 +1478,19 @@ class _SettingsViewState extends State<SettingsView>
         children: [
           Text(
             label,
-            style: const TextStyle(
-              fontSize: 12,
+            style: GoogleFonts.inter(
+              fontSize: 12.5,
               fontWeight: FontWeight.w400,
-              color: Color(0xFF64748B),
+              color: const Color(0xFF64748B),
             ),
           ),
           const Gap(4),
           Text(
             value,
-            style: const TextStyle(
-              fontSize: 12.5,
+            style: GoogleFonts.inter(
+              fontSize: 13.5,
               fontWeight: FontWeight.w700,
-              color: Color(0xFF0F172A),
+              color: const Color(0xFF0F172A),
             ),
           ),
         ],
@@ -1400,23 +1500,23 @@ class _SettingsViewState extends State<SettingsView>
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         SizedBox(
-          width: 210,
+          width: 220,
           child: Text(
             label,
-            style: const TextStyle(
-              fontSize: 12,
+            style: GoogleFonts.inter(
+              fontSize: 13.5,
               fontWeight: FontWeight.w400,
-              color: Color(0xFF64748B),
+              color: const Color(0xFF64748B),
             ),
           ),
         ),
         Expanded(
           child: Text(
             value,
-            style: const TextStyle(
-              fontSize: 12,
+            style: GoogleFonts.inter(
+              fontSize: 13.5,
               fontWeight: FontWeight.w700,
-              color: Color(0xFF0F172A),
+              color: const Color(0xFF0F172A),
             ),
           ),
         ),
@@ -1435,10 +1535,10 @@ class _SettingsViewState extends State<SettingsView>
         Expanded(
           child: Text(
             label,
-            style: const TextStyle(
-              fontSize: 12,
+            style: GoogleFonts.inter(
+              fontSize: 13.5,
               fontWeight: FontWeight.w700,
-              color: Color(0xFF0F172A),
+              color: const Color(0xFF0F172A),
             ),
           ),
         ),
@@ -1451,7 +1551,7 @@ class _SettingsViewState extends State<SettingsView>
             height: 24,
             padding: const EdgeInsets.all(2),
             decoration: BoxDecoration(
-              color: value ? const Color(0xFF1D149D) : const Color(0xFFE2E8F0),
+              color: value ? const Color(0xFF1E159D) : const Color(0xFFE2E8F0),
               borderRadius: BorderRadius.circular(9999),
             ),
             child: AnimatedAlign(
@@ -1494,28 +1594,28 @@ class _SettingsViewState extends State<SettingsView>
                 _buildFigmaStatusRow(
                   'Web Service Worker',
                   'firebase-messaging-sw.js active',
-                  Icons.check_circle_outline,
-                  const Color(0xFF059669),
+                  Icons.check_circle_rounded,
+                  const Color(0xFF10B981),
                 ),
-                const Divider(height: 32, color: Color(0xFFF1F5F9)),
+                const Divider(height: 28, thickness: 1, color: Color(0xFFF1F5F9)),
                 _buildFigmaStatusRow(
                   'FCM Push Integration',
                   'FCM V1 Cloud Engine Configured',
-                  Icons.check_circle_outline,
-                  const Color(0xFF059669),
+                  Icons.check_circle_rounded,
+                  const Color(0xFF10B981),
                 ),
-                const Divider(height: 32, color: Color(0xFFF1F5F9)),
+                const Divider(height: 28, thickness: 1, color: Color(0xFFF1F5F9)),
                 _buildFigmaStatusRow(
                   'Screen Privacy & Capture Protection',
                   'FLAG_SECURE Active',
-                  Icons.verified_user_outlined,
+                  Icons.gpp_good_outlined,
                   const Color(0xFFEA580C),
                 ),
-                const Divider(height: 32, color: Color(0xFFF1F5F9)),
+                const Divider(height: 28, thickness: 1, color: Color(0xFFF1F5F9)),
                 _buildFigmaStatusRow(
                   'Offline Storage Engine',
                   'Hive Local Box & Queue',
-                  Icons.storage_outlined,
+                  Icons.dns_rounded,
                   const Color(0xFFEA580C),
                 ),
               ],
@@ -1535,19 +1635,19 @@ class _SettingsViewState extends State<SettingsView>
                   '1.0.4+5 (Production Release)',
                   isMobile: isMobile,
                 ),
-                const Divider(height: 30, color: Color(0xFFF1F5F9)),
+                const Divider(height: 28, thickness: 1, color: Color(0xFFF1F5F9)),
                 _buildFigmaSystemInfoRow(
                   'Firebase Project ID',
                   'acadenocrm-b727a',
                   isMobile: isMobile,
                 ),
-                const Divider(height: 30, color: Color(0xFFF1F5F9)),
+                const Divider(height: 28, thickness: 1, color: Color(0xFFF1F5F9)),
                 _buildFigmaSystemInfoRow(
                   'Database Engine',
                   'Google Cloud Firestore (Native Multi-region)',
                   isMobile: isMobile,
                 ),
-                const Divider(height: 30, color: Color(0xFFF1F5F9)),
+                const Divider(height: 28, thickness: 1, color: Color(0xFFF1F5F9)),
                 _buildFigmaSystemInfoRow(
                   'Hosting Destination',
                   'Vercel Static Edge & SPA',
@@ -1561,13 +1661,15 @@ class _SettingsViewState extends State<SettingsView>
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               if (isWide)
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(child: pushCard),
-                    const Gap(24),
-                    Expanded(child: versionCard),
-                  ],
+                IntrinsicHeight(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Expanded(child: pushCard),
+                      const Gap(24),
+                      Expanded(child: versionCard),
+                    ],
+                  ),
                 )
               else ...[
                 pushCard,
@@ -1594,13 +1696,17 @@ class _SettingsViewState extends State<SettingsView>
       padding: EdgeInsets.all(isMobile ? 20 : 28),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE2E8F0), width: 1),
+        borderRadius: BorderRadius.circular(20),
         boxShadow: const [
           BoxShadow(
-            color: Color.fromRGBO(0, 0, 0, 0.03),
+            color: Color(0x0A000000),
+            blurRadius: 16,
+            offset: Offset(0, 4),
+          ),
+          BoxShadow(
+            color: Color(0x05000000),
             blurRadius: 4,
-            offset: Offset(0, 2),
+            offset: Offset(0, 1),
           ),
         ],
       ),
@@ -1610,18 +1716,19 @@ class _SettingsViewState extends State<SettingsView>
           Text(
             title,
             style: GoogleFonts.inter(
-              fontSize: 16,
+              fontSize: 18,
               fontWeight: FontWeight.w700,
-              letterSpacing: -0.4,
+              letterSpacing: -0.3,
               color: const Color(0xFF0F172A),
             ),
           ),
-          const Gap(4),
+          const Gap(6),
           Text(
             subtitle,
             style: GoogleFonts.inter(
-              fontSize: 12.5,
-              height: 1.5,
+              fontSize: 13,
+              fontWeight: FontWeight.w400,
+              height: 1.45,
               color: const Color(0xFF64748B),
             ),
           ),
@@ -1653,8 +1760,8 @@ class _SettingsViewState extends State<SettingsView>
               Text(
                 label,
                 style: GoogleFonts.inter(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
+                  fontSize: 13.5,
+                  fontWeight: FontWeight.w700,
                   color: const Color(0xFF0F172A),
                 ),
               ),
@@ -1663,8 +1770,8 @@ class _SettingsViewState extends State<SettingsView>
                 status,
                 style: GoogleFonts.jetBrainsMono(
                   fontSize: 12,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: -0.3,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: -0.2,
                   color: color,
                 ),
               ),
@@ -1687,8 +1794,8 @@ class _SettingsViewState extends State<SettingsView>
           Text(
             label,
             style: GoogleFonts.inter(
-              fontSize: 13,
-              fontWeight: FontWeight.w500,
+              fontSize: 12.5,
+              fontWeight: FontWeight.w400,
               color: const Color(0xFF64748B),
             ),
           ),
@@ -1696,7 +1803,7 @@ class _SettingsViewState extends State<SettingsView>
           Text(
             value,
             style: GoogleFonts.inter(
-              fontSize: 14,
+              fontSize: 13.5,
               fontWeight: FontWeight.w700,
               color: const Color(0xFF0F172A),
             ),
@@ -1708,12 +1815,12 @@ class _SettingsViewState extends State<SettingsView>
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         SizedBox(
-          width: 196,
+          width: 220,
           child: Text(
             label,
             style: GoogleFonts.inter(
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
+              fontSize: 13.5,
+              fontWeight: FontWeight.w400,
               color: const Color(0xFF64748B),
             ),
           ),
@@ -1722,7 +1829,7 @@ class _SettingsViewState extends State<SettingsView>
           child: Text(
             value,
             style: GoogleFonts.inter(
-              fontSize: 14,
+              fontSize: 13.5,
               fontWeight: FontWeight.w700,
               color: const Color(0xFF0F172A),
             ),
@@ -1835,7 +1942,10 @@ class _SettingsViewState extends State<SettingsView>
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: borderColor ?? const Color(0xFFE2E8F0), width: 1),
+        border: Border.all(
+          color: borderColor ?? const Color(0xFFE2E8F0),
+          width: 1,
+        ),
         boxShadow: const [
           BoxShadow(
             color: Color.fromRGBO(0, 0, 0, 0.03),

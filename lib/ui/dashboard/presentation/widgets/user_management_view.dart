@@ -2278,8 +2278,8 @@ class _UserManagementViewState extends State<UserManagementView> {
             focusColor: Colors.transparent,
             isExpanded: true,
             isDense: true,
-            dropdownColor: Colors.white,
-            borderRadius: BorderRadius.circular(12),
+            dropdownColor: const Color(0xFFE2E2E2),
+            borderRadius: BorderRadius.circular(16),
             icon: const Icon(
               Icons.keyboard_arrow_down_rounded,
               size: 16,
@@ -2288,7 +2288,7 @@ class _UserManagementViewState extends State<UserManagementView> {
             style: GoogleFonts.inter(
               fontSize: 14,
               fontWeight: FontWeight.w500,
-              color: const Color(0xFF334155),
+              color: const Color(0xFF2E1D44),
             ),
             selectedItemBuilder: (BuildContext context) {
               return items.map<Widget>((item) {
@@ -2312,7 +2312,7 @@ class _UserManagementViewState extends State<UserManagementView> {
                         style: GoogleFonts.inter(
                           fontSize: 14,
                           fontWeight: FontWeight.w500,
-                          color: const Color(0xFF334155),
+                          color: const Color(0xFF2E1D44),
                         ),
                       ),
                     ),
@@ -2328,8 +2328,8 @@ class _UserManagementViewState extends State<UserManagementView> {
                   label: item.label,
                   isSelected: isSelected,
                   icon: item.icon,
-                  activeColor: const Color(0xFFEF8144),
-                  textColor: const Color(0xFF334155),
+                  activeColor: const Color(0xFFD35401),
+                  textColor: const Color(0xFF2E1D44),
                 ),
               );
             }).toList(),
@@ -2346,18 +2346,15 @@ class _UserManagementViewState extends State<UserManagementView> {
       items: const [
         AcadenoDropdownItem<String>(
           value: 'all',
-          label: 'All Roles',
-          icon: Icon(Icons.work_outline_rounded, size: 14),
+          label: 'All Role',
         ),
         AcadenoDropdownItem<String>(
           value: 'admin',
           label: 'Admin',
-          icon: Icon(Icons.shield_outlined, size: 14),
         ),
         AcadenoDropdownItem<String>(
           value: 'hr',
           label: 'HR & Operations',
-          icon: Icon(Icons.badge_outlined, size: 14),
         ),
       ],
       onChanged: (v) => setState(() => _roleFilter = v ?? 'all'),
@@ -2370,18 +2367,15 @@ class _UserManagementViewState extends State<UserManagementView> {
       items: const [
         AcadenoDropdownItem<String>(
           value: 'all',
-          label: 'All Statuses',
-          icon: Icon(Icons.tune_rounded, size: 14),
+          label: 'All Status',
         ),
         AcadenoDropdownItem<String>(
           value: 'active',
           label: 'Active Only',
-          icon: Icon(Icons.check_circle_outline, size: 14),
         ),
         AcadenoDropdownItem<String>(
           value: 'inactive',
           label: 'Inactive Only',
-          icon: Icon(Icons.cancel_outlined, size: 14),
         ),
       ],
       onChanged: (v) => setState(() => _statusFilter = v ?? 'all'),
