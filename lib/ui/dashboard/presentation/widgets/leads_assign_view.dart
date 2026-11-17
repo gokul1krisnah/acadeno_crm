@@ -2301,7 +2301,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
         const Gap(8),
         Container(
           height: 38,
-          padding: const EdgeInsets.symmetric(horizontal: 14),
+          padding: const EdgeInsets.symmetric(horizontal: 16),
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(8),
@@ -2325,7 +2325,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                 borderRadius: BorderRadius.circular(8),
                 icon: const Icon(
                   Icons.keyboard_arrow_down_rounded,
-                  size: 18,
+                  size: 16,
                   color: Color(0xFF6B7280),
                 ),
                 style: GoogleFonts.inter(
@@ -2649,12 +2649,9 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                 final totalW = math.max(0.0, c.maxWidth);
                 if (totalW <= 0) return const SizedBox.shrink();
 
-                final isDesktop = totalW >= 1040;
-                final isTablet = totalW >= 680 && totalW < 1040;
-                final isSmallMobile = totalW < 380;
-                final padding = isDesktop
-                    ? 25.0
-                    : (isTablet ? 20.0 : (isSmallMobile ? 12.0 : 16.0));
+                final isMobileScreen =
+                    MediaQuery.of(context).size.width < 600 || totalW < 540;
+                final padding = isMobileScreen ? 16.0 : 25.0;
 
                 final searchField = Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -2689,10 +2686,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                             fontWeight: FontWeight.w400,
                             color: const Color(0xFF9CA3AF),
                           ),
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 14,
-                            vertical: 9,
-                          ),
+                          contentPadding: const EdgeInsets.fromLTRB(16, 9, 16, 10),
                           filled: true,
                           fillColor: Colors.white,
                           border: OutlineInputBorder(
@@ -2797,8 +2791,13 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                 );
 
                 Widget content;
-                if (isDesktop) {
-                  content = Row(
+                if (!isMobileScreen) {
+                  // Desktop & Tablet: Exact 6 equal columns in 1 row (Figma node 1706:134)
+                  const targetFilterWidth = 1070.0;
+                  final availableInnerW = totalW - (padding * 2);
+                  final needsScaling = availableInnerW < targetFilterWidth;
+
+                  Widget rowContent = Row(
                     children: [
                       Expanded(child: searchField),
                       const Gap(16),
@@ -2813,49 +2812,21 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                       Expanded(child: fStatus),
                     ],
                   );
-                } else if (isTablet) {
-                  content = Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Row(
-                        children: [
-                          Expanded(child: searchField),
-                          const Gap(16),
-                          Expanded(child: fSource),
-                          const Gap(16),
-                          Expanded(child: fCollege),
-                        ],
+
+                  if (needsScaling) {
+                    rowContent = FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: SizedBox(
+                        width: targetFilterWidth,
+                        child: rowContent,
                       ),
-                      const Gap(16),
-                      Row(
-                        children: [
-                          Expanded(child: fBranch),
-                          const Gap(16),
-                          Expanded(child: fYear),
-                          const Gap(16),
-                          Expanded(child: fStatus),
-                        ],
-                      ),
-                    ],
-                  );
-                } else if (isSmallMobile) {
-                  content = Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      searchField,
-                      const Gap(12),
-                      fSource,
-                      const Gap(12),
-                      fCollege,
-                      const Gap(12),
-                      fBranch,
-                      const Gap(12),
-                      fYear,
-                      const Gap(12),
-                      fStatus,
-                    ],
-                  );
+                    );
+                  }
+
+                  content = rowContent;
                 } else {
+                  // Mobile phones responsive layout
                   content = Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
