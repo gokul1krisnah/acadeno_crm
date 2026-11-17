@@ -169,13 +169,12 @@ class _VisitsTabViewState extends State<VisitsTabView> {
                         ),
                         Gap(headerToTabsGap),
 
-                        // Flat Tab Headers: UPCOMING | COMPLETED | CANCELLED
+                        // Tabs Bar matching Figma Node 1863:566: Upcoming | Completed | Cancelled
                         Row(
                           children: [
                             Expanded(
                               child: _VisitTabItem(
-                                title: 'UPCOMING',
-                                count: state.upcomingCount,
+                                title: 'Upcoming',
                                 alignment: Alignment.centerLeft,
                                 isSelected:
                                     state.selectedBucket ==
@@ -188,8 +187,7 @@ class _VisitsTabViewState extends State<VisitsTabView> {
                             ),
                             Expanded(
                               child: _VisitTabItem(
-                                title: 'COMPLETED',
-                                count: state.completedCount,
+                                title: 'Completed',
                                 alignment: Alignment.center,
                                 isSelected:
                                     state.selectedBucket ==
@@ -202,8 +200,7 @@ class _VisitsTabViewState extends State<VisitsTabView> {
                             ),
                             Expanded(
                               child: _VisitTabItem(
-                                title: 'CANCELLED',
-                                count: state.cancelledCount,
+                                title: 'Cancelled',
                                 alignment: Alignment.centerRight,
                                 isSelected:
                                     state.selectedBucket ==
@@ -218,37 +215,47 @@ class _VisitsTabViewState extends State<VisitsTabView> {
                         ),
                         const Gap(8),
 
-                        // Continuous sliding 2px indicator matching Follow-ups style
+                        // Sliding 2px indicator with baseline track (Figma Node 1863:566, 1863:570, 1863:574)
                         SizedBox(
                           height: 2,
                           width: double.infinity,
-                          child: AnimatedAlign(
-                            alignment: switch (state.selectedBucket) {
-                              VisitStatusBucket.upcoming =>
-                                Alignment.centerLeft,
-                              VisitStatusBucket.completed => Alignment.center,
-                              VisitStatusBucket.cancelled =>
-                                Alignment.centerRight,
-                            },
-                            duration: const Duration(milliseconds: 260),
-                            curve: Curves.easeInOutCubic,
-                            child: AnimatedContainer(
-                              duration: const Duration(milliseconds: 260),
-                              curve: Curves.easeInOutCubic,
-                              height: 2,
-                              width: switch (state.selectedBucket) {
-                                VisitStatusBucket.upcoming =>
-                                  isCompact ? 72.0 : 86.0,
-                                VisitStatusBucket.completed =>
-                                  isCompact ? 78.0 : 94.0,
-                                VisitStatusBucket.cancelled =>
-                                  isCompact ? 74.0 : 88.0,
-                              },
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFE64A19),
-                                borderRadius: BorderRadius.circular(999),
+                          child: Stack(
+                            children: [
+                              Positioned(
+                                left: 0,
+                                right: 0,
+                                bottom: 0,
+                                height: 2,
+                                child: Container(
+                                  color: const Color(0xFFEDF0FA),
+                                ),
                               ),
-                            ),
+                              AnimatedAlign(
+                                alignment: switch (state.selectedBucket) {
+                                  VisitStatusBucket.upcoming =>
+                                    Alignment.centerLeft,
+                                  VisitStatusBucket.completed => Alignment.center,
+                                  VisitStatusBucket.cancelled =>
+                                    Alignment.centerRight,
+                                },
+                                duration: const Duration(milliseconds: 260),
+                                curve: Curves.easeInOutCubic,
+                                child: AnimatedContainer(
+                                  duration: const Duration(milliseconds: 260),
+                                  curve: Curves.easeInOutCubic,
+                                  height: 2,
+                                  width: switch (state.selectedBucket) {
+                                    VisitStatusBucket.upcoming => 71.0,
+                                    VisitStatusBucket.completed => 78.0,
+                                    VisitStatusBucket.cancelled => 73.0,
+                                  },
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFE64A19),
+                                    borderRadius: BorderRadius.circular(999),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ],
@@ -3337,14 +3344,12 @@ class _CancelledVisitCard extends StatelessWidget {
 
 class _VisitTabItem extends StatelessWidget {
   final String title;
-  final int count;
   final Alignment alignment;
   final bool isSelected;
   final VoidCallback onTap;
 
   const _VisitTabItem({
     required this.title,
-    required this.count,
     required this.alignment,
     required this.isSelected,
     required this.onTap,
@@ -3360,57 +3365,17 @@ class _VisitTabItem extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 4),
         child: Align(
           alignment: alignment,
-          child: FittedBox(
-            fit: BoxFit.scaleDown,
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                AnimatedDefaultTextStyle(
-                  duration: const Duration(milliseconds: 200),
-                  style: GoogleFonts.inter(
-                    fontSize: 12,
-                    fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
-                    letterSpacing: 0.6,
-                    height: 17 / 12,
-                    color: isSelected
-                        ? const Color(0xFF0F172A)
-                        : const Color(0xFF94A3B8),
-                  ),
-                  child: Text(title, maxLines: 1),
-                ),
-                const Gap(5),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 6,
-                    vertical: 1.5,
-                  ),
-                  decoration: BoxDecoration(
-                    color: isSelected
-                        ? const Color(0xFFFFF1EB)
-                        : const Color(0xFFF1F5F9),
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(
-                      color: isSelected
-                          ? const Color(0xFFFFD8CC)
-                          : const Color(0xFFE2E8F0),
-                      width: 0.8,
-                    ),
-                  ),
-                  child: Text(
-                    '$count',
-                    style: GoogleFonts.inter(
-                      fontSize: 10,
-                      fontWeight: isSelected
-                          ? FontWeight.w700
-                          : FontWeight.w600,
-                      color: isSelected
-                          ? const Color(0xFFD45107)
-                          : const Color(0xFF64748B),
-                      height: 1.2,
-                    ),
-                  ),
-                ),
-              ],
+          child: Text(
+            title,
+            maxLines: 1,
+            style: GoogleFonts.inter(
+              fontSize: 13,
+              fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+              letterSpacing: -0.2,
+              height: 17 / 13,
+              color: isSelected
+                  ? const Color(0xFF0E142E)
+                  : const Color(0xFF647196),
             ),
           ),
         ),
