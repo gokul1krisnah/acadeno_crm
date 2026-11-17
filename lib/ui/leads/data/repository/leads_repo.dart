@@ -32,6 +32,8 @@ class LeadsRepository {
     required String source,
     String status = 'New',
     String notes = '',
+    String? studentNotes,
+    String? managerNotes,
     bool assignToSelfAsWalkIn = false,
   }) => _rds.createLead(
     name: name,
@@ -40,6 +42,8 @@ class LeadsRepository {
     source: source,
     status: status,
     notes: notes,
+    studentNotes: studentNotes,
+    managerNotes: managerNotes,
     assignToSelfAsWalkIn: assignToSelfAsWalkIn,
   );
 
@@ -51,6 +55,8 @@ class LeadsRepository {
     required String source,
     required String status,
     String? notes,
+    String? studentNotes,
+    String? managerNotes,
     String? course,
     String? batch,
   }) => _rds.updateLead(
@@ -61,6 +67,8 @@ class LeadsRepository {
     source: source,
     status: status,
     notes: notes,
+    studentNotes: studentNotes,
+    managerNotes: managerNotes,
     course: course,
     batch: batch,
   );

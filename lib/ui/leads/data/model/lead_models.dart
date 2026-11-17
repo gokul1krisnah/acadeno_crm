@@ -603,6 +603,8 @@ class LeadRecord {
   final DateTime? assignedAt;
   final String followUpTime;
   final String notes;
+  final String studentNotes;
+  final String managerNotes;
   final bool isDone;
   final bool isLocked;
   final String? lockedByUid;
@@ -644,6 +646,8 @@ class LeadRecord {
     this.assignedAt,
     this.followUpTime = '',
     this.notes = '',
+    this.studentNotes = '',
+    this.managerNotes = '',
     this.isDone = false,
     this.isLocked = false,
     this.lockedByUid,
@@ -881,6 +885,8 @@ class LeadRecord {
           : (assignedAtField is DateTime ? assignedAtField : null),
       followUpTime: rawFollowUp,
       notes: (data['notes'] ?? '').toString(),
+      studentNotes: (data['studentNotes'] ?? data['notes'] ?? '').toString(),
+      managerNotes: (data['managerNotes'] ?? data['leadManagerNotes'] ?? '').toString(),
       isDone: data['isDone'] == true,
       isLocked: data['isLocked'] == true,
       lockedByUid: data['lockedByUid']?.toString(),
@@ -931,6 +937,8 @@ class LeadRecord {
       'assignedByName': assignedByName,
       if (followUpTime.isNotEmpty) 'followUpTime': followUpTime.trim(),
       'notes': notes,
+      'studentNotes': studentNotes.isNotEmpty ? studentNotes : notes,
+      'managerNotes': managerNotes,
       'isDone': isDone,
       'isLocked': isLocked,
       'lockedByUid': lockedByUid,
@@ -972,6 +980,8 @@ class LeadRecord {
     DateTime? assignedAt,
     String? followUpTime,
     String? notes,
+    String? studentNotes,
+    String? managerNotes,
     bool? isDone,
     bool? isLocked,
     String? lockedByUid,
@@ -1013,6 +1023,8 @@ class LeadRecord {
       assignedAt: assignedAt ?? this.assignedAt,
       followUpTime: followUpTime ?? this.followUpTime,
       notes: notes ?? this.notes,
+      studentNotes: studentNotes ?? this.studentNotes,
+      managerNotes: managerNotes ?? this.managerNotes,
       isDone: isDone ?? this.isDone,
       isLocked: isLocked ?? this.isLocked,
       lockedByUid: lockedByUid ?? this.lockedByUid,

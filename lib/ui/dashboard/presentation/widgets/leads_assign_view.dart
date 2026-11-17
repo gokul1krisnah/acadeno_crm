@@ -460,7 +460,8 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
     final nameC = TextEditingController();
     final phoneC = TextEditingController();
     final collegeC = TextEditingController(text: 'NIT Calicut · CSE · 3');
-    final notesC = TextEditingController();
+    final studentNotesC = TextEditingController();
+    final managerNotesC = TextEditingController();
     final otherSourceC = TextEditingController();
     String source = 'Social Media';
     String? backendError;
@@ -732,6 +733,90 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                                     : null,
                           ),
                         ],
+                        const Gap(14),
+                        // Student Notes Section
+                        Text(
+                          'Student Notes (Requirements / Intake)',
+                          style: GoogleFonts.inter(
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.w600,
+                            color: const Color(0xFF1E3A8A),
+                          ),
+                        ),
+                        const Gap(6),
+                        TextFormField(
+                          controller: studentNotesC,
+                          maxLines: 2,
+                          style: GoogleFonts.inter(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w400,
+                            color: const Color(0xFF0F172A),
+                          ),
+                          decoration: InputDecoration(
+                            hintText: 'Student inquiries, interest, course requirements...',
+                            hintStyle: GoogleFonts.inter(
+                              color: const Color(0xFF94A3B8),
+                              fontSize: 12.5,
+                            ),
+                            filled: true,
+                            fillColor: const Color(0xFFF8FAFC),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(color: Color(0xFF2563EB), width: 1.5),
+                            ),
+                            contentPadding: const EdgeInsets.all(12),
+                          ),
+                        ),
+                        const Gap(12),
+                        // Manager Notes Section
+                        Text(
+                          'Manager Notes (Internal Remarks)',
+                          style: GoogleFonts.inter(
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.w600,
+                            color: const Color(0xFF9A3412),
+                          ),
+                        ),
+                        const Gap(6),
+                        TextFormField(
+                          controller: managerNotesC,
+                          maxLines: 2,
+                          style: GoogleFonts.inter(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w400,
+                            color: const Color(0xFF0F172A),
+                          ),
+                          decoration: InputDecoration(
+                            hintText: 'Lead manager review, follow-up instructions...',
+                            hintStyle: GoogleFonts.inter(
+                              color: const Color(0xFF94A3B8),
+                              fontSize: 12.5,
+                            ),
+                            filled: true,
+                            fillColor: const Color(0xFFF8FAFC),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(color: Color(0xFFD45107), width: 1.5),
+                            ),
+                            contentPadding: const EdgeInsets.all(12),
+                          ),
+                        ),
                         const Gap(20),
                         Row(
                           children: [
@@ -806,7 +891,9 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                                                   collegeBranch: collegeC.text
                                                       .trim(),
                                                   source: effSource,
-                                                  notes: notesC.text.trim(),
+                                                  notes: studentNotesC.text.trim(),
+                                                  studentNotes: studentNotesC.text.trim(),
+                                                  managerNotes: managerNotesC.text.trim(),
                                                 );
                                             if (!dCtx.mounted) return;
                                             Navigator.pop(dCtx);
@@ -880,7 +967,10 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
           : LeadPhoneValidator.formatDisplayPhone(lead.phone),
     );
     final collegeC = TextEditingController(text: lead.collegeBranch);
-    final notesC = TextEditingController(text: lead.notes);
+    final studentNotesC = TextEditingController(
+      text: lead.studentNotes.isNotEmpty ? lead.studentNotes : lead.notes,
+    );
+    final managerNotesC = TextEditingController(text: lead.managerNotes);
     final courseC = TextEditingController(text: lead.course);
     final batchC = TextEditingController(text: lead.batch);
 
@@ -1837,7 +1927,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                           const Gap(12),
                         ],
 
-                        // 1749:563 - Section - Quick Notes Bento Box
+                        // Student Notes Card Container
                         Container(
                           width: double.infinity,
                           padding: const EdgeInsets.all(15),
@@ -1845,13 +1935,13 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(16),
                             border: Border.all(
-                              color: const Color(0xCCE2E8F0),
+                              color: const Color(0xFFDBEAFE),
                               width: 1,
                             ),
                             boxShadow: const [
                               BoxShadow(
-                                color: Color(0x0D000000),
-                                blurRadius: 1,
+                                color: Color(0x081D4ED8),
+                                blurRadius: 4,
                                 offset: Offset(0, 1),
                               ),
                             ],
@@ -1859,19 +1949,29 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
-                                ' NOTES',
-                                style: GoogleFonts.inter(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w700,
-                                  color: const Color(0xFF334155),
-                                  letterSpacing: 0.55,
-                                  height: 16.5 / 11,
-                                ),
+                              Row(
+                                children: [
+                                  const Icon(
+                                    Icons.school_outlined,
+                                    size: 14,
+                                    color: Color(0xFF2563EB),
+                                  ),
+                                  const Gap(6),
+                                  Text(
+                                    'STUDENT NOTES',
+                                    style: GoogleFonts.inter(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w700,
+                                      color: const Color(0xFF1E40AF),
+                                      letterSpacing: 0.55,
+                                      height: 16.5 / 11,
+                                    ),
+                                  ),
+                                ],
                               ),
                               const Gap(10),
                               TextFormField(
-                                controller: notesC,
+                                controller: studentNotesC,
                                 minLines: 2,
                                 maxLines: 4,
                                 style: GoogleFonts.inter(
@@ -1882,42 +1982,111 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                                 ),
                                 decoration: InputDecoration(
                                   hintText:
-                                      'Inquired about Full-Stack cohort fees &\nschedule. Follow up regarding batch timing...',
+                                      'Student inquiry details, course interests, or background notes...',
                                   hintStyle: GoogleFonts.inter(
                                     color: const Color(0xFF94A3B8),
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w500,
-                                    height: 21.13 / 13,
+                                    fontSize: 12.5,
+                                    fontWeight: FontWeight.w400,
                                   ),
                                   filled: true,
-                                  fillColor: const Color(0x66F8FAFC),
+                                  fillColor: const Color(0x40EFF6FF),
                                   isDense: true,
-                                  contentPadding: const EdgeInsets.fromLTRB(
-                                    13,
-                                    10.06,
-                                    13,
-                                    17,
-                                  ),
+                                  contentPadding: const EdgeInsets.fromLTRB(13, 10, 13, 14),
                                   border: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12),
-                                    borderSide: const BorderSide(
-                                      color: Color(0xFFE2E8F0),
-                                      width: 1,
-                                    ),
+                                    borderSide: const BorderSide(color: Color(0xFFDBEAFE)),
                                   ),
                                   enabledBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12),
-                                    borderSide: const BorderSide(
-                                      color: Color(0xFFE2E8F0),
-                                      width: 1,
-                                    ),
+                                    borderSide: const BorderSide(color: Color(0xFFDBEAFE)),
                                   ),
                                   focusedBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12),
-                                    borderSide: const BorderSide(
-                                      color: Color(0xFFE8612D),
-                                      width: 1.2,
+                                    borderSide: const BorderSide(color: Color(0xFF2563EB), width: 1.2),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const Gap(14),
+
+                        // Manager Notes Card Container
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(15),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: const Color(0xFFFFEDD5),
+                              width: 1,
+                            ),
+                            boxShadow: const [
+                              BoxShadow(
+                                color: Color(0x08EA580C),
+                                blurRadius: 4,
+                                offset: Offset(0, 1),
+                              ),
+                            ],
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  const Icon(
+                                    Icons.rate_review_outlined,
+                                    size: 14,
+                                    color: Color(0xFFD45107),
+                                  ),
+                                  const Gap(6),
+                                  Text(
+                                    'MANAGER NOTES',
+                                    style: GoogleFonts.inter(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w700,
+                                      color: const Color(0xFF9A3412),
+                                      letterSpacing: 0.55,
+                                      height: 16.5 / 11,
                                     ),
+                                  ),
+                                ],
+                              ),
+                              const Gap(10),
+                              TextFormField(
+                                controller: managerNotesC,
+                                minLines: 2,
+                                maxLines: 4,
+                                style: GoogleFonts.inter(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w500,
+                                  color: const Color(0xFF0F172A),
+                                  height: 21.13 / 13,
+                                ),
+                                decoration: InputDecoration(
+                                  hintText:
+                                      'Lead manager review, follow-up instructions, internal notes...',
+                                  hintStyle: GoogleFonts.inter(
+                                    color: const Color(0xFF94A3B8),
+                                    fontSize: 12.5,
+                                    fontWeight: FontWeight.w400,
+                                  ),
+                                  filled: true,
+                                  fillColor: const Color(0x40FFF7ED),
+                                  isDense: true,
+                                  contentPadding: const EdgeInsets.fromLTRB(13, 10, 13, 14),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: const BorderSide(color: Color(0xFFFFEDD5)),
+                                  ),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: const BorderSide(color: Color(0xFFFFEDD5)),
+                                  ),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: const BorderSide(color: Color(0xFFD45107), width: 1.2),
                                   ),
                                 ),
                               ),
@@ -1968,7 +2137,9 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                                         collegeBranch: collegeC.text.trim(),
                                         source: selectedSource,
                                         status: selectedStatus,
-                                        notes: notesC.text.trim(),
+                                        notes: studentNotesC.text.trim(),
+                                        studentNotes: studentNotesC.text.trim(),
+                                        managerNotes: managerNotesC.text.trim(),
                                         course:
                                             (selectedStatus == 'Converted' ||
                                                 courseC.text.isNotEmpty)

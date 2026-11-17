@@ -50,6 +50,8 @@ abstract class LeadsBackend {
     required String source,
     String status = 'New',
     String notes = '',
+    String? studentNotes,
+    String? managerNotes,
     bool assignToSelfAsWalkIn = false,
   });
 
@@ -62,6 +64,8 @@ abstract class LeadsBackend {
     required String source,
     required String status,
     String? notes,
+    String? studentNotes,
+    String? managerNotes,
     String? course,
     String? batch,
   });
@@ -174,6 +178,8 @@ class LeadsRds {
     required String source,
     String status = 'New',
     String notes = '',
+    String? studentNotes,
+    String? managerNotes,
     bool assignToSelfAsWalkIn = false,
   }) => _backend.createLead(
     name: name,
@@ -182,6 +188,8 @@ class LeadsRds {
     source: source,
     status: status,
     notes: notes,
+    studentNotes: studentNotes,
+    managerNotes: managerNotes,
     assignToSelfAsWalkIn: assignToSelfAsWalkIn,
   );
 
@@ -193,6 +201,8 @@ class LeadsRds {
     required String source,
     required String status,
     String? notes,
+    String? studentNotes,
+    String? managerNotes,
     String? course,
     String? batch,
   }) => _backend.updateLead(
@@ -203,6 +213,8 @@ class LeadsRds {
     source: source,
     status: status,
     notes: notes,
+    studentNotes: studentNotes,
+    managerNotes: managerNotes,
     course: course,
     batch: batch,
   );
@@ -579,6 +591,8 @@ class FirestoreLeadsBackend implements LeadsBackend {
     required String source,
     String status = 'New',
     String notes = '',
+    String? studentNotes,
+    String? managerNotes,
     bool assignToSelfAsWalkIn = false,
   }) async {
     var trimmedName = name.trim();
@@ -600,8 +614,11 @@ class FirestoreLeadsBackend implements LeadsBackend {
         final nextNum = maxNum + 1;
         trimmedName = 'L${nextNum.toString().padLeft(2, '0')}';
       } catch (_) {
-        final countSnap = await _leads.count().get().catchError((_) => null);
-        final total = countSnap?.count ?? 0;
+        int total = 0;
+        try {
+          final countSnap = await _leads.count().get();
+          total = countSnap.count ?? 0;
+        } catch (_) {}
         trimmedName = 'L${(total + 1).toString().padLeft(2, '0')}';
       }
     }
@@ -691,7 +708,13 @@ class FirestoreLeadsBackend implements LeadsBackend {
       assignedByUid: assignToSelfAsWalkIn ? actor.uid : null,
       assignedByName: assignToSelfAsWalkIn ? actor.name : null,
       assignedAt: assignToSelfAsWalkIn ? now : null,
-      notes: notes.trim(),
+      notes: (studentNotes != null && studentNotes.trim().isNotEmpty)
+          ? studentNotes.trim()
+          : notes.trim(),
+      studentNotes: (studentNotes != null && studentNotes.trim().isNotEmpty)
+          ? studentNotes.trim()
+          : notes.trim(),
+      managerNotes: managerNotes?.trim() ?? '',
       timeline: [
         if (assignToSelfAsWalkIn)
           '${LeadDateHelper.timelineStamp(now)} · Walk-in claimed by ${actor.name}',
@@ -789,6 +812,8 @@ class FirestoreLeadsBackend implements LeadsBackend {
     required String source,
     required String status,
     String? notes,
+    String? studentNotes,
+    String? managerNotes,
     String? course,
     String? batch,
   }) async {
@@ -811,8 +836,11 @@ class FirestoreLeadsBackend implements LeadsBackend {
         final nextNum = maxNum + 1;
         trimmedName = 'L${nextNum.toString().padLeft(2, '0')}';
       } catch (_) {
-        final countSnap = await _leads.count().get().catchError((_) => null);
-        final total = countSnap?.count ?? 0;
+        int total = 0;
+        try {
+          final countSnap = await _leads.count().get();
+          total = countSnap.count ?? 0;
+        } catch (_) {}
         trimmedName = 'L${(total + 1).toString().padLeft(2, '0')}';
       }
     }
@@ -906,7 +934,13 @@ class FirestoreLeadsBackend implements LeadsBackend {
         year: isAdminOrManager ? parsed.year : current.year,
         source: isAdminOrManager ? source.trim() : current.source,
         status: status.trim(),
-        notes: notes ?? current.notes,
+        notes: (studentNotes != null || managerNotes != null)
+            ? ((studentNotes != null && studentNotes.isNotEmpty) ? studentNotes : current.notes)
+            : (notes ?? current.notes),
+        studentNotes: (studentNotes != null && studentNotes.isNotEmpty)
+            ? studentNotes
+            : (current.studentNotes.isNotEmpty ? current.studentNotes : (notes ?? current.notes)),
+        managerNotes: managerNotes ?? current.managerNotes,
         course: course ?? current.course,
         batch: batch ?? current.batch,
         updatedAt: DateTime.now(),
