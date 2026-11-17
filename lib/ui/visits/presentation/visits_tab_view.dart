@@ -2247,10 +2247,10 @@ class _UpcomingVisitCard extends StatelessWidget {
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        const Icon(
-                          Icons.place_outlined,
-                          size: 14,
-                          color: Color(0xFF647196),
+                        SvgPicture.asset(
+                          'assets/svgs/visit_location_pin.svg',
+                          width: 14,
+                          height: 14,
                         ),
                         const SizedBox(width: 4),
                         Expanded(
@@ -3130,12 +3130,12 @@ class _CancelledVisitCard extends StatelessWidget {
                               child: InkWell(
                                 onTap: onDelete,
                                 borderRadius: BorderRadius.circular(4),
-                                child: const Padding(
-                                  padding: EdgeInsets.only(bottom: 6, left: 4),
-                                  child: Icon(
-                                    Icons.delete_outline_rounded,
-                                    size: 16,
-                                    color: Color(0xFFE53E3E),
+                                child: Padding(
+                                  padding: const EdgeInsets.only(bottom: 6, left: 4),
+                                  child: SvgPicture.asset(
+                                    'assets/svgs/visit_cancel_delete.svg',
+                                    width: 10.5,
+                                    height: 12,
                                   ),
                                 ),
                               ),
@@ -3225,23 +3225,10 @@ class _CancelledVisitCard extends StatelessWidget {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Container(
-                  width: 15,
-                  height: 15,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFF0E142E),
-                    shape: BoxShape.circle,
-                  ),
-                  alignment: Alignment.center,
-                  child: const Text(
-                    '?',
-                    style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.white,
-                      height: 1.0,
-                    ),
-                  ),
+                SvgPicture.asset(
+                  'assets/svgs/visit_reason_question.svg',
+                  width: 14,
+                  height: 14,
                 ),
                 const SizedBox(width: 8),
                 Expanded(
@@ -3252,7 +3239,7 @@ class _CancelledVisitCard extends StatelessWidget {
                           text: 'Reason:',
                           style: GoogleFonts.inter(
                             fontSize: 11.5,
-                            fontWeight: FontWeight.w700,
+                            fontWeight: FontWeight.w500,
                             color: const Color(0xFF0E142E),
                             height: 17.25 / 11.5,
                           ),
