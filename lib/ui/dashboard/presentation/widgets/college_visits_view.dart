@@ -1249,6 +1249,107 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
     }
   }
 
+  Widget _buildHeader({
+    required int totalLeads,
+    required int totalConversions,
+  }) {
+    return LayoutBuilder(
+      builder: (context, c) {
+        final isMobile =
+            MediaQuery.of(context).size.width < 600 || c.maxWidth < 520;
+        final titleCol = Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'College visits',
+              style: GoogleFonts.inter(
+                fontSize: 30,
+                fontWeight: FontWeight.w700,
+                color: const Color(0xFF0F172A),
+                letterSpacing: -0.3809,
+                height: 36 / 30,
+              ),
+            ),
+            const Gap(8),
+            Text(
+              'Plan campus outreach, log HOD/faculty meetings, and track $totalLeads leads ($totalConversions conversions) generated',
+              style: GoogleFonts.poppins(
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+                color: const Color(0xFF64748B),
+                letterSpacing: -0.1094,
+                height: 24 / 16,
+              ),
+            ),
+          ],
+        );
+
+        final planBtn = SizedBox(
+          height: 44,
+          width: isMobile ? double.infinity : null,
+          child: ElevatedButton(
+            onPressed: _showPlanVisitDialog,
+            style: ElevatedButton.styleFrom(
+              alignment: Alignment.center,
+              backgroundColor: const Color(0xFFEE7438),
+              foregroundColor: Colors.white,
+              elevation: 0,
+              padding: const EdgeInsets.symmetric(
+                horizontal: 24,
+                vertical: 12,
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            child: Center(
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  const Icon(Icons.add, size: 16, color: Colors.white),
+                  const Gap(8),
+                  Text(
+                    'Plan college visit',
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.inter(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                      letterSpacing: 0.0137,
+                      height: 1.0,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+
+        if (isMobile) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [titleCol, const Gap(16), planBtn],
+          );
+        }
+
+        return SizedBox(
+          width: double.infinity,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(child: titleCol),
+              const Gap(24),
+              planBtn,
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
@@ -1299,102 +1400,11 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-              LayoutBuilder(
-                builder: (context, c) {
-                  final isMobile =
-                      MediaQuery.of(context).size.width < 600 || c.maxWidth < 520;
-                  final titleCol = Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'College visits',
-                        style: GoogleFonts.inter(
-                          fontSize: 30,
-                          fontWeight: FontWeight.w700,
-                          color: const Color(0xFF0F172A),
-                          letterSpacing: -0.3809,
-                          height: 36 / 30,
-                        ),
-                      ),
-                      const Gap(8),
-                      Text(
-                        'Plan campus outreach, log HOD/faculty meetings, and track $totalLeads leads ($totalConversions conversions) generated',
-                        style: GoogleFonts.poppins(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
-                          color: const Color(0xFF64748B),
-                          letterSpacing: -0.1094,
-                          height: 24 / 16,
-                        ),
-                      ),
-                    ],
-                  );
-
-                  final planBtn = SizedBox(
-                    height: 44,
-                    width: isMobile ? double.infinity : null,
-                    child: ElevatedButton(
-                      onPressed: _showPlanVisitDialog,
-                      style: ElevatedButton.styleFrom(
-                        alignment: Alignment.center,
-                        backgroundColor: const Color(0xFFEE7438),
-                        foregroundColor: Colors.white,
-                        elevation: 0,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 24,
-                          vertical: 12,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: Center(
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            const Icon(Icons.add, size: 16, color: Colors.white),
-                            const Gap(8),
-                            Text(
-                              'Plan college visit',
-                              textAlign: TextAlign.center,
-                              style: GoogleFonts.inter(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.white,
-                                letterSpacing: 0.0137,
-                                height: 1.0,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  );
-
-                  if (isMobile) {
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [titleCol, const Gap(16), planBtn],
-                    );
-                  }
-
-                  return SizedBox(
-                    width: double.infinity,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(child: titleCol),
-                        const Gap(24),
-                        planBtn,
-                      ],
-                    ),
-                  );
-                },
-              ),
-              const Gap(32),
+            _buildHeader(
+              totalLeads: totalLeads,
+              totalConversions: totalConversions,
+            ),
+            const Gap(32),
 
               if (visits.isEmpty)
                 Container(
