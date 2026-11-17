@@ -51,7 +51,7 @@ class DashboardUserModel {
 
   String get roleLabel => switch (role) {
     'admin' || 'super_admin' => 'Admin',
-    _ => 'HR & Operation Manager',
+    _ => 'HR & Operations',
   };
 
   static int _parseInt(dynamic val) {

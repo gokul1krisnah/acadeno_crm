@@ -2212,19 +2212,19 @@ class _UserManagementViewState extends State<UserManagementView> {
                   else
                     LayoutBuilder(
                       builder: (context, constraints) {
-                        final isDesktop = constraints.maxWidth >= 680 ||
-                            MediaQuery.of(context).size.width >= 768;
-                        if (isDesktop) {
-                          final double tableWidth = constraints.maxWidth < 1180
-                              ? 1180.0
-                              : constraints.maxWidth;
-                          return SizedBox(
-                            width: double.infinity,
-                            child: SingleChildScrollView(
-                              scrollDirection: Axis.horizontal,
-                              physics: const BouncingScrollPhysics(),
+                        final isDesktopTablet = constraints.maxWidth >= 520 ||
+                            MediaQuery.of(context).size.width >= 600;
+                        if (isDesktopTablet) {
+                          const targetTableWidth = 1060.0;
+                          final needsScaling =
+                              constraints.maxWidth < targetTableWidth;
+
+                          if (needsScaling) {
+                            return FittedBox(
+                              fit: BoxFit.scaleDown,
+                              alignment: Alignment.topCenter,
                               child: SizedBox(
-                                width: tableWidth,
+                                width: targetTableWidth,
                                 child: _buildDesktopTable(
                                   cubit,
                                   filteredUsers,
@@ -2232,6 +2232,16 @@ class _UserManagementViewState extends State<UserManagementView> {
                                   myUid,
                                 ),
                               ),
+                            );
+                          }
+
+                          return SizedBox(
+                            width: double.infinity,
+                            child: _buildDesktopTable(
+                              cubit,
+                              filteredUsers,
+                              allUsers,
+                              myUid,
                             ),
                           );
                         } else {
@@ -2606,7 +2616,7 @@ class _UserManagementViewState extends State<UserManagementView> {
         Container(
           width: double.infinity,
           height: 49,
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
           decoration: const BoxDecoration(
             color: Color(0x80F8FAFC),
             border: Border(bottom: BorderSide(color: Color(0xFFF1F5F9))),
@@ -2614,42 +2624,46 @@ class _UserManagementViewState extends State<UserManagementView> {
           child: Row(
             children: [
               Expanded(
-                flex: 270,
+                flex: 200,
                 child: Padding(
-                  padding: const EdgeInsets.only(right: 14),
+                  padding: const EdgeInsets.only(right: 12),
                   child: Text('USER', style: _tblHdr),
-                ),
-              ),
-              Expanded(
-                flex: 260,
-                child: Padding(
-                  padding: const EdgeInsets.only(right: 14),
-                  child: Text('EMAIL & UID', style: _tblHdr),
                 ),
               ),
               Expanded(
                 flex: 220,
                 child: Padding(
-                  padding: const EdgeInsets.only(right: 14),
+                  padding: const EdgeInsets.only(right: 12),
+                  child: Text('EMAIL & UID', style: _tblHdr),
+                ),
+              ),
+              Expanded(
+                flex: 160,
+                child: Padding(
+                  padding: const EdgeInsets.only(right: 12),
                   child: Text('ROLE', style: _tblHdr),
                 ),
               ),
               Expanded(
-                flex: 270,
+                flex: 240,
                 child: Padding(
-                  padding: const EdgeInsets.only(right: 14),
-                  child: Text('DEVICE SECURITY', style: _tblHdr),
+                  padding: const EdgeInsets.only(right: 12),
+                  child: Text('DEVICE SECURITY (PR-5.1)', style: _tblHdr),
                 ),
               ),
               SizedBox(
-                width: 85,
+                width: 65,
                 child: Center(child: Text('ACTIVE', style: _tblHdr)),
               ),
               SizedBox(
-                width: 115,
+                width: 75,
+                child: Center(child: Text('ACTIONS', style: _tblHdr)),
+              ),
+              SizedBox(
+                width: 100,
                 child: Align(
                   alignment: Alignment.centerRight,
-                  child: Text('ACTIONS', style: _tblHdr),
+                  child: Text('RESET PASSWORD', style: _tblHdr),
                 ),
               ),
             ],
@@ -2685,7 +2699,7 @@ class _UserManagementViewState extends State<UserManagementView> {
               return Container(
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
+                  horizontal: 20,
                   vertical: 16,
                 ),
                 decoration: const BoxDecoration(
@@ -2695,9 +2709,9 @@ class _UserManagementViewState extends State<UserManagementView> {
                   children: [
                     // USER Column
                     Expanded(
-                      flex: 270,
+                      flex: 200,
                       child: Padding(
-                        padding: const EdgeInsets.only(right: 14),
+                        padding: const EdgeInsets.only(right: 12),
                         child: Row(
                           children: [
                             Container(
@@ -2734,9 +2748,9 @@ class _UserManagementViewState extends State<UserManagementView> {
                                       overflow: TextOverflow.ellipsis,
                                       style: GoogleFonts.inter(
                                         fontWeight: FontWeight.w700,
-                                        fontSize: 15,
+                                        fontSize: 14.5,
                                         color: const Color(0xFF0F172A),
-                                        height: 22 / 15,
+                                        height: 22 / 14.5,
                                       ),
                                     ),
                                   ),
@@ -2772,9 +2786,9 @@ class _UserManagementViewState extends State<UserManagementView> {
 
                     // EMAIL & UID Column
                     Expanded(
-                      flex: 260,
+                      flex: 220,
                       child: Padding(
-                        padding: const EdgeInsets.only(right: 14),
+                        padding: const EdgeInsets.only(right: 12),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisSize: MainAxisSize.min,
@@ -2826,9 +2840,9 @@ class _UserManagementViewState extends State<UserManagementView> {
 
                     // ROLE Column (Figma Node 1364:2968)
                     Expanded(
-                      flex: 220,
+                      flex: 160,
                       child: Padding(
-                        padding: const EdgeInsets.only(right: 14),
+                        padding: const EdgeInsets.only(right: 12),
                         child: Align(
                           alignment: Alignment.centerLeft,
                           child: _buildRolePill(
@@ -2842,9 +2856,9 @@ class _UserManagementViewState extends State<UserManagementView> {
 
                     // DEVICE SECURITY Column
                     Expanded(
-                      flex: 270,
+                      flex: 240,
                       child: Padding(
-                        padding: const EdgeInsets.only(right: 14),
+                        padding: const EdgeInsets.only(right: 12),
                         child: Row(
                           children: [
                             Container(
@@ -2855,6 +2869,12 @@ class _UserManagementViewState extends State<UserManagementView> {
                                     ? const Color(0xFFECFDF5)
                                     : const Color(0xFFFFFBEB),
                                 borderRadius: BorderRadius.circular(8),
+                                border: Border.all(
+                                  color: user.deviceBound
+                                      ? const Color(0xFFDCFCE7)
+                                      : const Color(0xFFFEF3C7),
+                                  width: 1,
+                                ),
                               ),
                               alignment: Alignment.center,
                               child: Icon(
@@ -2911,27 +2931,27 @@ class _UserManagementViewState extends State<UserManagementView> {
                             ),
                             IconButton(
                               constraints: const BoxConstraints(
-                              minWidth: 26,
-                              minHeight: 26,
+                                minWidth: 26,
+                                minHeight: 26,
+                              ),
+                              padding: EdgeInsets.zero,
+                              icon: const Icon(
+                                Icons.cancel_rounded,
+                                size: 15,
+                                color: Color(0xFFCBD5E1),
+                              ),
+                              tooltip: 'Reset Phone Binding',
+                              onPressed: () =>
+                                  _confirmResetDevice(context, cubit, user),
                             ),
-                            padding: EdgeInsets.zero,
-                            icon: const Icon(
-                              Icons.cancel_rounded,
-                              size: 15,
-                              color: Color(0xFF94A3B8),
-                            ),
-                            tooltip: 'Reset Phone Binding',
-                            onPressed: () =>
-                                _confirmResetDevice(context, cubit, user),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
-                  ),
 
                     // ACTIVE Switch Column (Figma Node 1364:2988)
                     SizedBox(
-                      width: 85,
+                      width: 65,
                       child: Center(
                         child: _buildFigmaSwitch(
                           value: user.isActive,
@@ -2955,36 +2975,13 @@ class _UserManagementViewState extends State<UserManagementView> {
                       ),
                     ),
 
-                    // ACTIONS Column (Figma Node 1364:2951 & 1364:2990)
+                    // ACTIONS Column
                     SizedBox(
-                      width: 115,
+                      width: 75,
                       child: Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
+                        mainAxisAlignment: MainAxisAlignment.center,
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          Container(
-                            width: 28,
-                            height: 28,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(6),
-                            ),
-                            child: IconButton(
-                              padding: EdgeInsets.zero,
-                              constraints: const BoxConstraints(
-                                minWidth: 28,
-                                minHeight: 28,
-                              ),
-                              icon: const Icon(
-                                Icons.lock_reset_rounded,
-                                size: 16,
-                                color: Color(0xFF334155),
-                              ),
-                              tooltip: 'Reset Password',
-                              onPressed: () =>
-                                  _confirmResetPassword(context, cubit, user),
-                            ),
-                          ),
-                          const Gap(4),
                           Container(
                             width: 28,
                             height: 28,
@@ -3007,8 +3004,8 @@ class _UserManagementViewState extends State<UserManagementView> {
                                   _confirmForceSignOut(context, cubit, user),
                             ),
                           ),
-                          const Gap(4),
-                          if (isMe)
+                          const Gap(6),
+                          if (isMe || isUserAdmin)
                             Container(
                               width: 28,
                               height: 28,
@@ -3022,11 +3019,11 @@ class _UserManagementViewState extends State<UserManagementView> {
                                   minHeight: 28,
                                 ),
                                 icon: const Icon(
-                                  Icons.tune_rounded,
-                                  size: 16,
+                                  Icons.group_outlined,
+                                  size: 17,
                                   color: Color(0xFF6366F1),
                                 ),
-                                tooltip: 'Admin Settings',
+                                tooltip: 'Admin Team & Settings',
                                 onPressed: _navigateToSettings,
                               ),
                             )
@@ -3044,16 +3041,46 @@ class _UserManagementViewState extends State<UserManagementView> {
                                   minHeight: 28,
                                 ),
                                 icon: const Icon(
-                                  Icons.delete_outline_rounded,
-                                  size: 16,
+                                  CupertinoIcons.trash,
+                                  size: 15,
                                   color: Color(0xFFEF4444),
                                 ),
-                                tooltip: 'Remove user',
+                                tooltip: 'Deactivate / Delete',
                                 onPressed: () =>
                                     _confirmDelete(context, user.uid, user.name),
                               ),
                             ),
                         ],
+                      ),
+                    ),
+
+                    // RESET PASSWORD Column
+                    SizedBox(
+                      width: 100,
+                      child: Align(
+                        alignment: Alignment.centerRight,
+                        child: Container(
+                          width: 28,
+                          height: 28,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: IconButton(
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(
+                              minWidth: 28,
+                              minHeight: 28,
+                            ),
+                            icon: const Icon(
+                              Icons.lock_reset_rounded,
+                              size: 18,
+                              color: Color(0xFF0F172A),
+                            ),
+                            tooltip: 'Reset Password',
+                            onPressed: () =>
+                                _confirmResetPassword(context, cubit, user),
+                          ),
+                        ),
                       ),
                     ),
                   ],
