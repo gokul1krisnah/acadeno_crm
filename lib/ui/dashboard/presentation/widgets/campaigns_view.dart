@@ -1172,21 +1172,30 @@ class _CampaignsViewState extends State<CampaignsView> {
                     border: Border.all(color: const Color(0xFFE2E8F0), width: 1.0),
                   ),
                   alignment: Alignment.center,
-                  child: TextField(
-                    controller: _splitCountController,
-                    keyboardType: TextInputType.number,
-                    textAlign: TextAlign.center,
-                    textAlignVertical: TextAlignVertical.center,
-                    onChanged: (_) => setState(() {}),
-                    style: GoogleFonts.inter(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                      color: const Color(0xFF0F172A),
-                    ),
-                    decoration: const InputDecoration(
-                      isDense: true,
-                      border: InputBorder.none,
-                      contentPadding: EdgeInsets.zero,
+                  child: Center(
+                    child: TextField(
+                      controller: _splitCountController,
+                      maxLines: 1,
+                      keyboardType: TextInputType.number,
+                      textAlign: TextAlign.center,
+                      textAlignVertical: TextAlignVertical.center,
+                      onChanged: (_) => setState(() {}),
+                      strutStyle: const StrutStyle(
+                        fontSize: 16,
+                        height: 1.0,
+                        forceStrutHeight: true,
+                      ),
+                      style: GoogleFonts.inter(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFF0F172A),
+                        height: 1.0,
+                      ),
+                      decoration: const InputDecoration(
+                        isCollapsed: true,
+                        border: InputBorder.none,
+                        contentPadding: EdgeInsets.zero,
+                      ),
                     ),
                   ),
                 );
@@ -1747,8 +1756,7 @@ class _CampaignsViewState extends State<CampaignsView> {
                       ),
                       Expanded(
                         flex: 13,
-                        child: Align(
-                          alignment: Alignment.centerRight,
+                        child: Center(
                           child: Text('LAST CONTACT', style: headerStyle),
                         ),
                       ),
@@ -1915,16 +1923,16 @@ class _CampaignsViewState extends State<CampaignsView> {
                               ),
                               Expanded(
                                 flex: 13,
-                                child: Align(
-                                  alignment: Alignment.centerRight,
+                                child: Center(
                                   child: Text(
                                     lead.lastContact,
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
+                                    textAlign: TextAlign.center,
                                     style: GoogleFonts.inter(
                                       fontSize: 14,
                                       fontWeight: FontWeight.w400,
-                                      color: const Color(0xFF94A3B8),
+                                      color: const Color(0xFF64748B),
                                     ),
                                   ),
                                 ),
