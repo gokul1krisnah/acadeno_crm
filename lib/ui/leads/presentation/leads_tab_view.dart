@@ -1577,6 +1577,11 @@ class _TodayLeadCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final currentUid = FirebaseAuth.instance.currentUser?.uid;
+    final isLockedByOther = item.isLocked &&
+        item.lockedByUid != null &&
+        item.lockedByUid!.isNotEmpty &&
+        item.lockedByUid != currentUid;
     return InkWell(
       onTap: onTapCard,
       borderRadius: BorderRadius.circular(16),
@@ -1661,7 +1666,41 @@ class _TodayLeadCard extends StatelessWidget {
                           ],
                         ),
                       ),
-                      if (!item.isLocked) ...[
+                      if (isLockedByOther) ...[
+                        const Gap(8),
+                        InkWell(
+                          onTap: () {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  item.lockedMessage ??
+                                      'Another executive is calling now.',
+                                ),
+                                backgroundColor: const Color(0xFFDC2626),
+                              ),
+                            );
+                          },
+                          borderRadius: BorderRadius.circular(9999),
+                          child: Container(
+                            width: 36,
+                            height: 36,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFFEF2F2),
+                              borderRadius: BorderRadius.circular(9999),
+                              border: Border.all(
+                                color: const Color(0xFFFEE2E2),
+                                width: 1,
+                              ),
+                            ),
+                            alignment: Alignment.center,
+                            child: const Icon(
+                              CupertinoIcons.lock_fill,
+                              color: Color(0xFFDC2626),
+                              size: 14,
+                            ),
+                          ),
+                        ),
+                      ] else ...[
                         const Gap(8),
                         InkWell(
                           onTap: onTapCall,

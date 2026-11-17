@@ -667,8 +667,9 @@ class LeadRecord {
   /// True if the 10-minute call lock (FR-3.1, RL-2) is currently active.
   bool get isActivelyLocked {
     if (!isLocked) return false;
-    if (lockedAt == null) return isLocked;
-    return DateTime.now().difference(lockedAt!).inMinutes < 10;
+    final lockTime = lockedAt ?? updatedAt;
+    if (lockTime == null) return false;
+    return DateTime.now().difference(lockTime).inMinutes < 10;
   }
 
   String get maskedPhone => LeadPhoneValidator.maskPhone(

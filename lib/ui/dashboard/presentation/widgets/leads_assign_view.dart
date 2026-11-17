@@ -718,6 +718,9 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                                 child: ElevatedButton(
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: const Color(0xFFD45107),
+                                    disabledBackgroundColor: const Color(
+                                      0xFFD45107,
+                                    ).withValues(alpha: 0.6),
                                     foregroundColor: Colors.white,
                                     elevation: 0,
                                     padding: const EdgeInsets.only(
@@ -778,14 +781,19 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                                             });
                                           }
                                         },
-                                  child: Text(
-                                    'Save Walk-in Lead',
-                                    style: GoogleFonts.inter(
-                                      fontSize: 14.5,
-                                      fontWeight: FontWeight.w700,
-                                      color: Colors.white,
-                                    ),
-                                  ),
+                                  child: saving
+                                      ? const CupertinoActivityIndicator(
+                                          color: Colors.white,
+                                          radius: 10,
+                                        )
+                                      : Text(
+                                          'Save Walk-in Lead',
+                                          style: GoogleFonts.inter(
+                                            fontSize: 14.5,
+                                            fontWeight: FontWeight.w700,
+                                            color: Colors.white,
+                                          ),
+                                        ),
                                 ),
                               ),
                             ),
