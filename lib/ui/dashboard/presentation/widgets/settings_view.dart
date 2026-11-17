@@ -6,7 +6,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:hive/hive.dart';
 
 import 'package:acadeno_crm/shared/snackbar_alerts/snack_alert.dart';
-import 'package:acadeno_crm/shared/widgets/acadeno_dropdown.dart';
 
 class SettingsView extends StatefulWidget {
   final VoidCallback? onLogout;
