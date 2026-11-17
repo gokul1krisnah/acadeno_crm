@@ -2215,7 +2215,7 @@ class _UserManagementViewState extends State<UserManagementView> {
                         final isDesktopTablet = constraints.maxWidth >= 520 ||
                             MediaQuery.of(context).size.width >= 600;
                         if (isDesktopTablet) {
-                          const targetTableWidth = 1060.0;
+                          const targetTableWidth = 1260.0;
                           final needsScaling =
                               constraints.maxWidth < targetTableWidth;
 
@@ -2616,7 +2616,7 @@ class _UserManagementViewState extends State<UserManagementView> {
         Container(
           width: double.infinity,
           height: 49,
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
           decoration: const BoxDecoration(
             color: Color(0x80F8FAFC),
             border: Border(bottom: BorderSide(color: Color(0xFFF1F5F9))),
@@ -2624,47 +2624,44 @@ class _UserManagementViewState extends State<UserManagementView> {
           child: Row(
             children: [
               Expanded(
-                flex: 200,
+                flex: 250,
                 child: Padding(
-                  padding: const EdgeInsets.only(right: 12),
+                  padding: const EdgeInsets.only(right: 14),
                   child: Text('USER', style: _tblHdr),
-                ),
-              ),
-              Expanded(
-                flex: 220,
-                child: Padding(
-                  padding: const EdgeInsets.only(right: 12),
-                  child: Text('EMAIL & UID', style: _tblHdr),
-                ),
-              ),
-              Expanded(
-                flex: 160,
-                child: Padding(
-                  padding: const EdgeInsets.only(right: 12),
-                  child: Text('ROLE', style: _tblHdr),
                 ),
               ),
               Expanded(
                 flex: 240,
                 child: Padding(
-                  padding: const EdgeInsets.only(right: 12),
+                  padding: const EdgeInsets.only(right: 14),
+                  child: Text('EMAIL & UID', style: _tblHdr),
+                ),
+              ),
+              Expanded(
+                flex: 200,
+                child: Padding(
+                  padding: const EdgeInsets.only(right: 14),
+                  child: Text('ROLE', style: _tblHdr),
+                ),
+              ),
+              Expanded(
+                flex: 260,
+                child: Padding(
+                  padding: const EdgeInsets.only(right: 14),
                   child: Text('DEVICE SECURITY (PR-5.1)', style: _tblHdr),
                 ),
               ),
               SizedBox(
-                width: 65,
+                width: 75,
                 child: Center(child: Text('ACTIVE', style: _tblHdr)),
               ),
               SizedBox(
-                width: 75,
+                width: 95,
                 child: Center(child: Text('ACTIONS', style: _tblHdr)),
               ),
               SizedBox(
-                width: 100,
-                child: Align(
-                  alignment: Alignment.centerRight,
-                  child: Text('RESET PASSWORD', style: _tblHdr),
-                ),
+                width: 110,
+                child: Center(child: Text('RESET PASSWORD', style: _tblHdr)),
               ),
             ],
           ),
@@ -2699,7 +2696,7 @@ class _UserManagementViewState extends State<UserManagementView> {
               return Container(
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
+                  horizontal: 24,
                   vertical: 16,
                 ),
                 decoration: const BoxDecoration(
@@ -2709,14 +2706,14 @@ class _UserManagementViewState extends State<UserManagementView> {
                   children: [
                     // USER Column
                     Expanded(
-                      flex: 200,
+                      flex: 250,
                       child: Padding(
-                        padding: const EdgeInsets.only(right: 12),
+                        padding: const EdgeInsets.only(right: 14),
                         child: Row(
                           children: [
                             Container(
-                              width: 36,
-                              height: 36,
+                              width: 38,
+                              height: 38,
                               decoration: BoxDecoration(
                                 color: avatarBg,
                                 borderRadius: BorderRadius.circular(10),
@@ -2725,13 +2722,13 @@ class _UserManagementViewState extends State<UserManagementView> {
                               child: Text(
                                 initial,
                                 style: GoogleFonts.inter(
-                                  fontSize: 13.5,
+                                  fontSize: 14,
                                   fontWeight: FontWeight.w700,
                                   color: avatarText,
                                 ),
                               ),
                             ),
-                            const Gap(10),
+                            const Gap(12),
                             Expanded(
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
@@ -2748,17 +2745,17 @@ class _UserManagementViewState extends State<UserManagementView> {
                                       overflow: TextOverflow.ellipsis,
                                       style: GoogleFonts.inter(
                                         fontWeight: FontWeight.w700,
-                                        fontSize: 14.5,
+                                        fontSize: 15,
                                         color: const Color(0xFF0F172A),
-                                        height: 22 / 14.5,
+                                        height: 22 / 15,
                                       ),
                                     ),
                                   ),
                                   if (isMe) ...[
-                                    const Gap(6),
+                                    const Gap(8),
                                     Container(
                                       padding: const EdgeInsets.symmetric(
-                                        horizontal: 5,
+                                        horizontal: 6,
                                         vertical: 2,
                                       ),
                                       decoration: BoxDecoration(
@@ -2786,9 +2783,9 @@ class _UserManagementViewState extends State<UserManagementView> {
 
                     // EMAIL & UID Column
                     Expanded(
-                      flex: 220,
+                      flex: 240,
                       child: Padding(
-                        padding: const EdgeInsets.only(right: 12),
+                        padding: const EdgeInsets.only(right: 14),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisSize: MainAxisSize.min,
@@ -2840,9 +2837,9 @@ class _UserManagementViewState extends State<UserManagementView> {
 
                     // ROLE Column (Figma Node 1364:2968)
                     Expanded(
-                      flex: 160,
+                      flex: 200,
                       child: Padding(
-                        padding: const EdgeInsets.only(right: 12),
+                        padding: const EdgeInsets.only(right: 14),
                         child: Align(
                           alignment: Alignment.centerLeft,
                           child: _buildRolePill(
@@ -2856,14 +2853,14 @@ class _UserManagementViewState extends State<UserManagementView> {
 
                     // DEVICE SECURITY Column
                     Expanded(
-                      flex: 240,
+                      flex: 260,
                       child: Padding(
-                        padding: const EdgeInsets.only(right: 12),
+                        padding: const EdgeInsets.only(right: 14),
                         child: Row(
                           children: [
                             Container(
-                              width: 32,
-                              height: 32,
+                              width: 36,
+                              height: 36,
                               decoration: BoxDecoration(
                                 color: user.deviceBound
                                     ? const Color(0xFFECFDF5)
@@ -2881,13 +2878,13 @@ class _UserManagementViewState extends State<UserManagementView> {
                                 user.deviceBound
                                     ? Icons.phone_android_rounded
                                     : Icons.sync_rounded,
-                                size: 15,
+                                size: 16,
                                 color: user.deviceBound
                                     ? const Color(0xFF059669)
                                     : const Color(0xFFD97706),
                               ),
                             ),
-                            const Gap(8),
+                            const Gap(10),
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -2951,7 +2948,7 @@ class _UserManagementViewState extends State<UserManagementView> {
 
                     // ACTIVE Switch Column (Figma Node 1364:2988)
                     SizedBox(
-                      width: 65,
+                      width: 75,
                       child: Center(
                         child: _buildFigmaSwitch(
                           value: user.isActive,
@@ -2977,7 +2974,7 @@ class _UserManagementViewState extends State<UserManagementView> {
 
                     // ACTIONS Column
                     SizedBox(
-                      width: 75,
+                      width: 95,
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         crossAxisAlignment: CrossAxisAlignment.center,
@@ -3056,9 +3053,8 @@ class _UserManagementViewState extends State<UserManagementView> {
 
                     // RESET PASSWORD Column
                     SizedBox(
-                      width: 100,
-                      child: Align(
-                        alignment: Alignment.centerRight,
+                      width: 110,
+                      child: Center(
                         child: Container(
                           width: 28,
                           height: 28,
