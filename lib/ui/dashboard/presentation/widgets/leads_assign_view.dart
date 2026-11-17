@@ -607,7 +607,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                             color: const Color(0xFF0F172A),
                           ),
                           decoration: InputDecoration(
-                            hintText: 'Student Name *',
+                            hintText: 'Student Name (Optional)',
                             hintStyle: GoogleFonts.inter(
                               color: const Color(0xFF94A3B8),
                               fontSize: 13,
@@ -641,9 +641,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                               vertical: 16,
                             ),
                           ),
-                          validator: (v) => (v == null || v.trim().isEmpty)
-                              ? 'Required'
-                              : null,
+                          validator: null,
                         ),
                         const Gap(14),
                         CollegeSelectorField(

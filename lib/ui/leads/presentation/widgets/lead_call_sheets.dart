@@ -1531,7 +1531,7 @@ class LeadCallSheets {
                             color: const Color(0xFF0F172A),
                           ),
                           decoration: InputDecoration(
-                            hintText: 'Student Name *',
+                            hintText: 'Student Name (Optional)',
                             hintStyle: GoogleFonts.inter(
                               fontSize: 13,
                               fontWeight: FontWeight.w400,
@@ -1746,12 +1746,9 @@ class LeadCallSheets {
                                   final phoneErr = LeadPhoneValidator.validate(
                                     phoneCtrl.text,
                                   );
-                                  if (nameCtrl.text.trim().isEmpty ||
-                                      phoneErr != null) {
+                                  if (phoneErr != null) {
                                     setSheetState(() {
-                                      lookupFeedback =
-                                          phoneErr ??
-                                          'Student name is required';
+                                      lookupFeedback = phoneErr;
                                       lookupFoundDuplicate = true;
                                     });
                                     return;

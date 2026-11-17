@@ -581,9 +581,29 @@ class FirestoreLeadsBackend implements LeadsBackend {
     String notes = '',
     bool assignToSelfAsWalkIn = false,
   }) async {
-    final trimmedName = name.trim();
+    var trimmedName = name.trim();
     if (trimmedName.isEmpty) {
-      throw ArgumentError('Student name is required.');
+      try {
+        final lDocs = await _leads
+            .where('name', isGreaterThanOrEqualTo: 'L')
+            .where('name', isLessThanOrEqualTo: 'L\uf8ff')
+            .get();
+        int maxNum = 0;
+        for (final doc in lDocs.docs) {
+          final docName = (doc.data()['name'] ?? '').toString().trim();
+          final match = RegExp(r'^L0*(\d+)$', caseSensitive: false).firstMatch(docName);
+          if (match != null) {
+            final parsed = int.tryParse(match.group(1) ?? '0') ?? 0;
+            if (parsed > maxNum) maxNum = parsed;
+          }
+        }
+        final nextNum = maxNum + 1;
+        trimmedName = 'L${nextNum.toString().padLeft(2, '0')}';
+      } catch (_) {
+        final countSnap = await _leads.count().get().catchError((_) => null);
+        final total = countSnap?.count ?? 0;
+        trimmedName = 'L${(total + 1).toString().padLeft(2, '0')}';
+      }
     }
     final phoneError = LeadPhoneValidator.validate(phone);
     if (phoneError != null) {
@@ -772,9 +792,29 @@ class FirestoreLeadsBackend implements LeadsBackend {
     String? course,
     String? batch,
   }) async {
-    final trimmedName = name.trim();
+    var trimmedName = name.trim();
     if (trimmedName.isEmpty) {
-      throw ArgumentError('Student name is required.');
+      try {
+        final lDocs = await _leads
+            .where('name', isGreaterThanOrEqualTo: 'L')
+            .where('name', isLessThanOrEqualTo: 'L\uf8ff')
+            .get();
+        int maxNum = 0;
+        for (final doc in lDocs.docs) {
+          final docName = (doc.data()['name'] ?? '').toString().trim();
+          final match = RegExp(r'^L0*(\d+)$', caseSensitive: false).firstMatch(docName);
+          if (match != null) {
+            final parsed = int.tryParse(match.group(1) ?? '0') ?? 0;
+            if (parsed > maxNum) maxNum = parsed;
+          }
+        }
+        final nextNum = maxNum + 1;
+        trimmedName = 'L${nextNum.toString().padLeft(2, '0')}';
+      } catch (_) {
+        final countSnap = await _leads.count().get().catchError((_) => null);
+        final total = countSnap?.count ?? 0;
+        trimmedName = 'L${(total + 1).toString().padLeft(2, '0')}';
+      }
     }
     final phoneError = LeadPhoneValidator.validate(phone);
     if (phoneError != null) {
