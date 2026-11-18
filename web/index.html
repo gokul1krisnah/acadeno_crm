@@ -102,15 +102,17 @@
         return origDebug.apply(console, arguments);
       };
 
-      // Force WebGL1 context for CanvasKit to avoid WebGL2 (#version 300 es) ANGLE shader compilation errors on Windows GPUs
+      // Optimize WebGL context for CanvasKit to prevent VRAM memory exhaustion and WebGL context loss
       if (typeof HTMLCanvasElement !== 'undefined' && HTMLCanvasElement.prototype.getContext) {
         var origGetContext = HTMLCanvasElement.prototype.getContext;
         HTMLCanvasElement.prototype.getContext = function (type, attrs) {
-          if (type === 'webgl2') {
-            return null;
-          }
-          if (type === 'webgl' || type === 'experimental-webgl') {
-            var safeAttrs = Object.assign({ powerPreference: 'default', failIfMajorPerformanceCaveat: false }, attrs || {});
+          if (type === 'webgl2' || type === 'webgl' || type === 'experimental-webgl') {
+            var safeAttrs = Object.assign({
+              powerPreference: 'high-performance',
+              failIfMajorPerformanceCaveat: false,
+              preserveDrawingBuffer: false,
+              antialias: true
+            }, attrs || {});
             return origGetContext.call(this, type, safeAttrs);
           }
           return origGetContext.apply(this, arguments);
@@ -126,10 +128,33 @@
         }
       });
 
-      // Automatically recover if Chrome drops the WebGL GPU context
+      // When WebGL context is lost, CanvasKit WASM cannot recover in-place without memory corruption.
+      // Automatically reload to re-instantiate fresh WebAssembly memory cleanly.
+      var isReloading = false;
       window.addEventListener('webglcontextlost', function (e) {
         e.preventDefault();
+        if (!isReloading) {
+          isReloading = true;
+          console.warn('WebGL context lost. Restoring graphics session...');
+          setTimeout(function () {
+            window.location.reload();
+          }, 150);
+        }
       }, true);
+
+      window.addEventListener('error', function (event) {
+        var msg = String((event && event.message) || (event && event.error) || '');
+        if (msg.indexOf('memory access out of bounds') !== -1 ||
+            msg.indexOf('canvaskit.wasm') !== -1) {
+          if (!isReloading) {
+            isReloading = true;
+            console.warn('CanvasKit WASM memory error detected. Recovering session...');
+            setTimeout(function () {
+              window.location.reload();
+            }, 100);
+          }
+        }
+      });
     })();
 
     if ('serviceWorker' in navigator) {
