@@ -6,6 +6,7 @@ import 'package:acadeno_crm/shared/theme/app_svgs.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 
 import 'package:acadeno_crm/shared/extensions/build_context_extension.dart';
 import 'package:acadeno_crm/core/services/app_phone_call_service.dart';
@@ -279,7 +280,42 @@ class _FollowUpsTabViewState extends State<FollowUpsTabView> {
           cubit.refresh();
           await Future.delayed(const Duration(milliseconds: 1000));
         },
-        child: items.isEmpty
+        child: cubit.state.isLoading && items.isEmpty
+            ? Skeletonizer(
+                enabled: true,
+                child: ListView.separated(
+                  physics: const NeverScrollableScrollPhysics(),
+                  padding: EdgeInsets.fromLTRB(
+                    pad,
+                    isLandscape ? 14 : 24,
+                    pad,
+                    24,
+                  ),
+                  itemCount: 4,
+                  separatorBuilder: (_, _) => const Gap(16),
+                  itemBuilder: (context, index) {
+                    return _FollowUpCard(
+                      item: ExecutiveFollowUpItem(
+                        id: 'skel_$index',
+                        leadName: 'Candidate Follow-up Name',
+                        maskedPhone: '+91 98765 43210',
+                        phone: '+91 98765 43210',
+                        collegeInfo:
+                            'Computer Science · Govt Engineering College',
+                        timeLabel: 'Today · 11:30 AM',
+                        channelLabel: 'Call',
+                        note:
+                            'Requested callback regarding admission syllabus and fee details',
+                        bucket: cubit.state.selectedFollowUpBucket,
+                      ),
+                      onCallNow: () {},
+                      onSnooze: () {},
+                      onMarkDone: () {},
+                    );
+                  },
+                ),
+              )
+            : items.isEmpty
             ? ListView(
                 physics: const AlwaysScrollableScrollPhysics(
                   parent: BouncingScrollPhysics(),

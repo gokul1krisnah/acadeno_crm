@@ -7,6 +7,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 
 import '../../../../shared/utilities/link_launcher.dart';
 import 'figma_calendar_dialog.dart';
@@ -1833,7 +1834,35 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
             ),
             const Gap(32),
 
-            if (visits.isEmpty)
+            if (snapshot.connectionState == ConnectionState.waiting &&
+                !snapshot.hasData)
+              Skeletonizer(
+                enabled: true,
+                child: Column(
+                  children: List.generate(
+                    3,
+                    (i) => _buildVisitCard(
+                      _CollegeVisit(
+                        id: 'skel_$i',
+                        collegeName:
+                            'Government Engineering College Barton Hill',
+                        dateLabel: '25 Nov 2026',
+                        purpose:
+                            'Placement Awareness & Technology Seminar Outreach',
+                        sourceEvent: 'Campus Drive',
+                        content: 'Seminar on Full Stack Web & AI Engineering',
+                        assignedStaff: 'Rahul M, Shilpa K',
+                        status: 'Planned',
+                        outcomeNotes:
+                            'Dean approved auditorium session for 120 students.',
+                        leadsCollected: 85,
+                        conversions: 14,
+                      ),
+                    ),
+                  ),
+                ),
+              )
+            else if (visits.isEmpty)
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(

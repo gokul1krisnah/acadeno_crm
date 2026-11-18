@@ -11,6 +11,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+
 import 'package:acadeno_crm/shared/extensions/build_context_extension.dart';
 import 'package:acadeno_crm/ui/dashboard/presentation/widgets/figma_calendar_dialog.dart';
 import 'package:acadeno_crm/ui/visits/application/visits_cubit.dart';
@@ -344,7 +345,67 @@ class _VisitsTabViewState extends State<VisitsTabView> {
           cubit.refresh();
           await Future.delayed(const Duration(milliseconds: 1000));
         },
-        child: items.isEmpty
+        child: cubit.state.isLoading && items.isEmpty
+            ? Skeletonizer(
+                enabled: true,
+                child: ListView.separated(
+                  physics: const NeverScrollableScrollPhysics(),
+                  padding: EdgeInsets.fromLTRB(
+                    pad.clamp(16.0, 24.0),
+                    isLandscape ? 14 : 20,
+                    pad.clamp(16.0, 24.0),
+                    32,
+                  ),
+                  itemCount: 3,
+                  separatorBuilder: (_, _) => const Gap(14),
+                  itemBuilder: (context, index) {
+                    final visit = ExecutiveCollegeVisit(
+                      id: 'skel_$index',
+                      monthShort: 'NOV',
+                      dayNumber: '25',
+                      collegeName:
+                          'National Institute of Technology Calicut Campus',
+                      subtitle: 'MCA & B.Tech 3rd Yr Students Outreach',
+                      statusLabel: switch (bucket) {
+                        VisitStatusBucket.upcoming => 'Planned',
+                        VisitStatusBucket.completed => 'Completed',
+                        VisitStatusBucket.cancelled => 'Cancelled',
+                      },
+                      purpose: 'Campus Seminar & Workshop Placement Drive',
+                      isUpcoming: bucket == VisitStatusBucket.upcoming,
+                    );
+                    return Center(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 800),
+                        child: switch (bucket) {
+                          VisitStatusBucket.upcoming => _UpcomingVisitCard(
+                            key: ValueKey(visit.id),
+                            visit: visit,
+                            onDirections: () {},
+                            onRecordOutcome: () {},
+                            onCancel: () {},
+                            onDelete: () {},
+                          ),
+                          VisitStatusBucket.completed => _RecentVisitCard(
+                            key: ValueKey(visit.id),
+                            visit: visit,
+                            onDirections: () {},
+                            onRecordOutcome: () {},
+                            onDelete: () {},
+                          ),
+                          VisitStatusBucket.cancelled => _CancelledVisitCard(
+                            key: ValueKey(visit.id),
+                            visit: visit,
+                            onReschedule: () {},
+                            onDelete: () {},
+                          ),
+                        },
+                      ),
+                    );
+                  },
+                ),
+              )
+            : items.isEmpty
             ? ListView(
                 physics: const AlwaysScrollableScrollPhysics(
                   parent: BouncingScrollPhysics(),

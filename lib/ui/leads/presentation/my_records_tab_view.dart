@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:gap/gap.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 
 import '../../../shared/theme/app_svgs.dart';
 import '../../home/application/home_cubit.dart';
@@ -219,7 +220,111 @@ class _MyRecordsTabViewState extends State<MyRecordsTabView> {
                   const SliverToBoxAdapter(child: Gap(10)),
 
                   // List of Call Logs
-                  if (state.callRecords.isEmpty)
+                  if (state.isLoading && state.callRecords.isEmpty)
+                    SliverPadding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      sliver: SliverToBoxAdapter(
+                        child: Skeletonizer(
+                          enabled: true,
+                          child: Column(
+                            children: List.generate(
+                              4,
+                              (i) => Container(
+                                margin: const EdgeInsets.only(bottom: 10),
+                                padding: const EdgeInsets.all(14),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(
+                                    color: const Color(0xFFE5E7EB),
+                                    width: 1,
+                                  ),
+                                ),
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Container(
+                                      width: 38,
+                                      height: 38,
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFEEF2FF),
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      alignment: Alignment.center,
+                                      child: const Icon(
+                                        Icons.call_rounded,
+                                        size: 18,
+                                        color: Color(0xFF4F46E5),
+                                      ),
+                                    ),
+                                    const Gap(12),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              Text(
+                                                'Prospective Lead Student',
+                                                style: GoogleFonts.inter(
+                                                  fontSize: 14,
+                                                  fontWeight: FontWeight.w700,
+                                                  color: const Color(0xFF0F172A),
+                                                ),
+                                              ),
+                                              Container(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                  horizontal: 8,
+                                                  vertical: 2,
+                                                ),
+                                                decoration: BoxDecoration(
+                                                  color: const Color(0xFFE0F2FE),
+                                                  borderRadius:
+                                                      BorderRadius.circular(6),
+                                                ),
+                                                child: Text(
+                                                  'Interested',
+                                                  style: GoogleFonts.inter(
+                                                    fontSize: 11,
+                                                    fontWeight: FontWeight.w600,
+                                                    color: const Color(0xFF0369A1),
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          const Gap(3),
+                                          Text(
+                                            '+91 98765 43210 · Outbound call',
+                                            style: GoogleFonts.inter(
+                                              fontSize: 12,
+                                              color: const Color(0xFF64748B),
+                                            ),
+                                          ),
+                                          const Gap(4),
+                                          Text(
+                                            'Today, 11:20 AM · Duration: 2m 45s',
+                                            style: GoogleFonts.inter(
+                                              fontSize: 11,
+                                              color: const Color(0xFF94A3B8),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    )
+                  else if (state.callRecords.isEmpty)
                     SliverFillRemaining(
                       hasScrollBody: false,
                       child: Center(

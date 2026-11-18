@@ -16,7 +16,12 @@ class FollowUpsCubit extends Cubit<FollowUpsState> {
   final Set<String> _notifiedOverdueIds = <String>{};
 
   FollowUpsCubit(this._repository)
-    : super(FollowUpsState(followUps: _repository.fetchFollowUps())) {
+      : super(
+          FollowUpsState(
+            followUps: _repository.fetchFollowUps(),
+            isLoading: true,
+          ),
+        ) {
     _subscribe();
     _startPeriodicOverdueCheck();
   }

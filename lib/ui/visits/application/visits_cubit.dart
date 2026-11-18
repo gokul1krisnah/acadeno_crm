@@ -11,7 +11,7 @@ class VisitsCubit extends Cubit<VisitsState> {
   StreamSubscription<List<ExecutiveCollegeVisit>>? _visitsSub;
 
   VisitsCubit(this._repository)
-    : super(VisitsState(visits: _repository.fetchVisits())) {
+      : super(VisitsState(visits: _repository.fetchVisits(), isLoading: true)) {
     _subscribe();
   }
 
@@ -20,15 +20,17 @@ class VisitsCubit extends Cubit<VisitsState> {
     _visitsSub = _repository.watchVisits().listen(
       (liveVisits) {
         if (isClosed) return;
-        emit(state.copyWith(visits: liveVisits));
+        emit(state.copyWith(visits: liveVisits, isLoading: false));
       },
       onError: (_) {
-        // Retain fallback visits if offline
+        if (isClosed) return;
+        emit(state.copyWith(isLoading: false));
       },
     );
   }
 
   void refresh() {
+    emit(state.copyWith(isLoading: true));
     _subscribe();
   }
 

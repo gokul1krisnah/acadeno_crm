@@ -9,6 +9,7 @@ import 'package:acadeno_crm/core/services/offline_queue_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 
 import 'package:acadeno_crm/shared/extensions/build_context_extension.dart';
 import 'package:acadeno_crm/shared/theme/app_images.dart';
@@ -1029,34 +1030,33 @@ class _LeadsTabViewState extends State<LeadsTabView> {
 
                               // 6. Call Cards List (Loading, Error/Permission, Empty, or Assigned Leads)
                               if (state.isLoading && state.leads.isEmpty)
-                                Container(
-                                  width: double.infinity,
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 36,
-                                    horizontal: 16,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(16),
-                                    border: Border.all(
-                                      color: const Color(0xFFEAECF0),
-                                    ),
-                                  ),
-                                  child: const Column(
-                                    children: [
-                                      CircularProgressIndicator(
-                                        color: Color(0xFF4338CA),
-                                      ),
-                                      Gap(12),
-                                      Text(
-                                        'Loading your assigned calls for today...',
-                                        style: TextStyle(
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.w600,
-                                          color: Color(0xFF667085),
+                                Skeletonizer(
+                                  enabled: true,
+                                  child: ListView.separated(
+                                    shrinkWrap: true,
+                                    physics:
+                                        const NeverScrollableScrollPhysics(),
+                                    itemCount: 4,
+                                    separatorBuilder: (_, _) => const Gap(10),
+                                    itemBuilder: (context, index) {
+                                      return _TodayLeadCard(
+                                        item: ExecutiveLeadItem(
+                                          id: 'skel_$index',
+                                          name: 'Prospective Student Name',
+                                          initials: 'PS',
+                                          maskedPhone: '+91 98765 43210',
+                                          fullPhone: '+91 98765 43210',
+                                          collegeInfo:
+                                              'National Institute of Technology · B.Tech CSE',
+                                          statusTag: 'Pending',
+                                          statusColor: const Color(0xFFB54708),
+                                          statusBg: const Color(0xFFFEF0C7),
+                                          campaignTag: 'AI & Python Workshop',
                                         ),
-                                      ),
-                                    ],
+                                        onTapCard: () {},
+                                        onTapCall: () {},
+                                      );
+                                    },
                                   ),
                                 )
                               else if (state.errorMessage != null)

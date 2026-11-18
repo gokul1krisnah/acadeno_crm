@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 
 import '../../../../shared/widgets/acadeno_dropdown.dart';
 
@@ -364,7 +365,37 @@ class _FollowUpsViewState extends State<FollowUpsView> {
                     const Gap(16),
 
                     // Follow-Up Cards List (Figma Node 1363:1646)
-                    if (filteredItems.isEmpty)
+                    if (leadsSnap.connectionState == ConnectionState.waiting &&
+                        !leadsSnap.hasData)
+                      Skeletonizer(
+                        enabled: true,
+                        child: Column(
+                          children: List.generate(
+                            3,
+                            (i) => Padding(
+                              padding: const EdgeInsets.only(bottom: 16),
+                              child: _buildFollowUpCard(
+                                _FollowUpRow(
+                                  id: 'skel_$i',
+                                  studentName: 'Prospective Student Name',
+                                  phone: '+91 98765 43210',
+                                  collegeBranch:
+                                      'NIT Calicut · CSE · Final Year',
+                                  note:
+                                      'Requested callback regarding batch schedule and course fee structure',
+                                  dueLabel: 'Today · 2:30 PM',
+                                  isOverdue: false,
+                                  assignedExec: 'Anjali R',
+                                  completed: false,
+                                ),
+                                constraints.maxWidth,
+                                executives,
+                              ),
+                            ),
+                          ),
+                        ),
+                      )
+                    else if (filteredItems.isEmpty)
                       Container(
                         width: double.infinity,
                         padding: const EdgeInsets.all(48),

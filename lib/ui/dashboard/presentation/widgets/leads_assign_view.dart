@@ -15,6 +15,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 import 'package:acadeno_crm/shared/theme/app_svgs.dart';
 import 'package:acadeno_crm/shared/widgets/acadeno_dropdown.dart';
 
@@ -3419,27 +3420,100 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
   ) {
     final cubit = context.read<AdminLeadsCubit>();
 
-    if (state.isLoading || _isRefreshing) {
-      return Padding(
-        padding: const EdgeInsets.symmetric(vertical: 48, horizontal: 24),
-        child: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _isRefreshing
-                  ? const SpinKitFadingCircle(color: _primary, size: 36)
-                  : const CircularProgressIndicator(color: _primary),
-              const Gap(12),
-              Text(
-                _isRefreshing ? 'Refreshing leads...' : 'Loading leads...',
-                style: const TextStyle(
-                  color: _muted,
-                  fontSize: 13.5,
-                  fontWeight: FontWeight.w600,
+    if (state.isLoading || (_isRefreshing && rows.isEmpty)) {
+      final skeletonRows = List.generate(
+        6,
+        (i) => LeadRecord(
+          id: 'skel_$i',
+          name: 'Prospective Student Name',
+          phone: '+91 98765 43210',
+          phoneNormalized: '9876543210',
+          collegeBranch: 'National Institute of Technology · CSE',
+          source: 'Webinar Campaign',
+          status: 'Assigned',
+          lastContact: 'Today, 10:30 AM',
+          assignedToName: 'Sales Executive',
+          assignedDateKey: '2026-11-18',
+          assignedDateLabel: 'Today, 18 Nov',
+        ),
+      );
+
+      return Skeletonizer(
+        enabled: true,
+        child: LayoutBuilder(
+          builder: (context, c) {
+            if (c.maxWidth < 800) {
+              return Column(
+                children: [
+                  for (var i = 0; i < skeletonRows.length; i++) ...[
+                    if (i > 0) const Divider(height: 1),
+                    _MobileLeadCardRow(
+                      lead: skeletonRows[i],
+                      isSelected: false,
+                      onTap: () {},
+                      onSelectChanged: (_) {},
+                      statusBadge: _statusBadge(skeletonRows[i].status),
+                      checkboxBuilder: _buildFigmaCheckbox,
+                    ),
+                  ],
+                ],
+              );
+            }
+
+            final h = GoogleFonts.poppins(
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              color: const Color(0xFF6B7280),
+              letterSpacing: 1.1,
+              height: 16.5 / 11,
+            );
+            return Column(
+              children: [
+                Container(
+                  color: const Color(0xFFF9FAFB),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Expanded(
+                        flex: 10,
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            _buildFigmaCheckbox(
+                              value: false,
+                              onChanged: (_) {},
+                            ),
+                            const Gap(16),
+                            Text('NAME', style: h),
+                          ],
+                        ),
+                      ),
+                      Expanded(
+                          flex: 7, child: Text('COLLEGE - BRANCH', style: h)),
+                      Expanded(flex: 5, child: Text('SOURCE', style: h)),
+                      Expanded(flex: 4, child: Text('STATUS', style: h)),
+                      Expanded(flex: 5, child: Text('LAST CONTACT', style: h)),
+                      Expanded(flex: 5, child: Text('ASSIGNED TO', style: h)),
+                    ],
+                  ),
                 ),
-              ),
-            ],
-          ),
+                const Divider(height: 1, color: Color(0xFFF3F4F6)),
+                for (var i = 0; i < skeletonRows.length; i++) ...[
+                  if (i > 0) const Divider(height: 1, color: Color(0xFFF9FAFB)),
+                  _DesktopLeadTableRow(
+                    lead: skeletonRows[i],
+                    isSelected: false,
+                    onTap: () {},
+                    onSelectChanged: (_) {},
+                    statusBadge: _statusBadge(skeletonRows[i].status),
+                    checkboxBuilder: _buildFigmaCheckbox,
+                  ),
+                ],
+              ],
+            );
+          },
         ),
       );
     }
