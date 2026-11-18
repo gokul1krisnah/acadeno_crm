@@ -357,9 +357,9 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
                         '${LeadDateHelper.timelineStamp(createdAtDt)} · Registered via ${effectiveCampaign.isNotEmpty ? effectiveCampaign : "Campus outreach"} (Consent recorded)',
                     ]);
 
-        // Parse college and branch/year
+        // Parse college / other and branch/year/details
         final parts = effectiveCollegeInfo
-            .split('·')
+            .split(RegExp(r'[·\-]'))
             .map((s) => s.trim())
             .where((s) => s.isNotEmpty)
             .toList();
@@ -367,6 +367,12 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
         final branchYearDisplay = parts.length > 1
             ? parts.sublist(1).join(' · ')
             : '—';
+        final isOtherCategory = const [
+          'plus two',
+          'business development',
+          'career switching',
+          'skill upgrading',
+        ].any((cat) => collegeDisplay.toLowerCase().startsWith(cat));
 
         final createdLabel = createdAtDt != null
             ? LeadDateHelper.relativeStamp(createdAtDt, withTime: false)
@@ -1005,7 +1011,7 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     const Text(
-                                      'College',
+                                      'College / Other',
                                       style: TextStyle(
                                         fontSize: 11.5,
                                         color: Color(0xFF64748B),
@@ -1027,9 +1033,11 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    const Text(
-                                      'Branch · Year',
-                                      style: TextStyle(
+                                    Text(
+                                      isOtherCategory
+                                          ? 'Details'
+                                          : 'Branch · Year',
+                                      style: const TextStyle(
                                         fontSize: 11.5,
                                         color: Color(0xFF64748B),
                                       ),
