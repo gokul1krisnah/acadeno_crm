@@ -292,7 +292,7 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                       ],
                     ),
                   ),
-                  // Offline Sync Status Pill (RL-5, RL-6)
+                  // Offline Sync Status Pill
                   StreamBuilder<int>(
                     stream: OfflineQueueService.instance.pendingCountStream,
                     initialData: OfflineQueueService.instance.pendingCount,

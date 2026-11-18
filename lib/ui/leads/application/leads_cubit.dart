@@ -213,7 +213,7 @@ class LeadsCubit extends Cubit<LeadsState> {
     );
   }
 
-  /// Atomically claims a 10-minute call lock on [leadId] (FR-3.1, RL-2).
+  /// Atomically claims a 10-minute call lock on [leadId].
   Future<({bool granted, String? lockedBy})> claimLeadForCall(String leadId) {
     return _repository.claimLeadForCall(leadId);
   }

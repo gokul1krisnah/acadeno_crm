@@ -92,7 +92,7 @@ class AppPhoneCallService with WidgetsBindingObserver {
       return;
     }
 
-    // FR-3.1 & RL-2: Atomically claim 10-minute Call Lock before launching dialer
+    // Atomically claim 10-minute Call Lock before launching dialer
     if (lead.id.isNotEmpty) {
       final lockResult = await LeadsRds().claimLeadForCall(lead.id);
       if (!lockResult.granted) {

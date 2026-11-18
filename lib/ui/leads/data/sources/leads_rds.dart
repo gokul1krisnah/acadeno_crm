@@ -117,7 +117,7 @@ abstract class LeadsBackend {
   Future<({bool found, String message, String? owner, String? status})>
   lookupByPhone(String rawPhone);
 
-  /// Atomically claims a 10-minute call lock on [leadId] (FR-3.1, RL-2).
+  /// Atomically claims a 10-minute call lock on [leadId].
   Future<({bool granted, String? lockedBy})> claimLeadForCall(String leadId);
 
   Future<void> releaseLeadLock(String leadId);
@@ -1484,7 +1484,7 @@ class FirestoreLeadsBackend implements LeadsBackend {
               .map((d) => CallHistoryRecord.fromMap(d.id, d.data()))
               .toList();
 
-          // Merge locally queued calls so the executive sees them in My Record immediately (RL-5, RL-6)
+          // Merge locally queued calls so the executive sees them in My Record immediately
           final queued = OfflineQueueService.instance.getQueuedCalls();
           for (final q in queued) {
             if (!records.any((r) => r.id == q.clientId)) {
@@ -1585,7 +1585,7 @@ class FirestoreLeadsBackend implements LeadsBackend {
     final clientId =
         'call_${leadId}_${DateTime.now().millisecondsSinceEpoch}_${leadId.hashCode.abs()}';
 
-    // 1. If offline, IMMEDIATELY enqueue to persistent Hive queue & apply local cache writes (RL-5, RL-6)
+    // 1. If offline, IMMEDIATELY enqueue to persistent Hive queue & apply local cache writes
     if (!OfflineQueueService.instance.isOnline) {
       await OfflineQueueService.instance.enqueueOutcome(
         leadId: leadId,

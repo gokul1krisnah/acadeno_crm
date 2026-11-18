@@ -415,7 +415,7 @@ abstract final class LeadDateHelper {
     return formatFollowUp(at(offset, hour, minute), now: ref);
   }
 
-  /// Schedules the next automatic retry slot strictly within working hours (9 AM – 8 PM IST) (FR-3.6, RL-7).
+  /// Schedules the next automatic retry slot strictly within working hours (9 AM – 8 PM IST).
   static String nextWorkingHoursRetrySlot([DateTime? now]) {
     final ref = now ?? DateTime.now();
     final candidate = ref.add(const Duration(hours: 3));
@@ -668,7 +668,7 @@ class LeadRecord {
     this.updatedAt,
   });
 
-  /// True if the 10-minute call lock (FR-3.1, RL-2) is currently active.
+  /// True if the 10-minute call lock is currently active.
   bool get isActivelyLocked {
     if (!isLocked) return false;
     final lockTime = lockedAt ?? updatedAt;

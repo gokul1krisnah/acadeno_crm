@@ -1482,7 +1482,7 @@ class _UserManagementViewState extends State<UserManagementView> {
               vertical: (screenHeight * 0.04).clamp(12.0, 24.0).toDouble(),
             ),
             title: Text(
-              'Deactivate ${user.name} (RL-4)',
+              'Deactivate ${user.name}',
               style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
             ),
             content: SizedBox(
@@ -1505,44 +1505,17 @@ class _UserManagementViewState extends State<UserManagementView> {
                     style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
                   ),
                   const Gap(8),
-                  DropdownButtonFormField<String>(
-                    initialValue: reassignTarget,
-                    isExpanded: true,
+                  AcadenoDropdown.strings(
+                    value: reassignTarget,
+                    items: fallbackExecs,
+                    fillColor: Colors.white,
+                    borderColor: const Color(0xFFE2E8F0),
                     dropdownColor: const Color(0xFFE2E2E2),
-                    borderRadius: BorderRadius.circular(12),
-                    decoration: InputDecoration(
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(
-                          color: Color(0xFF4338CA),
-                          width: 1.5,
-                        ),
-                      ),
-                      isDense: true,
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 12,
-                      ),
+                    borderRadius: 12,
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 12,
                     ),
-                    items: fallbackExecs
-                        .map(
-                          (e) => DropdownMenuItem(
-                            value: e,
-                            child: AcadenoDropdown.buildMenuItemChild(
-                              label: e,
-                              isSelected: reassignTarget == e,
-                            ),
-                          ),
-                        )
-                        .toList(),
                     onChanged: (v) {
                       if (v != null) setDialogState(() => reassignTarget = v);
                     },

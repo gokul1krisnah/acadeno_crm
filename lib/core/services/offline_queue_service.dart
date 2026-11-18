@@ -8,7 +8,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 
 import '../../ui/leads/data/model/lead_models.dart';
 
-/// Representation of an offline call outcome queued on the device (RL-5, RL-6).
+/// Representation of an offline call outcome queued on the device.
 class QueuedCallOutcome {
   final String clientId;
   final String leadId;
@@ -126,7 +126,7 @@ class QueuedVisitOutcome {
       );
 }
 
-/// Enterprise-grade Offline Queue and Network Synchronization Manager (RL-5, RL-6).
+/// Enterprise-grade Offline Queue and Network Synchronization Manager.
 ///
 /// Features:
 /// 1. Persistent local storage in Hive for zero-data-loss when offline.
