@@ -28,6 +28,7 @@ abstract class AppSvgs {
   static const String visitOutcome = 'assets/svgs/visit_outcome.svg';
   static const String navToday = 'assets/svgs/nav_today.svg';
   static const String navFollowups = 'assets/svgs/nav_followups.svg';
+  static const String navCallLogs = 'assets/svgs/stat_phone.svg';
   static const String navVisits = 'assets/svgs/nav_visits.svg';
   static const String navRecords = 'assets/svgs/nav_records.svg';
   static const String navAlerts = 'assets/svgs/nav_alerts.svg';

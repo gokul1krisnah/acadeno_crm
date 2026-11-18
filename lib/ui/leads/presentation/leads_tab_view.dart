@@ -218,9 +218,7 @@ class _LeadsTabViewState extends State<LeadsTabView> {
         final homeState = context.watch<HomeCubit>().state;
         final followUpsState = context.watch<FollowUpsCubit>().state;
         final pad = context.devicePadding;
-        final displayedLeads = state.showingPendingCalls
-            ? state.pendingLeads
-            : state.doneLeads;
+        final displayedLeads = state.filteredLeads;
 
         final screenSize = MediaQuery.sizeOf(context);
         final screenWidth = screenSize.width;
@@ -954,78 +952,190 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                   ),
                                 ],
                               ),
-                              const Gap(20),
+                              const Gap(16),
+
+                              // Quick Category Options: All, Hot Leads, Follow-ups, Reminders
+                              SingleChildScrollView(
+                                scrollDirection: Axis.horizontal,
+                                physics: const BouncingScrollPhysics(),
+                                child: Row(
+                                  children: [
+                                    _CategoryFilterPill(
+                                      icon: Icons.view_list_rounded,
+                                      label: 'All Calls',
+                                      count: state.leads.length,
+                                      isSelected: state.categoryFilter ==
+                                          HomeCategoryFilter.all,
+                                      onTap: () => cubit.setCategoryFilter(
+                                        HomeCategoryFilter.all,
+                                      ),
+                                    ),
+                                    const Gap(8),
+                                    _CategoryFilterPill(
+                                      icon: CupertinoIcons.flame_fill,
+                                      label: 'Hot Leads',
+                                      count: state.hotLeads.length,
+                                      accentColor: const Color(0xFFEF4444),
+                                      bgColor: const Color(0xFFFEF2F2),
+                                      isSelected: state.categoryFilter ==
+                                          HomeCategoryFilter.hotLeads,
+                                      onTap: () => cubit.setCategoryFilter(
+                                        HomeCategoryFilter.hotLeads,
+                                      ),
+                                    ),
+                                    const Gap(8),
+                                    _CategoryFilterPill(
+                                      icon: CupertinoIcons.person_badge_plus,
+                                      label: 'Follow-ups',
+                                      count: state.followUpLeads.length,
+                                      accentColor: const Color(0xFF0D9488),
+                                      bgColor: const Color(0xFFF0FDFA),
+                                      isSelected: state.categoryFilter ==
+                                          HomeCategoryFilter.followUps,
+                                      onTap: () => cubit.setCategoryFilter(
+                                        HomeCategoryFilter.followUps,
+                                      ),
+                                    ),
+                                    const Gap(8),
+                                    _CategoryFilterPill(
+                                      icon: CupertinoIcons.clock_fill,
+                                      label: 'Reminders',
+                                      count: state.reminderLeads.length,
+                                      accentColor: const Color(0xFFB45309),
+                                      bgColor: const Color(0xFFFFFBEB),
+                                      isSelected: state.categoryFilter ==
+                                          HomeCategoryFilter.reminders,
+                                      onTap: () => cubit.setCategoryFilter(
+                                        HomeCategoryFilter.reminders,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const Gap(16),
 
                               // 5. TODAY'S CALLS Header with Pending / Completed switcher
-                              Row(
-                                children: [
-                                  const Flexible(
-                                    child: FittedBox(
-                                      fit: BoxFit.scaleDown,
-                                      alignment: Alignment.centerLeft,
-                                      child: Text(
-                                        "TODAY'S CALLS",
-                                        style: TextStyle(
-                                          fontFamily: 'Inter',
-                                          fontSize: 10,
-                                          fontWeight: FontWeight.w700,
-                                          height: 15 / 10,
-                                          letterSpacing: 1.0,
-                                          color: Color(0xFF9CA3AF),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  const Gap(8),
-                                  Flexible(
-                                    flex: 3,
-                                    child: Align(
-                                      alignment: Alignment.centerRight,
+                              if (state.categoryFilter == HomeCategoryFilter.all)
+                                Row(
+                                  children: [
+                                    const Flexible(
                                       child: FittedBox(
                                         fit: BoxFit.scaleDown,
-                                        alignment: Alignment.centerRight,
-                                        child: Container(
-                                          decoration: BoxDecoration(
-                                            color: const Color(
-                                              0xFFE2E8F0,
-                                            ).withValues(alpha: 0.6),
-                                            borderRadius: BorderRadius.circular(
-                                              10,
-                                            ),
-                                          ),
-                                          padding: const EdgeInsets.all(3),
-                                          child: Row(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              _CallTabPill(
-                                                label:
-                                                    'Pending (${state.pendingLeads.length})',
-                                                isSelected:
-                                                    state.showingPendingCalls,
-                                                onTap: () => cubit
-                                                    .togglePendingOrDoneCalls(
-                                                      true,
-                                                    ),
-                                              ),
-                                              const Gap(4),
-                                              _CallTabPill(
-                                                label:
-                                                    'Completed (${state.doneLeads.length})',
-                                                isSelected:
-                                                    !state.showingPendingCalls,
-                                                onTap: () => cubit
-                                                    .togglePendingOrDoneCalls(
-                                                      false,
-                                                    ),
-                                              ),
-                                            ],
+                                        alignment: Alignment.centerLeft,
+                                        child: Text(
+                                          "TODAY'S CALLS",
+                                          style: TextStyle(
+                                            fontFamily: 'Inter',
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.w700,
+                                            height: 15 / 10,
+                                            letterSpacing: 1.0,
+                                            color: Color(0xFF9CA3AF),
                                           ),
                                         ),
                                       ),
                                     ),
-                                  ),
-                                ],
-                              ),
+                                    const Gap(8),
+                                    Flexible(
+                                      flex: 3,
+                                      child: Align(
+                                        alignment: Alignment.centerRight,
+                                        child: FittedBox(
+                                          fit: BoxFit.scaleDown,
+                                          alignment: Alignment.centerRight,
+                                          child: Container(
+                                            decoration: BoxDecoration(
+                                              color: const Color(
+                                                0xFFE2E8F0,
+                                              ).withValues(alpha: 0.6),
+                                              borderRadius:
+                                                  BorderRadius.circular(10),
+                                            ),
+                                            padding: const EdgeInsets.all(3),
+                                            child: Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                _CallTabPill(
+                                                  label:
+                                                      'Pending (${state.pendingLeads.length})',
+                                                  isSelected:
+                                                      state.showingPendingCalls,
+                                                  onTap: () => cubit
+                                                      .togglePendingOrDoneCalls(
+                                                        true,
+                                                      ),
+                                                ),
+                                                const Gap(4),
+                                                _CallTabPill(
+                                                  label:
+                                                      'Completed (${state.doneLeads.length})',
+                                                  isSelected:
+                                                      !state.showingPendingCalls,
+                                                  onTap: () => cubit
+                                                      .togglePendingOrDoneCalls(
+                                                        false,
+                                                      ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                )
+                              else
+                                Row(
+                                  children: [
+                                    Flexible(
+                                      child: FittedBox(
+                                        fit: BoxFit.scaleDown,
+                                        alignment: Alignment.centerLeft,
+                                        child: Text(
+                                          switch (state.categoryFilter) {
+                                            HomeCategoryFilter.hotLeads =>
+                                              "HOT LEADS (${state.hotLeads.length})",
+                                            HomeCategoryFilter.followUps =>
+                                              "FOLLOW-UPS (${state.followUpLeads.length})",
+                                            HomeCategoryFilter.reminders =>
+                                              "REMINDERS (${state.reminderLeads.length})",
+                                            _ => "ASSIGNED CALLS",
+                                          },
+                                          style: const TextStyle(
+                                            fontFamily: 'Inter',
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.w700,
+                                            height: 15 / 10,
+                                            letterSpacing: 1.0,
+                                            color: Color(0xFF9CA3AF),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    const Spacer(),
+                                    InkWell(
+                                      onTap: () => cubit.setCategoryFilter(
+                                        HomeCategoryFilter.all,
+                                      ),
+                                      borderRadius: BorderRadius.circular(8),
+                                      child: const Padding(
+                                        padding: EdgeInsets.symmetric(
+                                          horizontal: 6,
+                                          vertical: 2,
+                                        ),
+                                        child: Text(
+                                          'Show All Calls',
+                                          style: TextStyle(
+                                            fontFamily: 'Inter',
+                                            fontSize: 11.5,
+                                            fontWeight: FontWeight.w600,
+                                            color: Color(0xFF6366F1),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               const Gap(12),
 
                               // 6. Call Cards List (Loading, Error/Permission, Empty, or Assigned Leads)
@@ -1182,9 +1292,18 @@ class _LeadsTabViewState extends State<LeadsTabView> {
 
                                       // Title (1467:391 Heading 3)
                                       Text(
-                                        state.showingPendingCalls
-                                            ? 'No pending leads assigned to you for today'
-                                            : 'No completed calls recorded yet today',
+                                        switch (state.categoryFilter) {
+                                          HomeCategoryFilter.hotLeads =>
+                                            'No hot leads recorded yet',
+                                          HomeCategoryFilter.followUps =>
+                                            'No follow-ups recorded yet',
+                                          HomeCategoryFilter.reminders =>
+                                            'No reminders recorded yet',
+                                          HomeCategoryFilter.all =>
+                                            state.showingPendingCalls
+                                                ? 'No pending leads assigned to you for today'
+                                                : 'No completed calls recorded yet today',
+                                        },
                                         textAlign: TextAlign.center,
                                         style: GoogleFonts.inter(
                                           fontSize: 14.5,
@@ -1198,7 +1317,16 @@ class _LeadsTabViewState extends State<LeadsTabView> {
 
                                       // Subtitle (1467:394)
                                       Text(
-                                        'New leads assigned by your Admin will\nappear here automatically.',
+                                        switch (state.categoryFilter) {
+                                          HomeCategoryFilter.hotLeads =>
+                                            'Categorize incoming or outgoing calls as Hot Leads to see them here.',
+                                          HomeCategoryFilter.followUps =>
+                                            'Categorize calls for follow-up to track them here.',
+                                          HomeCategoryFilter.reminders =>
+                                            'Categorize calls for reminders to manage them here.',
+                                          HomeCategoryFilter.all =>
+                                            'New leads assigned by your Admin will\nappear here automatically.',
+                                        },
                                         textAlign: TextAlign.center,
                                         style: GoogleFonts.inter(
                                           fontSize: 12.5,
@@ -1214,7 +1342,45 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                         mainAxisAlignment:
                                             MainAxisAlignment.center,
                                         children: [
-                                          if (!state.showingPendingCalls) ...[
+                                          if (state.categoryFilter !=
+                                              HomeCategoryFilter.all) ...[
+                                            Expanded(
+                                              flex: 169,
+                                              child: SizedBox(
+                                                height: 44,
+                                                child: ElevatedButton(
+                                                  onPressed: () => cubit
+                                                      .setCategoryFilter(
+                                                        HomeCategoryFilter.all,
+                                                      ),
+                                                  style: ElevatedButton.styleFrom(
+                                                    backgroundColor: const Color(
+                                                      0xFF6366F1,
+                                                    ),
+                                                    foregroundColor:
+                                                        Colors.white,
+                                                    elevation: 0,
+                                                    shape: RoundedRectangleBorder(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                            12,
+                                                          ),
+                                                    ),
+                                                  ),
+                                                  child: const Text(
+                                                    'View All Today\'s Calls',
+                                                    style: TextStyle(
+                                                      fontFamily: 'Inter',
+                                                      fontSize: 12.5,
+                                                      fontWeight:
+                                                          FontWeight.w700,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                            Gap(screenWidth < 360 ? 8 : 12),
+                                          ] else if (!state.showingPendingCalls) ...[
                                             Expanded(
                                               flex: 169,
                                               child: SizedBox(
@@ -1732,6 +1898,115 @@ class _TodayLeadCard extends StatelessWidget {
                   const Gap(12),
                   Row(
                     children: [
+                      if (item.category == 'hot_lead') ...[
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 9,
+                            vertical: 3.5,
+                          ),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFEF2F2),
+                            borderRadius: BorderRadius.circular(9999),
+                            border: Border.all(
+                              color: const Color(0xFFFCA5A5).withValues(alpha: 0.6),
+                            ),
+                          ),
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                CupertinoIcons.flame_fill,
+                                size: 10,
+                                color: Color(0xFFEF4444),
+                              ),
+                              Gap(4),
+                              Text(
+                                'HOT LEAD',
+                                style: TextStyle(
+                                  fontFamily: 'Inter',
+                                  fontSize: 9.5,
+                                  fontWeight: FontWeight.w700,
+                                  letterSpacing: 0.05,
+                                  color: Color(0xFFDC2626),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const Gap(6),
+                      ] else if (item.category == 'follow_up') ...[
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 9,
+                            vertical: 3.5,
+                          ),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF0FDFA),
+                            borderRadius: BorderRadius.circular(9999),
+                            border: Border.all(
+                              color: const Color(0xFF99F6E4).withValues(alpha: 0.6),
+                            ),
+                          ),
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                CupertinoIcons.person_badge_plus,
+                                size: 10,
+                                color: Color(0xFF0D9488),
+                              ),
+                              Gap(4),
+                              Text(
+                                'FOLLOW-UP',
+                                style: TextStyle(
+                                  fontFamily: 'Inter',
+                                  fontSize: 9.5,
+                                  fontWeight: FontWeight.w700,
+                                  letterSpacing: 0.05,
+                                  color: Color(0xFF0F766E),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const Gap(6),
+                      ] else if (item.category == 'reminder') ...[
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 9,
+                            vertical: 3.5,
+                          ),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFFFBEB),
+                            borderRadius: BorderRadius.circular(9999),
+                            border: Border.all(
+                              color: const Color(0xFFFDE68A).withValues(alpha: 0.6),
+                            ),
+                          ),
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                CupertinoIcons.clock_fill,
+                                size: 10,
+                                color: Color(0xFFB45309),
+                              ),
+                              Gap(4),
+                              Text(
+                                'REMINDER',
+                                style: TextStyle(
+                                  fontFamily: 'Inter',
+                                  fontSize: 9.5,
+                                  fontWeight: FontWeight.w700,
+                                  letterSpacing: 0.05,
+                                  color: Color(0xFFB45309),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const Gap(6),
+                      ],
                       Flexible(
                         flex: 0,
                         child: Container(
@@ -1866,6 +2141,105 @@ class _CallTabPill extends StatelessWidget {
                   : const Color(0xFF64748B),
             ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _CategoryFilterPill extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final int count;
+  final bool isSelected;
+  final VoidCallback onTap;
+  final Color? accentColor;
+  final Color? bgColor;
+
+  const _CategoryFilterPill({
+    required this.icon,
+    required this.label,
+    required this.count,
+    required this.isSelected,
+    required this.onTap,
+    this.accentColor,
+    this.bgColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final effectiveColor = accentColor ?? const Color(0xFF6366F1);
+    final selectedBg = bgColor ?? const Color(0xFFEEF2FF);
+
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? selectedBg : Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isSelected
+                ? effectiveColor.withValues(alpha: 0.5)
+                : const Color(0xFFE5E7EB),
+            width: isSelected ? 1.5 : 1,
+          ),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: effectiveColor.withValues(alpha: 0.12),
+                    blurRadius: 6,
+                    offset: const Offset(0, 2),
+                  ),
+                ]
+              : [
+                  const BoxShadow(
+                    color: Color(0x06000000),
+                    blurRadius: 2,
+                    offset: Offset(0, 1),
+                  ),
+                ],
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              size: 15,
+              color: isSelected ? effectiveColor : const Color(0xFF6B7280),
+            ),
+            const Gap(6),
+            Text(
+              label,
+              style: TextStyle(
+                fontFamily: 'Inter',
+                fontSize: 12.5,
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                color: isSelected ? effectiveColor : const Color(0xFF374151),
+              ),
+            ),
+            const Gap(6),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+              decoration: BoxDecoration(
+                color: isSelected
+                    ? effectiveColor.withValues(alpha: 0.18)
+                    : const Color(0xFFF3F4F6),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Text(
+                '$count',
+                style: TextStyle(
+                  fontFamily: 'Inter',
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  color: isSelected ? effectiveColor : const Color(0xFF6B7280),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );

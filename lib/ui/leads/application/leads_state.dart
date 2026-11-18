@@ -1,10 +1,18 @@
 import '../data/model/lead_models.dart';
 
+enum HomeCategoryFilter {
+  all,
+  hotLeads,
+  followUps,
+  reminders,
+}
+
 class LeadsState {
   final bool isLoading;
   final String? errorMessage;
   final bool isPermissionDenied;
   final bool showingPendingCalls;
+  final HomeCategoryFilter categoryFilter;
   final List<ExecutiveLeadItem> leads;
   final List<CallHistoryRecord> callRecords;
   final int phoneLookupsThisHour;
@@ -16,6 +24,7 @@ class LeadsState {
     this.errorMessage,
     this.isPermissionDenied = false,
     this.showingPendingCalls = true,
+    this.categoryFilter = HomeCategoryFilter.all,
     required this.leads,
     required this.callRecords,
     this.phoneLookupsThisHour = 0,
@@ -28,6 +37,40 @@ class LeadsState {
 
   List<ExecutiveLeadItem> get doneLeads =>
       leads.where((l) => l.isDone).toList();
+
+  /// Real categorized leads
+  List<ExecutiveLeadItem> get hotLeads => leads
+      .where((l) =>
+          l.category == 'hot_lead' ||
+          l.statusTag.toLowerCase() == 'hot lead' ||
+          l.statusTag.toLowerCase() == 'hot')
+      .toList();
+
+  List<ExecutiveLeadItem> get followUpLeads => leads
+      .where((l) =>
+          l.category == 'follow_up' ||
+          l.statusTag.toLowerCase().contains('follow'))
+      .toList();
+
+  List<ExecutiveLeadItem> get reminderLeads => leads
+      .where((l) =>
+          l.category == 'reminder' ||
+          l.category == 'reminders' ||
+          l.statusTag.toLowerCase().contains('reminder'))
+      .toList();
+
+  List<ExecutiveLeadItem> get filteredLeads {
+    switch (categoryFilter) {
+      case HomeCategoryFilter.hotLeads:
+        return hotLeads;
+      case HomeCategoryFilter.followUps:
+        return followUpLeads;
+      case HomeCategoryFilter.reminders:
+        return reminderLeads;
+      case HomeCategoryFilter.all:
+        return showingPendingCalls ? pendingLeads : doneLeads;
+    }
+  }
 
   /// Returns the top urgent lead for the "DUE NOW" card on the Today Dashboard,
   /// or `null` if no pending leads are assigned.
@@ -48,6 +91,7 @@ class LeadsState {
     bool clearError = false,
     bool? isPermissionDenied,
     bool? showingPendingCalls,
+    HomeCategoryFilter? categoryFilter,
     List<ExecutiveLeadItem>? leads,
     List<CallHistoryRecord>? callRecords,
     int? phoneLookupsThisHour,
@@ -60,6 +104,7 @@ class LeadsState {
       errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
       isPermissionDenied: isPermissionDenied ?? this.isPermissionDenied,
       showingPendingCalls: showingPendingCalls ?? this.showingPendingCalls,
+      categoryFilter: categoryFilter ?? this.categoryFilter,
       leads: leads ?? this.leads,
       callRecords: callRecords ?? this.callRecords,
       phoneLookupsThisHour: phoneLookupsThisHour ?? this.phoneLookupsThisHour,

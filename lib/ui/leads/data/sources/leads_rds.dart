@@ -1554,6 +1554,11 @@ class FirestoreLeadsBackend implements LeadsBackend {
               }
             }
 
+            if (data['category'] != null &&
+                data['category'].toString().trim().isNotEmpty) {
+              isForTargetDate = true;
+            }
+
             if (isForTargetDate) {
               final lead = LeadRecord.fromFirestore(doc);
               items.add(lead.toExecutiveLeadItem());

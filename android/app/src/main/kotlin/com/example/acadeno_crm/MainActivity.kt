@@ -161,6 +161,11 @@ class MainActivity : FlutterActivity() {
                         result.success(-1L)
                     }
                 }
+                "getCallLogs" -> {
+                    val limit = (call.argument<Number>("limit"))?.toInt() ?: 100
+                    val logs = queryDeviceCallLogs(limit)
+                    result.success(logs)
+                }
                 else -> result.notImplemented()
             }
         }
@@ -258,5 +263,81 @@ class MainActivity : FlutterActivity() {
             // Permission or provider exception
         }
         return -2L // Call record not yet committed
+    }
+
+    private fun queryDeviceCallLogs(limit: Int): List<Map<String, Any>> {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CALL_LOG) != PackageManager.PERMISSION_GRANTED) {
+            return emptyList()
+        }
+
+        val logs = mutableListOf<Map<String, Any>>()
+        try {
+            var simName = "Mobile"
+            try {
+                val tm = getSystemService(Context.TELEPHONY_SERVICE) as? TelephonyManager
+                val opName = tm?.simOperatorName ?: tm?.networkOperatorName
+                if (!opName.isNullOrBlank()) {
+                    simName = opName
+                }
+            } catch (_: Exception) {}
+
+            val projection = arrayOf(
+                CallLog.Calls._ID,
+                CallLog.Calls.NUMBER,
+                CallLog.Calls.DATE,
+                CallLog.Calls.DURATION,
+                CallLog.Calls.TYPE
+            )
+
+            val cursor = contentResolver.query(
+                CallLog.Calls.CONTENT_URI,
+                projection,
+                null,
+                null,
+                "${CallLog.Calls.DATE} DESC"
+            )
+
+            cursor?.use {
+                val idIdx = it.getColumnIndex(CallLog.Calls._ID)
+                val numberIdx = it.getColumnIndex(CallLog.Calls.NUMBER)
+                val dateIdx = it.getColumnIndex(CallLog.Calls.DATE)
+                val durationIdx = it.getColumnIndex(CallLog.Calls.DURATION)
+                val typeIdx = it.getColumnIndex(CallLog.Calls.TYPE)
+
+                var count = 0
+                while (it.moveToNext() && count < limit) {
+                    val id = if (idIdx != -1) it.getString(idIdx) ?: count.toString() else count.toString()
+                    val rawNumber = if (numberIdx != -1) it.getString(numberIdx) ?: "" else ""
+                    val callDate = if (dateIdx != -1) it.getLong(dateIdx) else 0L
+                    val duration = if (durationIdx != -1) it.getLong(durationIdx) else 0L
+                    val callTypeInt = if (typeIdx != -1) it.getInt(typeIdx) else 0
+
+                    val typeStr = when (callTypeInt) {
+                        CallLog.Calls.INCOMING_TYPE -> "incoming"
+                        CallLog.Calls.OUTGOING_TYPE -> "outgoing"
+                        CallLog.Calls.MISSED_TYPE -> "missed"
+                        CallLog.Calls.VOICEMAIL_TYPE -> "voicemail"
+                        CallLog.Calls.REJECTED_TYPE -> "rejected"
+                        CallLog.Calls.BLOCKED_TYPE -> "blocked"
+                        else -> "unknown"
+                    }
+
+                    if (rawNumber.isNotBlank()) {
+                        logs.add(
+                            mapOf(
+                                "id" to id,
+                                "number" to rawNumber,
+                                "timestamp" to callDate,
+                                "duration" to duration,
+                                "type" to typeStr,
+                                "simName" to simName
+                            )
+                        )
+                        count++
+                    }
+                }
+            }
+        } catch (_: Exception) {}
+        return logs
     }
 }

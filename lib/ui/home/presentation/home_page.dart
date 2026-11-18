@@ -17,6 +17,7 @@ import 'package:acadeno_crm/ui/alerts/application/alerts_state.dart';
 import 'package:acadeno_crm/ui/alerts/data/repository/alerts_repo.dart';
 import 'package:acadeno_crm/ui/alerts/data/sources/alerts_rds.dart';
 import 'package:acadeno_crm/ui/alerts/presentation/alerts_tab_view.dart';
+import 'package:acadeno_crm/ui/call_logs/presentation/call_logs_tab_view.dart';
 import 'package:acadeno_crm/ui/follow_ups/application/follow_ups_cubit.dart';
 import 'package:acadeno_crm/ui/follow_ups/application/follow_ups_state.dart';
 import 'package:acadeno_crm/ui/follow_ups/data/repository/follow_ups_repo.dart';
@@ -170,9 +171,10 @@ class _HomeScaffoldViewState extends State<_HomeScaffoldView> {
                                 child: switch (state.bottomNavIndex) {
                                   0 => LeadsTabView(onLogout: _performLogout),
                                   1 => const FollowUpsTabView(),
-                                  2 => const VisitsTabView(),
-                                  3 => const MyRecordsTabView(),
-                                  4 => const AlertsTabView(),
+                                  2 => const CallLogsTabView(),
+                                  3 => const VisitsTabView(),
+                                  4 => const MyRecordsTabView(),
+                                  5 => const AlertsTabView(),
                                   _ => LeadsTabView(onLogout: _performLogout),
                                 },
                               ),
@@ -235,6 +237,12 @@ class _ExecutiveBottomNavBar extends StatelessWidget {
       iconHeight: 18,
     ),
     _BottomNavItem(
+      label: 'Call Logs',
+      svgAsset: AppSvgs.navCallLogs,
+      iconWidth: 16,
+      iconHeight: 16,
+    ),
+    _BottomNavItem(
       label: 'Visits',
       svgAsset: AppSvgs.navVisits,
       iconWidth: 13.5,
@@ -258,8 +266,10 @@ class _ExecutiveBottomNavBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final bottomInset = MediaQuery.paddingOf(context).bottom;
     final isShortScreen = MediaQuery.sizeOf(context).height < 500;
-    final topPad = isShortScreen ? 8.0 : 12.0;
-    final bottomPad = bottomInset > 0 ? bottomInset + 4.0 : (isShortScreen ? 8.0 : 12.0);
+    final topPad = isShortScreen ? 6.0 : 10.0;
+    final bottomPad = bottomInset > 0 ? bottomInset + 4.0 : (isShortScreen ? 6.0 : 10.0);
+    final screenW = MediaQuery.sizeOf(context).width;
+    final pillWidth = screenW < 360 ? 44.0 : 50.0;
 
     return Container(
       decoration: const BoxDecoration(
@@ -271,7 +281,7 @@ class _ExecutiveBottomNavBar extends StatelessWidget {
           ),
         ),
       ),
-      padding: EdgeInsets.fromLTRB(6, topPad, 6, bottomPad),
+      padding: EdgeInsets.fromLTRB(4, topPad, 4, bottomPad),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: List.generate(_items.length, (index) {
@@ -292,10 +302,10 @@ class _ExecutiveBottomNavBar extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    // Icon container (Active: 56x36 pill #EEF2FF; Inactive: 56x36 transparent)
+                    // Icon container
                     Container(
-                      width: 56,
-                      height: 36,
+                      width: pillWidth,
+                      height: 34,
                       decoration: BoxDecoration(
                         color: isSelected
                             ? const Color(0xFFEEF2FF)
@@ -315,22 +325,25 @@ class _ExecutiveBottomNavBar extends StatelessWidget {
                         ),
                       ),
                     ),
-                    const Gap(4),
-                    Text(
-                      item.label,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.inter(
-                        fontSize: 10,
-                        fontWeight: isSelected
-                            ? FontWeight.w700
-                            : FontWeight.w500,
-                        color: isSelected
-                            ? const Color(0xFF6366F1)
-                            : const Color(0xFF9CA3AF),
-                        height: 15 / 10,
-                        letterSpacing: isSelected ? 0.2832 : 0.1,
+                    const Gap(2),
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        item.label,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.inter(
+                          fontSize: 9.5,
+                          fontWeight: isSelected
+                              ? FontWeight.w700
+                              : FontWeight.w500,
+                          color: isSelected
+                              ? const Color(0xFF6366F1)
+                              : const Color(0xFF9CA3AF),
+                          height: 14 / 9.5,
+                          letterSpacing: isSelected ? 0.2 : 0.05,
+                        ),
                       ),
                     ),
                   ],

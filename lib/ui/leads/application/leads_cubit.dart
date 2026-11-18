@@ -87,6 +87,10 @@ class LeadsCubit extends Cubit<LeadsState> {
     emit(state.copyWith(showingPendingCalls: showPending, clearToast: true));
   }
 
+  void setCategoryFilter(HomeCategoryFilter filter) {
+    emit(state.copyWith(categoryFilter: filter, clearToast: true));
+  }
+
   void clearToast() {
     if (state.toastMessage != null) {
       emit(state.copyWith(clearToast: true));

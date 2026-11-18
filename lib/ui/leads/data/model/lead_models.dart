@@ -605,6 +605,7 @@ class LeadRecord {
   final String notes;
   final String studentNotes;
   final String managerNotes;
+  final String category;
   final bool isDone;
   final bool isLocked;
   final String? lockedByUid;
@@ -648,6 +649,7 @@ class LeadRecord {
     this.notes = '',
     this.studentNotes = '',
     this.managerNotes = '',
+    this.category = '',
     this.isDone = false,
     this.isLocked = false,
     this.lockedByUid,
@@ -889,6 +891,7 @@ class LeadRecord {
       studentNotes: (data['studentNotes'] ?? data['notes'] ?? '').toString(),
       managerNotes: (data['managerNotes'] ?? data['leadManagerNotes'] ?? '')
           .toString(),
+      category: (data['category'] ?? '').toString().trim(),
       isDone: data['isDone'] == true,
       isLocked: data['isLocked'] == true,
       lockedByUid: data['lockedByUid']?.toString(),
@@ -943,6 +946,7 @@ class LeadRecord {
       'notes': notes,
       'studentNotes': studentNotes.isNotEmpty ? studentNotes : notes,
       'managerNotes': managerNotes,
+      if (category.isNotEmpty) 'category': category.trim(),
       'isDone': isDone,
       'isLocked': isLocked,
       'lockedByUid': lockedByUid,
@@ -986,6 +990,7 @@ class LeadRecord {
     String? notes,
     String? studentNotes,
     String? managerNotes,
+    String? category,
     bool? isDone,
     bool? isLocked,
     String? lockedByUid,
@@ -1029,6 +1034,7 @@ class LeadRecord {
       notes: notes ?? this.notes,
       studentNotes: studentNotes ?? this.studentNotes,
       managerNotes: managerNotes ?? this.managerNotes,
+      category: category ?? this.category,
       isDone: isDone ?? this.isDone,
       isLocked: isLocked ?? this.isLocked,
       lockedByUid: lockedByUid ?? this.lockedByUid,
@@ -1075,6 +1081,7 @@ class LeadRecord {
       fee: fee.isNotEmpty ? fee : (assignment?.fee ?? ''),
       studentNotes: studentNotes.isNotEmpty ? studentNotes : notes,
       managerNotes: managerNotes,
+      category: category,
       timeline: timeline.isNotEmpty
           ? timeline
           : [
@@ -1260,6 +1267,7 @@ class ExecutiveLeadItem {
   final String fee;
   String studentNotes;
   String managerNotes;
+  final String category;
 
   ExecutiveLeadItem({
     required this.id,
@@ -1292,6 +1300,7 @@ class ExecutiveLeadItem {
     this.fee = '',
     this.studentNotes = '',
     this.managerNotes = '',
+    this.category = '',
   });
 
   ExecutiveLeadItem copyWith({
@@ -1318,6 +1327,7 @@ class ExecutiveLeadItem {
     String? fee,
     String? studentNotes,
     String? managerNotes,
+    String? category,
   }) {
     return ExecutiveLeadItem(
       id: id ?? this.id,
@@ -1343,6 +1353,7 @@ class ExecutiveLeadItem {
       fee: fee ?? this.fee,
       studentNotes: studentNotes ?? this.studentNotes,
       managerNotes: managerNotes ?? this.managerNotes,
+      category: category ?? this.category,
     );
   }
 
