@@ -8,6 +8,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/injection/injection.dart';
 import '../../../../core/services/app_phone_call_service.dart';
 import '../../../../core/services/firestore_stream_cache.dart';
+import '../../../../shared/widgets/college_selector_field.dart';
 import '../../../../shared/widgets/staff_watermark_overlay.dart';
 import '../../../dashboard/presentation/widgets/figma_calendar_dialog.dart';
 import '../../../follow_ups/application/follow_ups_cubit.dart';
@@ -196,6 +197,25 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
     }
   }
 
+  void _openEditLeadDialog({
+    required String currentName,
+    required String currentEmail,
+    required String currentCollege,
+    required String currentCourse,
+  }) {
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (ctx) => _EditLeadDialog(
+        leadId: widget.lead.id,
+        initialName: currentName,
+        initialEmail: currentEmail,
+        initialCollege: currentCollege,
+        initialCourse: currentCourse,
+      ),
+    );
+  }
+
   void _openWhatsApp(String phoneToUse) async {
     final rawPhone = phoneToUse.isNotEmpty
         ? phoneToUse
@@ -283,6 +303,22 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
           }
           _managerNotesInitialized = true;
         }
+        final liveName = (snapData != null
+                ? (snapData['name'] ?? snapData['studentName'] ?? '')
+                : lead.name)
+            .toString()
+            .trim();
+        final isPlaceholderName = liveName.isEmpty ||
+            liveName.toLowerCase() == 'unnamed' ||
+            liveName.toLowerCase() == 'no name' ||
+            liveName.toLowerCase() == 'assigned lead' ||
+            RegExp(r'^l0*\d+$', caseSensitive: false).hasMatch(liveName);
+        final effectiveName = liveName.isNotEmpty
+            ? liveName
+            : (lead.name.isNotEmpty ? lead.name : 'No Name');
+        final effectiveInitials =
+            LeadPhoneValidator.initialsFromName(effectiveName);
+
         final liveCourse =
             (snapData != null ? (snapData['course'] ?? '') : lead.course)
                 .toString()
@@ -448,6 +484,21 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
               ),
             ),
             actions: [
+              IconButton(
+                tooltip: 'Edit Details',
+                icon: const Icon(
+                  Icons.edit_outlined,
+                  color: Color(0xFF475569),
+                  size: 20,
+                ),
+                onPressed: () => _openEditLeadDialog(
+                  currentName: effectiveName,
+                  currentEmail:
+                      effectiveEmail == 'Not provided' ? '' : effectiveEmail,
+                  currentCollege: effectiveCollegeInfo,
+                  currentCourse: liveCourse,
+                ),
+              ),
               PopupMenuButton<String>(
                 icon: const Icon(
                   Icons.more_vert_rounded,
@@ -455,13 +506,21 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
                   size: 20,
                 ),
                 onSelected: (val) async {
-                  if (val == 'opt_out') {
+                  if (val == 'edit') {
+                    _openEditLeadDialog(
+                      currentName: effectiveName,
+                      currentEmail:
+                          effectiveEmail == 'Not provided' ? '' : effectiveEmail,
+                      currentCollege: effectiveCollegeInfo,
+                      currentCourse: liveCourse,
+                    );
+                  } else if (val == 'opt_out') {
                     await LeadsRds().markLeadOptedOut(lead.id, optedOut: true);
                     if (!context.mounted) return;
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text(
-                          '${lead.name} marked "Do Not Contact" (DPDP Opt-out).',
+                          '$effectiveName marked "Do Not Contact" (DPDP Opt-out).',
                         ),
                         backgroundColor: const Color(0xFF0F172A),
                       ),
@@ -470,6 +529,27 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
                   }
                 },
                 itemBuilder: (ctx) => const [
+                  PopupMenuItem<String>(
+                    value: 'edit',
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.edit_outlined,
+                          size: 18,
+                          color: Color(0xFF0F172A),
+                        ),
+                        Gap(10),
+                        Text(
+                          'Edit Details',
+                          style: TextStyle(
+                            fontSize: 13.5,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF0F172A),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                   PopupMenuItem<String>(
                     value: 'opt_out',
                     child: Row(
@@ -547,7 +627,7 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
                                 ),
                                 alignment: Alignment.center,
                                 child: Text(
-                                  lead.initials,
+                                  effectiveInitials,
                                   style: const TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w600,
@@ -564,16 +644,87 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
                                     Row(
                                       children: [
                                         Expanded(
-                                          child: Text(
-                                            lead.name,
-                                            style: const TextStyle(
-                                              fontSize: 17.5,
-                                              fontWeight: FontWeight.w600,
-                                              color: Color(0xFF0F172A),
-                                              letterSpacing: -0.2,
+                                          child: InkWell(
+                                            onTap: () => _openEditLeadDialog(
+                                              currentName: effectiveName,
+                                              currentEmail:
+                                                  effectiveEmail ==
+                                                          'Not provided'
+                                                      ? ''
+                                                      : effectiveEmail,
+                                              currentCollege:
+                                                  effectiveCollegeInfo,
+                                              currentCourse: liveCourse,
                                             ),
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
+                                            borderRadius:
+                                                BorderRadius.circular(6),
+                                            child: Padding(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                vertical: 2,
+                                              ),
+                                              child: Row(
+                                                mainAxisSize:
+                                                    MainAxisSize.min,
+                                                children: [
+                                                  Flexible(
+                                                    child: Text(
+                                                      isPlaceholderName
+                                                          ? 'No Name (Add name)'
+                                                          : effectiveName,
+                                                      style: TextStyle(
+                                                        fontSize: 17.5,
+                                                        fontWeight:
+                                                            FontWeight.w600,
+                                                        color:
+                                                            isPlaceholderName
+                                                                ? const Color(
+                                                                    0xFFD97706,
+                                                                  )
+                                                                : const Color(
+                                                                    0xFF0F172A,
+                                                                  ),
+                                                        letterSpacing: -0.2,
+                                                      ),
+                                                      maxLines: 1,
+                                                      overflow:
+                                                          TextOverflow.ellipsis,
+                                                    ),
+                                                  ),
+                                                  const Gap(6),
+                                                  Container(
+                                                    padding:
+                                                        const EdgeInsets.all(4),
+                                                    decoration: BoxDecoration(
+                                                      color:
+                                                          isPlaceholderName
+                                                              ? const Color(
+                                                                  0xFFFEF3C7,
+                                                                )
+                                                              : const Color(
+                                                                  0xFFF1F5F9,
+                                                                ),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                        6,
+                                                      ),
+                                                    ),
+                                                    child: Icon(
+                                                      Icons.edit_outlined,
+                                                      size: 13,
+                                                      color:
+                                                          isPlaceholderName
+                                                              ? const Color(
+                                                                  0xFFD97706,
+                                                                )
+                                                              : const Color(
+                                                                  0xFF64748B,
+                                                                ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
                                           ),
                                         ),
                                         const Gap(8),
@@ -626,6 +777,8 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
                                   child: ElevatedButton.icon(
                                     onPressed: () {
                                       final callingLead = lead.copyWith(
+                                        name: effectiveName,
+                                        initials: effectiveInitials,
                                         fullPhone: effectivePhone,
                                         maskedPhone:
                                             lead.maskedPhone.isNotEmpty
@@ -1000,14 +1153,55 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'DETAILS',
-                            style: TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w600,
-                              color: Color(0xFF64748B),
-                              letterSpacing: 0.6,
-                            ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text(
+                                'DETAILS',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                  color: Color(0xFF64748B),
+                                  letterSpacing: 0.6,
+                                ),
+                              ),
+                              InkWell(
+                                onTap: () => _openEditLeadDialog(
+                                  currentName: effectiveName,
+                                  currentEmail: effectiveEmail == 'Not provided'
+                                      ? ''
+                                      : effectiveEmail,
+                                  currentCollege: effectiveCollegeInfo,
+                                  currentCourse: liveCourse,
+                                ),
+                                borderRadius: BorderRadius.circular(6),
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 6,
+                                    vertical: 2,
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: const [
+                                      Icon(
+                                        Icons.edit_outlined,
+                                        size: 13,
+                                        color: Color(0xFFEF8144),
+                                      ),
+                                      Gap(4),
+                                      Text(
+                                        'Edit',
+                                        style: TextStyle(
+                                          fontSize: 11.5,
+                                          fontWeight: FontWeight.w600,
+                                          color: Color(0xFFEF8144),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                           const Gap(14),
                           Row(
@@ -1739,6 +1933,505 @@ class _ActivityTimelineItem extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _EditLeadDialog extends StatefulWidget {
+  final String leadId;
+  final String initialName;
+  final String initialEmail;
+  final String initialCollege;
+  final String initialCourse;
+
+  const _EditLeadDialog({
+    required this.leadId,
+    required this.initialName,
+    required this.initialEmail,
+    required this.initialCollege,
+    required this.initialCourse,
+  });
+
+  @override
+  State<_EditLeadDialog> createState() => _EditLeadDialogState();
+}
+
+class _EditLeadDialogState extends State<_EditLeadDialog> {
+  final _formKey = GlobalKey<FormState>();
+  late final TextEditingController _nameCtrl;
+  late final TextEditingController _emailCtrl;
+  late final TextEditingController _collegeCtrl;
+  late final TextEditingController _courseCtrl;
+  bool _isSaving = false;
+  String? _errorMessage;
+
+  static bool _isPlaceholderName(String raw) {
+    final clean = raw.trim().toLowerCase();
+    if (clean.isEmpty) return true;
+    if (clean == 'no name' ||
+        clean == 'unnamed' ||
+        clean == 'assigned lead' ||
+        clean == 'lead') {
+      return true;
+    }
+    return RegExp(r'^l0*\d+$', caseSensitive: false).hasMatch(clean);
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    final nameIsPlaceholder = _isPlaceholderName(widget.initialName);
+    _nameCtrl = TextEditingController(
+      text: nameIsPlaceholder ? '' : widget.initialName,
+    );
+    _emailCtrl = TextEditingController(
+      text: widget.initialEmail == 'Not provided' ? '' : widget.initialEmail,
+    );
+    _collegeCtrl = TextEditingController(text: widget.initialCollege);
+    _courseCtrl = TextEditingController(text: widget.initialCourse);
+  }
+
+  @override
+  void dispose() {
+    _nameCtrl.dispose();
+    _emailCtrl.dispose();
+    _collegeCtrl.dispose();
+    _courseCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _handleSave() async {
+    if (_isSaving) return;
+    if (!_formKey.currentState!.validate()) return;
+
+    final trimmedName = _nameCtrl.text.trim();
+    if (trimmedName.isEmpty) {
+      setState(() => _errorMessage = 'Please enter a student name');
+      return;
+    }
+
+    setState(() {
+      _isSaving = true;
+      _errorMessage = null;
+    });
+
+    try {
+      if (_collegeCtrl.text.trim().isNotEmpty) {
+        await CollegeSelectorField.saveCollegeIfNew(_collegeCtrl.text.trim());
+      }
+
+      await LeadsRds().updateLeadBasicDetails(
+        leadId: widget.leadId,
+        name: trimmedName,
+        email: _emailCtrl.text.trim(),
+        collegeBranch: _collegeCtrl.text.trim(),
+        course: _courseCtrl.text.trim(),
+      );
+
+      if (mounted) {
+        Navigator.of(context).pop();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Lead details saved for $trimmedName'),
+            duration: const Duration(seconds: 2),
+            backgroundColor: const Color(0xFF15803D),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isSaving = false;
+          _errorMessage =
+              e.toString().replaceFirst(RegExp(r'^Exception:\s*'), '');
+        });
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      backgroundColor: Colors.white,
+      surfaceTintColor: Colors.transparent,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 480),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(20),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Header Row
+                Row(
+                  children: [
+                    Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFFF7ED),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: const Color(0xFFFED7AA)),
+                      ),
+                      child: const Icon(
+                        Icons.edit_note_rounded,
+                        color: Color(0xFFEA580C),
+                        size: 22,
+                      ),
+                    ),
+                    const Gap(12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: const [
+                          Text(
+                            'Edit Lead Details',
+                            style: TextStyle(
+                              fontSize: 16.5,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFF0F172A),
+                              letterSpacing: -0.2,
+                            ),
+                          ),
+                          Gap(1),
+                          Text(
+                            'Add or update student name and information',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Color(0xFF64748B),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(
+                        Icons.close_rounded,
+                        size: 20,
+                        color: Color(0xFF94A3B8),
+                      ),
+                      onPressed: () => Navigator.of(context).pop(),
+                      visualDensity: VisualDensity.compact,
+                      splashRadius: 18,
+                    ),
+                  ],
+                ),
+                const Gap(16),
+                const Divider(height: 1, color: Color(0xFFF1F5F9)),
+                const Gap(16),
+
+                if (_errorMessage != null) ...[
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFEF2F2),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: const Color(0xFFFECACA)),
+                    ),
+                    child: Text(
+                      _errorMessage!,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: Color(0xFFDC2626),
+                      ),
+                    ),
+                  ),
+                  const Gap(14),
+                ],
+
+                // 1. Student Name Field
+                Row(
+                  children: const [
+                    Text(
+                      'Student Name',
+                      style: TextStyle(
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF334155),
+                      ),
+                    ),
+                    Gap(4),
+                    Text(
+                      '*',
+                      style: TextStyle(
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFFEF4444),
+                      ),
+                    ),
+                  ],
+                ),
+                const Gap(6),
+                TextFormField(
+                  controller: _nameCtrl,
+                  autofocus: _nameCtrl.text.isEmpty,
+                  style: const TextStyle(
+                    fontSize: 13.5,
+                    fontWeight: FontWeight.w500,
+                    color: Color(0xFF0F172A),
+                  ),
+                  decoration: InputDecoration(
+                    hintText: 'Enter student name (e.g. Rahul Sharma)',
+                    hintStyle: const TextStyle(
+                      fontSize: 12.5,
+                      color: Color(0xFF94A3B8),
+                    ),
+                    prefixIcon: const Icon(
+                      Icons.person_outline_rounded,
+                      size: 18,
+                      color: Color(0xFF64748B),
+                    ),
+                    filled: true,
+                    fillColor: const Color(0xFFF8FAFC),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 12,
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: const BorderSide(
+                        color: Color(0xFFEF8144),
+                        width: 1.5,
+                      ),
+                    ),
+                  ),
+                  validator: (v) {
+                    if (v == null || v.trim().isEmpty) {
+                      return 'Student name is required';
+                    }
+                    return null;
+                  },
+                ),
+                const Gap(14),
+
+                // 2. Email Field
+                const Text(
+                  'Email Address',
+                  style: TextStyle(
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF334155),
+                  ),
+                ),
+                const Gap(6),
+                TextFormField(
+                  controller: _emailCtrl,
+                  keyboardType: TextInputType.emailAddress,
+                  style: const TextStyle(
+                    fontSize: 13.5,
+                    fontWeight: FontWeight.w500,
+                    color: Color(0xFF0F172A),
+                  ),
+                  decoration: InputDecoration(
+                    hintText: 'e.g. student@example.com',
+                    hintStyle: const TextStyle(
+                      fontSize: 12.5,
+                      color: Color(0xFF94A3B8),
+                    ),
+                    prefixIcon: const Icon(
+                      Icons.email_outlined,
+                      size: 18,
+                      color: Color(0xFF64748B),
+                    ),
+                    filled: true,
+                    fillColor: const Color(0xFFF8FAFC),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 12,
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: const BorderSide(
+                        color: Color(0xFFEF8144),
+                        width: 1.5,
+                      ),
+                    ),
+                  ),
+                ),
+                const Gap(14),
+
+                // 3. College / Other & Details
+                CollegeSelectorField(
+                  controller: _collegeCtrl,
+                  useBentoLeadDetailsStyle: true,
+                  label: 'COLLEGE / CATEGORY & BRANCH',
+                ),
+                const Gap(14),
+
+                // 4. Interested Program / Course
+                const Text(
+                  'Interested Course / Program',
+                  style: TextStyle(
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF334155),
+                  ),
+                ),
+                const Gap(6),
+                TextFormField(
+                  controller: _courseCtrl,
+                  style: const TextStyle(
+                    fontSize: 13.5,
+                    fontWeight: FontWeight.w500,
+                    color: Color(0xFF0F172A),
+                  ),
+                  decoration: InputDecoration(
+                    hintText: 'e.g. Python Full Stack, AI & Data Science...',
+                    hintStyle: const TextStyle(
+                      fontSize: 12.5,
+                      color: Color(0xFF94A3B8),
+                    ),
+                    prefixIcon: const Icon(
+                      Icons.school_outlined,
+                      size: 18,
+                      color: Color(0xFF64748B),
+                    ),
+                    filled: true,
+                    fillColor: const Color(0xFFF8FAFC),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 12,
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: const BorderSide(
+                        color: Color(0xFFEF8144),
+                        width: 1.5,
+                      ),
+                    ),
+                  ),
+                ),
+                const Gap(8),
+                // Quick chips for popular programs
+                Wrap(
+                  spacing: 6,
+                  runSpacing: 6,
+                  children: [
+                    'Python Full Stack',
+                    'MERN Stack',
+                    'Flutter Mobile',
+                    'AI & ML',
+                  ].map((prog) {
+                    return InkWell(
+                      onTap: () => setState(() => _courseCtrl.text = prog),
+                      borderRadius: BorderRadius.circular(6),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF1F5F9),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Text(
+                          prog,
+                          style: const TextStyle(
+                            fontSize: 11,
+                            color: Color(0xFF475569),
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+                const Gap(22),
+
+                // Action Buttons
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    OutlinedButton(
+                      onPressed: _isSaving
+                          ? null
+                          : () => Navigator.of(context).pop(),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: const Color(0xFF64748B),
+                        side: const BorderSide(color: Color(0xFFE2E8F0)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 18,
+                          vertical: 11,
+                        ),
+                      ),
+                      child: const Text(
+                        'Cancel',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                    const Gap(10),
+                    ElevatedButton(
+                      onPressed: _isSaving ? null : _handleSave,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFEF8144),
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 22,
+                          vertical: 11,
+                        ),
+                      ),
+                      child: _isSaving
+                          ? const SpinKitThreeBounce(
+                              color: Colors.white,
+                              size: 14,
+                            )
+                          : const Text(
+                              'Save Details',
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }

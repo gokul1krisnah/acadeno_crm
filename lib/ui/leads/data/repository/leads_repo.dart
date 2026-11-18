@@ -73,6 +73,20 @@ class LeadsRepository {
     batch: batch,
   );
 
+  Future<void> updateLeadBasicDetails({
+    required String leadId,
+    required String name,
+    String? email,
+    String? collegeBranch,
+    String? course,
+  }) => _rds.updateLeadBasicDetails(
+    leadId: leadId,
+    name: name,
+    email: email,
+    collegeBranch: collegeBranch,
+    course: course,
+  );
+
   Future<AssignmentBatchSummary> assignLeadsToExecutive({
     required List<String> leadIds,
     required String executiveUid,

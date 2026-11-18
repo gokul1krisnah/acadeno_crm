@@ -129,6 +129,15 @@ abstract class LeadsBackend {
     required String templateTitle,
   });
 
+  /// Updates basic lead details (name, email, college, course) from the executive side.
+  Future<void> updateLeadBasicDetails({
+    required String leadId,
+    required String name,
+    String? email,
+    String? collegeBranch,
+    String? course,
+  });
+
   /// Marks a lead as "Do Not Contact" (`optedOut = true`) per DPDP (PR-9.2).
   Future<void> markLeadOptedOut(String leadId, {bool optedOut = true});
 
@@ -317,6 +326,20 @@ class LeadsRds {
     leadId: leadId,
     leadName: leadName,
     templateTitle: templateTitle,
+  );
+
+  Future<void> updateLeadBasicDetails({
+    required String leadId,
+    required String name,
+    String? email,
+    String? collegeBranch,
+    String? course,
+  }) => _backend.updateLeadBasicDetails(
+    leadId: leadId,
+    name: name,
+    email: email,
+    collegeBranch: collegeBranch,
+    course: course,
   );
 
   Future<void> markLeadOptedOut(String leadId, {bool optedOut = true}) =>
@@ -925,7 +948,7 @@ class FirestoreLeadsBackend implements LeadsBackend {
 
       final parsed = LeadRecord.parseCollegeBranch(collegeBranch);
       updatedRecord = current.copyWith(
-        name: isAdminOrManager ? trimmedName : current.name,
+        name: trimmedName,
         phone: isAdminOrManager ? formattedPhone : current.phone,
         phoneNormalized: isAdminOrManager
             ? newPhone10
@@ -969,6 +992,79 @@ class FirestoreLeadsBackend implements LeadsBackend {
     );
 
     return updatedRecord;
+  }
+
+  @override
+  Future<void> updateLeadBasicDetails({
+    required String leadId,
+    required String name,
+    String? email,
+    String? collegeBranch,
+    String? course,
+  }) async {
+    final trimmedName = name.trim();
+    if (trimmedName.isEmpty) {
+      throw ArgumentError('Student name cannot be empty.');
+    }
+    final leadRef = _leads.doc(leadId);
+    final snap = await leadRef.get();
+    if (!snap.exists) {
+      throw StateError('Lead $leadId does not exist.');
+    }
+    final current = snap.data() ?? {};
+    final updates = <String, dynamic>{
+      'name': trimmedName,
+      'studentName': trimmedName,
+      'updatedAt': FieldValue.serverTimestamp(),
+    };
+    if (email != null) {
+      updates['email'] = email.trim();
+    }
+    if (collegeBranch != null && collegeBranch.trim().isNotEmpty) {
+      final cb = collegeBranch.trim();
+      updates['collegeBranch'] = cb;
+      final parsed = LeadRecord.parseCollegeBranch(cb);
+      updates['college'] = parsed.college;
+      updates['branch'] = parsed.branch;
+      updates['year'] = parsed.year;
+    }
+    if (course != null && course.trim().isNotEmpty) {
+      updates['course'] = course.trim();
+    }
+
+    final entry =
+        '${LeadDateHelper.timelineStamp()} · Details updated (Name: $trimmedName)';
+    updates['timeline'] = FieldValue.arrayUnion([entry]);
+
+    await leadRef.set(updates, SetOptions(merge: true));
+
+    // Keep lead_phones in sync
+    final phone = (current['phone'] ?? current['phoneNormalized'] ?? '').toString();
+    final phone10 = LeadPhoneValidator.normalize10Digits(phone);
+    if (phone10.isNotEmpty) {
+      try {
+        await _leadPhones.doc(phone10).set({
+          'leadName': trimmedName,
+          'updatedAt': FieldValue.serverTimestamp(),
+        }, SetOptions(merge: true));
+      } catch (_) {}
+    }
+
+    // Keep lead_assignments in sync
+    try {
+      final assignDocs =
+          await _assignments.where('leadId', isEqualTo: leadId).get();
+      for (final doc in assignDocs.docs) {
+        final assignUpdates = <String, dynamic>{
+          'leadName': trimmedName,
+          'updatedAt': FieldValue.serverTimestamp(),
+        };
+        if (collegeBranch != null && collegeBranch.trim().isNotEmpty) {
+          assignUpdates['collegeInfo'] = collegeBranch.trim();
+        }
+        await doc.reference.set(assignUpdates, SetOptions(merge: true));
+      }
+    } catch (_) {}
   }
 
   @override
