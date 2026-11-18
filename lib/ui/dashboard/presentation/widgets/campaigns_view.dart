@@ -1677,16 +1677,12 @@ class _CampaignsViewState extends State<CampaignsView> {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        final double tableWidth =
-            constraints.maxWidth < 1180 ? 1180.0 : constraints.maxWidth;
+        const targetTableWidth = 1180.0;
+        final needsScaling = constraints.maxWidth < targetTableWidth;
 
-        return SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: SizedBox(
-            width: tableWidth,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
+        final tableContent = Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
                 Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 24,
@@ -1941,8 +1937,22 @@ class _CampaignsViewState extends State<CampaignsView> {
                     ),
                   ],
               ],
+            );
+
+        if (needsScaling) {
+          return FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.topCenter,
+            child: SizedBox(
+              width: targetTableWidth,
+              child: tableContent,
             ),
-          ),
+          );
+        }
+
+        return SizedBox(
+          width: double.infinity,
+          child: tableContent,
         );
       },
     );
