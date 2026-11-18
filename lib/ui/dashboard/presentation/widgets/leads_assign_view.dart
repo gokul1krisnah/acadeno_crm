@@ -2667,8 +2667,17 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                       ),
                     ),
                     const Gap(8),
-                    SizedBox(
+                    Container(
                       height: 38,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: const Color(0xFFE5E7EB),
+                          width: 1,
+                        ),
+                      ),
                       child: TextField(
                         controller: _searchC,
                         textAlignVertical: TextAlignVertical.center,
@@ -2680,35 +2689,15 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                         ),
                         decoration: InputDecoration(
                           isDense: true,
+                          border: InputBorder.none,
                           hintText: 'Name, phone or college',
                           hintStyle: GoogleFonts.inter(
                             fontSize: 13,
                             fontWeight: FontWeight.w400,
                             color: const Color(0xFF9CA3AF),
                           ),
-                          contentPadding: const EdgeInsets.fromLTRB(16, 9, 16, 10),
-                          filled: true,
-                          fillColor: Colors.white,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                            borderSide: const BorderSide(
-                              color: Color(0xFFE5E7EB),
-                              width: 1,
-                            ),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                            borderSide: const BorderSide(
-                              color: Color(0xFFE5E7EB),
-                              width: 1,
-                            ),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                            borderSide: const BorderSide(
-                              color: Color(0xFFEF8144),
-                              width: 1.2,
-                            ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
                           ),
                         ),
                       ),
