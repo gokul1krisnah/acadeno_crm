@@ -2686,6 +2686,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                           fontSize: 13,
                           fontWeight: FontWeight.w500,
                           color: const Color(0xFF111827),
+                          height: 1.2,
                         ),
                         decoration: InputDecoration(
                           isDense: true,
@@ -2695,9 +2696,11 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                             fontSize: 13,
                             fontWeight: FontWeight.w400,
                             color: const Color(0xFF9CA3AF),
+                            height: 1.2,
                           ),
                           contentPadding: const EdgeInsets.symmetric(
                             horizontal: 16,
+                            vertical: 10,
                           ),
                         ),
                       ),
