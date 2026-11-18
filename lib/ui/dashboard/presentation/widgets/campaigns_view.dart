@@ -1717,9 +1717,12 @@ class _CampaignsViewState extends State<CampaignsView> {
                       ),
                       Expanded(
                         flex: 30,
-                        child: Text(
-                          'REASONS FOR HIGH SCORE',
-                          style: headerStyle,
+                        child: Center(
+                          child: Text(
+                            'REASONS FOR HIGH SCORE',
+                            style: headerStyle,
+                            textAlign: TextAlign.center,
+                          ),
                         ),
                       ),
                       Expanded(
@@ -1870,30 +1873,34 @@ class _CampaignsViewState extends State<CampaignsView> {
                               ),
                               Expanded(
                                 flex: 30,
-                                child: Wrap(
-                                  spacing: 6,
-                                  runSpacing: 6,
-                                  children: lead.reasons.map((r) {
-                                    return Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 10,
-                                        vertical: 4,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: const Color(0xFFEEF2FF),
-                                        borderRadius: BorderRadius.circular(6),
-                                      ),
-                                      child: Text(
-                                        r.label.toUpperCase(),
-                                        style: GoogleFonts.inter(
-                                          fontSize: 10,
-                                          fontWeight: FontWeight.w700,
-                                          color: const Color(0xFF4F46E5),
-                                          letterSpacing: 0.5,
+                                child: Center(
+                                  child: Wrap(
+                                    alignment: WrapAlignment.center,
+                                    crossAxisAlignment: WrapCrossAlignment.center,
+                                    spacing: 6,
+                                    runSpacing: 6,
+                                    children: lead.reasons.map((r) {
+                                      return Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 10,
+                                          vertical: 4,
                                         ),
-                                      ),
-                                    );
-                                  }).toList(),
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFFEEF2FF),
+                                          borderRadius: BorderRadius.circular(6),
+                                        ),
+                                        child: Text(
+                                          r.label.toUpperCase(),
+                                          style: GoogleFonts.inter(
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.w700,
+                                            color: const Color(0xFF4F46E5),
+                                            letterSpacing: 0.5,
+                                          ),
+                                        ),
+                                      );
+                                    }).toList(),
+                                  ),
                                 ),
                               ),
                               Expanded(
