@@ -1698,12 +1698,15 @@ class _CampaignsViewState extends State<CampaignsView> {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       SizedBox(width: 58, child: Text('#', style: headerStyle)),
-                      Expanded(flex: 15, child: Text('NAME', style: headerStyle)),
+                      Expanded(flex: 14, child: Text('NAME', style: headerStyle)),
                       Expanded(
-                        flex: 17,
-                        child: Padding(
-                          padding: const EdgeInsets.only(right: 16),
-                          child: Text('COLLEGE & BRANCH', style: headerStyle),
+                        flex: 18,
+                        child: Center(
+                          child: Text(
+                            'COLLEGE & BRANCH',
+                            style: headerStyle,
+                            textAlign: TextAlign.center,
+                          ),
                         ),
                       ),
                       Expanded(
@@ -1802,7 +1805,7 @@ class _CampaignsViewState extends State<CampaignsView> {
                                 ),
                               ),
                               Expanded(
-                                flex: 15,
+                                flex: 14,
                                 child: Text(
                                   lead.name,
                                   maxLines: 1,
@@ -1815,13 +1818,13 @@ class _CampaignsViewState extends State<CampaignsView> {
                                 ),
                               ),
                               Expanded(
-                                flex: 17,
-                                child: Padding(
-                                  padding: const EdgeInsets.only(right: 16),
+                                flex: 18,
+                                child: Center(
                                   child: Text(
                                     lead.collegeBranchYear,
                                     maxLines: 2,
                                     overflow: TextOverflow.ellipsis,
+                                    textAlign: TextAlign.center,
                                     style: GoogleFonts.inter(
                                       fontSize: 14,
                                       fontWeight: FontWeight.w400,
