@@ -1069,6 +1069,8 @@ class LeadRecord {
       course: course.isNotEmpty ? course : (assignment?.course ?? ''),
       batch: batch.isNotEmpty ? batch : (assignment?.batch ?? ''),
       fee: fee.isNotEmpty ? fee : (assignment?.fee ?? ''),
+      studentNotes: studentNotes.isNotEmpty ? studentNotes : notes,
+      managerNotes: managerNotes,
       timeline: timeline.isNotEmpty
           ? timeline
           : [
@@ -1252,6 +1254,8 @@ class ExecutiveLeadItem {
   final String course;
   final String batch;
   final String fee;
+  String studentNotes;
+  String managerNotes;
 
   ExecutiveLeadItem({
     required this.id,
@@ -1282,6 +1286,8 @@ class ExecutiveLeadItem {
     this.course = '',
     this.batch = '',
     this.fee = '',
+    this.studentNotes = '',
+    this.managerNotes = '',
   });
 
   ExecutiveLeadItem copyWith({
@@ -1306,6 +1312,8 @@ class ExecutiveLeadItem {
     String? course,
     String? batch,
     String? fee,
+    String? studentNotes,
+    String? managerNotes,
   }) {
     return ExecutiveLeadItem(
       id: id ?? this.id,
@@ -1329,6 +1337,8 @@ class ExecutiveLeadItem {
       course: course ?? this.course,
       batch: batch ?? this.batch,
       fee: fee ?? this.fee,
+      studentNotes: studentNotes ?? this.studentNotes,
+      managerNotes: managerNotes ?? this.managerNotes,
     );
   }
 

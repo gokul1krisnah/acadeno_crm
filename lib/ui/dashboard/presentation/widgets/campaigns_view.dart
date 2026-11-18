@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import 'package:acadeno_crm/ui/leads/data/model/lead_models.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'figma_calendar_dialog.dart';
 
@@ -1566,30 +1567,7 @@ class _CampaignsViewState extends State<CampaignsView> {
                 ),
               ),
             ),
-            Tooltip(
-              message: 'Delete campaign',
-              child: Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  onTap: () => _confirmAndDeleteCampaign(campaign, _activeCampaignIndex),
-                  borderRadius: BorderRadius.circular(8),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Icon(
-                      CupertinoIcons.trash_fill,
-                      size: 16,
-                      color: Color(0xFFEF4444),
-                    ),
-                  ),
-                ),
-              ),
-            ),
+            _buildCampaignDeleteButton(campaign),
           ],
         ),
         const Gap(12),
@@ -2466,30 +2444,7 @@ class _CampaignsViewState extends State<CampaignsView> {
                             ),
                           ),
                           const Gap(8),
-                          Tooltip(
-                            message: 'Delete campaign',
-                            child: Material(
-                              color: Colors.transparent,
-                              child: InkWell(
-                                onTap: () => _confirmAndDeleteCampaign(c, index),
-                                borderRadius: BorderRadius.circular(8),
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 10,
-                                    vertical: 8,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: const Icon(
-                                    CupertinoIcons.trash_fill,
-                                    size: 16,
-                                    color: Color(0xFFEF4444),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
+                          _buildCampaignDeleteButton(c),
                         ],
                       ),
                     ],
@@ -2558,30 +2513,7 @@ class _CampaignsViewState extends State<CampaignsView> {
                             child: const Text('View ranked leads'),
                           ),
                           const Gap(8),
-                          Tooltip(
-                            message: 'Delete campaign',
-                            child: Material(
-                              color: Colors.transparent,
-                              child: InkWell(
-                                onTap: () => _confirmAndDeleteCampaign(c, index),
-                                borderRadius: BorderRadius.circular(8),
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 10,
-                                    vertical: 8,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: const Icon(
-                                    CupertinoIcons.trash_fill,
-                                    size: 16,
-                                    color: Color(0xFFEF4444),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
+                          _buildCampaignDeleteButton(c),
                         ],
                       ),
                     ],
@@ -2590,5 +2522,135 @@ class _CampaignsViewState extends State<CampaignsView> {
         }),
       ],
     );
+  }
+
+  Widget _buildCampaignDeleteButton(_CampaignData campaign) {
+    return Tooltip(
+      message: 'Delete Campaign',
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => _confirmAndDeleteCampaign(campaign),
+          borderRadius: BorderRadius.circular(8),
+          hoverColor: const Color(0xFFFEE2E2),
+          child: Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 10,
+              vertical: 8,
+            ),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Icon(
+              CupertinoIcons.trash_fill,
+              size: 16,
+              color: Color(0xFFEF4444),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _confirmAndDeleteCampaign(_CampaignData campaign) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: [
+            const Icon(
+              Icons.warning_amber_rounded,
+              color: Color(0xFFDC2626),
+              size: 24,
+            ),
+            const Gap(10),
+            Expanded(
+              child: Text(
+                'Delete Campaign?',
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF111827),
+                ),
+              ),
+            ),
+          ],
+        ),
+        content: Text(
+          'Are you sure you want to permanently delete the campaign "${campaign.title}"? This will remove the campaign ranking criteria and assignments associated with it.',
+          style: const TextStyle(
+            fontSize: 14,
+            color: Color(0xFF4B5563),
+            height: 1.4,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text(
+              'Cancel',
+              style: TextStyle(
+                color: Color(0xFF6B7280),
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFDC2626),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text(
+              'Delete',
+              style: TextStyle(fontWeight: FontWeight.w600),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    try {
+      if (campaign.id.isNotEmpty) {
+        await FirebaseFirestore.instance
+            .collection('campaigns')
+            .doc(campaign.id)
+            .delete();
+      }
+      if (mounted) {
+        setState(() {
+          _campaigns.removeWhere((c) =>
+              c.id == campaign.id ||
+              (c.id.isEmpty &&
+                  c.title == campaign.title &&
+                  c.badge == campaign.badge));
+          if (_activeCampaignIndex >= _campaigns.length) {
+            _activeCampaignIndex =
+                _campaigns.isNotEmpty ? _campaigns.length - 1 : 0;
+          }
+        });
+        if (_campaigns.isNotEmpty) {
+          _recalculateAllCampaignsAndActiveRanking();
+        }
+        SnackBarAlert.showToast(
+          context: context,
+          message: 'Campaign "${campaign.title}" deleted successfully',
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        SnackBarAlert.showToast(
+          context: context,
+          message: 'Failed to delete campaign: $e',
+          isWarning: true,
+        );
+      }
+    }
   }
 }

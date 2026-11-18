@@ -38,8 +38,8 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
   @override
   void initState() {
     super.initState();
-    _studentNotesCtrl = TextEditingController();
-    _managerNotesCtrl = TextEditingController();
+    _studentNotesCtrl = TextEditingController(text: widget.lead.studentNotes);
+    _managerNotesCtrl = TextEditingController(text: widget.lead.managerNotes);
   }
 
   @override
@@ -62,6 +62,7 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
             'notes': text,
             'updatedAt': FieldValue.serverTimestamp(),
           }, SetOptions(merge: true));
+      widget.lead.studentNotes = text;
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -99,6 +100,7 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
             'leadManagerNotes': text,
             'updatedAt': FieldValue.serverTimestamp(),
           }, SetOptions(merge: true));
+      widget.lead.managerNotes = text;
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -263,8 +265,10 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
                 : '')
             .toString()
             .trim();
-        if (!_studentNotesInitialized) {
-          _studentNotesCtrl.text = liveStudentNotes;
+        if (!_studentNotesInitialized && snapData != null) {
+          if (liveStudentNotes.isNotEmpty) {
+            _studentNotesCtrl.text = liveStudentNotes;
+          }
           _studentNotesInitialized = true;
         }
 
@@ -273,8 +277,10 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
                 : '')
             .toString()
             .trim();
-        if (!_managerNotesInitialized) {
-          _managerNotesCtrl.text = liveManagerNotes;
+        if (!_managerNotesInitialized && snapData != null) {
+          if (liveManagerNotes.isNotEmpty) {
+            _managerNotesCtrl.text = liveManagerNotes;
+          }
           _managerNotesInitialized = true;
         }
         final liveCourse =
