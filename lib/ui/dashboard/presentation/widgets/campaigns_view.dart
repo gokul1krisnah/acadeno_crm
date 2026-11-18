@@ -1701,9 +1701,17 @@ class _CampaignsViewState extends State<CampaignsView> {
                       Expanded(flex: 15, child: Text('NAME', style: headerStyle)),
                       Expanded(
                         flex: 17,
-                        child: Text('COLLEGE & BRANCH', style: headerStyle),
+                        child: Padding(
+                          padding: const EdgeInsets.only(right: 16),
+                          child: Text('COLLEGE & BRANCH', style: headerStyle),
+                        ),
                       ),
-                      Expanded(flex: 17, child: Text('SCORE', style: headerStyle)),
+                      Expanded(
+                        flex: 17,
+                        child: Center(
+                          child: Text('SCORE', style: headerStyle),
+                        ),
+                      ),
                       Expanded(
                         flex: 30,
                         child: Text(
@@ -1808,46 +1816,53 @@ class _CampaignsViewState extends State<CampaignsView> {
                               ),
                               Expanded(
                                 flex: 17,
-                                child: Text(
-                                  lead.collegeBranchYear,
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: GoogleFonts.inter(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w400,
-                                    color: const Color(0xFF64748B),
+                                child: Padding(
+                                  padding: const EdgeInsets.only(right: 16),
+                                  child: Text(
+                                    lead.collegeBranchYear,
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: GoogleFonts.inter(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w400,
+                                      color: const Color(0xFF64748B),
+                                    ),
                                   ),
                                 ),
                               ),
                               Expanded(
                                 flex: 17,
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    SizedBox(
-                                      width: 96,
-                                      child: ClipRRect(
-                                        borderRadius: BorderRadius.circular(9999),
-                                        child: LinearProgressIndicator(
-                                          value: lead.score / 100,
-                                          minHeight: 8,
-                                          color: const Color(0xFF10B981),
-                                          backgroundColor: const Color(
-                                            0xFFF1F5F9,
+                                child: Center(
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                    children: [
+                                      SizedBox(
+                                        width: 96,
+                                        child: ClipRRect(
+                                          borderRadius: BorderRadius.circular(9999),
+                                          child: LinearProgressIndicator(
+                                            value: lead.score / 100,
+                                            minHeight: 8,
+                                            color: const Color(0xFF10B981),
+                                            backgroundColor: const Color(
+                                              0xFFF1F5F9,
+                                            ),
                                           ),
                                         ),
                                       ),
-                                    ),
-                                    const Gap(10),
-                                    Text(
-                                      '${lead.score}',
-                                      style: GoogleFonts.inter(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w700,
-                                        color: const Color(0xFF059669),
+                                      const Gap(10),
+                                      Text(
+                                        '${lead.score}',
+                                        style: GoogleFonts.inter(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w700,
+                                          color: const Color(0xFF059669),
+                                          height: 1.0,
+                                        ),
                                       ),
-                                    ),
-                                  ],
+                                    ],
+                                  ),
                                 ),
                               ),
                               Expanded(
