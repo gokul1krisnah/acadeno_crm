@@ -1456,11 +1456,12 @@ class _UserManagementViewState extends State<UserManagementView> {
         .where(
           (u) => u.uid != user.uid && u.isActive && u.name.trim().isNotEmpty,
         )
-        .map((u) => u.name)
+        .map((u) => u.name.trim())
+        .toSet()
         .toList();
     final fallbackExecs = activeExecs.isNotEmpty
         ? activeExecs
-        : ['Anjali R', 'Rahul M', 'Shilpa K', 'Ajmal P', 'Neethu S'];
+        : const ['Anjali R', 'Rahul M', 'Shilpa K', 'Ajmal P', 'Neethu S'];
     String reassignTarget = fallbackExecs.first;
 
     showDialog(

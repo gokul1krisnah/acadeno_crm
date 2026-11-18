@@ -2870,7 +2870,10 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                     MediaQuery.of(context).size.width >= 600;
                 final isMobileBar = !isDesktopTablet;
 
-                final safeExecutives = state.activeExecutives;
+                final seenExecUids = <String>{};
+                final safeExecutives = state.activeExecutives
+                    .where((e) => e.uid.isNotEmpty && seenExecUids.add(e.uid))
+                    .toList();
                 final safeSelectedExecUid =
                     safeExecutives.any(
                       (e) => e.uid == state.selectedExecutive?.uid,
@@ -3442,12 +3445,102 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
         enabled: true,
         child: LayoutBuilder(
           builder: (context, c) {
-            if (c.maxWidth < 800) {
-              return Column(
+            final isDesktopTablet = c.maxWidth >= 520 ||
+                MediaQuery.of(context).size.width >= 600;
+
+            if (isDesktopTablet) {
+              const targetTableWidth = 1050.0;
+              final needsScaling = c.maxWidth < targetTableWidth;
+
+              final h = GoogleFonts.poppins(
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+                color: const Color(0xFF6B7280),
+                letterSpacing: 1.1,
+                height: 16.5 / 11,
+              );
+
+              final skeletonDesktopTable = Column(
                 children: [
+                  Container(
+                    color: const Color(0xFFF9FAFB),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 14,
+                    ),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Expanded(
+                          flex: 10,
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              _buildFigmaCheckbox(
+                                value: false,
+                                onChanged: (_) {},
+                              ),
+                              const Gap(16),
+                              Text('NAME', style: h),
+                            ],
+                          ),
+                        ),
+                        Expanded(
+                          flex: 7,
+                          child: Text('COLLEGE / OTHERS', style: h),
+                        ),
+                        Expanded(
+                          flex: 5,
+                          child: Align(
+                            alignment: Alignment.center,
+                            child: Text(
+                              'SOURCE',
+                              style: h,
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          flex: 4,
+                          child: Align(
+                            alignment: Alignment.center,
+                            child: Text(
+                              'STATUS',
+                              style: h,
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          flex: 5,
+                          child: Align(
+                            alignment: Alignment.center,
+                            child: Text(
+                              'LAST CONTACT',
+                              style: h,
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          flex: 5,
+                          child: Align(
+                            alignment: Alignment.center,
+                            child: Text(
+                              'ASSIGNED TO',
+                              style: h,
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Divider(height: 1, color: Color(0xFFF3F4F6)),
                   for (var i = 0; i < skeletonRows.length; i++) ...[
-                    if (i > 0) const Divider(height: 1),
-                    _MobileLeadCardRow(
+                    if (i > 0)
+                      const Divider(height: 1, color: Color(0xFFF9FAFB)),
+                    _DesktopLeadTableRow(
                       lead: skeletonRows[i],
                       isSelected: false,
                       onTap: () {},
@@ -3458,91 +3551,29 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                   ],
                 ],
               );
+
+              if (needsScaling) {
+                return FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.topCenter,
+                  child: SizedBox(
+                    width: targetTableWidth,
+                    child: skeletonDesktopTable,
+                  ),
+                );
+              }
+
+              return SizedBox(
+                width: double.infinity,
+                child: skeletonDesktopTable,
+              );
             }
 
-            final h = GoogleFonts.poppins(
-              fontSize: 11,
-              fontWeight: FontWeight.w700,
-              color: const Color(0xFF6B7280),
-              letterSpacing: 1.1,
-              height: 16.5 / 11,
-            );
             return Column(
               children: [
-                Container(
-                  color: const Color(0xFFF9FAFB),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Expanded(
-                        flex: 10,
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            _buildFigmaCheckbox(
-                              value: false,
-                              onChanged: (_) {},
-                            ),
-                            const Gap(16),
-                            Text('NAME', style: h),
-                          ],
-                        ),
-                      ),
-                      Expanded(
-                          flex: 7, child: Text('COLLEGE / OTHERS', style: h)),
-                      Expanded(
-                        flex: 5,
-                        child: Align(
-                          alignment: Alignment.center,
-                          child: Text(
-                            'SOURCE',
-                            style: h,
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        flex: 4,
-                        child: Align(
-                          alignment: Alignment.center,
-                          child: Text(
-                            'STATUS',
-                            style: h,
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        flex: 5,
-                        child: Align(
-                          alignment: Alignment.center,
-                          child: Text(
-                            'LAST CONTACT',
-                            style: h,
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        flex: 5,
-                        child: Align(
-                          alignment: Alignment.center,
-                          child: Text(
-                            'ASSIGNED TO',
-                            style: h,
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const Divider(height: 1, color: Color(0xFFF3F4F6)),
                 for (var i = 0; i < skeletonRows.length; i++) ...[
-                  if (i > 0) const Divider(height: 1, color: Color(0xFFF9FAFB)),
-                  _DesktopLeadTableRow(
+                  if (i > 0) const Divider(height: 1),
+                  _MobileLeadCardRow(
                     lead: skeletonRows[i],
                     isSelected: false,
                     onTap: () {},
@@ -4217,16 +4248,18 @@ class _MobileLeadCardRowState extends State<_MobileLeadCardRow> {
                               ),
                             ),
                             const Gap(6),
-                            Text(
-                              '${r.collegeBranch} · ${r.source}',
-                              style: const TextStyle(
-                                color: _muted,
-                                fontSize: 12,
+                            if (r.collegeBranch.isNotEmpty) ...[
+                              Text(
+                                r.collegeBranch,
+                                style: const TextStyle(
+                                  color: _muted,
+                                  fontSize: 12,
+                                ),
                               ),
-                            ),
-                            const Gap(2),
+                              const Gap(2),
+                            ],
                             Text(
-                              'Source: ${r.source} · Last: ${r.lastContact} · Assigned: ${r.assignedToName}',
+                              'Source: ${r.source} · Last: ${r.lastContact} · Assigned: ${r.assignedToName.isEmpty ? '—' : r.assignedToName}',
                               style: const TextStyle(
                                 color: _muted,
                                 fontSize: 12,
