@@ -208,7 +208,14 @@ class _CampaignsViewState extends State<CampaignsView> {
   }
 
   void _recalculateAllCampaignsAndActiveRanking() {
-    if (_campaigns.isEmpty) return;
+    if (_campaigns.isEmpty) {
+      if (mounted) {
+        setState(() {
+          _rankedLeads = [];
+        });
+      }
+      return;
+    }
 
     // 1. Recalculate actual matching leads, score 70+, and assigned count for every campaign
     final updatedCampaigns = <_CampaignData>[];
@@ -265,7 +272,9 @@ class _CampaignsViewState extends State<CampaignsView> {
     }
 
     // 2. Score and rank leads for the active campaign
-    final activeCamp = updatedCampaigns[_activeCampaignIndex];
+    if (updatedCampaigns.isEmpty) return;
+    final safeIndex = _activeCampaignIndex.clamp(0, updatedCampaigns.length - 1);
+    final activeCamp = updatedCampaigns[safeIndex];
     final activeBranches = activeCamp.branches.toUpperCase();
     final activeTopics = activeCamp.topics.toLowerCase();
 
@@ -841,7 +850,7 @@ class _CampaignsViewState extends State<CampaignsView> {
                                   assignedCount: 0,
                                 );
 
-                                await FirebaseFirestore.instance
+                                final docRef = await FirebaseFirestore.instance
                                     .collection('campaigns')
                                     .add({
                                   'title': newCamp.title,
@@ -860,7 +869,10 @@ class _CampaignsViewState extends State<CampaignsView> {
 
                                 if (mounted) {
                                   setState(() {
-                                    _campaigns.insert(0, newCamp);
+                                    _campaigns.insert(
+                                      0,
+                                      newCamp.copyWith(id: docRef.id),
+                                    );
                                     _activeCampaignIndex = 0;
                                     _showAllCampaigns = false;
                                   });
@@ -2538,7 +2550,7 @@ class _CampaignsViewState extends State<CampaignsView> {
       ),
     );
 
-    if (confirmed != true) return;
+    if (confirmed != true || !mounted) return;
 
     try {
       if (campaign.id.isNotEmpty) {
@@ -2546,22 +2558,37 @@ class _CampaignsViewState extends State<CampaignsView> {
             .collection('campaigns')
             .doc(campaign.id)
             .delete();
-      }
-      if (mounted) {
-        setState(() {
-          _campaigns.removeWhere((c) =>
-              c.id == campaign.id ||
-              (c.id.isEmpty &&
-                  c.title == campaign.title &&
-                  c.badge == campaign.badge));
-          if (_activeCampaignIndex >= _campaigns.length) {
-            _activeCampaignIndex =
-                _campaigns.isNotEmpty ? _campaigns.length - 1 : 0;
-          }
-        });
-        if (_campaigns.isNotEmpty) {
-          _recalculateAllCampaignsAndActiveRanking();
+      } else {
+        final query = await FirebaseFirestore.instance
+            .collection('campaigns')
+            .where('title', isEqualTo: campaign.title)
+            .get();
+        for (final doc in query.docs) {
+          await doc.reference.delete();
         }
+      }
+
+      if (!mounted) return;
+
+      setState(() {
+        _campaigns.removeWhere((c) =>
+            (campaign.id.isNotEmpty && c.id == campaign.id) ||
+            (c.title == campaign.title && c.badge == campaign.badge));
+        if (_campaigns.isEmpty) {
+          _activeCampaignIndex = 0;
+          _rankedLeads = [];
+          _showAllCampaigns = true;
+        } else {
+          _activeCampaignIndex =
+              _activeCampaignIndex.clamp(0, _campaigns.length - 1);
+        }
+      });
+
+      if (_campaigns.isNotEmpty) {
+        _recalculateAllCampaignsAndActiveRanking();
+      }
+
+      if (mounted) {
         SnackBarAlert.showToast(
           context: context,
           message: 'Campaign "${campaign.title}" deleted successfully',
@@ -2569,9 +2596,22 @@ class _CampaignsViewState extends State<CampaignsView> {
       }
     } catch (e) {
       if (mounted) {
+        setState(() {
+          _campaigns.removeWhere((c) =>
+              (campaign.id.isNotEmpty && c.id == campaign.id) ||
+              (c.title == campaign.title && c.badge == campaign.badge));
+          if (_campaigns.isEmpty) {
+            _activeCampaignIndex = 0;
+            _rankedLeads = [];
+            _showAllCampaigns = true;
+          } else {
+            _activeCampaignIndex =
+                _activeCampaignIndex.clamp(0, _campaigns.length - 1);
+          }
+        });
         SnackBarAlert.showToast(
           context: context,
-          message: 'Failed to delete campaign: $e',
+          message: 'Campaign deleted locally: $e',
           isWarning: true,
         );
       }
