@@ -1701,11 +1701,14 @@ class _CampaignsViewState extends State<CampaignsView> {
                       Expanded(flex: 14, child: Text('NAME', style: headerStyle)),
                       Expanded(
                         flex: 18,
-                        child: Center(
-                          child: Text(
-                            'COLLEGE & BRANCH',
-                            style: headerStyle,
-                            textAlign: TextAlign.center,
+                        child: Padding(
+                          padding: const EdgeInsets.only(right: 28),
+                          child: Center(
+                            child: Text(
+                              'COLLEGE & BRANCH',
+                              style: headerStyle,
+                              textAlign: TextAlign.center,
+                            ),
                           ),
                         ),
                       ),
@@ -1822,16 +1825,19 @@ class _CampaignsViewState extends State<CampaignsView> {
                               ),
                               Expanded(
                                 flex: 18,
-                                child: Center(
-                                  child: Text(
-                                    lead.collegeBranchYear,
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                    textAlign: TextAlign.center,
-                                    style: GoogleFonts.inter(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w400,
-                                      color: const Color(0xFF64748B),
+                                child: Padding(
+                                  padding: const EdgeInsets.only(right: 28),
+                                  child: Center(
+                                    child: Text(
+                                      lead.collegeBranchYear,
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                      textAlign: TextAlign.center,
+                                      style: GoogleFonts.inter(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w400,
+                                        color: const Color(0xFF64748B),
+                                      ),
                                     ),
                                   ),
                                 ),
