@@ -1086,13 +1086,18 @@ class _CampaignsViewState extends State<CampaignsView> {
                   ),
             const Gap(16),
 
-            // Campaign Summary Card
+            // Campaign Summary Card (Figma desktop side-by-side view with responsive scaling for 1040px devices)
             LayoutBuilder(
               builder: (context, cardConstraints) {
-                final isCardStacked = cardConstraints.maxWidth < 960;
-                return Container(
+                final isDesktopTablet = cardConstraints.maxWidth >= 520 ||
+                    MediaQuery.of(context).size.width >= 600;
+
+                final desktopCard = Container(
                   width: double.infinity,
-                  padding: EdgeInsets.all(isCardStacked ? 18 : 32),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 28,
+                    vertical: 24,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(24),
@@ -1105,40 +1110,74 @@ class _CampaignsViewState extends State<CampaignsView> {
                       ),
                     ],
                   ),
-                  child: isCardStacked
-                      ? Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            _buildCampaignInfoLeft(campaign),
-                            const Gap(20),
-                            const Divider(height: 1, color: Color(0xFFF1F5F9)),
-                            const Gap(20),
-                            _buildCampaignStatsRight(campaign, isMobile: true),
-                          ],
-                        )
-                      : Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Expanded(
-                              child: Padding(
-                                padding: const EdgeInsets.only(right: 32),
-                                child: _buildCampaignInfoLeft(campaign),
-                              ),
-                            ),
-                            Container(
-                              height: 100,
-                              width: 1,
-                              color: const Color(0xFFF1F5F9),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.only(left: 32),
-                              child: _buildCampaignStatsRight(
-                                campaign,
-                                isMobile: false,
-                              ),
-                            ),
-                          ],
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.only(right: 28),
+                          child: _buildCampaignInfoLeft(campaign),
                         ),
+                      ),
+                      Container(
+                        height: 96,
+                        width: 1,
+                        color: const Color(0xFFF1F5F9),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(left: 28),
+                        child: _buildCampaignStatsRight(
+                          campaign,
+                          isMobile: false,
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+
+                if (isDesktopTablet) {
+                  const targetCardWidth = 960.0;
+                  final needsScaling =
+                      cardConstraints.maxWidth < targetCardWidth;
+
+                  if (needsScaling) {
+                    return FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: SizedBox(
+                        width: targetCardWidth,
+                        child: desktopCard,
+                      ),
+                    );
+                  }
+                  return desktopCard;
+                }
+
+                return Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(18),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(24),
+                    border: Border.all(color: const Color(0xFFE2E8F0)),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Color.fromRGBO(0, 0, 0, 0.05),
+                        offset: Offset(0, 1),
+                        blurRadius: 2,
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildCampaignInfoLeft(campaign),
+                      const Gap(20),
+                      const Divider(height: 1, color: Color(0xFFF1F5F9)),
+                      const Gap(20),
+                      _buildCampaignStatsRight(campaign, isMobile: true),
+                    ],
+                  ),
                 );
               },
             ),
