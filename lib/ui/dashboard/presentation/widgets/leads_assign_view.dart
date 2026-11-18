@@ -2864,9 +2864,10 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
             // Dark Bulk Selection & Assignment Bar (Responsive mobile-friendly layout)
             LayoutBuilder(
               builder: (context, barC) {
-                final isMobileBar =
-                    MediaQuery.of(context).size.width < 900 ||
-                    barC.maxWidth < 820;
+                final isDesktopTablet =
+                    barC.maxWidth >= 520 ||
+                    MediaQuery.of(context).size.width >= 600;
+                final isMobileBar = !isDesktopTablet;
 
                 final safeExecutives = state.activeExecutives;
                 final safeSelectedExecUid =
@@ -3111,57 +3112,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                   ),
                 );
 
-                if (isMobileBar) {
-                  return Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(14),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF111827),
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.1),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Row(
-                          children: [
-                            bulkDeleteBtn,
-                            const Gap(8),
-                            Expanded(
-                              child: Text(
-                                '${state.selectedLeadIds.length} Leads selected',
-                                style: GoogleFonts.inter(
-                                  color: Colors.white,
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
-                                  letterSpacing: 0.35,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const Gap(10),
-                        Row(
-                          children: [
-                            Expanded(child: execDropdown),
-                            const Gap(8),
-                            Expanded(child: dateDropdown),
-                          ],
-                        ),
-                        const Gap(10),
-                        assignBtn,
-                      ],
-                    ),
-                  );
-                }
-
-                return Container(
+                final desktopBar = Container(
                   width: double.infinity,
                   height: 68,
                   padding: const EdgeInsets.symmetric(
@@ -3237,6 +3188,71 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                           ),
                         ),
                       ),
+                    ],
+                  ),
+                );
+
+                if (isDesktopTablet) {
+                  const targetBarWidth = 860.0;
+                  final needsScaling = barC.maxWidth < targetBarWidth;
+
+                  if (needsScaling) {
+                    return FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: SizedBox(
+                        width: targetBarWidth,
+                        child: desktopBar,
+                      ),
+                    );
+                  }
+                  return desktopBar;
+                }
+
+                return Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF111827),
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.1),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Row(
+                        children: [
+                          bulkDeleteBtn,
+                          const Gap(8),
+                          Expanded(
+                            child: Text(
+                              '${state.selectedLeadIds.length} Leads selected',
+                              style: GoogleFonts.inter(
+                                color: Colors.white,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                letterSpacing: 0.35,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const Gap(10),
+                      Row(
+                        children: [
+                          Expanded(child: execDropdown),
+                          const Gap(8),
+                          Expanded(child: dateDropdown),
+                        ],
+                      ),
+                      const Gap(10),
+                      assignBtn,
                     ],
                   ),
                 );
