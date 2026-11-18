@@ -18,6 +18,7 @@ import 'package:acadeno_crm/ui/dashboard/presentation/widgets/figma_calendar_dia
 import 'package:acadeno_crm/ui/visits/application/visits_cubit.dart';
 import 'package:acadeno_crm/ui/visits/application/visits_state.dart';
 import 'package:acadeno_crm/ui/visits/data/model/visit_models.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 
 class VisitsTabView extends StatefulWidget {
   const VisitsTabView({super.key});

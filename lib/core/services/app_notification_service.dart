@@ -219,7 +219,6 @@ class AppNotificationService {
         );
         if (registeredToken.isNotEmpty) {
           _fcmToken = registeredToken;
-          debugPrint('FCM Device Token: $_fcmToken');
         }
       } catch (e) {
         debugPrint('FCM register notice (offline or skipped): $e');
