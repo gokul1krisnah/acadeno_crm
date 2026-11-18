@@ -14,7 +14,6 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:acadeno_crm/shared/theme/app_images.dart';
 import 'package:acadeno_crm/shared/theme/app_svgs.dart';
 import 'package:acadeno_crm/shared/widgets/college_selector_field.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:acadeno_crm/shared/snackbar_alerts/snack_alert.dart';
@@ -24,6 +23,7 @@ import 'package:acadeno_crm/ui/follow_ups/application/follow_ups_cubit.dart';
 import 'package:acadeno_crm/ui/home/application/home_cubit.dart';
 import 'package:acadeno_crm/ui/leads/application/leads_cubit.dart';
 import 'package:acadeno_crm/ui/leads/data/model/lead_models.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 class LeadCallSheets {
   // ---------------------------------------------------------------------------
@@ -1807,10 +1807,9 @@ class LeadCallSheets {
                               borderRadius: BorderRadius.circular(16),
                             ),
                           ),
-                          child: isSaving
-                              ? const CupertinoActivityIndicator(
+                          child: isSaving ? const SpinKitThreeBounce(
                                   color: Colors.white,
-                                  radius: 11,
+                                  size: 20,
                                 )
                               : FittedBox(
                                   fit: BoxFit.scaleDown,

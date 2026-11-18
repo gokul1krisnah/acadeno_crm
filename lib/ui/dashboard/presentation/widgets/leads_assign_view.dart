@@ -13,6 +13,7 @@ import 'package:acadeno_crm/ui/leads/data/sources/leads_rds.dart';
 import 'package:acadeno_crm/ui/leads/data/sources/lead_export_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:acadeno_crm/shared/theme/app_svgs.dart';
 import 'package:acadeno_crm/shared/widgets/acadeno_dropdown.dart';
@@ -923,11 +924,10 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                                             });
                                           }
                                         },
-                                  child: saving
-                                      ? const CupertinoActivityIndicator(
-                                          color: Colors.white,
-                                          radius: 10,
-                                        )
+                                  child: saving ? const SpinKitThreeBounce(
+                                      color: Colors.white,
+                                      size: 20,
+                                    )
                                       : Text(
                                           'Save Walk-in Lead',
                                           style: GoogleFonts.inter(
@@ -2170,14 +2170,9 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                                       });
                                     }
                                   },
-                            child: saving
-                                ? const SizedBox(
-                                    width: 20,
-                                    height: 20,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      color: Colors.white,
-                                    ),
+                            child: saving ? const SpinKitThreeBounce(
+                                    color: Colors.white,
+                                    size: 20,
                                   )
                                 : Text(
                                     'Save changes',
@@ -2451,14 +2446,9 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                           elevation: 0,
                         ),
                         onPressed: _isRefreshing ? null : _performRefresh,
-                        icon: _isRefreshing
-                            ? const SizedBox(
-                                width: 14,
-                                height: 14,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: _primary,
-                                ),
+                        icon: _isRefreshing ? const SpinKitThreeBounce(
+                                color: _primary,
+                                size: 14,
                               )
                             : const Icon(
                                 CupertinoIcons.refresh,

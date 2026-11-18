@@ -14,6 +14,7 @@ import '../../../leads/application/lead_import_cubit.dart';
 import '../../../leads/application/lead_import_state.dart';
 import '../../../leads/data/model/lead_import_models.dart';
 import '../../../leads/data/sources/lead_import_parser.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 class ImportLeadsView extends StatelessWidget {
   const ImportLeadsView({super.key});
@@ -803,13 +804,9 @@ class _ImportLeadsBodyState extends State<_ImportLeadsBody> {
                     ? Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const SizedBox(
-                            width: 16,
-                            height: 16,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: Colors.white,
-                            ),
+                          const SpinKitThreeBounce(
+                            color: Colors.white,
+                            size: 16,
                           ),
                           const Gap(10),
                           Text(

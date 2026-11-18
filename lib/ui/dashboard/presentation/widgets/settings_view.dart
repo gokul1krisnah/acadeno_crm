@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:hive/hive.dart';
 
 import 'package:acadeno_crm/shared/snackbar_alerts/snack_alert.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 class SettingsView extends StatefulWidget {
   final VoidCallback? onLogout;
@@ -699,14 +700,9 @@ class _SettingsViewState extends State<SettingsView>
             borderRadius: BorderRadius.circular(12),
           ),
         ),
-        child: isLoading
-            ? const SizedBox(
-                width: 18,
-                height: 18,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: Colors.white,
-                ),
+        child: isLoading ? const SpinKitThreeBounce(
+                color: Colors.white,
+                size: 18,
               )
             : FittedBox(
                 fit: BoxFit.scaleDown,

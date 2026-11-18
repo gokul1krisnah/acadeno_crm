@@ -10,6 +10,7 @@ import 'package:intl/intl.dart';
 
 import '../../../../shared/utilities/link_launcher.dart';
 import 'figma_calendar_dialog.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 class _CollegeVisit {
   final String id;
@@ -1157,14 +1158,9 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
                                     }
                                   }
                                 },
-                          child: isSaving
-                              ? const SizedBox(
-                                  width: 16,
-                                  height: 16,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    color: Colors.white,
-                                  ),
+                          child: isSaving ? const SpinKitThreeBounce(
+                                  color: Colors.white,
+                                  size: 20,
                                 )
                               : Text(
                                   isCancelled

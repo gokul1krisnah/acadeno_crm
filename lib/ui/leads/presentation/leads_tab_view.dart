@@ -19,6 +19,7 @@ import 'package:acadeno_crm/ui/leads/application/leads_state.dart';
 import 'package:acadeno_crm/ui/leads/data/model/lead_models.dart';
 
 import 'widgets/lead_call_sheets.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 class LeadsTabView extends StatefulWidget {
   final VoidCallback onLogout;
@@ -1103,10 +1104,10 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                         onPressed: _isRefreshing
                                             ? null
                                             : _performRefresh,
-                                        icon: _isRefreshing
-                                            ? const CupertinoActivityIndicator(
-                                                radius: 7,
-                                              )
+                                        icon: _isRefreshing ? const SpinKitThreeBounce(
+                                            color: Color(0xFF667085),
+                                            size: 14,
+                                          )
                                             : const Icon(
                                                 CupertinoIcons.refresh,
                                                 size: 16,
@@ -1366,8 +1367,9 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                                             .center,
                                                     children: [
                                                       if (_isRefreshing) ...[
-                                                        const CupertinoActivityIndicator(
-                                                          radius: 7,
+                                                        const SpinKitThreeBounce(
+                                                          color: Color(0xFF344054),
+                                                          size: 14,
                                                         ),
                                                         const Gap(8),
                                                         Text(

@@ -9,6 +9,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 import 'acadeno_dropdown.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 /// A dynamic college selection and editable input component.
 /// Provides a curved dropdown of known colleges + "+ Add New College".
@@ -715,14 +716,9 @@ class _CollegeSelectorFieldState extends State<CollegeSelectorField> {
                             borderRadius: BorderRadius.circular(10),
                           ),
                         ),
-                        icon: _isSavingCollege
-                            ? const SizedBox(
-                                width: 14,
-                                height: 14,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: Colors.white,
-                                ),
+                        icon: _isSavingCollege ? const SpinKitThreeBounce(
+                                color: Colors.white,
+                                size: 14,
                               )
                             : const Icon(Icons.check_rounded, size: 16),
                         label: Text(

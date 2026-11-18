@@ -11,6 +11,7 @@ import '../../../../shared/snackbar_alerts/snack_alert.dart';
 import '../../../../shared/widgets/acadeno_dropdown.dart';
 import '../../application/dashboard_cubit.dart';
 import '../../data/model/dashboard_user_model.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 class UserManagementView extends StatefulWidget {
   final VoidCallback? onOpenSettings;
@@ -1140,14 +1141,9 @@ class _UserManagementViewState extends State<UserManagementView> {
                               : (selectedTab == 0
                                   ? sendResetLink
                                   : setPasswordDirectly),
-                          child: isLoading
-                              ? const SizedBox(
-                                  width: 16,
-                                  height: 16,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    color: Colors.white,
-                                  ),
+                          child: isLoading ? const SpinKitThreeBounce(
+                                  color: Colors.white,
+                                  size: 18,
                                 )
                               : Text(
                                   selectedTab == 0
@@ -1439,14 +1435,9 @@ class _UserManagementViewState extends State<UserManagementView> {
                           setDState(() => isSubmitting = false);
                         }
                       },
-                child: isSubmitting
-                    ? const SizedBox(
-                        width: 18,
-                        height: 18,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.white,
-                        ),
+                child: isSubmitting ? const SpinKitThreeBounce(
+                        color: Colors.white,
+                        size: 18,
                       )
                     : Text(byUid ? 'Save User to Database' : 'Create Account'),
               ),

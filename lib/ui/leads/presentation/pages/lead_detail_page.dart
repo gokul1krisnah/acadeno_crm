@@ -15,6 +15,7 @@ import '../../../follow_ups/data/model/follow_up_time_helper.dart';
 import '../../data/model/lead_models.dart';
 import '../../data/sources/leads_rds.dart';
 import '../widgets/lead_call_sheets.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 class LeadDetailPage extends StatefulWidget {
   final ExecutiveLeadItem lead;
@@ -1262,15 +1263,9 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
                                 ],
                               ),
                               if (_isSavingStudentNotes)
-                                const SizedBox(
-                                  width: 14,
-                                  height: 14,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    valueColor: AlwaysStoppedAnimation<Color>(
-                                      Color(0xFF2563EB),
-                                    ),
-                                  ),
+                                const SpinKitThreeBounce(
+                                  color: Color(0xFF2563EB),
+                                  size: 14,
                                 )
                               else
                                 InkWell(
@@ -1376,15 +1371,9 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
                                 ],
                               ),
                               if (_isSavingManagerNotes)
-                                const SizedBox(
-                                  width: 14,
-                                  height: 14,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    valueColor: AlwaysStoppedAnimation<Color>(
-                                      Color(0xFFD45107),
-                                    ),
-                                  ),
+                                const SpinKitThreeBounce(
+                                  color: Color(0xFFD45107),
+                                  size: 14,
                                 )
                               else
                                 InkWell(

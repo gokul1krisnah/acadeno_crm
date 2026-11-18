@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import 'package:acadeno_crm/shared/snackbar_alerts/snack_alert.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 /// Opens the Admin Account Management & Security Dialog.
 void showAdminAccountDialog(
@@ -557,14 +558,9 @@ class _AdminAccountDialogState extends State<AdminAccountDialog>
                 elevation: 0,
               ),
               onPressed: _isSavingEmail ? null : _updateEmail,
-              child: _isSavingEmail
-                  ? const SizedBox(
-                      width: 16,
-                      height: 16,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
-                      ),
+              child: _isSavingEmail ? const SpinKitThreeBounce(
+                      color: Colors.white,
+                      size: 18,
                     )
                   : const Text(
                       'Update Admin Email',
@@ -665,14 +661,9 @@ class _AdminAccountDialogState extends State<AdminAccountDialog>
                 elevation: 0,
               ),
               onPressed: _isSavingPassword ? null : _updatePassword,
-              child: _isSavingPassword
-                  ? const SizedBox(
-                      width: 16,
-                      height: 16,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
-                      ),
+              child: _isSavingPassword ? const SpinKitThreeBounce(
+                      color: Colors.white,
+                      size: 18,
                     )
                   : const Text(
                       'Update Password',
@@ -751,14 +742,9 @@ class _AdminAccountDialogState extends State<AdminAccountDialog>
                 elevation: 0,
               ),
               onPressed: _isSavingName ? null : _updateDisplayName,
-              child: _isSavingName
-                  ? const SizedBox(
-                      width: 16,
-                      height: 16,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
-                      ),
+              child: _isSavingName ? const SpinKitThreeBounce(
+                      color: Colors.white,
+                      size: 18,
                     )
                   : const Text(
                       'Save Admin Profile',

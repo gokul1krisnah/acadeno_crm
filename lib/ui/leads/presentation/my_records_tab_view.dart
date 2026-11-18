@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -9,6 +8,7 @@ import '../../../shared/theme/app_svgs.dart';
 import '../../home/application/home_cubit.dart';
 import '../application/leads_cubit.dart';
 import '../application/leads_state.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 /// Full tab view for "My Records" & performance logs.
 class MyRecordsTabView extends StatefulWidget {
@@ -174,8 +174,9 @@ class _MyRecordsTabViewState extends State<MyRecordsTabView> {
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   if (_isRefreshing) ...[
-                                    const CupertinoActivityIndicator(
-                                      radius: 6,
+                                    const SpinKitThreeBounce(
+                                      color: Color(0xFF4F46E5),
+                                      size: 12,
                                     ),
                                     const Gap(6),
                                     Text(
@@ -273,8 +274,9 @@ class _MyRecordsTabViewState extends State<MyRecordsTabView> {
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     if (_isRefreshing) ...[
-                                      const CupertinoActivityIndicator(
-                                        radius: 7,
+                                      const SpinKitThreeBounce(
+                                        color: Color(0xFF4B5563),
+                                        size: 14,
                                       ),
                                       const Gap(8),
                                       Text(
