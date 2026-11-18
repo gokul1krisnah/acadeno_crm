@@ -174,7 +174,7 @@ class _MyRecordsTabViewState extends State<MyRecordsTabView> {
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   if (_isRefreshing) ...[
-                                    const SpinKitThreeBounce(
+                                    const SpinKitFadingCircle(
                                       color: Color(0xFF4F46E5),
                                       size: 12,
                                     ),
@@ -274,7 +274,7 @@ class _MyRecordsTabViewState extends State<MyRecordsTabView> {
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     if (_isRefreshing) ...[
-                                      const SpinKitThreeBounce(
+                                      const SpinKitFadingCircle(
                                         color: Color(0xFF4B5563),
                                         size: 14,
                                       ),

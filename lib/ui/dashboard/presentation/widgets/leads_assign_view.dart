@@ -2446,7 +2446,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                           elevation: 0,
                         ),
                         onPressed: _isRefreshing ? null : _performRefresh,
-                        icon: _isRefreshing ? const SpinKitThreeBounce(
+                        icon: _isRefreshing ? const SpinKitFadingCircle(
                                 color: _primary,
                                 size: 14,
                               )
@@ -3410,7 +3410,9 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const CircularProgressIndicator(color: _primary),
+              _isRefreshing
+                  ? const SpinKitFadingCircle(color: _primary, size: 36)
+                  : const CircularProgressIndicator(color: _primary),
               const Gap(12),
               Text(
                 _isRefreshing ? 'Refreshing leads...' : 'Loading leads...',
@@ -3460,8 +3462,13 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
               const Gap(14),
               OutlinedButton.icon(
                 onPressed: _isRefreshing ? null : _performRefresh,
-                icon: const Icon(CupertinoIcons.refresh, size: 16),
-                label: const Text('Retry'),
+                icon: _isRefreshing
+                    ? const SpinKitFadingCircle(
+                        color: _primary,
+                        size: 14,
+                      )
+                    : const Icon(CupertinoIcons.refresh, size: 16),
+                label: Text(_isRefreshing ? 'Refreshing...' : 'Retry'),
               ),
             ],
           ),

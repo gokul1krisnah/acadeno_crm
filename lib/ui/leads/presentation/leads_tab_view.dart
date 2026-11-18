@@ -1104,7 +1104,7 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                         onPressed: _isRefreshing
                                             ? null
                                             : _performRefresh,
-                                        icon: _isRefreshing ? const SpinKitThreeBounce(
+                                        icon: _isRefreshing ? const SpinKitFadingCircle(
                                             color: Color(0xFF667085),
                                             size: 14,
                                           )
@@ -1367,7 +1367,7 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                                             .center,
                                                     children: [
                                                       if (_isRefreshing) ...[
-                                                        const SpinKitThreeBounce(
+                                                        const SpinKitFadingCircle(
                                                           color: Color(0xFF344054),
                                                           size: 14,
                                                         ),
