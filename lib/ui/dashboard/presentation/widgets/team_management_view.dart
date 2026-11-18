@@ -810,248 +810,430 @@ class _TeamManagementViewState extends State<TeamManagementView> {
               ),
             )
           else
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: SizedBox(
-                width: maxWidth > 1050 ? maxWidth : 1050.0,
-                child: Column(
-                  children: [
-                    // Table Header Row
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 32,
-                        vertical: 16,
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final isDesktopTablet = constraints.maxWidth >= 520 ||
+                    MediaQuery.of(context).size.width >= 600;
+                if (isDesktopTablet) {
+                  const targetTableWidth = 1050.0;
+                  final needsScaling =
+                      constraints.maxWidth < targetTableWidth;
+
+                  final tableWidget = _buildPerformanceTable(
+                    activeUsers,
+                    leads,
+                  );
+
+                  if (needsScaling) {
+                    return FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.topCenter,
+                      child: SizedBox(
+                        width: targetTableWidth,
+                        child: tableWidget,
                       ),
-                      decoration: const BoxDecoration(
-                        color: Color(0xFFF8FAFC),
-                        border: Border(
-                          top: BorderSide(color: Color(0xFFF1F5F9)),
-                          bottom: BorderSide(color: Color(0xFFF1F5F9)),
-                        ),
-                      ),
-                      child: Row(
-                        children: [
-                          _buildTableHeaderCell('TEAM MEMBER', flex: 26, isCenter: false),
-                          _buildTableHeaderCell('ASSIGNED', flex: 14, isCenter: false),
-                          _buildTableHeaderCell('CONTACTED', flex: 16, isCenter: false),
-                          _buildTableHeaderCell('INTERESTED', flex: 14, isCenter: true),
-                          _buildTableHeaderCell('ACTIONS DONE', flex: 16, isCenter: true),
-                          _buildTableHeaderCell('CONVERTED', flex: 14, isCenter: true),
-                          _buildTableHeaderCell('PENDING', flex: 14, isCenter: true),
-                        ],
+                    );
+                  }
+
+                  return SizedBox(
+                    width: double.infinity,
+                    child: tableWidget,
+                  );
+                } else {
+                  return _buildMobilePerformanceList(activeUsers, leads);
+                }
+              },
+            ),
+        ],
+      ),
+    );
+  }
+
+  _UserPerformanceMetrics _calculateUserMetrics(
+    DashboardUserModel user,
+    List<Map<String, dynamic>> leads,
+  ) {
+    final userLeads = leads.where((l) {
+      final assignedUid = l['assignedToUid'];
+      final assignedName =
+          l['assignedToName'] ?? l['assignedTo'];
+      final ownerUid = l['ownerUid'];
+      return assignedUid == user.uid ||
+          ownerUid == user.uid ||
+          (assignedName != null &&
+              assignedName
+                      .toString()
+                      .trim()
+                      .toLowerCase() ==
+                  user.name.trim().toLowerCase());
+    }).toList();
+
+    final assignedCount = userLeads.length;
+    final contactedCount = userLeads.where((l) {
+      final status = (l['status'] ?? '')
+          .toString()
+          .toLowerCase();
+      final isDone = _leadIsDone(l['isDone']);
+      return status != 'new' && status != 'unassigned' ||
+          isDone;
+    }).length;
+    final contactedPct = assignedCount > 0
+        ? (contactedCount / assignedCount * 100).round()
+        : 0;
+    final interestedCount = userLeads.where((l) {
+      final status = (l['status'] ?? '')
+          .toString()
+          .toLowerCase();
+      return status == 'interested';
+    }).length;
+    final actionsDone = userLeads.where((l) {
+      final isDone = _leadIsDone(l['isDone']);
+      final hasTl = _leadHasTimeline(l['timeline']);
+      return isDone || hasTl;
+    }).length;
+    final convertedCount = userLeads.where((l) {
+      final status = (l['status'] ?? '')
+          .toString()
+          .toLowerCase();
+      return status.contains('convert');
+    }).length;
+    final pendingCount = userLeads.where((l) {
+      final isDone = _leadIsDone(l['isDone']);
+      final status = (l['status'] ?? '')
+          .toString()
+          .toLowerCase();
+      return !isDone &&
+          (status == 'new' ||
+              status == 'claimed' ||
+              status == 'follow-up' ||
+              status.contains('pending'));
+    }).length;
+
+    return _UserPerformanceMetrics(
+      assignedCount: assignedCount,
+      contactedCount: contactedCount,
+      contactedPct: contactedPct,
+      interestedCount: interestedCount,
+      actionsDone: actionsDone,
+      convertedCount: convertedCount,
+      pendingCount: pendingCount,
+    );
+  }
+
+  Widget _buildPerformanceTable(
+    List<DashboardUserModel> activeUsers,
+    List<Map<String, dynamic>> leads,
+  ) {
+    return Column(
+      children: [
+        // Table Header Row
+        Container(
+          padding: const EdgeInsets.symmetric(
+            horizontal: 32,
+            vertical: 16,
+          ),
+          decoration: const BoxDecoration(
+            color: Color(0xFFF8FAFC),
+            border: Border(
+              top: BorderSide(color: Color(0xFFF1F5F9)),
+              bottom: BorderSide(color: Color(0xFFF1F5F9)),
+            ),
+          ),
+          child: Row(
+            children: [
+              _buildTableHeaderCell('TEAM MEMBER', flex: 26, isCenter: false),
+              _buildTableHeaderCell('ASSIGNED', flex: 14, isCenter: false),
+              _buildTableHeaderCell('CONTACTED', flex: 16, isCenter: false),
+              _buildTableHeaderCell('INTERESTED', flex: 14, isCenter: true),
+              _buildTableHeaderCell('ACTIONS DONE', flex: 16, isCenter: true),
+              _buildTableHeaderCell('CONVERTED', flex: 14, isCenter: true),
+              _buildTableHeaderCell('PENDING', flex: 14, isCenter: true),
+            ],
+          ),
+        ),
+
+        // Table Body Rows
+        ...activeUsers.map((user) {
+          final isLast = user == activeUsers.last;
+          final m = _calculateUserMetrics(user, leads);
+
+          return Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 32,
+              vertical: 24,
+            ),
+            decoration: BoxDecoration(
+              border: isLast
+                  ? null
+                  : const Border(
+                      bottom: BorderSide(
+                        color: Color(0xFFF1F5F9),
                       ),
                     ),
-
-                    // Table Body Rows
-                    ...activeUsers.map((user) {
-                      final isLast = user == activeUsers.last;
-
-                      final userLeads = leads.where((l) {
-                        final assignedUid = l['assignedToUid'];
-                        final assignedName =
-                            l['assignedToName'] ?? l['assignedTo'];
-                        final ownerUid = l['ownerUid'];
-                        return assignedUid == user.uid ||
-                            ownerUid == user.uid ||
-                            (assignedName != null &&
-                                assignedName
-                                        .toString()
-                                        .trim()
-                                        .toLowerCase() ==
-                                    user.name.trim().toLowerCase());
-                      }).toList();
-
-                      final assignedCount = userLeads.length;
-                      final contactedCount = userLeads.where((l) {
-                        final status = (l['status'] ?? '')
-                            .toString()
-                            .toLowerCase();
-                        final isDone = _leadIsDone(l['isDone']);
-                        return status != 'new' && status != 'unassigned' ||
-                            isDone;
-                      }).length;
-                      final contactedPct = assignedCount > 0
-                          ? (contactedCount / assignedCount * 100).round()
-                          : 0;
-                      final interestedCount = userLeads.where((l) {
-                        final status = (l['status'] ?? '')
-                            .toString()
-                            .toLowerCase();
-                        return status == 'interested';
-                      }).length;
-                      final actionsDone = userLeads.where((l) {
-                        final isDone = _leadIsDone(l['isDone']);
-                        final hasTl = _leadHasTimeline(l['timeline']);
-                        return isDone || hasTl;
-                      }).length;
-                      final convertedCount = userLeads.where((l) {
-                        final status = (l['status'] ?? '')
-                            .toString()
-                            .toLowerCase();
-                        return status.contains('convert');
-                      }).length;
-                      final pendingCount = userLeads.where((l) {
-                        final isDone = _leadIsDone(l['isDone']);
-                        final status = (l['status'] ?? '')
-                            .toString()
-                            .toLowerCase();
-                        return !isDone &&
-                            (status == 'new' ||
-                                status == 'claimed' ||
-                                status == 'follow-up' ||
-                                status.contains('pending'));
-                      }).length;
-
-                      return Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 32,
-                          vertical: 24,
-                        ),
-                        decoration: BoxDecoration(
-                          border: isLast
-                              ? null
-                              : const Border(
-                                  bottom: BorderSide(
-                                    color: Color(0xFFF1F5F9),
-                                  ),
-                                ),
-                        ),
-                        child: Row(
-                          children: [
-                            // Team Member Name + Role
-                            Expanded(
-                              flex: 26,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    user.name,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: GoogleFonts.inter(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w700,
-                                      color: const Color(0xFF0F172A),
-                                      height: 24 / 16,
-                                    ),
-                                  ),
-                                  const Gap(2),
-                                  Text(
-                                    user.isAdminRole
-                                        ? 'ADMIN'
-                                        : 'HR & OPERATION MANAGER',
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: GoogleFonts.inter(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w600,
-                                      color: user.isAdminRole
-                                          ? const Color(0xFF6366F1)
-                                          : const Color(0xFF3B82F6),
-                                      height: 16 / 12,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-
-                            // Assigned
-                            Expanded(
-                              flex: 14,
-                              child: Text(
-                                '$assignedCount',
-                                style: GoogleFonts.inter(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w500,
-                                  color: const Color(0xFF1E293B),
-                                  height: 20 / 14,
-                                ),
-                              ),
-                            ),
-
-                            // Contacted
-                            Expanded(
-                              flex: 16,
-                              child: Text(
-                                assignedCount > 0
-                                    ? '$contactedCount ($contactedPct%)'
-                                    : 'None',
-                                style: GoogleFonts.inter(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w500,
-                                  color: const Color(0xFF1E293B),
-                                  height: 20 / 14,
-                                ),
-                              ),
-                            ),
-
-                            // Interested
-                            Expanded(
-                              flex: 14,
-                              child: Text(
-                                '$interestedCount',
-                                textAlign: TextAlign.center,
-                                style: GoogleFonts.inter(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w500,
-                                  color: const Color(0xFF1E293B),
-                                  height: 20 / 14,
-                                ),
-                              ),
-                            ),
-
-                            // Actions Done
-                            Expanded(
-                              flex: 16,
-                              child: Text(
-                                '$actionsDone',
-                                textAlign: TextAlign.center,
-                                style: GoogleFonts.inter(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w500,
-                                  color: const Color(0xFF1E293B),
-                                  height: 20 / 14,
-                                ),
-                              ),
-                            ),
-
-                            // Converted
-                            Expanded(
-                              flex: 14,
-                              child: Text(
-                                '$convertedCount',
-                                textAlign: TextAlign.center,
-                                style: GoogleFonts.inter(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w700,
-                                  color: const Color(0xFF16A34A),
-                                  height: 20 / 14,
-                                ),
-                              ),
-                            ),
-
-                            // Pending
-                            Expanded(
-                              flex: 14,
-                              child: Text(
-                                '$pendingCount',
-                                textAlign: TextAlign.center,
-                                style: GoogleFonts.inter(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w500,
-                                  color: const Color(0xFF1E293B),
-                                  height: 20 / 14,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    }),
-                  ],
-                ),
-              ),
             ),
+            child: Row(
+              children: [
+                // Team Member Name + Role
+                Expanded(
+                  flex: 26,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        user.name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.inter(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          color: const Color(0xFF0F172A),
+                          height: 24 / 16,
+                        ),
+                      ),
+                      const Gap(2),
+                      Text(
+                        user.isAdminRole
+                            ? 'ADMIN'
+                            : 'HR & OPERATION MANAGER',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.inter(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: user.isAdminRole
+                              ? const Color(0xFF6366F1)
+                              : const Color(0xFF3B82F6),
+                          height: 16 / 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // Assigned
+                Expanded(
+                  flex: 14,
+                  child: Text(
+                    '${m.assignedCount}',
+                    style: GoogleFonts.inter(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: const Color(0xFF1E293B),
+                      height: 20 / 14,
+                    ),
+                  ),
+                ),
+
+                // Contacted
+                Expanded(
+                  flex: 16,
+                  child: Text(
+                    m.assignedCount > 0
+                        ? '${m.contactedCount} (${m.contactedPct}%)'
+                        : 'None',
+                    style: GoogleFonts.inter(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: const Color(0xFF1E293B),
+                      height: 20 / 14,
+                    ),
+                  ),
+                ),
+
+                // Interested
+                Expanded(
+                  flex: 14,
+                  child: Text(
+                    '${m.interestedCount}',
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.inter(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: const Color(0xFF1E293B),
+                      height: 20 / 14,
+                    ),
+                  ),
+                ),
+
+                // Actions Done
+                Expanded(
+                  flex: 16,
+                  child: Text(
+                    '${m.actionsDone}',
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.inter(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: const Color(0xFF1E293B),
+                      height: 20 / 14,
+                    ),
+                  ),
+                ),
+
+                // Converted
+                Expanded(
+                  flex: 14,
+                  child: Text(
+                    '${m.convertedCount}',
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.inter(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      color: const Color(0xFF16A34A),
+                      height: 20 / 14,
+                    ),
+                  ),
+                ),
+
+                // Pending
+                Expanded(
+                  flex: 14,
+                  child: Text(
+                    '${m.pendingCount}',
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.inter(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: const Color(0xFF1E293B),
+                      height: 20 / 14,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        }),
+      ],
+    );
+  }
+
+  Widget _buildMobilePerformanceList(
+    List<DashboardUserModel> activeUsers,
+    List<Map<String, dynamic>> leads,
+  ) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+      child: Column(
+        children: [
+          for (var i = 0; i < activeUsers.length; i++) ...[
+            if (i > 0) const Gap(12),
+            Builder(
+              builder: (context) {
+                final user = activeUsers[i];
+                final m = _calculateUserMetrics(user, leads);
+
+                return Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF8FAFC),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: const Color(0xFFE2E8F0)),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  user.name,
+                                  style: GoogleFonts.inter(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w700,
+                                    color: const Color(0xFF0F172A),
+                                  ),
+                                ),
+                                const Gap(2),
+                                Text(
+                                  user.isAdminRole
+                                      ? 'ADMIN'
+                                      : 'HR & OPERATION MANAGER',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                    color: user.isAdminRole
+                                        ? const Color(0xFF6366F1)
+                                        : const Color(0xFF3B82F6),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const Gap(14),
+                      const Divider(color: Color(0xFFE2E8F0), height: 1),
+                      const Gap(14),
+                      Row(
+                        children: [
+                          _buildMobileMetricItem('Assigned', '${m.assignedCount}'),
+                          _buildMobileMetricItem(
+                            'Contacted',
+                            m.assignedCount > 0
+                                ? '${m.contactedCount} (${m.contactedPct}%)'
+                                : 'None',
+                          ),
+                          _buildMobileMetricItem('Interested', '${m.interestedCount}'),
+                        ],
+                      ),
+                      const Gap(10),
+                      Row(
+                        children: [
+                          _buildMobileMetricItem('Actions', '${m.actionsDone}'),
+                          _buildMobileMetricItem(
+                            'Converted',
+                            '${m.convertedCount}',
+                            valueColor: const Color(0xFF16A34A),
+                            isBold: true,
+                          ),
+                          _buildMobileMetricItem('Pending', '${m.pendingCount}'),
+                        ],
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ],
+          const Gap(16),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMobileMetricItem(
+    String label,
+    String value, {
+    Color? valueColor,
+    bool isBold = false,
+  }) {
+    return Expanded(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label.toUpperCase(),
+            style: GoogleFonts.inter(
+              fontSize: 10,
+              fontWeight: FontWeight.w600,
+              color: const Color(0xFF64748B),
+              letterSpacing: 0.5,
+            ),
+          ),
+          const Gap(4),
+          Text(
+            value,
+            style: GoogleFonts.inter(
+              fontSize: 13,
+              fontWeight: isBold ? FontWeight.w700 : FontWeight.w500,
+              color: valueColor ?? const Color(0xFF1E293B),
+            ),
+          ),
         ],
       ),
     );
@@ -1077,6 +1259,26 @@ class _TeamManagementViewState extends State<TeamManagementView> {
       ),
     );
   }
+}
+
+class _UserPerformanceMetrics {
+  final int assignedCount;
+  final int contactedCount;
+  final int contactedPct;
+  final int interestedCount;
+  final int actionsDone;
+  final int convertedCount;
+  final int pendingCount;
+
+  const _UserPerformanceMetrics({
+    required this.assignedCount,
+    required this.contactedCount,
+    required this.contactedPct,
+    required this.interestedCount,
+    required this.actionsDone,
+    required this.convertedCount,
+    required this.pendingCount,
+  });
 }
 
 class _TeamStatCard extends StatefulWidget {
