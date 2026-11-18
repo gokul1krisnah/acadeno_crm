@@ -2619,8 +2619,9 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                     children: [
                       titleCol,
                       const Gap(12),
-                      SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerLeft,
                         child: actionButtons,
                       ),
                     ],
@@ -3210,8 +3211,9 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                         ],
                       ),
                       Flexible(
-                        child: SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          alignment: Alignment.centerRight,
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             crossAxisAlignment: CrossAxisAlignment.center,
@@ -3523,8 +3525,85 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
 
     return LayoutBuilder(
       builder: (context, c) {
-        // Mobile responsive card list (< 720px)
-        if (c.maxWidth < 800) {
+        final isDesktopTablet = c.maxWidth >= 520 ||
+            MediaQuery.of(context).size.width >= 600;
+
+        if (isDesktopTablet) {
+          const targetTableWidth = 1050.0;
+          final needsScaling = c.maxWidth < targetTableWidth;
+
+          final h = GoogleFonts.poppins(
+            fontSize: 11,
+            fontWeight: FontWeight.w700,
+            color: const Color(0xFF6B7280),
+            letterSpacing: 1.1,
+            height: 16.5 / 11,
+          );
+
+          final desktopTable = Column(
+            children: [
+              Container(
+                color: const Color(0xFFF9FAFB),
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Expanded(
+                      flex: 10,
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          _buildFigmaCheckbox(
+                            value: allSelectedOnPage,
+                            onChanged: (v) =>
+                                cubit.toggleSelectAllOnPage(v ?? false),
+                          ),
+                          const Gap(16),
+                          Text('NAME', style: h),
+                        ],
+                      ),
+                    ),
+                    Expanded(flex: 7, child: Text('COLLEGE - BRANCH', style: h)),
+                    Expanded(flex: 5, child: Text('SOURCE', style: h)),
+                    Expanded(flex: 4, child: Text('STATUS', style: h)),
+                    Expanded(flex: 5, child: Text('LAST CONTACT', style: h)),
+                    Expanded(flex: 5, child: Text('ASSIGNED TO', style: h)),
+                  ],
+                ),
+              ),
+              const Divider(height: 1, color: Color(0xFFF3F4F6)),
+              for (var i = 0; i < rows.length; i++) ...[
+                if (i > 0) const Divider(height: 1, color: Color(0xFFF9FAFB)),
+                _DesktopLeadTableRow(
+                  lead: rows[i],
+                  isSelected: state.selectedLeadIds.contains(rows[i].id),
+                  onTap: () =>
+                      _openLeadDetailAndEditDialog(context, rows[i], state),
+                  onSelectChanged: (v) =>
+                      cubit.toggleLeadSelection(rows[i].id, v ?? false),
+                  statusBadge: _statusBadge(rows[i].status),
+                  checkboxBuilder: _buildFigmaCheckbox,
+                ),
+              ],
+            ],
+          );
+
+          if (needsScaling) {
+            return FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.topCenter,
+              child: SizedBox(
+                width: targetTableWidth,
+                child: desktopTable,
+              ),
+            );
+          }
+
+          return SizedBox(
+            width: double.infinity,
+            child: desktopTable,
+          );
+        } else {
           return Column(
             children: [
               for (var i = 0; i < rows.length; i++) ...[
@@ -3543,61 +3622,6 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
             ],
           );
         }
-
-        final h = GoogleFonts.poppins(
-          fontSize: 11,
-          fontWeight: FontWeight.w700,
-          color: const Color(0xFF6B7280),
-          letterSpacing: 1.1,
-          height: 16.5 / 11,
-        );
-        return Column(
-          children: [
-            Container(
-              color: const Color(0xFFF9FAFB),
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Expanded(
-                    flex: 10,
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        _buildFigmaCheckbox(
-                          value: allSelectedOnPage,
-                          onChanged: (v) =>
-                              cubit.toggleSelectAllOnPage(v ?? false),
-                        ),
-                        const Gap(16),
-                        Text('NAME', style: h),
-                      ],
-                    ),
-                  ),
-                  Expanded(flex: 7, child: Text('COLLEGE - BRANCH', style: h)),
-                  Expanded(flex: 5, child: Text('SOURCE', style: h)),
-                  Expanded(flex: 4, child: Text('STATUS', style: h)),
-                  Expanded(flex: 5, child: Text('LAST CONTACT', style: h)),
-                  Expanded(flex: 5, child: Text('ASSIGNED TO', style: h)),
-                ],
-              ),
-            ),
-            const Divider(height: 1, color: Color(0xFFF3F4F6)),
-            for (var i = 0; i < rows.length; i++) ...[
-              if (i > 0) const Divider(height: 1, color: Color(0xFFF9FAFB)),
-              _DesktopLeadTableRow(
-                lead: rows[i],
-                isSelected: state.selectedLeadIds.contains(rows[i].id),
-                onTap: () =>
-                    _openLeadDetailAndEditDialog(context, rows[i], state),
-                onSelectChanged: (v) =>
-                    cubit.toggleLeadSelection(rows[i].id, v ?? false),
-                statusBadge: _statusBadge(rows[i].status),
-                checkboxBuilder: _buildFigmaCheckbox,
-              ),
-            ],
-          ],
-        );
       },
     );
   }
