@@ -247,11 +247,11 @@ class _VisitsTabViewState extends State<VisitsTabView> {
                                   height: 2,
                                   width: switch (state.selectedBucket) {
                                     VisitStatusBucket.upcoming =>
-                                      isCompact ? 72.0 : 86.0,
+                                      isCompact ? 58.0 : 66.0,
                                     VisitStatusBucket.completed =>
-                                      isCompact ? 78.0 : 94.0,
+                                      isCompact ? 64.0 : 72.0,
                                     VisitStatusBucket.cancelled =>
-                                      isCompact ? 74.0 : 88.0,
+                                      isCompact ? 58.0 : 66.0,
                                   },
                                   decoration: BoxDecoration(
                                     color: const Color(0xFFE64A19),
@@ -3585,55 +3585,18 @@ class _VisitTabItem extends StatelessWidget {
           alignment: alignment,
           child: FittedBox(
             fit: BoxFit.scaleDown,
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                AnimatedDefaultTextStyle(
-                  duration: const Duration(milliseconds: 200),
-                  style: GoogleFonts.inter(
-                    fontSize: 12,
-                    fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
-                    letterSpacing: 0.6,
-                    height: 17 / 12,
-                    color: isSelected
-                        ? const Color(0xFF0F172A)
-                        : const Color(0xFF94A3B8),
-                  ),
-                  child: Text(title, maxLines: 1),
-                ),
-                const Gap(5),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 6,
-                    vertical: 1.5,
-                  ),
-                  decoration: BoxDecoration(
-                    color: isSelected
-                        ? const Color(0xFFFFF1EB)
-                        : const Color(0xFFF1F5F9),
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(
-                      color: isSelected
-                          ? const Color(0xFFFFD8CC)
-                          : const Color(0xFFE2E8F0),
-                      width: 0.8,
-                    ),
-                  ),
-                  child: Text(
-                    '$count',
-                    style: GoogleFonts.inter(
-                      fontSize: 10,
-                      fontWeight: isSelected
-                          ? FontWeight.w700
-                          : FontWeight.w600,
-                      color: isSelected
-                          ? const Color(0xFFD45107)
-                          : const Color(0xFF64748B),
-                      height: 1.2,
-                    ),
-                  ),
-                ),
-              ],
+            child: AnimatedDefaultTextStyle(
+              duration: const Duration(milliseconds: 200),
+              style: GoogleFonts.inter(
+                fontSize: 12,
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+                letterSpacing: 0.6,
+                height: 17 / 12,
+                color: isSelected
+                    ? const Color(0xFF0F172A)
+                    : const Color(0xFF94A3B8),
+              ),
+              child: Text(title, maxLines: 1),
             ),
           ),
         ),
