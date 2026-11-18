@@ -1146,8 +1146,7 @@ class _CampaignsViewState extends State<CampaignsView> {
             // Split Top Leads Bar (Figma Node: 1357:403 & 1357:404)
             LayoutBuilder(
               builder: (context, barC) {
-                final isDesktopFull = barC.maxWidth >= 1060;
-                final isMobileBar = barC.maxWidth < 680;
+                final isMobileBar = barC.maxWidth < 600;
 
                 final splitTopLabel = Padding(
                   padding: const EdgeInsets.only(left: 8),
@@ -1252,13 +1251,16 @@ class _CampaignsViewState extends State<CampaignsView> {
                   );
                 }).toList();
 
-                final perExecText = Text(
-                  '$_perExecCount each',
-                  style: GoogleFonts.inter(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    color: const Color(0xFF64748B),
-                    height: 20 / 14,
+                final perExecText = Padding(
+                  padding: const EdgeInsets.only(left: 12),
+                  child: Text(
+                    '$_perExecCount each',
+                    style: GoogleFonts.inter(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: const Color(0xFF64748B),
+                      height: 20 / 14,
+                    ),
                   ),
                 );
 
@@ -1332,7 +1334,7 @@ class _CampaignsViewState extends State<CampaignsView> {
                   ],
                 );
 
-                // Mobile Layout (< 680px)
+                // Mobile Layout (< 600px)
                 if (isMobileBar) {
                   return Container(
                     width: double.infinity,
@@ -1393,99 +1395,50 @@ class _CampaignsViewState extends State<CampaignsView> {
                   );
                 }
 
-                // Desktop Full Width Layout (matches Figma 1357:403 & 1357:404 exactly)
-                if (isDesktopFull) {
-                  return Container(
-                    width: double.infinity,
-                    height: 74,
-                    padding: const EdgeInsets.all(16),
-                    decoration: containerDecoration,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        // Figma: 1357:404 (Container)
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            splitTopLabel,
-                            const Gap(16),
-                            splitInputField,
-                            const Gap(16),
-                            leadsEvenlyAcrossLabel,
-                            const Gap(16),
-                            // Figma: 1357:412 (Executive pills)
-                            Row(
-                              mainAxisSize: MainAxisSize.min,
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                for (int i = 0; i < execPillsList.length; i++) ...[
-                                  execPillsList[i],
-                                  if (i < execPillsList.length - 1)
-                                    const Gap(8),
-                                ],
-                              ],
-                            ),
-                          ],
-                        ),
-                        // Figma: 1357:419 (Right Container)
-                        Padding(
-                          padding: const EdgeInsets.only(right: 8),
-                          child: Row(
+                // Desktop / Tablet Bar Layout (Figma Node: 1357:403 & 1357:404)
+                // Calculated target width ensures no RenderFlex overflow on laptops & tablets
+                final minBarWidth = 720.0 + (execPillsList.length * 105.0);
+                final targetBarWidth = minBarWidth < 1180.0 ? 1180.0 : minBarWidth;
+                final needsScaling = barC.maxWidth < targetBarWidth;
+
+                final desktopBarRow = SizedBox(
+                  width: needsScaling ? targetBarWidth : double.infinity,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      // Left group: Split Top + Input + Leads Evenly Across + Pills
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          splitTopLabel,
+                          const Gap(16),
+                          splitInputField,
+                          const Gap(16),
+                          leadsEvenlyAcrossLabel,
+                          const Gap(16),
+                          // Executive pills
+                          Row(
                             mainAxisSize: MainAxisSize.min,
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
-                              perExecText,
-                              const Gap(24),
-                              assignBtn,
+                              for (int i = 0; i < execPillsList.length; i++) ...[
+                                execPillsList[i],
+                                if (i < execPillsList.length - 1)
+                                  const Gap(8),
+                              ],
                             ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                }
-
-                // Tablet / Intermediate Layout (Figma styles preserved with responsive wrap)
-                return Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(16),
-                  decoration: containerDecoration,
-                  child: Wrap(
-                    spacing: 16,
-                    runSpacing: 12,
-                    crossAxisAlignment: WrapCrossAlignment.center,
-                    alignment: WrapAlignment.spaceBetween,
-                    children: [
-                      // Left group (1357:404)
-                      Wrap(
-                        spacing: 16,
-                        runSpacing: 10,
-                        crossAxisAlignment: WrapCrossAlignment.center,
-                        children: [
-                          Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              splitTopLabel,
-                              const Gap(16),
-                              splitInputField,
-                              const Gap(16),
-                              leadsEvenlyAcrossLabel,
-                            ],
-                          ),
-                          Wrap(
-                            spacing: 8,
-                            runSpacing: 8,
-                            children: execPillsList,
                           ),
                         ],
                       ),
-                      // Right group (1357:419)
+                      const Gap(24),
+                      // Right group: "20 each" + Assign Button
                       Padding(
-                        padding: const EdgeInsets.only(right: 8),
+                        padding: const EdgeInsets.only(left: 16, right: 8),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             perExecText,
                             const Gap(24),
@@ -1495,6 +1448,20 @@ class _CampaignsViewState extends State<CampaignsView> {
                       ),
                     ],
                   ),
+                );
+
+                return Container(
+                  width: double.infinity,
+                  height: 74,
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  decoration: containerDecoration,
+                  child: needsScaling
+                      ? FittedBox(
+                          fit: BoxFit.scaleDown,
+                          alignment: Alignment.centerLeft,
+                          child: desktopBarRow,
+                        )
+                      : desktopBarRow,
                 );
               },
             ),
