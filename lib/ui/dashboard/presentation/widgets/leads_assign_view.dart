@@ -3491,7 +3491,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                         ),
                       ),
                       Expanded(
-                          flex: 7, child: Text('COLLEGE - BRANCH', style: h)),
+                          flex: 7, child: Text('COLLEGE / OTHERS', style: h)),
                       Expanded(
                         flex: 5,
                         child: Align(
@@ -3690,7 +3690,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                         ],
                       ),
                     ),
-                    Expanded(flex: 7, child: Text('COLLEGE - BRANCH', style: h)),
+                    Expanded(flex: 7, child: Text('COLLEGE / OTHERS', style: h)),
                     Expanded(
                       flex: 5,
                       child: Align(
