@@ -413,7 +413,7 @@ class _FollowUpsViewState extends State<FollowUpsView> {
     List<_FollowUpRow> followUps,
     List<String> executives,
   ) {
-    final isCompact = maxWidth < 880;
+    final isMobile = maxWidth < 550;
 
     final reassignButton = Container(
       alignment: Alignment.center,
@@ -459,7 +459,7 @@ class _FollowUpsViewState extends State<FollowUpsView> {
       ),
     );
 
-    if (isCompact) {
+    if (isMobile) {
       return Container(
         width: double.infinity,
         padding: const EdgeInsets.all(16),
@@ -526,18 +526,16 @@ class _FollowUpsViewState extends State<FollowUpsView> {
       );
     }
 
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFF3B3FB1), width: 2),
-      ),
+    const targetBarWidth = 980.0;
+    final needsScaling = maxWidth < targetBarWidth;
+
+    final barRow = SizedBox(
+      width: needsScaling ? targetBarWidth : double.infinity,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Row(
+            mainAxisSize: MainAxisSize.min,
             children: [
               const Icon(
                 CupertinoIcons.shuffle,
@@ -578,9 +576,27 @@ class _FollowUpsViewState extends State<FollowUpsView> {
               ),
             ],
           ),
+          const Gap(16),
           reassignButton,
         ],
       ),
+    );
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFF3B3FB1), width: 2),
+      ),
+      child: needsScaling
+          ? FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: barRow,
+            )
+          : barRow,
     );
   }
 
@@ -625,7 +641,7 @@ class _FollowUpsViewState extends State<FollowUpsView> {
       onChanged: (v) => setState(() => _selectedExecFilter = v),
     );
 
-    if (maxWidth < 680) {
+    if (maxWidth < 550) {
       return Wrap(
         spacing: 12,
         runSpacing: 12,
@@ -635,10 +651,24 @@ class _FollowUpsViewState extends State<FollowUpsView> {
       );
     }
 
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [filterTabs, execDropdown],
+    const targetFilterWidth = 640.0;
+    final needsScaling = maxWidth < targetFilterWidth;
+
+    final filterRow = SizedBox(
+      width: needsScaling ? targetFilterWidth : double.infinity,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [filterTabs, execDropdown],
+      ),
     );
+
+    return needsScaling
+        ? FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: filterRow,
+          )
+        : filterRow;
   }
 
   Widget _buildFilterPill({
@@ -842,7 +872,7 @@ class _FollowUpsViewState extends State<FollowUpsView> {
     List<String> executives,
   ) {
     final isOverdue = item.isOverdue;
-    final isCompact = maxWidth < 600;
+    final isMobile = maxWidth < 550;
 
     // Left Icon Container (48x48, rounded 12)
     final iconWidget = Container(
@@ -1067,6 +1097,23 @@ class _FollowUpsViewState extends State<FollowUpsView> {
       children: [assignedPill, reassignBtn, markDoneBtn],
     );
 
+    const targetCardWidth = 980.0;
+    final needsScaling = maxWidth < targetCardWidth;
+
+    final desktopCardContent = SizedBox(
+      width: needsScaling ? targetCardWidth : double.infinity,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          iconWidget,
+          const Gap(16),
+          Expanded(child: detailsWidget),
+          const Gap(16),
+          actionsRow,
+        ],
+      ),
+    );
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(24),
@@ -1085,7 +1132,7 @@ class _FollowUpsViewState extends State<FollowUpsView> {
           ),
         ],
       ),
-      child: isCompact
+      child: isMobile
           ? Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -1101,16 +1148,13 @@ class _FollowUpsViewState extends State<FollowUpsView> {
                 actionsRow,
               ],
             )
-          : Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                iconWidget,
-                const Gap(16),
-                Expanded(child: detailsWidget),
-                const Gap(16),
-                actionsRow,
-              ],
-            ),
+          : (needsScaling
+              ? FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: desktopCardContent,
+                )
+              : desktopCardContent),
     );
   }
 }
