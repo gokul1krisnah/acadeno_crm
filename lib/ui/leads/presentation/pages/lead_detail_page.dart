@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:gap/gap.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/injection/injection.dart';
@@ -486,10 +487,14 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
             actions: [
               IconButton(
                 tooltip: 'Edit Details',
-                icon: const Icon(
-                  Icons.edit_outlined,
-                  color: Color(0xFF475569),
-                  size: 20,
+                icon: SvgPicture.asset(
+                  'assets/svgs/list_edit.svg',
+                  width: 20,
+                  height: 20,
+                  colorFilter: const ColorFilter.mode(
+                    Color(0xFF475569),
+                    BlendMode.srcIn,
+                  ),
                 ),
                 onPressed: () => _openEditLeadDialog(
                   currentName: effectiveName,
@@ -506,15 +511,7 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
                   size: 20,
                 ),
                 onSelected: (val) async {
-                  if (val == 'edit') {
-                    _openEditLeadDialog(
-                      currentName: effectiveName,
-                      currentEmail:
-                          effectiveEmail == 'Not provided' ? '' : effectiveEmail,
-                      currentCollege: effectiveCollegeInfo,
-                      currentCourse: liveCourse,
-                    );
-                  } else if (val == 'opt_out') {
+                  if (val == 'opt_out') {
                     await LeadsRds().markLeadOptedOut(lead.id, optedOut: true);
                     if (!context.mounted) return;
                     ScaffoldMessenger.of(context).showSnackBar(
@@ -530,27 +527,6 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
                 },
                 itemBuilder: (ctx) => const [
                   PopupMenuItem<String>(
-                    value: 'edit',
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.edit_outlined,
-                          size: 18,
-                          color: Color(0xFF0F172A),
-                        ),
-                        Gap(10),
-                        Text(
-                          'Edit Details',
-                          style: TextStyle(
-                            fontSize: 13.5,
-                            fontWeight: FontWeight.w600,
-                            color: Color(0xFF0F172A),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  PopupMenuItem<String>(
                     value: 'opt_out',
                     child: Row(
                       children: [
@@ -564,7 +540,7 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
                           'Do Not Contact (DPDP Opt-out)',
                           style: TextStyle(
                             fontSize: 13.5,
-                            fontWeight: FontWeight.w600,
+                            fontWeight: FontWeight.w500,
                             color: Color(0xFFDC2626),
                           ),
                         ),
@@ -644,87 +620,20 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
                                     Row(
                                       children: [
                                         Expanded(
-                                          child: InkWell(
-                                            onTap: () => _openEditLeadDialog(
-                                              currentName: effectiveName,
-                                              currentEmail:
-                                                  effectiveEmail ==
-                                                          'Not provided'
-                                                      ? ''
-                                                      : effectiveEmail,
-                                              currentCollege:
-                                                  effectiveCollegeInfo,
-                                              currentCourse: liveCourse,
+                                          child: Text(
+                                            isPlaceholderName
+                                                ? 'No Name'
+                                                : effectiveName,
+                                            style: TextStyle(
+                                              fontSize: 17.5,
+                                              fontWeight: FontWeight.w600,
+                                              color: isPlaceholderName
+                                                  ? const Color(0xFFD97706)
+                                                  : const Color(0xFF0F172A),
+                                              letterSpacing: -0.2,
                                             ),
-                                            borderRadius:
-                                                BorderRadius.circular(6),
-                                            child: Padding(
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                vertical: 2,
-                                              ),
-                                              child: Row(
-                                                mainAxisSize:
-                                                    MainAxisSize.min,
-                                                children: [
-                                                  Flexible(
-                                                    child: Text(
-                                                      isPlaceholderName
-                                                          ? 'No Name (Add name)'
-                                                          : effectiveName,
-                                                      style: TextStyle(
-                                                        fontSize: 17.5,
-                                                        fontWeight:
-                                                            FontWeight.w600,
-                                                        color:
-                                                            isPlaceholderName
-                                                                ? const Color(
-                                                                    0xFFD97706,
-                                                                  )
-                                                                : const Color(
-                                                                    0xFF0F172A,
-                                                                  ),
-                                                        letterSpacing: -0.2,
-                                                      ),
-                                                      maxLines: 1,
-                                                      overflow:
-                                                          TextOverflow.ellipsis,
-                                                    ),
-                                                  ),
-                                                  const Gap(6),
-                                                  Container(
-                                                    padding:
-                                                        const EdgeInsets.all(4),
-                                                    decoration: BoxDecoration(
-                                                      color:
-                                                          isPlaceholderName
-                                                              ? const Color(
-                                                                  0xFFFEF3C7,
-                                                                )
-                                                              : const Color(
-                                                                  0xFFF1F5F9,
-                                                                ),
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                        6,
-                                                      ),
-                                                    ),
-                                                    child: Icon(
-                                                      Icons.edit_outlined,
-                                                      size: 13,
-                                                      color:
-                                                          isPlaceholderName
-                                                              ? const Color(
-                                                                  0xFFD97706,
-                                                                )
-                                                              : const Color(
-                                                                  0xFF64748B,
-                                                                ),
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
                                           ),
                                         ),
                                         const Gap(8),
@@ -1155,50 +1064,14 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
                         children: [
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              const Text(
+                            children: const [
+                              Text(
                                 'DETAILS',
                                 style: TextStyle(
                                   fontSize: 11,
                                   fontWeight: FontWeight.w600,
                                   color: Color(0xFF64748B),
                                   letterSpacing: 0.6,
-                                ),
-                              ),
-                              InkWell(
-                                onTap: () => _openEditLeadDialog(
-                                  currentName: effectiveName,
-                                  currentEmail: effectiveEmail == 'Not provided'
-                                      ? ''
-                                      : effectiveEmail,
-                                  currentCollege: effectiveCollegeInfo,
-                                  currentCourse: liveCourse,
-                                ),
-                                borderRadius: BorderRadius.circular(6),
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 6,
-                                    vertical: 2,
-                                  ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: const [
-                                      Icon(
-                                        Icons.edit_outlined,
-                                        size: 13,
-                                        color: Color(0xFFEF8144),
-                                      ),
-                                      Gap(4),
-                                      Text(
-                                        'Edit',
-                                        style: TextStyle(
-                                          fontSize: 11.5,
-                                          fontWeight: FontWeight.w600,
-                                          color: Color(0xFFEF8144),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
                                 ),
                               ),
                             ],
