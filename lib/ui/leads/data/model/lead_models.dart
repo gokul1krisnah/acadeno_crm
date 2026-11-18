@@ -828,8 +828,9 @@ class LeadRecord {
         (data['course'] ?? data['workshop'] ?? data['program'] ?? '')
             .toString()
             .trim();
-    final rawBatch =
-        (data['batch'] ?? data['batchName'] ?? '').toString().trim();
+    final rawBatch = (data['batch'] ?? data['batchName'] ?? '')
+        .toString()
+        .trim();
     final rawFee = (data['fee'] ?? data['courseFee'] ?? data['amount'] ?? '')
         .toString()
         .trim();
@@ -886,14 +887,17 @@ class LeadRecord {
       followUpTime: rawFollowUp,
       notes: (data['notes'] ?? '').toString(),
       studentNotes: (data['studentNotes'] ?? data['notes'] ?? '').toString(),
-      managerNotes: (data['managerNotes'] ?? data['leadManagerNotes'] ?? '').toString(),
+      managerNotes: (data['managerNotes'] ?? data['leadManagerNotes'] ?? '')
+          .toString(),
       isDone: data['isDone'] == true,
       isLocked: data['isLocked'] == true,
       lockedByUid: data['lockedByUid']?.toString(),
       lockedByName: data['lockedByName']?.toString(),
       lockedAt: data['lockedAt'] is Timestamp
           ? (data['lockedAt'] as Timestamp).toDate()
-          : (data['lockedAt'] is DateTime ? data['lockedAt'] as DateTime : null),
+          : (data['lockedAt'] is DateTime
+                ? data['lockedAt'] as DateTime
+                : null),
       lockedMessage: data['lockedMessage']?.toString(),
       noAnswerCount: (data['noAnswerCount'] as num?)?.toInt() ?? 0,
       optedOut: data['optedOut'] == true || status.toLowerCase() == 'opted out',
