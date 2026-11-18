@@ -3492,10 +3492,50 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                       ),
                       Expanded(
                           flex: 7, child: Text('COLLEGE - BRANCH', style: h)),
-                      Expanded(flex: 5, child: Text('SOURCE', style: h)),
-                      Expanded(flex: 4, child: Text('STATUS', style: h)),
-                      Expanded(flex: 5, child: Text('LAST CONTACT', style: h)),
-                      Expanded(flex: 5, child: Text('ASSIGNED TO', style: h)),
+                      Expanded(
+                        flex: 5,
+                        child: Align(
+                          alignment: Alignment.center,
+                          child: Text(
+                            'SOURCE',
+                            style: h,
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        flex: 4,
+                        child: Align(
+                          alignment: Alignment.center,
+                          child: Text(
+                            'STATUS',
+                            style: h,
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        flex: 5,
+                        child: Align(
+                          alignment: Alignment.center,
+                          child: Text(
+                            'LAST CONTACT',
+                            style: h,
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        flex: 5,
+                        child: Align(
+                          alignment: Alignment.center,
+                          child: Text(
+                            'ASSIGNED TO',
+                            style: h,
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -3651,10 +3691,50 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                       ),
                     ),
                     Expanded(flex: 7, child: Text('COLLEGE - BRANCH', style: h)),
-                    Expanded(flex: 5, child: Text('SOURCE', style: h)),
-                    Expanded(flex: 4, child: Text('STATUS', style: h)),
-                    Expanded(flex: 5, child: Text('LAST CONTACT', style: h)),
-                    Expanded(flex: 5, child: Text('ASSIGNED TO', style: h)),
+                    Expanded(
+                      flex: 5,
+                      child: Align(
+                        alignment: Alignment.center,
+                        child: Text(
+                          'SOURCE',
+                          style: h,
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      flex: 4,
+                      child: Align(
+                        alignment: Alignment.center,
+                        child: Text(
+                          'STATUS',
+                          style: h,
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      flex: 5,
+                      child: Align(
+                        alignment: Alignment.center,
+                        child: Text(
+                          'LAST CONTACT',
+                          style: h,
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      flex: 5,
+                      child: Align(
+                        alignment: Alignment.center,
+                        child: Text(
+                          'ASSIGNED TO',
+                          style: h,
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -3944,11 +4024,12 @@ class _DesktopLeadTableRowState extends State<_DesktopLeadTableRow> {
                       Expanded(
                         flex: 5,
                         child: Align(
-                          alignment: Alignment.centerLeft,
+                          alignment: Alignment.center,
                           child: Text(
                             r.source,
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
+                            textAlign: TextAlign.center,
                             style: GoogleFonts.poppins(
                               fontSize: 14,
                               fontWeight: FontWeight.w500,
@@ -3962,16 +4043,17 @@ class _DesktopLeadTableRowState extends State<_DesktopLeadTableRow> {
                       Expanded(
                         flex: 4,
                         child: Align(
-                          alignment: Alignment.centerLeft,
+                          alignment: Alignment.center,
                           child: widget.statusBadge,
                         ),
                       ),
                       Expanded(
                         flex: 5,
                         child: Align(
-                          alignment: Alignment.centerLeft,
+                          alignment: Alignment.center,
                           child: Text(
                             r.lastContact,
+                            textAlign: TextAlign.center,
                             style: GoogleFonts.poppins(
                               fontSize: 14,
                               fontWeight: FontWeight.w500,
@@ -3984,11 +4066,12 @@ class _DesktopLeadTableRowState extends State<_DesktopLeadTableRow> {
                       Expanded(
                         flex: 5,
                         child: Align(
-                          alignment: Alignment.centerLeft,
+                          alignment: Alignment.center,
                           child: Text(
                             r.assignedToName.isEmpty ? '—' : r.assignedToName,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
+                            textAlign: TextAlign.center,
                             style: GoogleFonts.poppins(
                               fontSize: 14,
                               fontWeight: FontWeight.w500,
