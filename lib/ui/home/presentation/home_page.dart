@@ -223,8 +223,8 @@ class _ExecutiveBottomNavBar extends StatelessWidget {
 
   static const _items = [
     _BottomNavItem(
-      label: 'Today',
-      svgAsset: AppSvgs.navToday,
+      label: 'Home',
+      svgAsset: AppSvgs.home,
       iconWidth: 16,
       iconHeight: 16,
     ),
@@ -259,19 +259,16 @@ class _ExecutiveBottomNavBar extends StatelessWidget {
     final bottomInset = MediaQuery.paddingOf(context).bottom;
     final isShortScreen = MediaQuery.sizeOf(context).height < 500;
     final topPad = isShortScreen ? 6.0 : 10.0;
-    final bottomPad = bottomInset > 0 ? bottomInset + 4.0 : (isShortScreen ? 6.0 : 10.0);
+    final bottomPad = bottomInset > 0
+        ? bottomInset + 4.0
+        : (isShortScreen ? 6.0 : 10.0);
     final screenW = MediaQuery.sizeOf(context).width;
     final pillWidth = screenW < 360 ? 44.0 : 50.0;
 
     return Container(
       decoration: const BoxDecoration(
         color: Colors.white,
-        border: Border(
-          top: BorderSide(
-            color: Color(0xFFF3F4F6),
-            width: 1,
-          ),
-        ),
+        border: Border(top: BorderSide(color: Color(0xFFF3F4F6), width: 1)),
       ),
       padding: EdgeInsets.fromLTRB(4, topPad, 4, bottomPad),
       child: Row(

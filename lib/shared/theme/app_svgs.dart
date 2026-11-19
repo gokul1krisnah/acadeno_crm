@@ -9,7 +9,13 @@ abstract class AppSvgs {
   static const String logout = 'assets/svgs/logout.svg';
   static const String addWalkInLead = 'assets/svgs/addwalkinlead.svg';
   static const String myRecord = 'assets/svgs/myrecord.svg';
+  static const String home = 'assets/svgs/home.svg';
   static const String tick = 'assets/svgs/tick.svg';
+  static const String followup = 'assets/svgs/followup.svg';
+  static const String reminder = 'assets/svgs/reminder.svg';
+  static const String flame = 'assets/svgs/flame.svg';
+  static const String clock = 'assets/svgs/alert_clock.svg';
+  static const String all = 'assets/svgs/threelines.svg';
   static const String clipboardCheck = 'assets/svgs/clipboard_check.svg';
   static const String refresh = 'assets/svgs/refresh.svg';
   static const String arrowLeft = 'assets/svgs/arrow_left.svg';

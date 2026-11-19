@@ -1,12 +1,14 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:gap/gap.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../shared/extensions/build_context_extension.dart';
 import '../../../shared/snackbar_alerts/snack_alert.dart';
+import '../../../shared/theme/app_svgs.dart';
 import '../../alerts/presentation/widgets/alerts_header_button.dart';
 import '../../leads/data/model/lead_models.dart';
 import '../../leads/presentation/widgets/lead_call_sheets.dart';
@@ -263,12 +265,15 @@ class _CallLogsBodyState extends State<_CallLogsBody> with WidgetsBindingObserve
                           children: [
                             _buildFilterChip(
                               label: 'All (${state.allLogs.length})',
+                              svgAsset: AppSvgs.all,
                               isSelected: state.activeCategoryFilter == 'all',
                               onTap: () => cubit.setFilter('all'),
                             ),
                             const Gap(8),
                             _buildFilterChip(
                               label: 'Hot leads',
+                              svgAsset: AppSvgs.flame,
+                              iconColor: const Color(0xFFEF4444),
                               isSelected:
                                   state.activeCategoryFilter == 'hot_lead',
                               onTap: () => cubit.setFilter('hot_lead'),
@@ -276,6 +281,8 @@ class _CallLogsBodyState extends State<_CallLogsBody> with WidgetsBindingObserve
                             const Gap(8),
                             _buildFilterChip(
                               label: 'Follow-ups',
+                              svgAsset: AppSvgs.followup,
+                              iconColor: const Color(0xFF0D9488),
                               isSelected:
                                   state.activeCategoryFilter == 'follow_up',
                               onTap: () => cubit.setFilter('follow_up'),
@@ -283,6 +290,8 @@ class _CallLogsBodyState extends State<_CallLogsBody> with WidgetsBindingObserve
                             const Gap(8),
                             _buildFilterChip(
                               label: 'Reminders',
+                              svgAsset: AppSvgs.reminder,
+                              iconColor: const Color(0xFFB45309),
                               isSelected:
                                   state.activeCategoryFilter == 'reminder',
                               onTap: () => cubit.setFilter('reminder'),
@@ -369,6 +378,8 @@ class _CallLogsBodyState extends State<_CallLogsBody> with WidgetsBindingObserve
 
   Widget _buildFilterChip({
     required String label,
+    String? svgAsset,
+    Color? iconColor,
     required bool isSelected,
     required VoidCallback onTap,
   }) {
@@ -377,7 +388,7 @@ class _CallLogsBodyState extends State<_CallLogsBody> with WidgetsBindingObserve
       borderRadius: BorderRadius.circular(24),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 150),
-        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 9),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
         decoration: BoxDecoration(
           color: isSelected ? const Color(0xFF4338CA) : Colors.white,
           borderRadius: BorderRadius.circular(24),
@@ -388,13 +399,32 @@ class _CallLogsBodyState extends State<_CallLogsBody> with WidgetsBindingObserve
             width: 1,
           ),
         ),
-        child: Text(
-          label,
-          style: GoogleFonts.inter(
-            fontSize: 13,
-            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-            color: isSelected ? Colors.white : const Color(0xFF1E293B),
-          ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (svgAsset != null) ...[
+              SvgPicture.asset(
+                svgAsset,
+                width: 14,
+                height: 14,
+                colorFilter: ColorFilter.mode(
+                  isSelected
+                      ? Colors.white
+                      : (iconColor ?? const Color(0xFF64748B)),
+                  BlendMode.srcIn,
+                ),
+              ),
+              const Gap(6),
+            ],
+            Text(
+              label,
+              style: GoogleFonts.inter(
+                fontSize: 13,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                color: isSelected ? Colors.white : const Color(0xFF1E293B),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -730,6 +760,7 @@ class _CallLogCard extends StatelessWidget {
               Expanded(
                 child: _CategoryPill(
                   label: 'Hot lead',
+                  svgAsset: AppSvgs.flame,
                   inactiveBg: const Color(0xFFFCE7EC),
                   inactiveTextColor: const Color(0xFFBE123C),
                   activeBg: const Color(0xFFE11D48),
@@ -741,6 +772,7 @@ class _CallLogCard extends StatelessWidget {
               Expanded(
                 child: _CategoryPill(
                   label: 'Follow up',
+                  svgAsset: AppSvgs.followup,
                   inactiveBg: const Color(0xFFE6F7F0),
                   inactiveTextColor: const Color(0xFF047857),
                   activeBg: const Color(0xFF059669),
@@ -752,6 +784,7 @@ class _CallLogCard extends StatelessWidget {
               Expanded(
                 child: _CategoryPill(
                   label: 'Reminder',
+                  svgAsset: AppSvgs.reminder,
                   inactiveBg: const Color(0xFFFEF3DC),
                   inactiveTextColor: const Color(0xFFB45309),
                   activeBg: const Color(0xFFD97706),
@@ -824,6 +857,7 @@ class _CallLogCard extends StatelessWidget {
 
 class _CategoryPill extends StatelessWidget {
   final String label;
+  final String? svgAsset;
   final Color inactiveBg;
   final Color inactiveTextColor;
   final Color activeBg;
@@ -832,6 +866,7 @@ class _CategoryPill extends StatelessWidget {
 
   const _CategoryPill({
     required this.label,
+    this.svgAsset,
     required this.inactiveBg,
     required this.inactiveTextColor,
     required this.activeBg,
@@ -841,6 +876,7 @@ class _CategoryPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final fgColor = isSelected ? Colors.white : inactiveTextColor;
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -867,17 +903,31 @@ class _CategoryPill extends StatelessWidget {
           alignment: Alignment.center,
           child: FittedBox(
             fit: BoxFit.scaleDown,
-            child: Text(
-              label,
-              maxLines: 1,
-              softWrap: false,
-              textAlign: TextAlign.center,
-              style: GoogleFonts.inter(
-                fontSize: 12.5,
-                fontWeight: FontWeight.w600,
-                color: isSelected ? Colors.white : inactiveTextColor,
-                height: 16 / 12.5,
-              ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (svgAsset != null) ...[
+                  SvgPicture.asset(
+                    svgAsset!,
+                    width: 12,
+                    height: 12,
+                    colorFilter: ColorFilter.mode(fgColor, BlendMode.srcIn),
+                  ),
+                  const Gap(4),
+                ],
+                Text(
+                  label,
+                  maxLines: 1,
+                  softWrap: false,
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.inter(
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w600,
+                    color: fgColor,
+                    height: 16 / 12.5,
+                  ),
+                ),
+              ],
             ),
           ),
         ),
