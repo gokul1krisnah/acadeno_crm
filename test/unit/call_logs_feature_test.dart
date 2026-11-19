@@ -149,5 +149,44 @@ void main() {
       expect(remState.filteredLeads.length, equals(1));
       expect(remState.filteredLeads.first.id, equals('lead_3'));
     });
+
+    test('TC-CL-005: Explicit category is mutually exclusive and does not leak across tabs', () {
+      final legacyReminder = ExecutiveLeadItem(
+        id: 'lead_rem',
+        name: 'L01',
+        initials: 'L',
+        maskedPhone: '+91 98765 •••10',
+        fullPhone: '+91 9876543210',
+        collegeInfo: 'Call Log Inquiry',
+        statusTag: 'Follow-up',
+        statusColor: const Color(0xFFB45309),
+        statusBg: const Color(0xFFFFFBEB),
+        campaignTag: 'Call Log',
+        category: 'reminder',
+      );
+
+      final otherOutcome = ExecutiveLeadItem(
+        id: 'lead_other',
+        name: 'L02',
+        initials: 'L',
+        maskedPhone: '+91 98765 •••11',
+        fullPhone: '+91 9876543211',
+        collegeInfo: 'Call Log Inquiry',
+        statusTag: 'Callback',
+        statusColor: const Color(0xFF344054),
+        statusBg: const Color(0xFFF2F4F7),
+        campaignTag: 'Call Log',
+        category: 'other',
+      );
+
+      final state = LeadsState(
+        leads: [legacyReminder, otherOutcome],
+        callRecords: const [],
+      );
+
+      expect(state.reminderLeads.map((e) => e.id), equals(['lead_rem']));
+      expect(state.followUpLeads, isEmpty);
+      expect(state.hotLeads, isEmpty);
+    });
   });
 }

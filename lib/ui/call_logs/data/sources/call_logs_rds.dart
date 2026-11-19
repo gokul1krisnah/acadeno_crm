@@ -182,11 +182,12 @@ class CallLogsRds {
     if (norm.isEmpty) return;
 
     final String statusForCategory;
-    if (category == CallCategory.followUp ||
-        category == CallCategory.reminder) {
+    if (category == CallCategory.followUp) {
       statusForCategory = 'Follow-up';
+    } else if (category == CallCategory.reminder) {
+      statusForCategory = 'Reminder';
     } else if (category == CallCategory.hotLead) {
-      statusForCategory = 'Interested';
+      statusForCategory = 'Hot Lead';
     } else {
       statusForCategory = 'Assigned';
     }
@@ -337,8 +338,7 @@ class CallLogsRds {
     // 2. Synchronize with `leads`, `call_logs`, and follow-ups
     if (norm.isEmpty) return;
 
-    final mappedStatus =
-        trimmedOutcome == 'Callback' ? 'Follow-up' : trimmedOutcome;
+    final mappedStatus = trimmedOutcome;
 
     final phoneDoc = await _leadPhones.doc(norm).get();
     String? targetLeadId;

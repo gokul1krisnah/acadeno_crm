@@ -1359,6 +1359,8 @@ class ExecutiveLeadItem {
 
   static (Color, Color) statusColorsFor(String status) {
     return switch (status) {
+      'Hot Lead' => (const Color(0xFFDC2626), const Color(0xFFFEF2F2)),
+      'Reminder' => (const Color(0xFFB45309), const Color(0xFFFFFBEB)),
       'Interested' ||
       'Converted' => (const Color(0xFF15803D), const Color(0xFFE6F4EA)),
       'Follow-up' ||

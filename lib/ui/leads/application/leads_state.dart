@@ -38,26 +38,25 @@ class LeadsState {
   List<ExecutiveLeadItem> get doneLeads =>
       leads.where((l) => l.isDone).toList();
 
-  /// Real categorized leads
-  List<ExecutiveLeadItem> get hotLeads => leads
-      .where((l) =>
-          l.category == 'hot_lead' ||
-          l.statusTag.toLowerCase() == 'hot lead' ||
-          l.statusTag.toLowerCase() == 'hot')
-      .toList();
+  /// Real categorized leads (mutually exclusive when an explicit category is set)
+  List<ExecutiveLeadItem> get hotLeads => leads.where((l) {
+    final cat = l.category.trim().toLowerCase();
+    if (cat.isNotEmpty) return cat == 'hot_lead';
+    final st = l.statusTag.toLowerCase();
+    return st == 'hot lead' || st == 'hot';
+  }).toList();
 
-  List<ExecutiveLeadItem> get followUpLeads => leads
-      .where((l) =>
-          l.category == 'follow_up' ||
-          l.statusTag.toLowerCase().contains('follow'))
-      .toList();
+  List<ExecutiveLeadItem> get followUpLeads => leads.where((l) {
+    final cat = l.category.trim().toLowerCase();
+    if (cat.isNotEmpty) return cat == 'follow_up';
+    return l.statusTag.toLowerCase().contains('follow');
+  }).toList();
 
-  List<ExecutiveLeadItem> get reminderLeads => leads
-      .where((l) =>
-          l.category == 'reminder' ||
-          l.category == 'reminders' ||
-          l.statusTag.toLowerCase().contains('reminder'))
-      .toList();
+  List<ExecutiveLeadItem> get reminderLeads => leads.where((l) {
+    final cat = l.category.trim().toLowerCase();
+    if (cat.isNotEmpty) return cat == 'reminder' || cat == 'reminders';
+    return l.statusTag.toLowerCase().contains('reminder');
+  }).toList();
 
   List<ExecutiveLeadItem> get filteredLeads {
     switch (categoryFilter) {

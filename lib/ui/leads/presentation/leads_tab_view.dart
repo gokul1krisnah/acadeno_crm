@@ -2093,7 +2093,6 @@ class _TodayLeadCard extends StatelessWidget {
                             ],
                           ),
                         ),
-                        const Gap(6),
                       ] else if (item.category == 'follow_up') ...[
                         Container(
                           padding: const EdgeInsets.symmetric(
@@ -2135,8 +2134,8 @@ class _TodayLeadCard extends StatelessWidget {
                             ],
                           ),
                         ),
-                        const Gap(6),
-                      ] else if (item.category == 'reminder') ...[
+                      ] else if (item.category == 'reminder' ||
+                          item.category == 'reminders') ...[
                         Container(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 9,
@@ -2177,34 +2176,34 @@ class _TodayLeadCard extends StatelessWidget {
                             ],
                           ),
                         ),
-                        const Gap(6),
-                      ],
-                      Flexible(
-                        flex: 0,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFEEF2FF),
-                            borderRadius: BorderRadius.circular(9999),
-                          ),
-                          child: Text(
-                            item.statusTag.toUpperCase(),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              fontFamily: 'Inter',
-                              fontSize: 10,
-                              fontWeight: FontWeight.w700,
-                              height: 15 / 10,
-                              letterSpacing: 0.06,
-                              color: Color(0xFF6366F1),
+                      ] else ...[
+                        Flexible(
+                          flex: 0,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFEEF2FF),
+                              borderRadius: BorderRadius.circular(9999),
+                            ),
+                            child: Text(
+                              item.statusTag.toUpperCase(),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontFamily: 'Inter',
+                                fontSize: 10,
+                                fontWeight: FontWeight.w700,
+                                height: 15 / 10,
+                                letterSpacing: 0.06,
+                                color: Color(0xFF6366F1),
+                              ),
                             ),
                           ),
                         ),
-                      ),
+                      ],
                       const Gap(8),
                       Flexible(
                         child: Padding(
