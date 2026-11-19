@@ -49,31 +49,30 @@ Future<void> main() async {
 
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
-  // Initialize Firebase App Check immediately after Firebase.initializeApp and
-  // before any other Firebase service (Auth, Firestore, Messaging, or Firebase AI Logic).
-  // Uses debug providers in local debug builds and Play Integrity / App Attest in release builds.
-  try {
-    const recaptchaSiteKey = String.fromEnvironment('RECAPTCHA_V3_SITE_KEY');
-    await FirebaseAppCheck.instance.activate(
-      providerAndroid: kDebugMode
-          ? const AndroidDebugProvider()
-          : const AndroidPlayIntegrityProvider(),
-      providerApple: kDebugMode
-          ? const AppleDebugProvider()
-          : const AppleAppAttestWithDeviceCheckFallbackProvider(),
-      providerWeb: recaptchaSiteKey.isNotEmpty
-          ? (kDebugMode
-                ? WebDebugProvider()
-                : ReCaptchaV3Provider(recaptchaSiteKey))
-          : (kDebugMode ? WebDebugProvider() : null),
-    );
-  } catch (e) {
-    // Do not log raw token values; only log generic activation status in debug builds.
-    if (kDebugMode) {
-      debugPrint(
-        '[AppCheck] Activation notice (${e.runtimeType}). Register your local debug token in Firebase Console → App Check → Apps → Manage debug tokens.',
+  // Only activate Firebase App Check if explicitly opted in via
+  // --dart-define=USE_FIREBASE_APP_CHECK=true after registering App Check
+  // in Firebase Console. When App Check is not registered in Firebase Console
+  // ("Status: Register"), touching FirebaseAppCheck.instance registers the
+  // service on Firebase.app() and causes firebase_ai to call getToken() and
+  // fail with "[firebase_app_check/unknown] Too many attempts".
+  const useAppCheck = bool.fromEnvironment('USE_FIREBASE_APP_CHECK');
+  if (useAppCheck) {
+    try {
+      const recaptchaSiteKey = String.fromEnvironment('RECAPTCHA_V3_SITE_KEY');
+      await FirebaseAppCheck.instance.activate(
+        providerAndroid: kDebugMode
+            ? const AndroidDebugProvider()
+            : const AndroidPlayIntegrityProvider(),
+        providerApple: kDebugMode
+            ? const AppleDebugProvider()
+            : const AppleAppAttestWithDeviceCheckFallbackProvider(),
+        providerWeb: recaptchaSiteKey.isNotEmpty
+            ? (kDebugMode
+                  ? WebDebugProvider()
+                  : ReCaptchaV3Provider(recaptchaSiteKey))
+            : (kDebugMode ? WebDebugProvider() : null),
       );
-    }
+    } catch (_) {}
   }
 
   // Ensure Firebase Auth persists credentials across browser/tab restarts on Web.
