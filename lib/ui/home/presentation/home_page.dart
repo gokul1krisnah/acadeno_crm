@@ -191,7 +191,14 @@ class _HomeScaffoldViewState extends State<_HomeScaffoldView> {
                               // Bottom Navigation Bar (Exact match to Figma 1824:1808)
                               _ExecutiveBottomNavBar(
                                 currentIndex: state.bottomNavIndex,
-                                onSelect: cubit.selectBottomNav,
+                                onSelect: (index) {
+                                  cubit.selectBottomNav(index);
+                                  if (index == 0) {
+                                    context.read<LeadsCubit>().refresh();
+                                  } else if (index == 1) {
+                                    context.read<FollowUpsCubit>().refresh();
+                                  }
+                                },
                               ),
                             ],
                           ),

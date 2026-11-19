@@ -4,9 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
-import '../../../follow_ups/data/sources/follow_ups_rds.dart';
 import '../../../leads/data/model/lead_models.dart';
-import '../../../leads/data/sources/leads_rds.dart';
 import '../model/call_log_model.dart';
 
 class CallLogsRds {
@@ -159,27 +157,11 @@ class CallLogsRds {
     }
     final name = currentUserDisplayName;
     final norm = item.normalizedPhone;
-    final baseKey = norm.isNotEmpty ? norm : item.id;
+    final rawDigits = item.number.replaceAll(RegExp(r'\D'), '');
+    final baseKey = norm.isNotEmpty
+        ? norm
+        : (rawDigits.isNotEmpty ? rawDigits : item.id);
     final docId = '${uid}_$baseKey';
-
-    // 1. Persist categorization in `call_categorizations/{uid}_{phoneOrCallId}`
-    await _callCategorizations.doc(docId).set({
-      'callId': item.id,
-      'phone': item.number,
-      'phoneNormalized': norm,
-      if (item.hasContactName) 'contactName': item.contactName,
-      'category': category.dbValue,
-      'durationSeconds': item.durationSeconds,
-      'callTimestamp': Timestamp.fromDate(item.timestamp),
-      'categorizedAt': FieldValue.serverTimestamp(),
-      'updatedAt': FieldValue.serverTimestamp(),
-      'executiveUid': uid,
-      'executiveName': name,
-      'notes': notes ?? '',
-    }, SetOptions(merge: true));
-
-    // 2. Synchronize with Leads & Follow-ups collection
-    if (norm.isEmpty) return;
 
     final String statusForCategory;
     if (category == CallCategory.followUp) {
@@ -192,99 +174,54 @@ class CallLogsRds {
       statusForCategory = 'Assigned';
     }
 
-    try {
-      final phoneDoc = await _leadPhones.doc(norm).get();
-      String? targetLeadId;
+    final now = DateTime.now();
+    final String? defaultFollowUpSlot =
+        (category == CallCategory.followUp ||
+            category == CallCategory.reminder)
+        ? LeadDateHelper.formatFollowUp(
+            now
+                .add(const Duration(days: 1))
+                .copyWith(
+                  hour: category == CallCategory.reminder ? 11 : 10,
+                  minute: 30,
+                ),
+          )
+        : null;
 
-      if (phoneDoc.exists && phoneDoc.data() != null) {
-        final pData = phoneDoc.data()!;
-        targetLeadId = (pData['leadId'] ?? '').toString().trim();
-      }
+    final timelineEntry =
+        '${LeadDateHelper.timelineStamp(now)} · Categorized as ${category.label} from Call Log by $name';
 
-      if (targetLeadId != null && targetLeadId.isNotEmpty) {
-        // Update existing lead status and category (if permitted by row-level rules)
-        final now = DateTime.now();
-        final updates = <String, dynamic>{
-          'category': category.dbValue,
-          'status': statusForCategory,
-          'lastContact': 'Today · Categorized via Call Log',
-          'lastContactAt': FieldValue.serverTimestamp(),
-          'updatedAt': FieldValue.serverTimestamp(),
-          'timeline': FieldValue.arrayUnion([
-            '${LeadDateHelper.timelineStamp(now)} · Categorized as ${category.label} from Call Log by $name',
-          ]),
-        };
-
-        try {
-          final existingSnap = await _leads.doc(targetLeadId).get();
-          final existingAssignee =
-              (existingSnap.data()?['assignedToUid'] ?? '').toString().trim();
-          if (existingAssignee.isEmpty) {
-            updates['assignedToUid'] = uid;
-            updates['assignedToName'] = name;
-            updates['assignedTo'] = name;
-            updates['assignedDateKey'] = LeadDateHelper.todayDateKey(now);
-            updates['assignedDateLabel'] = LeadDateHelper.dateLabel(now);
-          }
-          await _leads.doc(targetLeadId).update(updates);
-        } on FirebaseException catch (fe) {
-          // If the existing lead is owned by another executive, keep the
-          // executive's own call_categorizations record without failing.
-          debugPrint(
-            'CallLogsRds.saveCategorization existing lead update skipped (${fe.code}): ${fe.message}',
-          );
-          targetLeadId = null;
-        }
-      } else {
-        // Create new lead record assigned to this executive
-        try {
-          final created = await LeadsRds().createLead(
-            name: item.hasContactName ? item.contactName : '',
-            phone: item.number,
-            collegeBranch: 'Call Log Inquiry',
-            source: 'Call Log',
-            status: statusForCategory,
-            notes:
-                'Auto-categorized as ${category.label} from device call log.',
-            assignToSelfAsWalkIn: true,
-          );
-          targetLeadId = created.id;
-
-          await _leads.doc(created.id).update({
-            'category': category.dbValue,
-            'status': statusForCategory,
-            'updatedAt': FieldValue.serverTimestamp(),
-          });
-        } on DuplicateLeadException catch (dup) {
-          targetLeadId = dup.existingLeadId;
-          try {
-            await _leads.doc(dup.existingLeadId).update({
-              'category': category.dbValue,
-              'status': statusForCategory,
-              'updatedAt': FieldValue.serverTimestamp(),
-            });
-          } catch (_) {}
-        }
-      }
-
-      // If Follow-up or Reminder, also schedule follow-up on the lead
-      if (targetLeadId != null &&
-          targetLeadId.isNotEmpty &&
-          (category == CallCategory.followUp ||
-              category == CallCategory.reminder)) {
-        final scheduledTime = DateTime.now()
-            .add(const Duration(days: 1))
-            .copyWith(
-              hour: category == CallCategory.reminder ? 11 : 10,
-              minute: 30,
-            );
-        final timeLabel = LeadDateHelper.formatFollowUp(scheduledTime);
-
-        await FollowUpsRds().snoozeFollowUp(targetLeadId, timeLabel);
-      }
-    } catch (e) {
-      debugPrint('CallLogsRds.saveCategorization lead sync error: $e');
-    }
+    // 1. Persist categorization in `call_categorizations/{uid}_{phoneOrCallId}`
+    // and synchronize with `leads` in parallel so Home screen tabs update immediately.
+    await Future.wait([
+      _callCategorizations.doc(docId).set({
+        'callId': item.id,
+        'phone': item.number,
+        'phoneNormalized': baseKey,
+        if (item.hasContactName) 'contactName': item.contactName,
+        'category': category.dbValue,
+        'durationSeconds': item.durationSeconds,
+        'callTimestamp': Timestamp.fromDate(item.timestamp),
+        'categorizedAt': FieldValue.serverTimestamp(),
+        'updatedAt': FieldValue.serverTimestamp(),
+        'executiveUid': uid,
+        'executiveName': name,
+        'notes': notes ?? '',
+      }, SetOptions(merge: true)),
+      _upsertExecutiveLeadFromCallLog(
+        item: item,
+        uid: uid,
+        executiveName: name,
+        category: category,
+        status: statusForCategory,
+        lastContactLabel: 'Today · Categorized via Call Log',
+        timelineEntry: timelineEntry,
+        notes: (notes != null && notes.trim().isNotEmpty)
+            ? notes.trim()
+            : 'Auto-categorized as ${category.label} from device call log.',
+        followUpTime: defaultFollowUpSlot,
+      ),
+    ]);
   }
 
   /// Saves a detailed outcome from the "Other" popup to `call_categorizations`,
@@ -309,15 +246,36 @@ class CallLogsRds {
     final trimmedNotes = notes.trim();
     final name = currentUserDisplayName;
     final norm = item.normalizedPhone;
-    final baseKey = norm.isNotEmpty ? norm : item.id;
+    final rawDigits = item.number.replaceAll(RegExp(r'\D'), '');
+    final baseKey = norm.isNotEmpty
+        ? norm
+        : (rawDigits.isNotEmpty ? rawDigits : item.id);
     final docId = '${uid}_$baseKey';
     final now = DateTime.now();
+
+    final String? effectiveFollowUpSlot =
+        (trimmedOutcome == 'Callback' || trimmedOutcome == 'Follow-up')
+        ? ((followUpTime != null && followUpTime.trim().isNotEmpty)
+              ? followUpTime.trim()
+              : LeadDateHelper.formatFollowUp(
+                  now.add(const Duration(days: 1)).copyWith(
+                    hour: 10,
+                    minute: 30,
+                  ),
+                ))
+        : ((followUpTime != null && followUpTime.trim().isNotEmpty)
+              ? followUpTime.trim()
+              : null);
+
+    final timelineEntry =
+        '${LeadDateHelper.timelineStamp(now)} · $trimmedOutcome logged from Call Log by $name'
+        '${trimmedNotes.isNotEmpty ? " ($trimmedNotes)" : ""}';
 
     // 1. Persist categorization + outcome in `call_categorizations/{uid}_{key}`
     await _callCategorizations.doc(docId).set({
       'callId': item.id,
       'phone': item.number,
-      'phoneNormalized': norm,
+      'phoneNormalized': baseKey,
       if (item.hasContactName) 'contactName': item.contactName,
       'category': CallCategory.other.dbValue,
       'outcome': trimmedOutcome,
@@ -331,100 +289,25 @@ class CallLogsRds {
       if (courseEnrolled != null && courseEnrolled.trim().isNotEmpty)
         'course': courseEnrolled.trim(),
       if (batch != null && batch.trim().isNotEmpty) 'batch': batch.trim(),
-      if (followUpTime != null && followUpTime.trim().isNotEmpty)
-        'followUpTime': followUpTime.trim(),
+      'followUpTime': ?effectiveFollowUpSlot,
     }, SetOptions(merge: true));
 
-    // 2. Synchronize with `leads`, `call_logs`, and follow-ups
-    if (norm.isEmpty) return;
-
-    final mappedStatus = trimmedOutcome;
-
-    final phoneDoc = await _leadPhones.doc(norm).get();
-    String? targetLeadId;
-    if (phoneDoc.exists && phoneDoc.data() != null) {
-      targetLeadId = (phoneDoc.data()!['leadId'] ?? '').toString().trim();
-    }
-
-    final timelineEntry =
-        '${LeadDateHelper.timelineStamp(now)} · $trimmedOutcome logged from Call Log by $name'
-        '${trimmedNotes.isNotEmpty ? " ($trimmedNotes)" : ""}';
-
-    if (targetLeadId != null && targetLeadId.isNotEmpty) {
-      final updates = <String, dynamic>{
-        'category': CallCategory.other.dbValue,
-        'status': mappedStatus,
-        'lastContact': 'Today · $trimmedOutcome',
-        'lastContactAt': FieldValue.serverTimestamp(),
-        'lastCalledAt': FieldValue.serverTimestamp(),
-        'updatedAt': FieldValue.serverTimestamp(),
-        if (trimmedNotes.isNotEmpty) 'notes': trimmedNotes,
-        if (trimmedNotes.isNotEmpty) 'studentNotes': trimmedNotes,
-        if (courseEnrolled != null && courseEnrolled.trim().isNotEmpty)
-          'course': courseEnrolled.trim(),
-        if (batch != null && batch.trim().isNotEmpty) 'batch': batch.trim(),
-        'timeline': FieldValue.arrayUnion([timelineEntry]),
-      };
-
-      try {
-        final existingSnap = await _leads.doc(targetLeadId).get();
-        final existingAssignee =
-            (existingSnap.data()?['assignedToUid'] ?? '').toString().trim();
-        if (existingAssignee.isEmpty) {
-          updates['assignedToUid'] = uid;
-          updates['assignedToName'] = name;
-          updates['assignedTo'] = name;
-          updates['assignedDateKey'] = LeadDateHelper.todayDateKey(now);
-          updates['assignedDateLabel'] = LeadDateHelper.dateLabel(now);
-        }
-        await _leads.doc(targetLeadId).update(updates);
-      } on FirebaseException catch (fe) {
-        debugPrint(
-          'CallLogsRds.saveOtherOutcome existing lead update skipped (${fe.code}): ${fe.message}',
-        );
-        targetLeadId = null;
-      }
-    } else {
-      try {
-        final created = await LeadsRds().createLead(
-          name: item.hasContactName ? item.contactName : '',
-          phone: item.number,
-          collegeBranch: 'Call Log Inquiry',
-          source: 'Call Log',
-          status: mappedStatus,
-          notes: trimmedNotes.isNotEmpty
-              ? trimmedNotes
-              : 'Logged as $trimmedOutcome from device call log.',
-          assignToSelfAsWalkIn: true,
-        );
-        targetLeadId = created.id;
-
-        await _leads.doc(created.id).update({
-          'category': CallCategory.other.dbValue,
-          'status': mappedStatus,
-          if (courseEnrolled != null && courseEnrolled.trim().isNotEmpty)
-            'course': courseEnrolled.trim(),
-          if (batch != null && batch.trim().isNotEmpty) 'batch': batch.trim(),
-          'lastContact': 'Today · $trimmedOutcome',
-          'lastContactAt': FieldValue.serverTimestamp(),
-          'lastCalledAt': FieldValue.serverTimestamp(),
-          'updatedAt': FieldValue.serverTimestamp(),
-          'timeline': FieldValue.arrayUnion([timelineEntry]),
-        });
-      } on DuplicateLeadException catch (dup) {
-        targetLeadId = dup.existingLeadId;
-        try {
-          await _leads.doc(dup.existingLeadId).update({
-            'category': CallCategory.other.dbValue,
-            'status': mappedStatus,
-            if (trimmedNotes.isNotEmpty) 'notes': trimmedNotes,
-            if (trimmedNotes.isNotEmpty) 'studentNotes': trimmedNotes,
-            'updatedAt': FieldValue.serverTimestamp(),
-            'timeline': FieldValue.arrayUnion([timelineEntry]),
-          });
-        } catch (_) {}
-      }
-    }
+    // 2. Synchronize with `leads` without rejecting non-6-9 or non-10-digit call log numbers
+    final targetLeadId = await _upsertExecutiveLeadFromCallLog(
+      item: item,
+      uid: uid,
+      executiveName: name,
+      category: CallCategory.other,
+      status: trimmedOutcome,
+      lastContactLabel: 'Today · $trimmedOutcome',
+      timelineEntry: timelineEntry,
+      notes: trimmedNotes.isNotEmpty
+          ? trimmedNotes
+          : 'Logged as $trimmedOutcome from device call log.',
+      courseEnrolled: courseEnrolled,
+      batch: batch,
+      followUpTime: effectiveFollowUpSlot,
+    );
 
     // 3. Append permanent call log record for executive & admin visibility
     try {
@@ -434,7 +317,7 @@ class CallLogsRds {
             ? item.contactName
             : item.formattedNumber,
         'phone': item.number,
-        'phoneNormalized': norm,
+        'phoneNormalized': baseKey,
         'collegeInfo': 'Call Log Inquiry',
         'campaign': 'Call Log',
         'outcome': trimmedOutcome,
@@ -448,20 +331,213 @@ class CallLogsRds {
     } catch (e) {
       debugPrint('CallLogsRds.saveOtherOutcome call_logs append notice: $e');
     }
+  }
 
-    // 4. Schedule follow-up if outcome is Callback or Follow-up
-    if (targetLeadId != null &&
-        targetLeadId.isNotEmpty &&
-        (trimmedOutcome == 'Callback' || trimmedOutcome == 'Follow-up')) {
-      final slot = (followUpTime != null && followUpTime.trim().isNotEmpty)
-          ? followUpTime.trim()
-          : LeadDateHelper.formatFollowUp(
-              DateTime.now().add(const Duration(days: 1)).copyWith(
-                hour: 10,
-                minute: 30,
-              ),
-            );
-      await FollowUpsRds().snoozeFollowUp(targetLeadId, slot);
+  /// Finds, claims, or creates a `leads` document assigned to [uid] for [item]
+  /// in a single pass with [category] and [status] already populated so the
+  /// Home screen tabs (Hot Leads, Follow-ups, Reminders, All Calls) update
+  /// immediately without failing on non-6-9 phone numbers or stale `lead_phones`.
+  Future<String?> _upsertExecutiveLeadFromCallLog({
+    required DeviceCallLogItem item,
+    required String uid,
+    required String executiveName,
+    required CallCategory category,
+    required String status,
+    required String lastContactLabel,
+    required String timelineEntry,
+    String? notes,
+    String? courseEnrolled,
+    String? batch,
+    String? followUpTime,
+  }) async {
+    final norm = item.normalizedPhone;
+    final rawDigits = item.number.replaceAll(RegExp(r'\D'), '');
+    final phoneKey = norm.isNotEmpty
+        ? norm
+        : (rawDigits.isNotEmpty ? rawDigits : item.id);
+    if (phoneKey.isEmpty) return null;
+
+    final displayPhone = norm.isNotEmpty
+        ? LeadPhoneValidator.formatDisplayPhone(norm)
+        : (item.number.trim().isNotEmpty ? item.number.trim() : phoneKey);
+
+    final now = DateTime.now();
+    final todayKey = LeadDateHelper.todayDateKey(now);
+    final todayLabel = LeadDateHelper.dateLabel(now, now: now);
+
+    final statusLower = status.trim().toLowerCase();
+    final bool isTerminalDone =
+        category == CallCategory.other &&
+        (statusLower == 'converted' ||
+            statusLower == 'not interested' ||
+            statusLower == 'wrong number');
+    final bool isDone = isTerminalDone;
+
+    final commonUpdates = <String, dynamic>{
+      'category': category.dbValue,
+      'status': status,
+      'assignedToUid': uid,
+      'assignedToName': executiveName,
+      'assignedTo': executiveName,
+      'assignedDateKey': todayKey,
+      'assignedDateLabel': todayLabel,
+      'lastContact': lastContactLabel,
+      'lastContactAt': FieldValue.serverTimestamp(),
+      'lastCalledAt': FieldValue.serverTimestamp(),
+      'updatedAt': FieldValue.serverTimestamp(),
+      'isDone': isDone,
+      'followUpDone': isDone,
+      'isOverdue': false,
+      if (followUpTime != null && followUpTime.trim().isNotEmpty)
+        'followUpTime': followUpTime.trim(),
+      if (notes != null && notes.trim().isNotEmpty) 'notes': notes.trim(),
+      if (notes != null && notes.trim().isNotEmpty)
+        'studentNotes': notes.trim(),
+      if (courseEnrolled != null && courseEnrolled.trim().isNotEmpty)
+        'course': courseEnrolled.trim(),
+      if (batch != null && batch.trim().isNotEmpty) 'batch': batch.trim(),
+      'timeline': FieldValue.arrayUnion([timelineEntry]),
+    };
+
+    // 1. Check executive's own assigned leads first (always permitted by firestore.rules).
+    try {
+      final ownQuery = await _leads
+          .where('assignedToUid', isEqualTo: uid)
+          .where('phoneNormalized', isEqualTo: phoneKey)
+          .limit(1)
+          .get();
+
+      if (ownQuery.docs.isNotEmpty) {
+        final doc = ownQuery.docs.first;
+        final existingName = (doc.data()['name'] ?? '').toString().trim();
+        final isAutoCode = RegExp(
+          r'^L0*\d+$',
+          caseSensitive: false,
+        ).hasMatch(existingName);
+        await doc.reference.update({
+          ...commonUpdates,
+          if (item.hasContactName && (existingName.isEmpty || isAutoCode))
+            'name': item.contactName.trim(),
+        });
+        return doc.id;
+      }
+    } catch (e) {
+      debugPrint('CallLogsRds own lead lookup notice: $e');
+    }
+
+    // 2. Check global phone index in case an unassigned lead exists that this executive can claim.
+    try {
+      final phoneDoc = await _leadPhones.doc(phoneKey).get();
+      if (phoneDoc.exists && phoneDoc.data() != null) {
+        final indexedLeadId = (phoneDoc.data()!['leadId'] ?? '')
+            .toString()
+            .trim();
+        if (indexedLeadId.isNotEmpty) {
+          try {
+            await _leads.doc(indexedLeadId).update({
+              ...commonUpdates,
+              if (item.hasContactName) 'name': item.contactName.trim(),
+            });
+            await _leadPhones.doc(phoneKey).set({
+              'ownerUid': uid,
+              'ownerName': executiveName,
+              'status': status,
+              'updatedAt': FieldValue.serverTimestamp(),
+            }, SetOptions(merge: true));
+            return indexedLeadId;
+          } catch (_) {
+            // The indexed lead was either deleted or belongs to another executive;
+            // fall through to deterministic executive lead creation below.
+          }
+        }
+      }
+    } catch (_) {}
+
+    // 3. Create or update the executive's deterministic lead document for this call log.
+    final detLeadId = 'call_${uid}_$phoneKey';
+    final detLeadRef = _leads.doc(detLeadId);
+
+    String resolvedName = item.hasContactName ? item.contactName.trim() : '';
+    if (resolvedName.isEmpty) {
+      try {
+        final existingDet = await detLeadRef.get();
+        if (existingDet.exists && existingDet.data() != null) {
+          resolvedName = (existingDet.data()!['name'] ?? '').toString().trim();
+        }
+      } catch (_) {}
+    }
+    if (resolvedName.isEmpty) {
+      resolvedName = await _allocateNextLeadSequenceName(uid);
+    }
+
+    await detLeadRef.set({
+      'id': detLeadId,
+      'name': resolvedName,
+      'phone': displayPhone,
+      'phoneNormalized': phoneKey,
+      'collegeBranch': 'Call Log Inquiry',
+      'college': 'Call Log Inquiry',
+      'branch': '',
+      'year': '',
+      'source': 'Call Log',
+      'optedOut': false,
+      'isLocked': false,
+      'createdByUid': uid,
+      'createdByName': executiveName,
+      'createdAt': FieldValue.serverTimestamp(),
+      'assignedByUid': uid,
+      'assignedByName': executiveName,
+      'assignedAt': FieldValue.serverTimestamp(),
+      ...commonUpdates,
+    }, SetOptions(merge: true));
+
+    try {
+      await _leadPhones.doc(phoneKey).set({
+        'phoneNormalized': phoneKey,
+        'leadId': detLeadId,
+        'leadName': resolvedName,
+        'ownerUid': uid,
+        'ownerName': executiveName,
+        'status': status,
+        'createdByUid': uid,
+        'updatedAt': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+    } catch (_) {}
+
+    return detLeadId;
+  }
+
+  /// Atomically allocates the next sequential `L01`, `L02`, `L03` lead code.
+  Future<String> _allocateNextLeadSequenceName(String uid) async {
+    int seedMax = 0;
+    try {
+      final ownDocs = await _leads.where('assignedToUid', isEqualTo: uid).get();
+      for (final d in ownDocs.docs) {
+        final n = (d.data()['name'] ?? '').toString().trim();
+        final m = RegExp(r'^L0*(\d+)$', caseSensitive: false).firstMatch(n);
+        if (m != null) {
+          final parsed = int.tryParse(m.group(1) ?? '0') ?? 0;
+          if (parsed > seedMax) seedMax = parsed;
+        }
+      }
+    } catch (_) {}
+
+    final counterRef = _firestore.collection('counters').doc('lead_sequence');
+    try {
+      return await _firestore.runTransaction<String>((tx) async {
+        final snap = await tx.get(counterRef);
+        final stored = (snap.data()?['lastNumber'] as num?)?.toInt() ?? 0;
+        final base = stored > seedMax ? stored : seedMax;
+        final next = base + 1;
+        tx.set(counterRef, {
+          'lastNumber': next,
+          'updatedAt': FieldValue.serverTimestamp(),
+        }, SetOptions(merge: true));
+        return 'L${next.toString().padLeft(2, '0')}';
+      });
+    } catch (_) {
+      final next = seedMax + 1;
+      return 'L${next.toString().padLeft(2, '0')}';
     }
   }
 

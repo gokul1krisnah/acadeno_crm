@@ -15,6 +15,12 @@ abstract final class LeadPhoneValidator {
     if (digits.length == 12 && digits.startsWith('91')) {
       return digits.substring(2);
     }
+    if (digits.length == 13 && digits.startsWith('091')) {
+      return digits.substring(3);
+    }
+    if (digits.length == 14 && digits.startsWith('0091')) {
+      return digits.substring(4);
+    }
     return '';
   }
 
