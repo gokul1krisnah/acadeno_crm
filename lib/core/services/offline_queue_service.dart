@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io' show InternetAddress;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -7,6 +8,7 @@ import 'package:flutter/foundation.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 import '../../ui/leads/data/model/lead_models.dart';
+import 'firestore_connectivity_helper.dart';
 
 /// Representation of an offline call outcome queued on the device.
 class QueuedCallOutcome {
@@ -163,6 +165,128 @@ class OfflineQueueService {
   Timer? _justSyncedTimer;
   Timer? _offlineDebounceTimer;
   Timer? _reconnectBannerTimer;
+  Timer? _recoveryProbeTimer;
+  int _recoveryAttempt = 0;
+
+  static const String _firestoreHost = 'firestore.googleapis.com';
+  static const List<Duration> _recoveryBackoffSteps = [
+    Duration(seconds: 5),
+    Duration(seconds: 15),
+    Duration(seconds: 30),
+    Duration(seconds: 60),
+  ];
+  static const int _maxItemRetries = 5;
+
+  /// Optional test hook to override the DNS/host reachability check.
+  @visibleForTesting
+  Future<bool> Function()? reachabilityProbeOverride;
+
+  /// Exposes the current automatic recovery attempt count for diagnostics/tests.
+  @visibleForTesting
+  int get recoveryAttemptCount => _recoveryAttempt;
+
+  /// Verifies actual DNS resolution for `firestore.googleapis.com` on mobile/desktop.
+  /// Returns `false` when DNS fails (`UnknownHostException`) even if the OS
+  /// reports an active Wi-Fi or cellular interface.
+  Future<bool> verifyFirestoreReachability() async {
+    if (reachabilityProbeOverride != null) {
+      try {
+        return await reachabilityProbeOverride!();
+      } catch (_) {
+        return false;
+      }
+    }
+    if (kIsWeb) return true;
+    try {
+      final addresses = await InternetAddress.lookup(
+        _firestoreHost,
+      ).timeout(const Duration(seconds: 3));
+      return addresses.isNotEmpty &&
+          addresses.any((addr) => addr.rawAddress.isNotEmpty);
+    } catch (_) {
+      return false;
+    }
+  }
+
+  /// Reports a Firestore connectivity or DNS failure (e.g., `unavailable` /
+  /// `UnknownHostException`). Marks the app offline so [OfflineStatusBar]
+  /// displays immediately, and schedules a bounded exponential-backoff probe
+  /// instead of an infinite retry loop.
+  void reportConnectivityFailure() {
+    _offlineDebounceTimer?.cancel();
+    if (isOnlineNotifier.value) {
+      isOnlineNotifier.value = false;
+      debugPrint(
+        '📴 Firestore unreachable (DNS/network failure). Entering offline mode.',
+      );
+    }
+    _scheduleBoundedRecoveryProbe();
+  }
+
+  void _scheduleBoundedRecoveryProbe() {
+    if (_recoveryProbeTimer?.isActive ?? false) return;
+    if (_recoveryAttempt >= _recoveryBackoffSteps.length) {
+      debugPrint(
+        '⏹️ Automatic reconnect probes paused after ${_recoveryBackoffSteps.length} attempts. Waiting for network change, app resume, or manual Retry.',
+      );
+      return;
+    }
+    final delay = _recoveryBackoffSteps[_recoveryAttempt];
+    _recoveryAttempt++;
+    _recoveryProbeTimer = Timer(delay, () async {
+      if (isOnlineNotifier.value) {
+        _recoveryAttempt = 0;
+        return;
+      }
+      final reachable = await verifyFirestoreReachability();
+      if (reachable) {
+        _recoveryAttempt = 0;
+        await _handleNetworkRestored();
+      } else {
+        _scheduleBoundedRecoveryProbe();
+      }
+    });
+  }
+
+  /// Re-checks OS network interface + DNS reachability and drains any pending
+  /// offline writes if Firestore is reachable. Safe to call on app resume.
+  Future<bool> checkConnectivityAndSync() async {
+    _recoveryProbeTimer?.cancel();
+    _recoveryAttempt = 0;
+
+    bool hasInterface = true;
+    try {
+      final results = await Connectivity().checkConnectivity();
+      hasInterface = results.any((r) => r != ConnectivityResult.none);
+    } catch (_) {
+      hasInterface = true;
+    }
+
+    if (!hasInterface) {
+      if (isOnlineNotifier.value) {
+        isOnlineNotifier.value = false;
+      }
+      return false;
+    }
+
+    final reachable = await verifyFirestoreReachability();
+    if (!reachable) {
+      if (isOnlineNotifier.value) {
+        isOnlineNotifier.value = false;
+        debugPrint(
+          '📴 Network interface active, but $_firestoreHost could not be resolved.',
+        );
+      }
+      _scheduleBoundedRecoveryProbe();
+      return false;
+    }
+
+    await _handleNetworkRestored();
+    if (pendingCountNotifier.value > 0) {
+      await syncPendingQueue();
+    }
+    return true;
+  }
 
   /// Initializes the local Hive boxes with automatic legacy migration.
   static Future<void> init() async {
@@ -224,9 +348,17 @@ class OfflineQueueService {
           },
         );
       } else {
-        // Active interface detected! Cancel offline debounce timer immediately.
+        // Active interface detected! Cancel offline debounce timer and verify DNS reachability.
         _offlineDebounceTimer?.cancel();
-        _handleNetworkRestored();
+        _recoveryProbeTimer?.cancel();
+        _recoveryAttempt = 0;
+        verifyFirestoreReachability().then((reachable) {
+          if (reachable) {
+            _handleNetworkRestored();
+          } else {
+            reportConnectivityFailure();
+          }
+        });
       }
     });
 
@@ -241,8 +373,12 @@ class OfflineQueueService {
       final results = await Connectivity().checkConnectivity();
       if (results.every((r) => r == ConnectivityResult.none)) {
         isOnlineNotifier.value = false;
-      } else {
-        isOnlineNotifier.value = true;
+        return;
+      }
+      final reachable = await verifyFirestoreReachability();
+      isOnlineNotifier.value = reachable;
+      if (!reachable) {
+        _scheduleBoundedRecoveryProbe();
       }
     } catch (_) {
       isOnlineNotifier.value = true;
@@ -251,10 +387,19 @@ class OfflineQueueService {
 
   Future<void> _handleNetworkRestored() async {
     final wasOffline = !isOnlineNotifier.value;
+    _recoveryProbeTimer?.cancel();
+    _recoveryAttempt = 0;
 
     if (wasOffline) {
       isOnlineNotifier.value = true;
       debugPrint('🌐 Internet connection restored.');
+
+      // Ensure Firestore network client resumes cleanly without blocking UI.
+      try {
+        await FirebaseFirestore.instance.enableNetwork().timeout(
+          const Duration(seconds: 2),
+        );
+      } catch (_) {}
 
       if (pendingCountNotifier.value > 0) {
         // Drain queued items
@@ -305,7 +450,10 @@ class OfflineQueueService {
   }
 
   /// Queues a call outcome locally with an idempotent client ID.
+  /// Pass [clientId] when falling back from an interrupted online attempt so
+  /// retries merge into the same `call_logs/{clientId}` document without duplicates.
   Future<void> enqueueOutcome({
+    String? clientId,
     required String leadId,
     required String leadName,
     required String outcome,
@@ -319,11 +467,12 @@ class OfflineQueueService {
     final uid = executiveUid ?? FirebaseAuth.instance.currentUser?.uid;
     final name =
         executiveName ?? FirebaseAuth.instance.currentUser?.displayName;
-    final clientId =
-        'call_${leadId}_${DateTime.now().millisecondsSinceEpoch}_${leadId.hashCode.abs()}';
+    final resolvedClientId = (clientId != null && clientId.trim().isNotEmpty)
+        ? clientId.trim()
+        : 'call_${leadId}_${DateTime.now().millisecondsSinceEpoch}_${leadId.hashCode.abs()}';
 
     final queued = QueuedCallOutcome(
-      clientId: clientId,
+      clientId: resolvedClientId,
       leadId: leadId,
       leadName: leadName,
       outcome: outcome,
@@ -336,10 +485,10 @@ class OfflineQueueService {
       executiveName: name,
     );
 
-    await _box?.put(clientId, jsonEncode(queued.toMap()));
+    await _box?.put(resolvedClientId, jsonEncode(queued.toMap()));
     _updateCounts();
     debugPrint(
-      '💾 Queued call outcome locally (client_id: $clientId). Queue count: ${pendingCountNotifier.value}',
+      '💾 Queued call outcome locally (client_id: $resolvedClientId). Queue count: ${pendingCountNotifier.value}',
     );
 
     // If online, trigger sync immediately
@@ -383,15 +532,9 @@ class OfflineQueueService {
     }
   }
 
-  /// Public trigger to manually force a sync.
+  /// Public trigger to manually force a connectivity check & sync.
   Future<void> syncNow() async {
-    try {
-      final results = await Connectivity().checkConnectivity();
-      if (results.any((r) => r != ConnectivityResult.none)) {
-        isOnlineNotifier.value = true;
-      }
-    } catch (_) {}
-    await syncPendingQueue();
+    await checkConnectivityAndSync();
   }
 
   /// Drains all items from the persistent queue and commits to Firestore.
@@ -403,6 +546,14 @@ class OfflineQueueService {
         pendingCountNotifier.value == 0) {
       return;
     }
+
+    // Verify actual DNS/host reachability before firing Firestore writes.
+    final reachable = await verifyFirestoreReachability();
+    if (!reachable) {
+      reportConnectivityFailure();
+      return;
+    }
+
     isSyncingNotifier.value = true;
 
     final initialItemsCount = pendingCountNotifier.value;
@@ -420,8 +571,17 @@ class OfflineQueueService {
         try {
           final decoded = jsonDecode(raw);
           if (decoded is! Map<String, dynamic>) continue;
-          final data = decoded;
+          final data = Map<String, dynamic>.from(decoded);
           final type = data['type'] as String? ?? 'call_outcome';
+          final retryCount = (data['retryCount'] as num?)?.toInt() ?? 0;
+
+          if (retryCount >= _maxItemRetries) {
+            debugPrint(
+              '⚠️ Dropping permanently failing offline queue record $key after $retryCount retries.',
+            );
+            await _box!.delete(key);
+            continue;
+          }
 
           bool success = false;
           if (type == 'call_outcome') {
@@ -436,9 +596,31 @@ class OfflineQueueService {
             await _box!.delete(key);
             syncedSuccessCount++;
             debugPrint('✅ Synced offline queued record: $key');
+          } else {
+            data['retryCount'] = retryCount + 1;
+            await _box!.put(key, jsonEncode(data));
           }
         } catch (e) {
+          if (FirestoreConnectivityHelper.isConnectivityError(e)) {
+            debugPrint(
+              '📴 Sync paused at $key due to DNS/network error: $e',
+            );
+            reportConnectivityFailure();
+            break;
+          }
           debugPrint('⚠️ Error processing offline queue record $key: $e');
+          try {
+            final decoded = jsonDecode(raw);
+            if (decoded is Map<String, dynamic>) {
+              final nextRetry = ((decoded['retryCount'] as num?)?.toInt() ?? 0) + 1;
+              if (nextRetry >= _maxItemRetries) {
+                await _box!.delete(key);
+              } else {
+                decoded['retryCount'] = nextRetry;
+                await _box!.put(key, jsonEncode(decoded));
+              }
+            }
+          } catch (_) {}
         }
       }
     } finally {
@@ -488,24 +670,26 @@ class OfflineQueueService {
               now: item.recordedAt,
             )
           : null;
-      await leadRef.set({
-        'status': nextStatus,
-        'lastContact': 'Today',
-        'lastContactAt': callTs,
-        'lastCalledAt': callTs,
-        'isDone': !isFollowUpPending,
-        'followUpDone': !isFollowUpPending,
-        'isOverdue': false,
-        'isLocked': false,
-        'lockedByUid': null,
-        'lockedMessage': null,
-        'followUpTime': ?resolvedFollowUp,
-        if (item.notes.trim().isNotEmpty) 'notes': item.notes.trim(),
-        'timeline': FieldValue.arrayUnion([
-          '${LeadDateHelper.timelineStamp(item.recordedAt)} · ${item.outcome} logged by ${item.executiveName ?? "executive"}${item.notes.trim().isNotEmpty ? " (${item.notes.trim()})" : ""}',
-        ]),
-        'updatedAt': FieldValue.serverTimestamp(),
-      }, SetOptions(merge: true));
+      await leadRef
+          .set({
+            'status': nextStatus,
+            'lastContact': 'Today',
+            'lastContactAt': callTs,
+            'lastCalledAt': callTs,
+            'isDone': !isFollowUpPending,
+            'followUpDone': !isFollowUpPending,
+            'isOverdue': false,
+            'isLocked': false,
+            'lockedByUid': null,
+            'lockedMessage': null,
+            'followUpTime': ?resolvedFollowUp,
+            if (item.notes.trim().isNotEmpty) 'notes': item.notes.trim(),
+            'timeline': FieldValue.arrayUnion([
+              '${LeadDateHelper.timelineStamp(item.recordedAt)} · ${item.outcome} logged by ${item.executiveName ?? "executive"}${item.notes.trim().isNotEmpty ? " (${item.notes.trim()})" : ""}',
+            ]),
+            'updatedAt': FieldValue.serverTimestamp(),
+          }, SetOptions(merge: true))
+          .timeout(const Duration(seconds: 8));
 
       // 3. Assignment document update (merge to both collections for complete sync)
       final assignUpdate = {
@@ -514,28 +698,39 @@ class OfflineQueueService {
         'leadStatus': nextStatus,
         'updatedAt': FieldValue.serverTimestamp(),
       };
-      await assignRef1.set(assignUpdate, SetOptions(merge: true));
-      await assignRef2.set(assignUpdate, SetOptions(merge: true));
+      await assignRef1
+          .set(assignUpdate, SetOptions(merge: true))
+          .timeout(const Duration(seconds: 8));
+      await assignRef2
+          .set(assignUpdate, SetOptions(merge: true))
+          .timeout(const Duration(seconds: 8));
 
       // 4. Call log with DETERMINISTIC document ID (clientId) -> guarantees zero duplicates!
       final logRef = firestore.collection('call_logs').doc(item.clientId);
-      await logRef.set({
-        'leadId': item.leadId,
-        'leadName': item.leadName,
-        'executiveUid': item.executiveUid,
-        'executiveName': item.executiveName ?? 'Sales Executive',
-        'outcome': item.outcome,
-        'duration': item.duration,
-        'notes': item.notes,
-        if (item.courseEnrolled != null) 'courseEnrolled': item.courseEnrolled,
-        if (item.discountAmount != null) 'discountAmount': item.discountAmount,
-        'createdAt': Timestamp.fromDate(item.recordedAt),
-        'syncedAt': FieldValue.serverTimestamp(),
-        'isOfflineSynced': true,
-      }, SetOptions(merge: true));
+      await logRef
+          .set({
+            'leadId': item.leadId,
+            'leadName': item.leadName,
+            'executiveUid': item.executiveUid,
+            'executiveName': item.executiveName ?? 'Sales Executive',
+            'outcome': item.outcome,
+            'duration': item.duration,
+            'notes': item.notes,
+            if (item.courseEnrolled != null)
+              'courseEnrolled': item.courseEnrolled,
+            if (item.discountAmount != null)
+              'discountAmount': item.discountAmount,
+            'createdAt': Timestamp.fromDate(item.recordedAt),
+            'syncedAt': FieldValue.serverTimestamp(),
+            'isOfflineSynced': true,
+          }, SetOptions(merge: true))
+          .timeout(const Duration(seconds: 8));
 
       return true;
     } catch (e) {
+      if (FirestoreConnectivityHelper.isConnectivityError(e)) {
+        rethrow;
+      }
       debugPrint('Sync call outcome failed for ${item.clientId}: $e');
       return false;
     }
@@ -547,19 +742,26 @@ class OfflineQueueService {
     QueuedVisitOutcome item,
   ) async {
     try {
-      await firestore.collection('college_visits').doc(item.visitId).set({
-        'status': 'Completed',
-        'statusLabel': 'Completed',
-        'metSummary': item.metPeople.trim(),
-        'outcomeNotes': item.metPeople.trim(),
-        'nextActionSummary': item.nextAction.trim(),
-        'leadsCollected': item.leadsCollected,
-        'interestedCount': item.interestedCount,
-        'updatedByUid': item.executiveUid,
-        'updatedAt': FieldValue.serverTimestamp(),
-      }, SetOptions(merge: true));
+      await firestore
+          .collection('college_visits')
+          .doc(item.visitId)
+          .set({
+            'status': 'Completed',
+            'statusLabel': 'Completed',
+            'metSummary': item.metPeople.trim(),
+            'outcomeNotes': item.metPeople.trim(),
+            'nextActionSummary': item.nextAction.trim(),
+            'leadsCollected': item.leadsCollected,
+            'interestedCount': item.interestedCount,
+            'updatedByUid': item.executiveUid,
+            'updatedAt': FieldValue.serverTimestamp(),
+          }, SetOptions(merge: true))
+          .timeout(const Duration(seconds: 8));
       return true;
     } catch (e) {
+      if (FirestoreConnectivityHelper.isConnectivityError(e)) {
+        rethrow;
+      }
       debugPrint('Sync visit outcome failed for ${item.visitId}: $e');
       return false;
     }
@@ -576,6 +778,7 @@ class OfflineQueueService {
     _offlineDebounceTimer?.cancel();
     _reconnectBannerTimer?.cancel();
     _justSyncedTimer?.cancel();
+    _recoveryProbeTimer?.cancel();
     _pendingCountController.close();
   }
 }

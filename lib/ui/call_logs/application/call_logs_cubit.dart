@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../core/services/firestore_connectivity_helper.dart';
 import '../data/model/call_log_model.dart';
 import '../data/repository/call_logs_repo.dart';
 import 'call_logs_state.dart';
@@ -75,7 +76,9 @@ class CallLogsCubit extends Cubit<CallLogsState> {
           ),
         );
       },
-      onError: (_) {},
+      onError: (Object error) {
+        FirestoreConnectivityHelper.reportIfConnectivityError(error);
+      },
     );
   }
 
@@ -229,6 +232,7 @@ class CallLogsCubit extends Cubit<CallLogsState> {
         );
       }
     } catch (e) {
+      FirestoreConnectivityHelper.reportIfConnectivityError(e);
       // Revert optimistic selection so UI stays consistent with Firestore
       item.category = previousCategory;
       final revertedLogs = _applyCategorizations(state.allLogs, previousMap);
@@ -237,13 +241,16 @@ class CallLogsCubit extends Cubit<CallLogsState> {
         state.activeCategoryFilter,
         state.searchQuery,
       );
+      final msg = FirestoreConnectivityHelper.isConnectivityError(e)
+          ? FirestoreConnectivityHelper.offlineMessage
+          : 'Failed to save ${category.label}. Please try again.';
       if (!isClosed) {
         emit(
           state.copyWith(
             categorizations: previousMap,
             allLogs: revertedLogs,
             displayedLogs: revertedFiltered,
-            toastMessage: 'Failed to save ${category.label}. Please try again.',
+            toastMessage: msg,
             isToastError: true,
           ),
         );
@@ -262,14 +269,19 @@ class CallLogsCubit extends Cubit<CallLogsState> {
     String? batch,
     String? followUpTime,
   }) async {
-    await _repository.saveOtherOutcome(
-      item: item,
-      outcome: outcome,
-      notes: notes,
-      courseEnrolled: courseEnrolled,
-      batch: batch,
-      followUpTime: followUpTime,
-    );
+    try {
+      await _repository.saveOtherOutcome(
+        item: item,
+        outcome: outcome,
+        notes: notes,
+        courseEnrolled: courseEnrolled,
+        batch: batch,
+        followUpTime: followUpTime,
+      );
+    } catch (e) {
+      FirestoreConnectivityHelper.reportIfConnectivityError(e);
+      rethrow;
+    }
 
     item.category = CallCategory.other;
     final updatedMap = Map<String, CallCategory>.from(state.categorizations);

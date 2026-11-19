@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
+import 'package:acadeno_crm/core/services/firestore_connectivity_helper.dart';
 import 'package:acadeno_crm/core/services/firestore_stream_cache.dart';
 import 'package:acadeno_crm/core/services/offline_queue_service.dart';
 import 'dart:convert';
@@ -1737,6 +1738,7 @@ class FirestoreLeadsBackend implements LeadsBackend {
     // 1. If offline, IMMEDIATELY enqueue to persistent Hive queue & apply local cache writes
     if (!OfflineQueueService.instance.isOnline) {
       await OfflineQueueService.instance.enqueueOutcome(
+        clientId: clientId,
         leadId: leadId,
         leadName: leadName,
         outcome: outcome,
@@ -1782,6 +1784,7 @@ class FirestoreLeadsBackend implements LeadsBackend {
       return CallOutcomeResult(
         collegeInfo: collegeInfo,
         needsDiscountApproval: needsApproval,
+        isQueuedOffline: true,
       );
     }
 
@@ -1930,8 +1933,13 @@ class FirestoreLeadsBackend implements LeadsBackend {
             'createdAt': FieldValue.serverTimestamp(),
           }, SetOptions(merge: true))
           .timeout(const Duration(milliseconds: 1500));
-    } catch (_) {
+    } catch (e) {
+      if (!FirestoreConnectivityHelper.isConnectivityError(e)) {
+        rethrow;
+      }
+      OfflineQueueService.instance.reportConnectivityFailure();
       await OfflineQueueService.instance.enqueueOutcome(
+        clientId: clientId,
         leadId: leadId,
         leadName: leadName,
         outcome: outcome,
@@ -1941,6 +1949,11 @@ class FirestoreLeadsBackend implements LeadsBackend {
         discountAmount: discountAmount,
         executiveUid: actor.uid,
         executiveName: actor.name,
+      );
+      return CallOutcomeResult(
+        collegeInfo: collegeInfo,
+        needsDiscountApproval: needsApproval,
+        isQueuedOffline: true,
       );
     }
 

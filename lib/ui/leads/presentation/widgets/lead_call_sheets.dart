@@ -1,4 +1,5 @@
 import 'package:acadeno_crm/core/injection/injection.dart';
+import 'package:acadeno_crm/core/services/firestore_connectivity_helper.dart';
 import 'package:acadeno_crm/ui/follow_ups/data/repository/follow_ups_repo.dart';
 import 'package:acadeno_crm/ui/follow_ups/data/sources/follow_ups_rds.dart';
 import 'package:acadeno_crm/ui/leads/data/repository/leads_repo.dart';
@@ -716,19 +717,23 @@ class LeadCallSheets {
                                       }
                                     } catch (e) {
                                       debugPrint('recordCallOutcome error: $e');
+                                      FirestoreConnectivityHelper
+                                          .reportIfConnectivityError(e);
                                       if (ctx.mounted) {
-                                        final rawMsg = e
-                                            .toString()
-                                            .replaceFirst('Exception: ', '')
-                                            .replaceFirst(
-                                              'Bad state: ',
-                                              '',
-                                            );
+                                        final friendly =
+                                            FirestoreConnectivityHelper
+                                                .userFriendlyMessage(
+                                                  e,
+                                                  fallback:
+                                                      'Failed to save outcome. Please try again.',
+                                                );
                                         setSheetState(() {
                                           isSaving = false;
-                                          saveError = rawMsg.isNotEmpty
-                                              ? 'Failed to save: $rawMsg'
-                                              : 'Failed to save outcome. Please try again.';
+                                          saveError =
+                                              FirestoreConnectivityHelper
+                                                  .isConnectivityError(e)
+                                              ? friendly
+                                              : 'Failed to save: $friendly';
                                         });
                                       }
                                     }
@@ -1560,12 +1565,14 @@ class LeadCallSheets {
                                       });
                                     }
                                   } catch (e) {
+                                    FirestoreConnectivityHelper
+                                        .reportIfConnectivityError(e);
                                     if (ctx.mounted) {
                                       setSheetState(() {
                                         isSaving = false;
-                                        lookupFeedback = e
-                                            .toString()
-                                            .replaceFirst('Exception: ', '');
+                                        lookupFeedback =
+                                            FirestoreConnectivityHelper
+                                                .userFriendlyMessage(e);
                                         lookupFoundDuplicate = true;
                                       });
                                     }

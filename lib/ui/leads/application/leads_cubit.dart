@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
+import '../../../core/services/firestore_connectivity_helper.dart';
 import '../../../core/services/offline_queue_service.dart';
 import '../data/model/lead_models.dart';
 import '../data/repository/leads_repo.dart';
@@ -54,6 +55,7 @@ class LeadsCubit extends Cubit<LeadsState> {
           },
           onError: (Object error) {
             if (isClosed) return;
+            FirestoreConnectivityHelper.reportIfConnectivityError(error);
             final isPerm =
                 error is LeadPermissionException ||
                 (error is FirebaseException &&
@@ -174,18 +176,9 @@ class LeadsCubit extends Cubit<LeadsState> {
       ),
     );
 
-    emit(
-      state.copyWith(
-        leads: updatedLeads,
-        callRecords: updatedRecords,
-        toastMessage: 'Saved "$outcome" for $leadName$extraMsg',
-        isToastError: false,
-      ),
-    );
-
     if (resolvedLeadId.isNotEmpty) {
       try {
-        return await _repository.recordExecutiveCallOutcome(
+        final result = await _repository.recordExecutiveCallOutcome(
           leadId: resolvedLeadId,
           leadName: leadName,
           outcome: outcome,
@@ -201,15 +194,41 @@ class LeadsCubit extends Cubit<LeadsState> {
           receiptNumber: receiptNumber,
           expectedBalanceDate: expectedBalanceDate,
         );
+        if (!isClosed) {
+          emit(
+            state.copyWith(
+              leads: updatedLeads,
+              callRecords: updatedRecords,
+              toastMessage: result.isQueuedOffline
+                  ? 'Saved "$outcome" locally — will sync when online'
+                  : 'Saved "$outcome" for $leadName$extraMsg',
+              isToastError: false,
+            ),
+          );
+        }
+        return result;
       } catch (e) {
-        emit(
-          state.copyWith(
-            toastMessage: _cleanErrorMessage(e),
-            isToastError: true,
-          ),
-        );
+        FirestoreConnectivityHelper.reportIfConnectivityError(e);
+        if (!isClosed) {
+          emit(
+            state.copyWith(
+              toastMessage: _cleanErrorMessage(e),
+              isToastError: true,
+            ),
+          );
+        }
+        rethrow;
       }
     }
+
+    emit(
+      state.copyWith(
+        leads: updatedLeads,
+        callRecords: updatedRecords,
+        toastMessage: 'Saved "$outcome" for $leadName$extraMsg',
+        isToastError: false,
+      ),
+    );
 
     return CallOutcomeResult(
       collegeInfo: collegeInfo,
@@ -358,6 +377,7 @@ class LeadsCubit extends Cubit<LeadsState> {
     try {
       return await _repository.lookupByPhone(rawPhone);
     } catch (e) {
+      FirestoreConnectivityHelper.reportIfConnectivityError(e);
       return (
         found: false,
         message: _cleanErrorMessage(e),
@@ -395,6 +415,7 @@ class LeadsCubit extends Cubit<LeadsState> {
       emit(state.copyWith(toastMessage: e.toString(), isToastError: true));
       return false;
     } catch (e) {
+      FirestoreConnectivityHelper.reportIfConnectivityError(e);
       emit(
         state.copyWith(toastMessage: _cleanErrorMessage(e), isToastError: true),
       );
@@ -403,11 +424,7 @@ class LeadsCubit extends Cubit<LeadsState> {
   }
 
   static String _cleanErrorMessage(Object error) {
-    final raw = error.toString();
-    return raw
-        .replaceFirst('Exception: ', '')
-        .replaceFirst('Invalid argument(s): ', '')
-        .replaceFirst('Bad state: ', '');
+    return FirestoreConnectivityHelper.userFriendlyMessage(error);
   }
 
   static (Color, Color) _statusBadgeColors(String status) {

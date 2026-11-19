@@ -150,6 +150,8 @@ class _AcadenoAppState extends State<AcadenoApp> with WidgetsBindingObserver {
           currentUser.getIdToken().catchError((_) => null);
         }
       }
+      // Re-verify DNS/network reachability and drain any queued offline writes.
+      OfflineQueueService.instance.checkConnectivityAndSync();
     }
   }
 

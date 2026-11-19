@@ -1476,9 +1476,11 @@ class AssignmentBatchSummary {
 class CallOutcomeResult {
   final String collegeInfo;
   final bool needsDiscountApproval;
+  final bool isQueuedOffline;
 
   const CallOutcomeResult({
     required this.collegeInfo,
     required this.needsDiscountApproval,
+    this.isQueuedOffline = false,
   });
 }

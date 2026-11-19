@@ -8,6 +8,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/injection/injection.dart';
 import '../../../../core/services/app_phone_call_service.dart';
+import '../../../../core/services/firestore_connectivity_helper.dart';
 import '../../../../core/services/firestore_stream_cache.dart';
 import '../../../../shared/widgets/college_selector_field.dart';
 import '../../../../shared/widgets/staff_watermark_overlay.dart';
@@ -82,11 +83,17 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
         );
       }
     } catch (e) {
+      FirestoreConnectivityHelper.reportIfConnectivityError(e);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to update student notes: $e'),
-            duration: const Duration(seconds: 2),
+            content: Text(
+              FirestoreConnectivityHelper.userFriendlyMessage(
+                e,
+                fallback: 'Failed to update student notes.',
+              ),
+            ),
+            duration: const Duration(seconds: 3),
             backgroundColor: const Color(0xFFEF4444),
           ),
         );
@@ -123,11 +130,17 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
         );
       }
     } catch (e) {
+      FirestoreConnectivityHelper.reportIfConnectivityError(e);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to update manager notes: $e'),
-            duration: const Duration(seconds: 2),
+            content: Text(
+              FirestoreConnectivityHelper.userFriendlyMessage(
+                e,
+                fallback: 'Failed to update manager notes.',
+              ),
+            ),
+            duration: const Duration(seconds: 3),
             backgroundColor: const Color(0xFFEF4444),
           ),
         );
