@@ -30,8 +30,8 @@ class MainActivity : FlutterActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // Screenshots allowed by default; can be enabled via securityChannel when instructed
-        window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+        // Block screenshots and screen recording by default (FLAG_SECURE)
+        window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
 
         try {
             val tm = getSystemService(Context.TELEPHONY_SERVICE) as? TelephonyManager

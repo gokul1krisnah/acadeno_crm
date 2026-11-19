@@ -44,8 +44,8 @@ Future<void> main() async {
     return true;
   };
 
-  // Allow screenshots across the app by default (can be restricted when requested)
-  await AppSecurityService.instance.disableScreenshotProtection();
+  // Block screenshots and screen recording across the app by default (FLAG_SECURE)
+  await AppSecurityService.instance.enableScreenshotProtection();
 
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
