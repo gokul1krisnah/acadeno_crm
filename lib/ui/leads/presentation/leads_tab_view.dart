@@ -13,6 +13,7 @@ import 'package:skeletonizer/skeletonizer.dart';
 
 import 'package:acadeno_crm/shared/extensions/build_context_extension.dart';
 import 'package:acadeno_crm/shared/theme/app_images.dart';
+import 'package:acadeno_crm/ui/alerts/presentation/widgets/alerts_header_button.dart';
 import 'package:acadeno_crm/ui/follow_ups/application/follow_ups_cubit.dart';
 import 'package:acadeno_crm/ui/home/application/home_cubit.dart';
 import 'package:acadeno_crm/ui/leads/application/leads_cubit.dart';
@@ -355,6 +356,8 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                       ),
                     ),
                   ),
+                  const Gap(8),
+                  const AlertsHeaderButton(),
                 ],
               ),
               const Gap(16),

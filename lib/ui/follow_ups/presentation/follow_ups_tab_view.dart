@@ -10,6 +10,7 @@ import 'package:skeletonizer/skeletonizer.dart';
 
 import 'package:acadeno_crm/shared/extensions/build_context_extension.dart';
 import 'package:acadeno_crm/core/services/app_phone_call_service.dart';
+import 'package:acadeno_crm/ui/alerts/presentation/widgets/alerts_header_button.dart';
 import 'package:acadeno_crm/ui/dashboard/presentation/widgets/figma_calendar_dialog.dart';
 import 'package:acadeno_crm/ui/follow_ups/application/follow_ups_cubit.dart';
 import 'package:acadeno_crm/ui/follow_ups/application/follow_ups_state.dart';
@@ -117,15 +118,24 @@ class _FollowUpsTabViewState extends State<FollowUpsTabView> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          'Follow-ups',
-                          style: GoogleFonts.inter(
-                            fontSize: isCompact ? 22 : 24,
-                            fontWeight: FontWeight.w700,
-                            color: const Color(0xFF0F172A),
-                            height: 36 / 24,
-                            letterSpacing: -0.5,
-                          ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Expanded(
+                              child: Text(
+                                'Follow-ups',
+                                style: GoogleFonts.inter(
+                                  fontSize: isCompact ? 22 : 24,
+                                  fontWeight: FontWeight.w700,
+                                  color: const Color(0xFF0F172A),
+                                  height: 36 / 24,
+                                  letterSpacing: -0.5,
+                                ),
+                              ),
+                            ),
+                            const AlertsHeaderButton(),
+                          ],
                         ),
                         Gap(headerToTabsGap),
 

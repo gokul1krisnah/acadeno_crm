@@ -4,15 +4,10 @@ import 'package:acadeno_crm/ui/follow_ups/data/sources/follow_ups_rds.dart';
 import 'package:acadeno_crm/ui/leads/data/repository/leads_repo.dart';
 import 'package:acadeno_crm/ui/leads/data/sources/leads_rds.dart';
 import 'package:acadeno_crm/shared/widgets/acadeno_dropdown.dart';
-import 'dart:ui' show ImageFilter;
 import '../pages/lead_detail_page.dart';
 import 'package:gap/gap.dart';
-import 'package:intl/intl.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:acadeno_crm/shared/theme/app_images.dart';
-import 'package:acadeno_crm/shared/theme/app_svgs.dart';
 import 'package:acadeno_crm/shared/widgets/college_selector_field.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -123,22 +118,7 @@ class LeadCallSheets {
         tempFollowUpsCubit ??
         FollowUpsCubit(FollowUpsRepository(FollowUpsRds()));
 
-    HomeCubit? homeCubit;
-    try {
-      homeCubit = context.read<HomeCubit>();
-    } catch (_) {
-      homeCubit = null;
-    }
-
-    final greeting = homeCubit?.state.greeting ?? 'Good afternoon';
-    final firstName = (homeCubit?.state.user.firstName.isNotEmpty ?? false)
-        ? homeCubit!.state.user.firstName
-        : 'Test';
-    final todayLabel = (homeCubit?.state.todayLabel.isNotEmpty ?? false)
-        ? homeCubit!.state.todayLabel
-        : DateFormat('EEE, d MMM').format(DateTime.now());
-
-    String selectedOutcome = 'Follow-up';
+    String selectedOutcome = 'Interested';
     String selectedFollowUpSlot = LeadDateHelper.formatFollowUp(
       DateTime.now().add(const Duration(days: 1)).copyWith(hour: 10, minute: 30),
     );
@@ -148,9 +128,9 @@ class LeadCallSheets {
       DateTime.now().add(const Duration(days: 7)).copyWith(hour: 11, minute: 0),
     );
     final notesCtrl = TextEditingController();
-    final durationCtrl = TextEditingController(
-      text: initialDuration.trim().isNotEmpty ? initialDuration.trim() : '0s',
-    );
+    final resolvedInitialDuration = initialDuration.trim().isNotEmpty
+        ? initialDuration.trim()
+        : '0s';
     final batchCtrl = TextEditingController(text: 'Nov 2026 Weekend');
     final rawFeeDigits = (fee ?? '').replaceAll(RegExp(r'\D'), '');
     final feeCtrl = TextEditingController(
@@ -163,833 +143,492 @@ class LeadCallSheets {
     final receiptCtrl = TextEditingController();
 
     const outcomeRows = [
-      [('Interested', Color(0xFF22C55E)), ('Follow-up', Color(0xFFE8612D))],
-      [('No answer', Color(0xFF1E3A8A)), ('Busy', Color(0xFF3730A3))],
-      [('Switched off', Color(0xFF1E293B)), ('Converted', Color(0xFF2563EB))],
-      [
-        ('Not interested', Color(0xFFEF4444)),
-        ('Wrong number', Color(0xFF6B7280)),
-      ],
+      [('Interested', Color(0xFF22C55E)), ('No answer', Color(0xFF1E3A8A))],
+      [('Busy', Color(0xFF4F46E5)), ('Switched off', Color(0xFF0F172A))],
+      [('Converted', Color(0xFF2563EB)), ('Not interested', Color(0xFFDC2626))],
+      [('Wrong number', Color(0xFF64748B)), ('Callback', Color(0xFFD97706))],
     ];
 
     final saved = await showModalBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
-      isDismissible: false,
-      enableDrag: false,
+      isDismissible: true,
+      enableDrag: true,
       backgroundColor: Colors.transparent,
-      barrierColor: Colors.black.withValues(alpha: 0.75),
+      barrierColor: Colors.black.withValues(alpha: 0.45),
       elevation: 0,
       builder: (ctx) {
-        return PopScope(
-          canPop: false,
-          child: SizedBox(
-            height: MediaQuery.sizeOf(ctx).height,
-            width: double.infinity,
-            child: Scaffold(
-            backgroundColor: Colors.black,
-            body: Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 512),
-                child: Column(
-                  children: [
-                    // Top Blurred Header (Figma node 1643:31 + 1643:116, height 96px)
-                    SizedBox(
-                      height: 96,
-                      width: double.infinity,
-                      child: Stack(
-                        fit: StackFit.expand,
-                        children: [
-                          Container(
-                            color: Colors.white,
-                            padding: const EdgeInsets.fromLTRB(20, 32, 20, 12),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                Expanded(
-                                  child: Row(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
-                                    children: [
-                                      Image.asset(
-                                        AppImages.acadenoALogo,
-                                        width: 38,
-                                        height: 38,
-                                        fit: BoxFit.contain,
-                                      ),
-                                      const Gap(12),
-                                      Expanded(
-                                        child: Column(
-                                          mainAxisSize: MainAxisSize.min,
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              '$greeting, $firstName',
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
-                                              style: GoogleFonts.inter(
-                                                fontSize: 20,
-                                                fontWeight: FontWeight.w700,
-                                                color: const Color(0xFF111827),
-                                                letterSpacing: -0.0195,
-                                                height: 28 / 20,
-                                              ),
-                                            ),
-                                            Text(
-                                              todayLabel,
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
-                                              style: GoogleFonts.inter(
-                                                fontSize: 12,
-                                                fontWeight: FontWeight.w500,
-                                                color: const Color(0xFF6B7280),
-                                                height: 16 / 12,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                Container(
-                                  width: 40,
-                                  height: 40,
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFFF9FAFB),
-                                    borderRadius: BorderRadius.circular(12),
-                                    border: Border.all(
-                                      color: const Color(0xFFF3F4F6),
-                                      width: 1,
-                                    ),
-                                  ),
-                                  alignment: Alignment.center,
-                                  child: SvgPicture.asset(
-                                    AppSvgs.logout,
-                                    width: 16,
-                                    height: 16,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          Positioned.fill(
-                            child: ClipRect(
-                              child: BackdropFilter(
-                                filter: ImageFilter.blur(
-                                  sigmaX: 2.2,
-                                  sigmaY: 2.2,
-                                ),
-                                child: Container(
-                                  color: const Color(0x33D9D9D9),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+        final bottomInset = MediaQuery.viewInsetsOf(ctx).bottom;
+        final safeBottom = MediaQuery.paddingOf(ctx).bottom;
+        final screenWidth = MediaQuery.sizeOf(ctx).width;
+        final hPad = screenWidth < 360 ? 16.0 : 20.0;
 
-                    // Post Call Feedback Screen (Figma node 1606:1689 / 1606:1609)
-                    Expanded(
-                      child: Container(
-                        width: double.infinity,
-                        color: Colors.black,
-                        child: StatefulBuilder(
-                          builder: (ctx, setSheetState) {
-                            return SingleChildScrollView(
-                              physics: const ClampingScrollPhysics(),
+        return Center(
+          heightFactor: 1.0,
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxWidth: 512,
+              maxHeight: MediaQuery.sizeOf(ctx).height * 0.92,
+            ),
+            child: StatefulBuilder(
+              builder: (ctx, setSheetState) {
+                return Container(
+                  width: double.infinity,
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.vertical(
+                      top: Radius.circular(28),
+                    ),
+                  ),
+                  child: SingleChildScrollView(
+                    physics: const ClampingScrollPhysics(),
+                    padding: EdgeInsets.fromLTRB(
+                      hPad,
+                      12,
+                      hPad,
+                      bottomInset + (safeBottom > 0 ? safeBottom + 12 : 24),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // Top Drag Handle
+                        Center(
+                          child: Container(
+                            width: 44,
+                            height: 4.5,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFCBD5E1),
+                              borderRadius: BorderRadius.circular(9999),
+                            ),
+                          ),
+                        ),
+                        const Gap(20),
+
+                        // Title: How did the call go?
+                        Text(
+                          'How did the call go?',
+                          style: GoogleFonts.inter(
+                            fontSize: 22,
+                            fontWeight: FontWeight.w700,
+                            color: const Color(0xFF0F172A),
+                            letterSpacing: -0.3,
+                            height: 28 / 22,
+                          ),
+                        ),
+                        const Gap(20),
+
+                        // 2x4 Outcomes Grid
+                        Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: List.generate(outcomeRows.length, (rowIdx) {
+                            final row = outcomeRows[rowIdx];
+                            return Padding(
                               padding: EdgeInsets.only(
-                                bottom:
-                                    MediaQuery.viewInsetsOf(ctx).bottom + 32,
+                                bottom: rowIdx < outcomeRows.length - 1 ? 12 : 0,
                               ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                              child: Row(
                                 children: [
-                                  // Call ended card (Figma node 1606:1628 -> 1606:1629)
-                                  Padding(
-                                    padding: const EdgeInsets.fromLTRB(
-                                      24,
-                                      8,
-                                      24,
-                                      32,
+                                  Expanded(
+                                    child: _buildOutcomeButton(
+                                      name: row[0].$1,
+                                      dotColor: row[0].$2,
+                                      isSelected: selectedOutcome == row[0].$1,
+                                      onTap: () {
+                                        setSheetState(
+                                          () => selectedOutcome = row[0].$1,
+                                        );
+                                      },
                                     ),
-                                    child: Container(
-                                      width: double.infinity,
-                                      padding: const EdgeInsets.all(24),
-                                      decoration: BoxDecoration(
-                                        color: const Color(0xFF1C1C1C),
-                                        borderRadius: BorderRadius.circular(16),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: _buildOutcomeButton(
+                                      name: row[1].$1,
+                                      dotColor: row[1].$2,
+                                      isSelected: selectedOutcome == row[1].$1,
+                                      onTap: () {
+                                        setSheetState(
+                                          () => selectedOutcome = row[1].$1,
+                                        );
+                                      },
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          }),
+                        ),
+
+                        // Converted: Course / Workshop dropdown and Batch input
+                        if (selectedOutcome == 'Converted') ...[
+                          const Gap(20),
+                          Text(
+                            'Course / Workshop',
+                            style: GoogleFonts.inter(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                              color: const Color(0xFF334155),
+                              height: 18 / 12,
+                            ),
+                          ),
+                          const Gap(6),
+                          AcadenoDropdown<String>(
+                            value: selectedProgram,
+                            items: acadenoPrograms
+                                .map(
+                                  (p) => AcadenoDropdownItem<String>(
+                                    value: p,
+                                    label: p,
+                                  ),
+                                )
+                                .toList(),
+                            fillColor: const Color(0xFFF5F5F5),
+                            borderColor: const Color(0xFFE5E7EB),
+                            borderRadius: 16.0,
+                            dropdownColor: const Color(0xFFE2E2E2),
+                            activeItemColor: const Color(0xFFC84B14),
+                            onChanged: (v) {
+                              if (v != null) {
+                                setSheetState(() => selectedProgram = v);
+                              }
+                            },
+                          ),
+                          const Gap(14),
+                          Text(
+                            'Batch',
+                            style: GoogleFonts.inter(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                              color: const Color(0xFF334155),
+                              height: 18 / 12,
+                            ),
+                          ),
+                          const Gap(6),
+                          Container(
+                            height: 47,
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF5F5F5),
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
+                                color: const Color(0xFFE5E7EB),
+                              ),
+                            ),
+                            alignment: Alignment.centerLeft,
+                            child: TextField(
+                              controller: batchCtrl,
+                              style: GoogleFonts.inter(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                                color: const Color(0xFF1E293B),
+                              ),
+                              decoration: InputDecoration(
+                                isDense: true,
+                                border: InputBorder.none,
+                                hintText: 'Enter batch name...',
+                                hintStyle: GoogleFonts.inter(
+                                  fontSize: 14,
+                                  color: const Color(0xFF9CA3AF),
+                                ),
+                                contentPadding: EdgeInsets.zero,
+                              ),
+                            ),
+                          ),
+                        ] else if (selectedOutcome == 'Callback') ...[
+                          const Gap(20),
+                          LayoutBuilder(
+                            builder: (context, constraints) {
+                              final dateButton = Material(
+                                color: Colors.transparent,
+                                child: InkWell(
+                                  onTap: () async {
+                                    final now = DateTime.now();
+                                    final d = await showFigmaCalendarDialog(
+                                      context: ctx,
+                                      initialDate: now.add(
+                                        const Duration(days: 1),
                                       ),
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              Text(
-                                                'Call ended • ${durationCtrl.text.trim().isEmpty ? "0s" : durationCtrl.text.trim()}',
-                                                style: GoogleFonts.inter(
-                                                  fontSize: 14,
-                                                  fontWeight: FontWeight.w500,
-                                                  color: const Color(0xFF9CA3AF),
-                                                  height: 20 / 14,
-                                                ),
-                                              ),
-                                              SizedBox(
-                                                width: 96,
-                                                height: 28,
-                                                child: TextField(
-                                                  controller: durationCtrl,
-                                                  onChanged: (_) =>
-                                                      setSheetState(() {}),
-                                                  textAlign: TextAlign.center,
-                                                  style: GoogleFonts.inter(
-                                                    fontSize: 12,
-                                                    fontWeight: FontWeight.w600,
-                                                    color: Colors.white,
-                                                  ),
-                                                  decoration: InputDecoration(
-                                                    isDense: true,
-                                                    contentPadding:
-                                                        const EdgeInsets.symmetric(
-                                                          horizontal: 8,
-                                                          vertical: 5,
-                                                        ),
-                                                    hintText: 'e.g. 2m 15s',
-                                                    hintStyle: GoogleFonts.inter(
-                                                      fontSize: 11,
-                                                      color: const Color(
-                                                        0xFF6B7280,
-                                                      ),
-                                                    ),
-                                                    filled: true,
-                                                    fillColor: const Color(
-                                                      0xFF2D2D2D,
-                                                    ),
-                                                    border: OutlineInputBorder(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                            8,
-                                                          ),
-                                                      borderSide:
-                                                          BorderSide.none,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                          const Gap(4),
-                                          Text(
-                                            leadName,
+                                      firstDate: now,
+                                      lastDate: now.add(
+                                        const Duration(days: 90),
+                                      ),
+                                    );
+                                    if (d != null && ctx.mounted) {
+                                      final t = await showTimePicker(
+                                        context: ctx,
+                                        initialTime: const TimeOfDay(
+                                          hour: 10,
+                                          minute: 30,
+                                        ),
+                                      );
+                                      if (t != null) {
+                                        final dt = DateTime(
+                                          d.year,
+                                          d.month,
+                                          d.day,
+                                          t.hour,
+                                          t.minute,
+                                        );
+                                        setSheetState(() {
+                                          selectedFollowUpSlot =
+                                              LeadDateHelper.formatFollowUp(dt);
+                                        });
+                                      }
+                                    }
+                                  },
+                                  borderRadius: BorderRadius.circular(10),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 8,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFFFF7ED),
+                                      borderRadius: BorderRadius.circular(10),
+                                      border: Border.all(
+                                        color: const Color(0xFFFFEDD5),
+                                        width: 1,
+                                      ),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        const Icon(
+                                          Icons.calendar_today_rounded,
+                                          size: 14,
+                                          color: Color(0xFFC84B14),
+                                        ),
+                                        const Gap(8),
+                                        Flexible(
+                                          child: Text(
+                                            selectedFollowUpSlot,
                                             maxLines: 1,
                                             overflow: TextOverflow.ellipsis,
                                             style: GoogleFonts.inter(
-                                              fontSize: 24,
-                                              fontWeight: FontWeight.w700,
-                                              color: Colors.white,
-                                              height: 32 / 24,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-
-                                  // Light Rounded Sheet (Figma node 1606:1635)
-                                  Container(
-                                    width: double.infinity,
-                                    padding: const EdgeInsets.fromLTRB(
-                                      24,
-                                      16,
-                                      24,
-                                      28,
-                                    ),
-                                    decoration: const BoxDecoration(
-                                      color: Colors.white,
-                                      borderRadius: BorderRadius.vertical(
-                                        top: Radius.circular(32),
-                                      ),
-                                    ),
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        // Top Drag Handle (Figma node 1606:1636)
-                                        Center(
-                                          child: Container(
-                                            width: 40,
-                                            height: 4,
-                                            decoration: BoxDecoration(
-                                              color: const Color(0xFFD1D5DB),
-                                              borderRadius:
-                                                  BorderRadius.circular(9999),
-                                            ),
-                                          ),
-                                        ),
-                                        const Gap(24),
-
-                                        // Heading 3: How did the call go? (Figma node 1606:1637)
-                                        Text(
-                                          'How did the call go?',
-                                          style: GoogleFonts.inter(
-                                            fontSize: 20,
-                                            fontWeight: FontWeight.w700,
-                                            color: const Color(0xFF111827),
-                                            height: 28 / 20,
-                                          ),
-                                        ),
-                                        const Gap(24),
-
-                                        // 2x4 Outcomes Grid (Figma node 1606:1639)
-                                        LayoutBuilder(
-                                          builder: (context, gridConstraints) {
-                                            final availW =
-                                                gridConstraints.maxWidth;
-                                            final colGap = availW >= 420
-                                                ? 48.0
-                                                : (availW * 0.06).clamp(
-                                                    12.0,
-                                                    48.0,
-                                                  );
-                                            return Column(
-                                              mainAxisSize: MainAxisSize.min,
-                                              children: List.generate(outcomeRows.length, (
-                                                rowIdx,
-                                              ) {
-                                                final row = outcomeRows[rowIdx];
-                                                return Padding(
-                                                  padding: EdgeInsets.only(
-                                                    bottom:
-                                                        rowIdx <
-                                                            outcomeRows.length -
-                                                                1
-                                                        ? 14
-                                                        : 0,
-                                                  ),
-                                                  child: Row(
-                                                    children: [
-                                                      Expanded(
-                                                        flex: 201,
-                                                        child: _buildOutcomeButton(
-                                                          name: row[0].$1,
-                                                          dotColor: row[0].$2,
-                                                          isSelected:
-                                                              selectedOutcome ==
-                                                              row[0].$1,
-                                                          dotToTextGap:
-                                                              row[0].$1 ==
-                                                                  'Not interested'
-                                                              ? 24.89
-                                                              : 12.0,
-                                                          onTap: () {
-                                                            setSheetState(
-                                                              () =>
-                                                                  selectedOutcome =
-                                                                      row[0].$1,
-                                                            );
-                                                          },
-                                                        ),
-                                                      ),
-                                                      SizedBox(width: colGap),
-                                                      Expanded(
-                                                        flex: 190,
-                                                        child: _buildOutcomeButton(
-                                                          name: row[1].$1,
-                                                          dotColor: row[1].$2,
-                                                          isSelected:
-                                                              selectedOutcome ==
-                                                              row[1].$1,
-                                                          dotToTextGap: 12.0,
-                                                          onTap: () {
-                                                            setSheetState(
-                                                              () =>
-                                                                  selectedOutcome =
-                                                                      row[1].$1,
-                                                            );
-                                                          },
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                );
-                                              }),
-                                            );
-                                          },
-                                        ),
-
-                                        const Gap(24),
-
-                                        // Converted: Show ONLY Course / Workshop dropdown and Batch input (Figma node 1821:1590)
-                                        if (selectedOutcome == 'Converted') ...[
-                                          const Gap(24),
-                                          Text(
-                                            'Course / Workshop',
-                                            style: GoogleFonts.inter(
-                                              fontSize: 11.5,
-                                              fontWeight: FontWeight.w700,
-                                              color: const Color(0xFF334155),
-                                              height: 17.25 / 11.5,
-                                            ),
-                                          ),
-                                          const Gap(6),
-                                          AcadenoDropdown<String>(
-                                            value: selectedProgram,
-                                            items: acadenoPrograms
-                                                .map(
-                                                  (p) => AcadenoDropdownItem<String>(
-                                                    value: p,
-                                                    label: p,
-                                                  ),
-                                                )
-                                                .toList(),
-                                            fillColor: const Color(0xFFF5F5F5),
-                                            borderColor: const Color(0xFFE5E7EB),
-                                            borderRadius: 16.0,
-                                            dropdownColor: const Color(0xFFE2E2E2),
-                                            activeItemColor: const Color(0xFFD35401),
-                                            onChanged: (v) {
-                                              if (v != null) {
-                                                setSheetState(
-                                                  () => selectedProgram = v,
-                                                );
-                                              }
-                                            },
-                                          ),
-                                          const Gap(14),
-                                          Text(
-                                            'Batch',
-                                            style: GoogleFonts.inter(
-                                              fontSize: 11.5,
-                                              fontWeight: FontWeight.w700,
-                                              color: const Color(0xFF334155),
-                                              height: 17.25 / 11.5,
-                                            ),
-                                          ),
-                                          const Gap(6),
-                                          Container(
-                                            height: 47,
-                                            padding: const EdgeInsets.symmetric(
-                                              horizontal: 21,
-                                            ),
-                                            decoration: BoxDecoration(
-                                              color: const Color(0xFFF5F5F5),
-                                              borderRadius: BorderRadius.circular(16),
-                                              border: Border.all(
-                                                color: const Color(0xFFE5E7EB),
-                                              ),
-                                              boxShadow: const [
-                                                BoxShadow(
-                                                  color: Color(0x0D764BA2),
-                                                  blurRadius: 5,
-                                                  offset: Offset(0, 2),
-                                                ),
-                                              ],
-                                            ),
-                                            alignment: Alignment.centerLeft,
-                                            child: TextField(
-                                              controller: batchCtrl,
-                                              style: GoogleFonts.inter(
-                                                fontSize: 14,
-                                                fontWeight: FontWeight.w500,
-                                                color: const Color(0xFF1E293B),
-                                              ),
-                                              decoration: InputDecoration(
-                                                isDense: true,
-                                                border: InputBorder.none,
-                                                hintText: 'Enter batch name...',
-                                                hintStyle: GoogleFonts.inter(
-                                                  fontSize: 14,
-                                                  color: const Color(0xFF9CA3AF),
-                                                ),
-                                                contentPadding: EdgeInsets.zero,
-                                              ),
-                                            ),
-                                          ),
-                                          const Gap(24),
-                                        ] else if (selectedOutcome == 'Follow-up') ...[
-                                          const Gap(20),
-                                          LayoutBuilder(
-                                            builder: (context, constraints) {
-                                              final dateButton = Material(
-                                                color: Colors.transparent,
-                                                child: InkWell(
-                                                  onTap: () async {
-                                                    final now = DateTime.now();
-                                                    final d =
-                                                        await showFigmaCalendarDialog(
-                                                          context: ctx,
-                                                          initialDate: now.add(
-                                                            const Duration(days: 1),
-                                                          ),
-                                                          firstDate: now,
-                                                          lastDate: now.add(
-                                                            const Duration(days: 90),
-                                                          ),
-                                                        );
-                                                    if (d != null && ctx.mounted) {
-                                                      final t =
-                                                          await showTimePicker(
-                                                            context: ctx,
-                                                            initialTime:
-                                                                const TimeOfDay(
-                                                                  hour: 10,
-                                                                  minute: 30,
-                                                                ),
-                                                          );
-                                                      if (t != null) {
-                                                        final dt = DateTime(
-                                                          d.year,
-                                                          d.month,
-                                                          d.day,
-                                                          t.hour,
-                                                          t.minute,
-                                                        );
-                                                        setSheetState(() {
-                                                          selectedFollowUpSlot =
-                                                              LeadDateHelper
-                                                                  .formatFollowUp(dt);
-                                                        });
-                                                      }
-                                                    }
-                                                  },
-                                                  borderRadius:
-                                                      BorderRadius.circular(10),
-                                                  child: Container(
-                                                    padding:
-                                                        const EdgeInsets.symmetric(
-                                                          horizontal: 12,
-                                                          vertical: 8,
-                                                        ),
-                                                    decoration: BoxDecoration(
-                                                      color: const Color(0xFFFFF7ED),
-                                                      borderRadius:
-                                                          BorderRadius.circular(10),
-                                                      border: Border.all(
-                                                        color: const Color(0xFFFFEDD5),
-                                                        width: 1,
-                                                      ),
-                                                    ),
-                                                    child: Row(
-                                                      mainAxisSize: MainAxisSize.min,
-                                                      children: [
-                                                        const Icon(
-                                                          Icons.calendar_today_rounded,
-                                                          size: 14,
-                                                          color: Color(0xFFE8612D),
-                                                        ),
-                                                        const Gap(8),
-                                                        Flexible(
-                                                          child: Text(
-                                                            selectedFollowUpSlot,
-                                                            maxLines: 1,
-                                                            overflow:
-                                                                TextOverflow.ellipsis,
-                                                            style: GoogleFonts.inter(
-                                                              fontSize: 13,
-                                                              fontWeight:
-                                                                  FontWeight.w600,
-                                                              color: const Color(
-                                                                0xFFE8612D,
-                                                              ),
-                                                            ),
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                ),
-                                              );
-
-                                              final isNarrow =
-                                                  constraints.maxWidth < 360;
-                                              if (isNarrow) {
-                                                return Column(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-                                                  children: [
-                                                    Text(
-                                                      'Follow-up Date & Time',
-                                                      style: GoogleFonts.inter(
-                                                        fontSize: 14,
-                                                        fontWeight:
-                                                            FontWeight.w700,
-                                                        color: const Color(
-                                                          0xFF374151,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                    const Gap(8),
-                                                    dateButton,
-                                                  ],
-                                                );
-                                              }
-
-                                              return Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.spaceBetween,
-                                                children: [
-                                                  Expanded(
-                                                    child: Text(
-                                                      'Follow-up Date & Time',
-                                                      style: GoogleFonts.inter(
-                                                        fontSize: 14,
-                                                        fontWeight:
-                                                            FontWeight.w700,
-                                                        color: const Color(
-                                                          0xFF374151,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ),
-                                                  const Gap(10),
-                                                  Flexible(child: dateButton),
-                                                ],
-                                              );
-                                            },
-                                          ),
-                                          const Gap(20),
-                                        ],
-                                        // Notes (optional) (Figma node 1606:1677)
-                                        Text(
-                                          'Notes (optional)',
-                                          style: GoogleFonts.inter(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.w700,
-                                            color: const Color(0xFF374151),
-                                            height: 24 / 16,
-                                          ),
-                                        ),
-                                        const Gap(16),
-
-                                        Container(
-                                          width: double.infinity,
-                                          constraints: const BoxConstraints(
-                                            minHeight: 100,
-                                          ),
-                                          decoration: BoxDecoration(
-                                            color: Colors.white,
-                                            borderRadius: BorderRadius.circular(
-                                              16,
-                                            ),
-                                            border: Border.all(
-                                              color: const Color(0xFFE5E7EB),
-                                              width: 1,
-                                            ),
-                                            boxShadow: const [
-                                              BoxShadow(
-                                                color: Color(0x0D000000),
-                                                blurRadius: 1,
-                                                offset: Offset(0, 1),
-                                              ),
-                                            ],
-                                          ),
-                                          padding: const EdgeInsets.fromLTRB(
-                                            16,
-                                            15,
-                                            16,
-                                            16,
-                                          ),
-                                          child: TextField(
-                                            controller: notesCtrl,
-                                            maxLines: 3,
-                                            minLines: 2,
-                                            style: GoogleFonts.inter(
-                                              fontSize: 15,
-                                              fontWeight: FontWeight.w400,
-                                              color: const Color(0xFF4B5563),
-                                              height: 24.38 / 15,
-                                            ),
-                                            decoration: InputDecoration(
-                                              isDense: true,
-                                              contentPadding: EdgeInsets.zero,
-                                              hintText:
-                                                  'Wants fee details and batch timings.\nPrefers WhatsApp.',
-                                              hintStyle: GoogleFonts.inter(
-                                                color: const Color(0xFF4B5563),
-                                                fontSize: 15,
-                                                fontWeight: FontWeight.w400,
-                                                height: 24.38 / 15,
-                                              ),
-                                              border: InputBorder.none,
-                                              enabledBorder: InputBorder.none,
-                                              focusedBorder: InputBorder.none,
-                                            ),
-                                          ),
-                                        ),
-                                        const Gap(24),
-
-                                        // Save Button (Figma node 1606:1683)
-                                        SizedBox(
-                                          width: double.infinity,
-                                          height: 60,
-                                          child: ElevatedButton(
-                                            onPressed: () async {
-                                              final resolvedDuration =
-                                                  durationCtrl.text
-                                                      .trim()
-                                                      .isEmpty
-                                                  ? '0s'
-                                                  : durationCtrl.text.trim();
-                                              final feeVal = int.tryParse(
-                                                feeCtrl.text.trim(),
-                                              );
-                                              final discVal = int.tryParse(
-                                                discountCtrl.text.trim(),
-                                              );
-                                              final paidVal = int.tryParse(
-                                                paidCtrl.text.trim(),
-                                              );
-                                              final balanceVal =
-                                                  (feeVal ?? 0) -
-                                                  (discVal ?? 0) -
-                                                  (paidVal ?? 0);
-
-                                              if (ctx.mounted) {
-                                                Navigator.pop(ctx, true);
-                                              }
-                                              try {
-                                                final result = await cubit
-                                                    .recordCallOutcome(
-                                                      leadId: leadId,
-                                                      leadName: leadName,
-                                                      outcome: selectedOutcome,
-                                                      duration:
-                                                          resolvedDuration,
-                                                      notes: notesCtrl.text
-                                                          .trim(),
-                                                      courseEnrolled:
-                                                          (selectedOutcome ==
-                                                                  'Converted' ||
-                                                              selectedOutcome ==
-                                                                  'Interested')
-                                                          ? selectedProgram
-                                                          : null,
-                                                      discountAmount:
-                                                          selectedOutcome ==
-                                                              'Converted'
-                                                          ? discVal
-                                                          : null,
-                                                      batch:
-                                                          selectedOutcome ==
-                                                              'Converted'
-                                                          ? batchCtrl.text
-                                                                .trim()
-                                                          : null,
-                                                      feeAmount:
-                                                          selectedOutcome ==
-                                                              'Converted'
-                                                          ? feeVal
-                                                          : null,
-                                                      amountPaid:
-                                                          selectedOutcome ==
-                                                              'Converted'
-                                                          ? paidVal
-                                                          : null,
-                                                      paymentMode:
-                                                          selectedOutcome ==
-                                                              'Converted'
-                                                          ? selectedPaymentMode
-                                                          : null,
-                                                      receiptNumber:
-                                                          selectedOutcome ==
-                                                              'Converted'
-                                                          ? receiptCtrl.text
-                                                                .trim()
-                                                          : null,
-                                                      expectedBalanceDate:
-                                                          (selectedOutcome ==
-                                                                  'Converted' &&
-                                                              balanceVal > 0)
-                                                          ? expectedBalanceDate
-                                                          : null,
-                                                      followUpTime:
-                                                          selectedFollowUpSlot,
-                                                    );
-                                                followUpsCubit
-                                                    .addFromCallOutcome(
-                                                      leadName: leadName,
-                                                      collegeInfo:
-                                                          result.collegeInfo,
-                                                      outcome:
-                                                          (selectedOutcome ==
-                                                                  'Converted' &&
-                                                              balanceVal > 0)
-                                                          ? 'Follow-up'
-                                                          : selectedOutcome,
-                                                      notes:
-                                                          (selectedOutcome ==
-                                                                  'Converted' &&
-                                                              balanceVal > 0)
-                                                          ? 'Balance collection (₹$balanceVal due)'
-                                                          : notesCtrl.text
-                                                                .trim(),
-                                                      followUpTimeLabel:
-                                                          (selectedOutcome ==
-                                                                  'Converted' &&
-                                                              balanceVal > 0)
-                                                          ? expectedBalanceDate
-                                                          : selectedFollowUpSlot,
-                                                    );
-                                                if (context.mounted) {
-                                                  SnackBarAlert.showToast(
-                                                    context: context,
-                                                    message:
-                                                        'Outcome saved for $leadName',
-                                                  );
-                                                }
-                                              } catch (e) {
-                                                debugPrint(
-                                                  'recordCallOutcome error: $e',
-                                                );
-                                              }
-                                            },
-                                            style: ElevatedButton.styleFrom(
-                                              backgroundColor: const Color(
-                                                0xFFE8612D,
-                                              ),
-                                              foregroundColor: Colors.white,
-                                              elevation: 0,
-                                              shape: RoundedRectangleBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(12),
-                                              ),
-                                            ),
-                                            child: Text(
-                                              'Save',
-                                              textAlign: TextAlign.center,
-                                              style: GoogleFonts.inter(
-                                                fontSize: 18,
-                                                fontWeight: FontWeight.w700,
-                                                color: Colors.white,
-                                                letterSpacing: 0.0879,
-                                                height: 28 / 18,
-                                              ),
+                                              fontSize: 13,
+                                              fontWeight: FontWeight.w600,
+                                              color: const Color(0xFFC84B14),
                                             ),
                                           ),
                                         ),
                                       ],
                                     ),
                                   ),
+                                ),
+                              );
+
+                              final isNarrow = constraints.maxWidth < 360;
+                              if (isNarrow) {
+                                return Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Callback Date & Time',
+                                      style: GoogleFonts.inter(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w700,
+                                        color: const Color(0xFF374151),
+                                      ),
+                                    ),
+                                    const Gap(8),
+                                    dateButton,
+                                  ],
+                                );
+                              }
+
+                              return Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      'Callback Date & Time',
+                                      style: GoogleFonts.inter(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w700,
+                                        color: const Color(0xFF374151),
+                                      ),
+                                    ),
+                                  ),
+                                  const Gap(10),
+                                  Flexible(child: dateButton),
                                 ],
-                              ),
-                            );
-                          },
+                              );
+                            },
+                          ),
+                        ],
+
+                        const Gap(24),
+
+                        // Notes (optional)
+                        Text(
+                          'Notes (optional)',
+                          style: GoogleFonts.inter(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                            color: const Color(0xFF0F172A),
+                            height: 22 / 16,
+                          ),
                         ),
-                      ),
+                        const Gap(10),
+
+                        Container(
+                          width: double.infinity,
+                          constraints: const BoxConstraints(minHeight: 112),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: const Color(0xFFE2E8F0),
+                              width: 1,
+                            ),
+                          ),
+                          padding: const EdgeInsets.all(16),
+                          child: TextField(
+                            controller: notesCtrl,
+                            maxLines: 4,
+                            minLines: 3,
+                            style: GoogleFonts.inter(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w400,
+                              color: const Color(0xFF0F172A),
+                              height: 1.45,
+                            ),
+                            decoration: InputDecoration(
+                              isDense: true,
+                              contentPadding: EdgeInsets.zero,
+                              hintText:
+                                  'Wants fee details and batch timings. Prefers WhatsApp.',
+                              hintStyle: GoogleFonts.inter(
+                                color: const Color(0xFF475569),
+                                fontSize: 15,
+                                fontWeight: FontWeight.w400,
+                                height: 1.45,
+                              ),
+                              border: InputBorder.none,
+                              enabledBorder: InputBorder.none,
+                              focusedBorder: InputBorder.none,
+                            ),
+                          ),
+                        ),
+                        const Gap(28),
+
+                        // Save Button
+                        SizedBox(
+                          width: double.infinity,
+                          height: 56,
+                          child: ElevatedButton(
+                            onPressed: () async {
+                              final feeVal = int.tryParse(feeCtrl.text.trim());
+                              final discVal =
+                                  int.tryParse(discountCtrl.text.trim());
+                              final paidVal =
+                                  int.tryParse(paidCtrl.text.trim());
+                              final balanceVal =
+                                  (feeVal ?? 0) -
+                                  (discVal ?? 0) -
+                                  (paidVal ?? 0);
+
+                              if (ctx.mounted) {
+                                Navigator.pop(ctx, true);
+                              }
+                              try {
+                                final result = await cubit.recordCallOutcome(
+                                  leadId: leadId,
+                                  leadName: leadName,
+                                  outcome: selectedOutcome,
+                                  duration: resolvedInitialDuration,
+                                  notes: notesCtrl.text.trim(),
+                                  courseEnrolled:
+                                      (selectedOutcome == 'Converted' ||
+                                          selectedOutcome == 'Interested')
+                                      ? selectedProgram
+                                      : null,
+                                  discountAmount:
+                                      selectedOutcome == 'Converted'
+                                      ? discVal
+                                      : null,
+                                  batch: selectedOutcome == 'Converted'
+                                      ? batchCtrl.text.trim()
+                                      : null,
+                                  feeAmount: selectedOutcome == 'Converted'
+                                      ? feeVal
+                                      : null,
+                                  amountPaid: selectedOutcome == 'Converted'
+                                      ? paidVal
+                                      : null,
+                                  paymentMode: selectedOutcome == 'Converted'
+                                      ? selectedPaymentMode
+                                      : null,
+                                  receiptNumber: selectedOutcome == 'Converted'
+                                      ? receiptCtrl.text.trim()
+                                      : null,
+                                  expectedBalanceDate:
+                                      (selectedOutcome == 'Converted' &&
+                                          balanceVal > 0)
+                                      ? expectedBalanceDate
+                                      : null,
+                                  followUpTime: selectedFollowUpSlot,
+                                );
+                                followUpsCubit.addFromCallOutcome(
+                                  leadName: leadName,
+                                  collegeInfo: result.collegeInfo,
+                                  outcome:
+                                      (selectedOutcome == 'Converted' &&
+                                          balanceVal > 0)
+                                      ? 'Follow-up'
+                                      : (selectedOutcome == 'Callback'
+                                            ? 'Follow-up'
+                                            : selectedOutcome),
+                                  notes:
+                                      (selectedOutcome == 'Converted' &&
+                                          balanceVal > 0)
+                                      ? 'Balance collection (₹$balanceVal due)'
+                                      : notesCtrl.text.trim(),
+                                  followUpTimeLabel:
+                                      (selectedOutcome == 'Converted' &&
+                                          balanceVal > 0)
+                                      ? expectedBalanceDate
+                                      : selectedFollowUpSlot,
+                                );
+                                if (context.mounted) {
+                                  SnackBarAlert.showToast(
+                                    context: context,
+                                    message: 'Outcome saved for $leadName',
+                                  );
+                                }
+                              } catch (e) {
+                                debugPrint('recordCallOutcome error: $e');
+                              }
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFFC84B14),
+                              foregroundColor: Colors.white,
+                              elevation: 0,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                            ),
+                            child: Text(
+                              'Save',
+                              textAlign: TextAlign.center,
+                              style: GoogleFonts.inter(
+                                fontSize: 17,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.white,
+                                height: 24 / 17,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-              ),
+                  ),
+                );
+              },
             ),
           ),
-        ),
         );
       },
     );
@@ -1000,68 +639,55 @@ class LeadCallSheets {
     required String name,
     required Color dotColor,
     required bool isSelected,
-    required double dotToTextGap,
     required VoidCallback onTap,
   }) {
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: onTap,
-      child: Container(
-        height: 52,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 140),
+        height: 54,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFFE8612D) : Colors.white,
-          borderRadius: BorderRadius.circular(12),
+          color: isSelected ? const Color(0xFFC84B14) : Colors.white,
+          borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: isSelected
-                ? const Color(0xFFE8612D)
-                : const Color(0xFFE5E7EB),
+                ? const Color(0xFFC84B14)
+                : const Color(0xFFE2E8F0),
             width: 1,
           ),
           boxShadow: isSelected
               ? const [
                   BoxShadow(
-                    color: Color(0x1A000000),
-                    blurRadius: 6,
+                    color: Color(0x45C84B14),
+                    blurRadius: 12,
                     offset: Offset(0, 4),
-                    spreadRadius: -1,
-                  ),
-                  BoxShadow(
-                    color: Color(0x1A000000),
-                    blurRadius: 4,
-                    offset: Offset(0, 2),
-                    spreadRadius: -2,
                   ),
                 ]
-              : const [
-                  BoxShadow(
-                    color: Color(0x0D000000),
-                    blurRadius: 1,
-                    offset: Offset(0, 1),
-                  ),
-                ],
+              : null,
         ),
         child: Row(
           children: [
             Container(
-              width: 8,
-              height: 8,
+              width: 10,
+              height: 10,
               decoration: BoxDecoration(
                 color: isSelected ? Colors.white : dotColor,
                 shape: BoxShape.circle,
               ),
             ),
-            SizedBox(width: dotToTextGap),
+            const SizedBox(width: 10),
             Expanded(
               child: Text(
                 name,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: GoogleFonts.inter(
-                  fontSize: 16,
+                  fontSize: 15,
                   fontWeight: FontWeight.w600,
-                  color: isSelected ? Colors.white : const Color(0xFF374151),
-                  height: 24 / 16,
+                  color: isSelected ? Colors.white : const Color(0xFF0F172A),
+                  height: 20 / 15,
                 ),
               ),
             ),

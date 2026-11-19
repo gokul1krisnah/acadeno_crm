@@ -7,6 +7,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../../shared/extensions/build_context_extension.dart';
 import '../../../shared/snackbar_alerts/snack_alert.dart';
+import '../../alerts/presentation/widgets/alerts_header_button.dart';
 import '../../leads/data/model/lead_models.dart';
 import '../../leads/presentation/widgets/lead_call_sheets.dart';
 import '../application/call_logs_cubit.dart';
@@ -141,14 +142,34 @@ class _CallLogsBodyState extends State<_CallLogsBody> with WidgetsBindingObserve
                               letterSpacing: -0.4,
                             ),
                           ),
-                          IconButton(
-                            tooltip: 'Refresh Call Logs',
-                            icon: const Icon(
-                              CupertinoIcons.arrow_clockwise,
-                              size: 20,
-                              color: Color(0xFF475569),
-                            ),
-                            onPressed: cubit.refresh,
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              InkWell(
+                                onTap: cubit.refresh,
+                                borderRadius: BorderRadius.circular(12),
+                                child: Container(
+                                  width: 40,
+                                  height: 40,
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFF9FAFB),
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(
+                                      color: const Color(0xFFF3F4F6),
+                                      width: 1,
+                                    ),
+                                  ),
+                                  alignment: Alignment.center,
+                                  child: const Icon(
+                                    CupertinoIcons.arrow_clockwise,
+                                    size: 18,
+                                    color: Color(0xFF475569),
+                                  ),
+                                ),
+                              ),
+                              const Gap(8),
+                              const AlertsHeaderButton(),
+                            ],
                           ),
                         ],
                       ),

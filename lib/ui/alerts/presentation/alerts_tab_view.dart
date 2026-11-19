@@ -11,7 +11,9 @@ import 'package:acadeno_crm/ui/alerts/data/model/alert_models.dart';
 import 'package:acadeno_crm/ui/home/application/home_cubit.dart';
 
 class AlertsTabView extends StatelessWidget {
-  const AlertsTabView({super.key});
+  final bool showBackButton;
+
+  const AlertsTabView({super.key, this.showBackButton = false});
 
   @override
   Widget build(BuildContext context) {
@@ -50,6 +52,31 @@ class AlertsTabView extends StatelessWidget {
                         Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
+                            if (showBackButton) ...[
+                              InkWell(
+                                onTap: () => Navigator.of(context).maybePop(),
+                                borderRadius: BorderRadius.circular(10),
+                                child: Container(
+                                  width: 36,
+                                  height: 36,
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFF9FAFB),
+                                    borderRadius: BorderRadius.circular(10),
+                                    border: Border.all(
+                                      color: const Color(0xFFF3F4F6),
+                                      width: 1,
+                                    ),
+                                  ),
+                                  alignment: Alignment.center,
+                                  child: const Icon(
+                                    Icons.arrow_back_ios_new_rounded,
+                                    size: 16,
+                                    color: Color(0xFF0F172A),
+                                  ),
+                                ),
+                              ),
+                              const Gap(10),
+                            ],
                             Image.asset(
                               AppImages.acadenoALogo,
                               width: 28,
@@ -223,6 +250,9 @@ class AlertsTabView extends StatelessWidget {
       try {
         context.read<HomeCubit>().selectBottomNav(item.targetTabIndex!);
       } catch (_) {}
+      if (showBackButton && Navigator.of(context).canPop()) {
+        Navigator.of(context).pop();
+      }
     }
   }
 

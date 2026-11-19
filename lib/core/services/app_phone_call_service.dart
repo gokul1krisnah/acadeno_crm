@@ -7,7 +7,6 @@ import 'package:flutter/services.dart';
 import '../../ui/follow_ups/data/model/follow_up_models.dart';
 import '../../ui/leads/data/model/lead_models.dart';
 import '../../ui/leads/data/sources/leads_rds.dart';
-import '../../ui/leads/presentation/widgets/lead_call_sheets.dart';
 import '../utils/url_dialer_helper.dart';
 
 /// Telephony & Dialer Service for ACADENO CRM.
@@ -31,13 +30,9 @@ class AppPhoneCallService with WidgetsBindingObserver {
   int _dialStartTimeMs = 0;
   bool _isWaitingForCallReturn = false;
   bool _hasLeftApp = false;
-  BuildContext? _activeContext;
-  GlobalKey<NavigatorState>? _navigatorKey;
 
-  /// Attaches global navigator key for immediate fallback dialog display.
-  void attachNavigatorKey(GlobalKey<NavigatorState> key) {
-    _navigatorKey = key;
-  }
+  /// Attaches global navigator key (retained for API compatibility).
+  void attachNavigatorKey(GlobalKey<NavigatorState> key) {}
 
   /// Initializes lifecycle observation for automatic post-call return detection.
   void initialize() {
@@ -111,7 +106,6 @@ class AppPhoneCallService with WidgetsBindingObserver {
     }
 
     _activeLead = lead;
-    _activeContext = context;
     _dialStartTimeMs = DateTime.now().millisecondsSinceEpoch;
     _isWaitingForCallReturn = true;
     _hasLeftApp = false;
@@ -164,10 +158,8 @@ class AppPhoneCallService with WidgetsBindingObserver {
 
   Future<void> _handleCallReturn() async {
     final lead = _activeLead;
-    final context = _activeContext;
     final startMs = _dialStartTimeMs;
     _activeLead = null;
-    _activeContext = null;
 
     final elapsedMs = DateTime.now().millisecondsSinceEpoch - startMs;
     // Debounce accidental same-frame re-entry (< 150ms)
@@ -175,90 +167,10 @@ class AppPhoneCallService with WidgetsBindingObserver {
 
     if (lead == null) return;
 
-    final cleanPhone =
-        (lead.fullPhone.isNotEmpty ? lead.fullPhone : lead.maskedPhone)
-            .replaceAll(RegExp(r'[^0-9+]'), '');
-
-    int durationSeconds = 0;
-
-    // Fast check on Android Telecom CallLog with quick retry (FR-3.2)
-    if (!kIsWeb && Platform.isAndroid) {
-      try {
-        int? res = await _channel.invokeMethod<int>('getLastCallDuration', {
-          'phone': cleanPhone,
-          'startTimestamp': startMs,
-        }).timeout(const Duration(milliseconds: 300), onTimeout: () => null);
-
-        // If -1 (no call found yet), give a 350ms window for the system dialer
-        // process to flush the call record to the SQLite CallLog provider
-        if (res == -1) {
-          await Future<void>.delayed(const Duration(milliseconds: 350));
-          res = await _channel.invokeMethod<int>('getLastCallDuration', {
-            'phone': cleanPhone,
-            'startTimestamp': startMs,
-          }).timeout(const Duration(milliseconds: 350), onTimeout: () => -1);
-        }
-
-        if (res != null && res >= 0) {
-          durationSeconds = res;
-        } else if (res == -1 && lead.id.isNotEmpty) {
-          // User opened dialer pad and returned without placing a call:
-          // release the active "is calling now" lock immediately.
-          unawaited(LeadsRds().releaseLeadLock(lead.id));
-        }
-      } catch (e) {
-        debugPrint('[AppPhoneCallService] CallLog check error: $e');
-      }
+    // Release active call lock on return without automatically opening any popup.
+    if (lead.id.isNotEmpty) {
+      unawaited(LeadsRds().releaseLeadLock(lead.id));
     }
-
-    // FR-3.2 & FR-3.3: Always open the mandatory Call Outcome sheet on return to foreground.
-    // Duration is pre-filled from CallLog when Android permits, or editable manually.
-    final formattedDuration = _formatDuration(durationSeconds);
-
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      final targetContext = (context != null && context.mounted)
-          ? context
-          : _navigatorKey?.currentContext;
-
-      if (targetContext == null || !targetContext.mounted) {
-        if (lead.id.isNotEmpty) {
-          unawaited(LeadsRds().releaseLeadLock(lead.id));
-        }
-        return;
-      }
-
-      try {
-        final saved = await LeadCallSheets.showCallAndOutcomeSheet(
-          targetContext,
-          leadId: lead.id,
-          leadName: lead.name,
-          maskedPhone: lead.maskedPhone,
-          collegeInfo: lead.collegeInfo,
-          campaignTag: lead.campaignTag,
-          initialDuration: formattedDuration,
-          course: lead.course,
-          fee: lead.fee,
-        );
-        if (!saved && lead.id.isNotEmpty) {
-          unawaited(LeadsRds().releaseLeadLock(lead.id));
-        }
-      } catch (e) {
-        debugPrint('[AppPhoneCallService] Error showing outcome sheet: $e');
-        if (lead.id.isNotEmpty) {
-          unawaited(LeadsRds().releaseLeadLock(lead.id));
-        }
-      }
-    });
-  }
-
-  String _formatDuration(int seconds) {
-    if (seconds <= 0) return '0s';
-    final mins = seconds ~/ 60;
-    final secs = seconds % 60;
-    if (mins > 0) {
-      return '${mins}m ${secs.toString().padLeft(2, '0')}s';
-    }
-    return '${secs}s';
   }
 
   void dispose() {

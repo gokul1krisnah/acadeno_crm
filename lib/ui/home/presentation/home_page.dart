@@ -16,7 +16,6 @@ import 'package:acadeno_crm/ui/alerts/application/alerts_cubit.dart';
 import 'package:acadeno_crm/ui/alerts/application/alerts_state.dart';
 import 'package:acadeno_crm/ui/alerts/data/repository/alerts_repo.dart';
 import 'package:acadeno_crm/ui/alerts/data/sources/alerts_rds.dart';
-import 'package:acadeno_crm/ui/alerts/presentation/alerts_tab_view.dart';
 import 'package:acadeno_crm/ui/call_logs/presentation/call_logs_tab_view.dart';
 import 'package:acadeno_crm/ui/follow_ups/application/follow_ups_cubit.dart';
 import 'package:acadeno_crm/ui/follow_ups/application/follow_ups_state.dart';
@@ -174,7 +173,6 @@ class _HomeScaffoldViewState extends State<_HomeScaffoldView> {
                                   2 => const CallLogsTabView(),
                                   3 => const VisitsTabView(),
                                   4 => const MyRecordsTabView(),
-                                  5 => const AlertsTabView(),
                                   _ => LeadsTabView(onLogout: _performLogout),
                                 },
                               ),
@@ -252,12 +250,6 @@ class _ExecutiveBottomNavBar extends StatelessWidget {
       label: 'My Records',
       svgAsset: AppSvgs.navRecords,
       iconWidth: 20,
-      iconHeight: 18,
-    ),
-    _BottomNavItem(
-      label: 'Alerts',
-      svgAsset: AppSvgs.navAlerts,
-      iconWidth: 15.75,
       iconHeight: 18,
     ),
   ];

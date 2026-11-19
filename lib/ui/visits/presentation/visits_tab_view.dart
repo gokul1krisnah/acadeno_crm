@@ -14,6 +14,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 import 'package:acadeno_crm/shared/extensions/build_context_extension.dart';
+import 'package:acadeno_crm/ui/alerts/presentation/widgets/alerts_header_button.dart';
 import 'package:acadeno_crm/ui/dashboard/presentation/widgets/figma_calendar_dialog.dart';
 import 'package:acadeno_crm/ui/visits/application/visits_cubit.dart';
 import 'package:acadeno_crm/ui/visits/application/visits_state.dart';
@@ -124,16 +125,21 @@ class _VisitsTabViewState extends State<VisitsTabView> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
-                            Text(
-                              'College visits',
-                              style: GoogleFonts.inter(
-                                fontSize: isCompact ? 22 : 24,
-                                fontWeight: FontWeight.w700,
-                                color: const Color(0xFF0F172A),
-                                letterSpacing: -0.5,
-                                height: 32 / 24,
+                            Expanded(
+                              child: Text(
+                                'College visits',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: GoogleFonts.inter(
+                                  fontSize: isCompact ? 20 : 24,
+                                  fontWeight: FontWeight.w700,
+                                  color: const Color(0xFF0F172A),
+                                  letterSpacing: -0.5,
+                                  height: 32 / 24,
+                                ),
                               ),
                             ),
+                            const Gap(8),
                             SizedBox(
                               height: 38,
                               child: ElevatedButton.icon(
@@ -157,8 +163,8 @@ class _VisitsTabViewState extends State<VisitsTabView> {
                                   foregroundColor: Colors.white,
                                   elevation: 0,
                                   shadowColor: const Color(0x0D000000),
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 16,
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: isCompact ? 12 : 16,
                                     vertical: 8,
                                   ),
                                   shape: RoundedRectangleBorder(
@@ -167,6 +173,8 @@ class _VisitsTabViewState extends State<VisitsTabView> {
                                 ),
                               ),
                             ),
+                            const Gap(8),
+                            const AlertsHeaderButton(),
                           ],
                         ),
                         Gap(headerToTabsGap),

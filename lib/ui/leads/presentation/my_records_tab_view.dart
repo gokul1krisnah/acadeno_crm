@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 import '../../../shared/theme/app_svgs.dart';
+import '../../alerts/presentation/widgets/alerts_header_button.dart';
 import '../../home/application/home_cubit.dart';
 import '../application/leads_cubit.dart';
 import '../application/leads_state.dart';
@@ -70,15 +71,20 @@ class _MyRecordsTabViewState extends State<MyRecordsTabView> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text(
-                                'My Records',
-                                style: GoogleFonts.inter(
-                                  fontSize: 22,
-                                  fontWeight: FontWeight.w700,
-                                  color: const Color(0xFF0F172A),
-                                  letterSpacing: -0.4,
+                              Expanded(
+                                child: Text(
+                                  'My Records',
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: GoogleFonts.inter(
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.w700,
+                                    color: const Color(0xFF0F172A),
+                                    letterSpacing: -0.4,
+                                  ),
                                 ),
                               ),
+                              const Gap(8),
                               Container(
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: 10,
@@ -98,6 +104,8 @@ class _MyRecordsTabViewState extends State<MyRecordsTabView> {
                                   ),
                                 ),
                               ),
+                              const Gap(8),
+                              const AlertsHeaderButton(),
                             ],
                           ),
                           const Gap(4),
