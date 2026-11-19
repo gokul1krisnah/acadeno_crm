@@ -211,6 +211,51 @@ class CallLogsCubit extends Cubit<CallLogsState> {
     }
   }
 
+  /// Saves a detailed outcome from the "Other" popup.
+  /// Updates the card category to `Other` only after Firestore confirms the save.
+  /// Rethrows errors so the popup stays open and preserves user input.
+  Future<void> saveOtherOutcome({
+    required DeviceCallLogItem item,
+    required String outcome,
+    required String notes,
+    String? courseEnrolled,
+    String? batch,
+    String? followUpTime,
+  }) async {
+    await _repository.saveOtherOutcome(
+      item: item,
+      outcome: outcome,
+      notes: notes,
+      courseEnrolled: courseEnrolled,
+      batch: batch,
+      followUpTime: followUpTime,
+    );
+
+    item.category = CallCategory.other;
+    final updatedMap = Map<String, CallCategory>.from(state.categorizations);
+    if (item.normalizedPhone.isNotEmpty) {
+      updatedMap[item.normalizedPhone] = CallCategory.other;
+    }
+    updatedMap[item.id] = CallCategory.other;
+
+    final updatedLogs = _applyCategorizations(state.allLogs, updatedMap);
+    final filtered = _filterLogs(
+      updatedLogs,
+      state.activeCategoryFilter,
+      state.searchQuery,
+    );
+
+    if (!isClosed) {
+      emit(
+        state.copyWith(
+          categorizations: updatedMap,
+          allLogs: updatedLogs,
+          displayedLogs: filtered,
+        ),
+      );
+    }
+  }
+
   void setFilter(String filter) {
     final filtered = _filterLogs(state.allLogs, filter, state.searchQuery);
     emit(state.copyWith(activeCategoryFilter: filter, displayedLogs: filtered));

@@ -93,6 +93,13 @@ class LeadCallSheets {
     String initialDuration = '0s',
     String? course,
     String? fee,
+    Future<void> Function({
+      required String outcome,
+      required String notes,
+      String? courseEnrolled,
+      String? batch,
+      String? followUpTime,
+    })? onSave,
   }) async {
     final LeadsCubit cubit;
     LeadsCubit? tempCubit;
@@ -119,6 +126,8 @@ class LeadCallSheets {
         FollowUpsCubit(FollowUpsRepository(FollowUpsRds()));
 
     String selectedOutcome = 'Interested';
+    bool isSaving = false;
+    String? saveError;
     String selectedFollowUpSlot = LeadDateHelper.formatFollowUp(
       DateTime.now().add(const Duration(days: 1)).copyWith(hour: 10, minute: 30),
     );
@@ -512,114 +521,237 @@ class LeadCallSheets {
                             ),
                           ),
                         ),
-                        const Gap(28),
+                        if (saveError != null) ...[
+                          const Gap(14),
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 10,
+                            ),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFFEF2F2),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: const Color(0xFFFECACA),
+                              ),
+                            ),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Padding(
+                                  padding: EdgeInsets.only(top: 1),
+                                  child: Icon(
+                                    Icons.error_outline_rounded,
+                                    size: 16,
+                                    color: Color(0xFFDC2626),
+                                  ),
+                                ),
+                                const Gap(8),
+                                Expanded(
+                                  child: Text(
+                                    saveError!,
+                                    style: GoogleFonts.inter(
+                                      fontSize: 12.5,
+                                      fontWeight: FontWeight.w500,
+                                      color: const Color(0xFFB91C1C),
+                                      height: 1.35,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const Gap(14),
+                        ] else
+                          const Gap(28),
 
                         // Save Button
                         SizedBox(
                           width: double.infinity,
                           height: 56,
                           child: ElevatedButton(
-                            onPressed: () async {
-                              final feeVal = int.tryParse(feeCtrl.text.trim());
-                              final discVal =
-                                  int.tryParse(discountCtrl.text.trim());
-                              final paidVal =
-                                  int.tryParse(paidCtrl.text.trim());
-                              final balanceVal =
-                                  (feeVal ?? 0) -
-                                  (discVal ?? 0) -
-                                  (paidVal ?? 0);
+                            onPressed: isSaving
+                                ? null
+                                : () async {
+                                    if (selectedOutcome.trim().isEmpty) {
+                                      setSheetState(
+                                        () => saveError =
+                                            'Please select a call outcome before saving.',
+                                      );
+                                      return;
+                                    }
+                                    if (selectedOutcome == 'Converted' &&
+                                        batchCtrl.text.trim().isEmpty) {
+                                      setSheetState(
+                                        () => saveError =
+                                            'Please enter a batch name for converted leads.',
+                                      );
+                                      return;
+                                    }
 
-                              if (ctx.mounted) {
-                                Navigator.pop(ctx, true);
-                              }
-                              try {
-                                final result = await cubit.recordCallOutcome(
-                                  leadId: leadId,
-                                  leadName: leadName,
-                                  outcome: selectedOutcome,
-                                  duration: resolvedInitialDuration,
-                                  notes: notesCtrl.text.trim(),
-                                  courseEnrolled:
-                                      (selectedOutcome == 'Converted' ||
-                                          selectedOutcome == 'Interested')
-                                      ? selectedProgram
-                                      : null,
-                                  discountAmount:
-                                      selectedOutcome == 'Converted'
-                                      ? discVal
-                                      : null,
-                                  batch: selectedOutcome == 'Converted'
-                                      ? batchCtrl.text.trim()
-                                      : null,
-                                  feeAmount: selectedOutcome == 'Converted'
-                                      ? feeVal
-                                      : null,
-                                  amountPaid: selectedOutcome == 'Converted'
-                                      ? paidVal
-                                      : null,
-                                  paymentMode: selectedOutcome == 'Converted'
-                                      ? selectedPaymentMode
-                                      : null,
-                                  receiptNumber: selectedOutcome == 'Converted'
-                                      ? receiptCtrl.text.trim()
-                                      : null,
-                                  expectedBalanceDate:
-                                      (selectedOutcome == 'Converted' &&
-                                          balanceVal > 0)
-                                      ? expectedBalanceDate
-                                      : null,
-                                  followUpTime: selectedFollowUpSlot,
-                                );
-                                followUpsCubit.addFromCallOutcome(
-                                  leadName: leadName,
-                                  collegeInfo: result.collegeInfo,
-                                  outcome:
-                                      (selectedOutcome == 'Converted' &&
-                                          balanceVal > 0)
-                                      ? 'Follow-up'
-                                      : (selectedOutcome == 'Callback'
-                                            ? 'Follow-up'
-                                            : selectedOutcome),
-                                  notes:
-                                      (selectedOutcome == 'Converted' &&
-                                          balanceVal > 0)
-                                      ? 'Balance collection (₹$balanceVal due)'
-                                      : notesCtrl.text.trim(),
-                                  followUpTimeLabel:
-                                      (selectedOutcome == 'Converted' &&
-                                          balanceVal > 0)
-                                      ? expectedBalanceDate
-                                      : selectedFollowUpSlot,
-                                );
-                                if (context.mounted) {
-                                  SnackBarAlert.showToast(
-                                    context: context,
-                                    message: 'Outcome saved for $leadName',
-                                  );
-                                }
-                              } catch (e) {
-                                debugPrint('recordCallOutcome error: $e');
-                              }
-                            },
+                                    setSheetState(() {
+                                      isSaving = true;
+                                      saveError = null;
+                                    });
+
+                                    final trimmedNotes = notesCtrl.text.trim();
+                                    final courseVal =
+                                        (selectedOutcome == 'Converted' ||
+                                            selectedOutcome == 'Interested')
+                                        ? selectedProgram
+                                        : null;
+                                    final batchVal =
+                                        selectedOutcome == 'Converted'
+                                        ? batchCtrl.text.trim()
+                                        : null;
+
+                                    try {
+                                      if (onSave != null) {
+                                        await onSave(
+                                          outcome: selectedOutcome,
+                                          notes: trimmedNotes,
+                                          courseEnrolled: courseVal,
+                                          batch: batchVal,
+                                          followUpTime: selectedFollowUpSlot,
+                                        );
+                                      } else {
+                                        final feeVal = int.tryParse(
+                                          feeCtrl.text.trim(),
+                                        );
+                                        final discVal = int.tryParse(
+                                          discountCtrl.text.trim(),
+                                        );
+                                        final paidVal = int.tryParse(
+                                          paidCtrl.text.trim(),
+                                        );
+                                        final balanceVal =
+                                            (feeVal ?? 0) -
+                                            (discVal ?? 0) -
+                                            (paidVal ?? 0);
+
+                                        final result = await cubit
+                                            .recordCallOutcome(
+                                              leadId: leadId,
+                                              leadName: leadName,
+                                              outcome: selectedOutcome,
+                                              duration: resolvedInitialDuration,
+                                              notes: trimmedNotes,
+                                              courseEnrolled: courseVal,
+                                              discountAmount:
+                                                  selectedOutcome == 'Converted'
+                                                  ? discVal
+                                                  : null,
+                                              batch: batchVal,
+                                              feeAmount:
+                                                  selectedOutcome == 'Converted'
+                                                  ? feeVal
+                                                  : null,
+                                              amountPaid:
+                                                  selectedOutcome == 'Converted'
+                                                  ? paidVal
+                                                  : null,
+                                              paymentMode:
+                                                  selectedOutcome == 'Converted'
+                                                  ? selectedPaymentMode
+                                                  : null,
+                                              receiptNumber:
+                                                  selectedOutcome == 'Converted'
+                                                  ? receiptCtrl.text.trim()
+                                                  : null,
+                                              expectedBalanceDate:
+                                                  (selectedOutcome ==
+                                                          'Converted' &&
+                                                      balanceVal > 0)
+                                                  ? expectedBalanceDate
+                                                  : null,
+                                              followUpTime:
+                                                  selectedFollowUpSlot,
+                                            );
+                                        followUpsCubit.addFromCallOutcome(
+                                          leadName: leadName,
+                                          collegeInfo: result.collegeInfo,
+                                          outcome:
+                                              (selectedOutcome == 'Converted' &&
+                                                  balanceVal > 0)
+                                              ? 'Follow-up'
+                                              : (selectedOutcome == 'Callback'
+                                                    ? 'Follow-up'
+                                                    : selectedOutcome),
+                                          notes:
+                                              (selectedOutcome == 'Converted' &&
+                                                  balanceVal > 0)
+                                              ? 'Balance collection (₹$balanceVal due)'
+                                              : trimmedNotes,
+                                          followUpTimeLabel:
+                                              (selectedOutcome == 'Converted' &&
+                                                  balanceVal > 0)
+                                              ? expectedBalanceDate
+                                              : selectedFollowUpSlot,
+                                        );
+                                      }
+
+                                      if (ctx.mounted) {
+                                        Navigator.pop(ctx, true);
+                                      }
+                                      if (context.mounted) {
+                                        SnackBarAlert.showToast(
+                                          context: context,
+                                          message:
+                                              'Saved as $selectedOutcome',
+                                        );
+                                      }
+                                    } catch (e) {
+                                      debugPrint('recordCallOutcome error: $e');
+                                      if (ctx.mounted) {
+                                        final rawMsg = e
+                                            .toString()
+                                            .replaceFirst('Exception: ', '')
+                                            .replaceFirst(
+                                              'Bad state: ',
+                                              '',
+                                            );
+                                        setSheetState(() {
+                                          isSaving = false;
+                                          saveError = rawMsg.isNotEmpty
+                                              ? 'Failed to save: $rawMsg'
+                                              : 'Failed to save outcome. Please try again.';
+                                        });
+                                      }
+                                    }
+                                  },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: const Color(0xFFC84B14),
+                              disabledBackgroundColor: const Color(
+                                0xFFC84B14,
+                              ).withValues(alpha: 0.65),
                               foregroundColor: Colors.white,
                               elevation: 0,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(16),
                               ),
                             ),
-                            child: Text(
-                              'Save',
-                              textAlign: TextAlign.center,
-                              style: GoogleFonts.inter(
-                                fontSize: 17,
-                                fontWeight: FontWeight.w700,
-                                color: Colors.white,
-                                height: 24 / 17,
-                              ),
-                            ),
+                            child: isSaving
+                                ? const SizedBox(
+                                    width: 22,
+                                    height: 22,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2.5,
+                                      valueColor: AlwaysStoppedAnimation<Color>(
+                                        Colors.white,
+                                      ),
+                                    ),
+                                  )
+                                : Text(
+                                    'Save',
+                                    textAlign: TextAlign.center,
+                                    style: GoogleFonts.inter(
+                                      fontSize: 17,
+                                      fontWeight: FontWeight.w700,
+                                      color: Colors.white,
+                                      height: 24 / 17,
+                                    ),
+                                  ),
                           ),
                         ),
                       ],

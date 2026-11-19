@@ -25,6 +25,22 @@ class CallLogsRepository {
     String? notes,
   }) => _rds.saveCategorization(item: item, category: category, notes: notes);
 
+  Future<void> saveOtherOutcome({
+    required DeviceCallLogItem item,
+    required String outcome,
+    required String notes,
+    String? courseEnrolled,
+    String? batch,
+    String? followUpTime,
+  }) => _rds.saveOtherOutcome(
+    item: item,
+    outcome: outcome,
+    notes: notes,
+    courseEnrolled: courseEnrolled,
+    batch: batch,
+    followUpTime: followUpTime,
+  );
+
   Stream<List<ExecutiveLeadItem>> streamLeadsByCategory(CallCategory category) =>
       _rds.streamLeadsByCategory(category);
 }

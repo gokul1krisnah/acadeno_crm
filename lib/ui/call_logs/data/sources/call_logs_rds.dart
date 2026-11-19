@@ -259,6 +259,182 @@ class CallLogsRds {
     }
   }
 
+  /// Saves a detailed outcome from the "Other" popup to `call_categorizations`,
+  /// `leads`, `call_logs`, and (if Callback/Follow-up) follow-ups.
+  /// Throws on failure so the popup can remain open and let the user retry.
+  Future<void> saveOtherOutcome({
+    required DeviceCallLogItem item,
+    required String outcome,
+    required String notes,
+    String? courseEnrolled,
+    String? batch,
+    String? followUpTime,
+  }) async {
+    final uid = currentUserId;
+    if (uid == null || uid.isEmpty) {
+      throw StateError('Please sign in to save call outcomes.');
+    }
+    final trimmedOutcome = outcome.trim();
+    if (trimmedOutcome.isEmpty) {
+      throw ArgumentError('Please select a call outcome.');
+    }
+    final trimmedNotes = notes.trim();
+    final name = currentUserDisplayName;
+    final norm = item.normalizedPhone;
+    final baseKey = norm.isNotEmpty ? norm : item.id;
+    final docId = '${uid}_$baseKey';
+    final now = DateTime.now();
+
+    // 1. Persist categorization + outcome in `call_categorizations/{uid}_{key}`
+    await _callCategorizations.doc(docId).set({
+      'callId': item.id,
+      'phone': item.number,
+      'phoneNormalized': norm,
+      'category': CallCategory.other.dbValue,
+      'outcome': trimmedOutcome,
+      'durationSeconds': item.durationSeconds,
+      'callTimestamp': Timestamp.fromDate(item.timestamp),
+      'categorizedAt': FieldValue.serverTimestamp(),
+      'updatedAt': FieldValue.serverTimestamp(),
+      'executiveUid': uid,
+      'executiveName': name,
+      'notes': trimmedNotes,
+      if (courseEnrolled != null && courseEnrolled.trim().isNotEmpty)
+        'course': courseEnrolled.trim(),
+      if (batch != null && batch.trim().isNotEmpty) 'batch': batch.trim(),
+      if (followUpTime != null && followUpTime.trim().isNotEmpty)
+        'followUpTime': followUpTime.trim(),
+    }, SetOptions(merge: true));
+
+    // 2. Synchronize with `leads`, `call_logs`, and follow-ups
+    if (norm.isEmpty) return;
+
+    final mappedStatus =
+        trimmedOutcome == 'Callback' ? 'Follow-up' : trimmedOutcome;
+
+    final phoneDoc = await _leadPhones.doc(norm).get();
+    String? targetLeadId;
+    if (phoneDoc.exists && phoneDoc.data() != null) {
+      targetLeadId = (phoneDoc.data()!['leadId'] ?? '').toString().trim();
+    }
+
+    final timelineEntry =
+        '${LeadDateHelper.timelineStamp(now)} · $trimmedOutcome logged from Call Log by $name'
+        '${trimmedNotes.isNotEmpty ? " ($trimmedNotes)" : ""}';
+
+    if (targetLeadId != null && targetLeadId.isNotEmpty) {
+      final updates = <String, dynamic>{
+        'category': CallCategory.other.dbValue,
+        'status': mappedStatus,
+        'lastContact': 'Today · $trimmedOutcome',
+        'lastContactAt': FieldValue.serverTimestamp(),
+        'lastCalledAt': FieldValue.serverTimestamp(),
+        'updatedAt': FieldValue.serverTimestamp(),
+        if (trimmedNotes.isNotEmpty) 'notes': trimmedNotes,
+        if (trimmedNotes.isNotEmpty) 'studentNotes': trimmedNotes,
+        if (courseEnrolled != null && courseEnrolled.trim().isNotEmpty)
+          'course': courseEnrolled.trim(),
+        if (batch != null && batch.trim().isNotEmpty) 'batch': batch.trim(),
+        'timeline': FieldValue.arrayUnion([timelineEntry]),
+      };
+
+      try {
+        final existingSnap = await _leads.doc(targetLeadId).get();
+        final existingAssignee =
+            (existingSnap.data()?['assignedToUid'] ?? '').toString().trim();
+        if (existingAssignee.isEmpty) {
+          updates['assignedToUid'] = uid;
+          updates['assignedToName'] = name;
+          updates['assignedTo'] = name;
+          updates['assignedDateKey'] = LeadDateHelper.todayDateKey(now);
+          updates['assignedDateLabel'] = LeadDateHelper.dateLabel(now);
+        }
+        await _leads.doc(targetLeadId).update(updates);
+      } on FirebaseException catch (fe) {
+        debugPrint(
+          'CallLogsRds.saveOtherOutcome existing lead update skipped (${fe.code}): ${fe.message}',
+        );
+        targetLeadId = null;
+      }
+    } else {
+      try {
+        final created = await LeadsRds().createLead(
+          name: '',
+          phone: item.number,
+          collegeBranch: 'Call Log Inquiry',
+          source: 'Call Log',
+          status: mappedStatus,
+          notes: trimmedNotes.isNotEmpty
+              ? trimmedNotes
+              : 'Logged as $trimmedOutcome from device call log.',
+          assignToSelfAsWalkIn: true,
+        );
+        targetLeadId = created.id;
+
+        await _leads.doc(created.id).update({
+          'category': CallCategory.other.dbValue,
+          'status': mappedStatus,
+          if (courseEnrolled != null && courseEnrolled.trim().isNotEmpty)
+            'course': courseEnrolled.trim(),
+          if (batch != null && batch.trim().isNotEmpty) 'batch': batch.trim(),
+          'lastContact': 'Today · $trimmedOutcome',
+          'lastContactAt': FieldValue.serverTimestamp(),
+          'lastCalledAt': FieldValue.serverTimestamp(),
+          'updatedAt': FieldValue.serverTimestamp(),
+          'timeline': FieldValue.arrayUnion([timelineEntry]),
+        });
+      } on DuplicateLeadException catch (dup) {
+        targetLeadId = dup.existingLeadId;
+        try {
+          await _leads.doc(dup.existingLeadId).update({
+            'category': CallCategory.other.dbValue,
+            'status': mappedStatus,
+            if (trimmedNotes.isNotEmpty) 'notes': trimmedNotes,
+            if (trimmedNotes.isNotEmpty) 'studentNotes': trimmedNotes,
+            'updatedAt': FieldValue.serverTimestamp(),
+            'timeline': FieldValue.arrayUnion([timelineEntry]),
+          });
+        } catch (_) {}
+      }
+    }
+
+    // 3. Append permanent call log record for executive & admin visibility
+    try {
+      await _firestore.collection('call_logs').add({
+        'leadId': targetLeadId ?? '',
+        'leadName': item.formattedNumber,
+        'phone': item.number,
+        'phoneNormalized': norm,
+        'collegeInfo': 'Call Log Inquiry',
+        'campaign': 'Call Log',
+        'outcome': trimmedOutcome,
+        'category': CallCategory.other.dbValue,
+        'duration': item.formattedDuration,
+        'notes': trimmedNotes,
+        'executiveUid': uid,
+        'executiveName': name,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+    } catch (e) {
+      debugPrint('CallLogsRds.saveOtherOutcome call_logs append notice: $e');
+    }
+
+    // 4. Schedule follow-up if outcome is Callback or Follow-up
+    if (targetLeadId != null &&
+        targetLeadId.isNotEmpty &&
+        (trimmedOutcome == 'Callback' || trimmedOutcome == 'Follow-up')) {
+      final slot = (followUpTime != null && followUpTime.trim().isNotEmpty)
+          ? followUpTime.trim()
+          : LeadDateHelper.formatFollowUp(
+              DateTime.now().add(const Duration(days: 1)).copyWith(
+                hour: 10,
+                minute: 30,
+              ),
+            );
+      await FollowUpsRds().snoozeFollowUp(targetLeadId, slot);
+    }
+  }
+
   /// Streams leads filtered by specific category for the user Home screen.
   Stream<List<ExecutiveLeadItem>> streamLeadsByCategory(CallCategory category) {
     final uid = currentUserId;
