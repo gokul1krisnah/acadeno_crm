@@ -59,6 +59,20 @@ class AuthSessionLocalDs {
     });
   }
 
+  /// Refreshes the session activity timestamp without altering user/role data.
+  Future<void> touch() async {
+    final box = _box;
+    if (box == null) return;
+    try {
+      final raw = box.get(_key);
+      if (raw is Map) {
+        final updated = Map<dynamic, dynamic>.from(raw);
+        updated['savedAt'] = DateTime.now().toIso8601String();
+        await box.put(_key, updated);
+      }
+    } catch (_) {}
+  }
+
   /// Returns the saved session, or null if absent or corrupted.
   Future<AuthSession?> read() async {
     final box = _box;

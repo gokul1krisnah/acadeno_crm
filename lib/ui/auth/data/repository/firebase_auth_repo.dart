@@ -73,29 +73,49 @@ class AuthRepository {
   /// Sets [sessionVerifiedOnline] to false if the backend was unreachable
   /// (the session is then trusted from local state only).
   Future<User?> restoreSession() async {
-    final user = currentUser;
+    // 1. Wait for Firebase Auth to finish hydrating persisted credentials on cold start
+    // (especially important on Web IndexedDB and cold mobile restarts).
+    User? user = currentUser;
+    if (user == null) {
+      try {
+        user = await FirebaseAuth.instance
+            .authStateChanges()
+            .first
+            .timeout(const Duration(seconds: 3), onTimeout: () => null);
+      } catch (_) {
+        user = currentUser;
+      }
+    }
+
     final saved = await _sessionDs.read();
     _savedSession = saved;
 
-    // Firebase has no user, or Hive metadata is missing/mismatched.
-    if (user == null || saved == null || saved.uid != user.uid) {
-      if (user != null) await _authRds.signOut();
+    // No authenticated Firebase user -> session cannot be restored.
+    if (user == null) {
       await clearSession();
       return null;
     }
 
+    // If Hive had metadata for a different UID, discard the stale metadata (do not sign out the valid Firebase user).
+    if (saved != null && saved.uid != user.uid) {
+      await clearSession();
+    }
+
     try {
       // Validates and refreshes the backend auth token (fails if disabled/deleted/revoked).
-      await user.reload().timeout(const Duration(milliseconds: 1000));
+      await user.reload().timeout(const Duration(seconds: 3));
       sessionVerifiedOnline = true;
-      return currentUser;
+      return currentUser ?? user;
     } on FirebaseAuthException catch (e) {
       if (e.code == 'network-request-failed') {
         sessionVerifiedOnline = false;
         return user;
       }
-      if (e.code == 'user-disabled' || e.code == 'user-not-found') {
-        await signOut();
+      if (e.code == 'user-disabled' ||
+          e.code == 'user-not-found' ||
+          e.code == 'user-token-expired' ||
+          e.code == 'invalid-user-token') {
+        await signOut(unbindDevice: false);
         return null;
       }
       sessionVerifiedOnline = false;

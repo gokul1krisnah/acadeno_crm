@@ -151,6 +151,9 @@ class CallLogsCubit extends Cubit<CallLogsState> {
     DeviceCallLogItem item,
     CallCategory category,
   ) async {
+    final previousCategory = item.category;
+    final previousMap = Map<String, CallCategory>.from(state.categorizations);
+
     try {
       item.category = category;
       final updatedMap = Map<String, CallCategory>.from(state.categorizations);
@@ -166,24 +169,45 @@ class CallLogsCubit extends Cubit<CallLogsState> {
         state.searchQuery,
       );
 
+      // Optimistic visual feedback while saving to Firestore
       emit(
         state.copyWith(
           categorizations: updatedMap,
           allLogs: updatedLogs,
           displayedLogs: filtered,
-          toastMessage: 'Categorized as ${category.label}',
-          isToastError: false,
         ),
       );
 
       await _repository.saveCategorization(item: item, category: category);
+
+      if (!isClosed) {
+        emit(
+          state.copyWith(
+            toastMessage: 'Saved as ${category.label}',
+            isToastError: false,
+          ),
+        );
+      }
     } catch (e) {
-      emit(
-        state.copyWith(
-          toastMessage: 'Failed to save categorization: $e',
-          isToastError: true,
-        ),
+      // Revert optimistic selection so UI stays consistent with Firestore
+      item.category = previousCategory;
+      final revertedLogs = _applyCategorizations(state.allLogs, previousMap);
+      final revertedFiltered = _filterLogs(
+        revertedLogs,
+        state.activeCategoryFilter,
+        state.searchQuery,
       );
+      if (!isClosed) {
+        emit(
+          state.copyWith(
+            categorizations: previousMap,
+            allLogs: revertedLogs,
+            displayedLogs: revertedFiltered,
+            toastMessage: 'Failed to save ${category.label}. Please try again.',
+            isToastError: true,
+          ),
+        );
+      }
     }
   }
 

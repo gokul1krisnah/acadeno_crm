@@ -48,6 +48,13 @@ Future<void> main() async {
 
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
+  // Ensure Firebase Auth persists credentials across browser/tab restarts on Web.
+  if (kIsWeb) {
+    try {
+      await FirebaseAuth.instance.setPersistence(Persistence.LOCAL);
+    } catch (_) {}
+  }
+
   // Set Firebase Auth locale to eliminate "Ignoring header X-Firebase-Locale because its value was null"
   try {
     if (!kIsWeb) {
@@ -123,22 +130,24 @@ class _AcadenoAppState extends State<AcadenoApp> with WidgetsBindingObserver {
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
-    // When the app is minimized/paused, gracefully pause Firestore network connection.
-    // This prevents Android OS DNS lookup failures (UnknownHostException) in the background and saves battery.
     if (state == AppLifecycleState.paused ||
         state == AppLifecycleState.hidden) {
       _pausedAt ??= DateTime.now();
-      FirebaseFirestore.instance.disableNetwork().catchError((_) {});
     } else if (state == AppLifecycleState.resumed) {
-      FirebaseFirestore.instance.enableNetwork().catchError((_) {});
       final pausedTime = _pausedAt;
       _pausedAt = null;
-      if (pausedTime != null && FirebaseAuth.instance.currentUser != null) {
-        final elapsed = DateTime.now().difference(pausedTime);
-        if (elapsed >= const Duration(hours: 12)) {
+      final currentUser = FirebaseAuth.instance.currentUser;
+      if (currentUser != null) {
+        if (pausedTime != null &&
+            DateTime.now().difference(pausedTime) >=
+                const Duration(hours: 12)) {
           SessionSecurityService.instance.terminateSession(
             'Your 12-hour session has expired. Please sign in again.',
           );
+        } else {
+          // Keep active session fresh across normal background/foreground transitions.
+          AuthSessionLocalDs().touch();
+          currentUser.getIdToken().catchError((_) => null);
         }
       }
     }

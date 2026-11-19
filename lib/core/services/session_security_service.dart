@@ -21,6 +21,7 @@ class SessionSecurityService {
   String? _monitoredUid;
   String? _initialLogoutToken;
   Timestamp? _initialLogoutAt;
+  bool _hasBaseline = false;
   bool _isTerminating = false;
 
   AppRouter? _router;
@@ -46,6 +47,7 @@ class SessionSecurityService {
     _isTerminating = false;
     _initialLogoutToken = initialLogoutToken;
     _initialLogoutAt = initialLogoutAt;
+    _hasBaseline = initialLogoutToken != null || initialLogoutAt != null;
 
     _userDocSub?.cancel();
 
@@ -65,6 +67,10 @@ class SessionSecurityService {
     DocumentSnapshot<Map<String, dynamic>> doc,
   ) async {
     if (_isTerminating) return;
+    // Ignore stale local cache snapshots so offline/cache-to-server transitions
+    // never trigger false-positive logouts.
+    if (doc.metadata.isFromCache) return;
+
     final currentAuthUser = FirebaseAuth.instance.currentUser;
     if (currentAuthUser == null || currentAuthUser.uid != doc.id) {
       await stopListening();
@@ -90,7 +96,7 @@ class SessionSecurityService {
       return;
     }
 
-    // 2. Initial state initialization: Capture the existing tokens present on first snapshot
+    // 2. Initial state initialization: Capture the existing tokens present on first server snapshot
     final serverLogoutToken = data['forceLogoutToken'] as String?;
     final serverLogoutAt = data['forceLogoutAt'] as Timestamp?;
 
@@ -101,12 +107,14 @@ class SessionSecurityService {
     if (registeredId != null && registeredId == currentDevice.deviceId) {
       _initialLogoutToken = serverLogoutToken;
       _initialLogoutAt = serverLogoutAt;
+      _hasBaseline = true;
       return;
     }
 
-    if (_initialLogoutToken == null && _initialLogoutAt == null) {
+    if (!_hasBaseline) {
       _initialLogoutToken = serverLogoutToken;
       _initialLogoutAt = serverLogoutAt;
+      _hasBaseline = true;
       return;
     }
 
@@ -189,6 +197,7 @@ class SessionSecurityService {
     final sub = _userDocSub;
     _userDocSub = null;
     _monitoredUid = null;
+    _hasBaseline = false;
     try {
       await sub?.cancel();
     } catch (_) {}

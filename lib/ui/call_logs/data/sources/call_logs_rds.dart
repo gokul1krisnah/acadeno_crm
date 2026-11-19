@@ -17,11 +17,9 @@ class CallLogsRds {
     'com.acadeno.crm/phone_call',
   );
 
-  CallLogsRds({
-    FirebaseFirestore? firestore,
-    FirebaseAuth? firebaseAuth,
-  }) : _firestore = firestore ?? FirebaseFirestore.instance,
-       _firebaseAuth = firebaseAuth ?? FirebaseAuth.instance;
+  CallLogsRds({FirebaseFirestore? firestore, FirebaseAuth? firebaseAuth})
+    : _firestore = firestore ?? FirebaseFirestore.instance,
+      _firebaseAuth = firebaseAuth ?? FirebaseAuth.instance;
 
   CollectionReference<Map<String, dynamic>> get _callCategorizations =>
       _firestore.collection('call_categorizations');
@@ -96,10 +94,11 @@ class CallLogsRds {
   /// Streams saved call categorizations for the current executive to keep pills synced.
   Stream<Map<String, CallCategory>> streamSavedCategorizations() {
     final uid = currentUserId;
-    Query<Map<String, dynamic>> query = _callCategorizations;
-    if (uid != null && uid.isNotEmpty) {
-      query = query.where('executiveUid', isEqualTo: uid);
+    if (uid == null || uid.isEmpty) {
+      return Stream.value(const <String, CallCategory>{});
     }
+
+    final query = _callCategorizations.where('executiveUid', isEqualTo: uid);
 
     return query.snapshots().map((snap) {
       final map = <String, CallCategory>{};
@@ -128,13 +127,17 @@ class CallLogsRds {
     required CallCategory category,
     String? notes,
   }) async {
-    final uid = currentUserId ?? 'exec_user';
+    final uid = currentUserId;
+    if (uid == null || uid.isEmpty) {
+      throw StateError('Please sign in to save categorizations.');
+    }
     final name = currentUserDisplayName;
     final norm = item.normalizedPhone;
-    final docKey = norm.isNotEmpty ? norm : item.id;
+    final baseKey = norm.isNotEmpty ? norm : item.id;
+    final docId = '${uid}_$baseKey';
 
-    // 1. Persist categorization in `call_categorizations`
-    await _callCategorizations.doc(docKey).set({
+    // 1. Persist categorization in `call_categorizations/{uid}_{phoneOrCallId}`
+    await _callCategorizations.doc(docId).set({
       'callId': item.id,
       'phone': item.number,
       'phoneNormalized': norm,
@@ -142,6 +145,7 @@ class CallLogsRds {
       'durationSeconds': item.durationSeconds,
       'callTimestamp': Timestamp.fromDate(item.timestamp),
       'categorizedAt': FieldValue.serverTimestamp(),
+      'updatedAt': FieldValue.serverTimestamp(),
       'executiveUid': uid,
       'executiveName': name,
       'notes': notes ?? '',
@@ -149,6 +153,16 @@ class CallLogsRds {
 
     // 2. Synchronize with Leads & Follow-ups collection
     if (norm.isEmpty) return;
+
+    final String statusForCategory;
+    if (category == CallCategory.followUp ||
+        category == CallCategory.reminder) {
+      statusForCategory = 'Follow-up';
+    } else if (category == CallCategory.hotLead) {
+      statusForCategory = 'Interested';
+    } else {
+      statusForCategory = 'Assigned';
+    }
 
     try {
       final phoneDoc = await _leadPhones.doc(norm).get();
@@ -160,62 +174,85 @@ class CallLogsRds {
       }
 
       if (targetLeadId != null && targetLeadId.isNotEmpty) {
-        // Update existing lead status and category
-        String statusUpdate = 'Interested';
-        if (category == CallCategory.followUp) {
-          statusUpdate = 'Follow-up';
-        } else if (category == CallCategory.reminder) {
-          statusUpdate = 'Follow-up';
-        } else if (category == CallCategory.hotLead) {
-          statusUpdate = 'Interested';
-        }
-
-        await _leads.doc(targetLeadId).update({
+        // Update existing lead status and category (if permitted by row-level rules)
+        final now = DateTime.now();
+        final updates = <String, dynamic>{
           'category': category.dbValue,
-          'status': statusUpdate,
+          'status': statusForCategory,
           'lastContact': 'Today · Categorized via Call Log',
           'lastContactAt': FieldValue.serverTimestamp(),
+          'updatedAt': FieldValue.serverTimestamp(),
           'timeline': FieldValue.arrayUnion([
-            '${LeadDateHelper.todayDateKey()} · Categorized as ${category.label} from Call Log by $name',
+            '${LeadDateHelper.timelineStamp(now)} · Categorized as ${category.label} from Call Log by $name',
           ]),
-        });
+        };
+
+        try {
+          final existingSnap = await _leads.doc(targetLeadId).get();
+          final existingAssignee =
+              (existingSnap.data()?['assignedToUid'] ?? '').toString().trim();
+          if (existingAssignee.isEmpty) {
+            updates['assignedToUid'] = uid;
+            updates['assignedToName'] = name;
+            updates['assignedTo'] = name;
+            updates['assignedDateKey'] = LeadDateHelper.todayDateKey(now);
+            updates['assignedDateLabel'] = LeadDateHelper.dateLabel(now);
+          }
+          await _leads.doc(targetLeadId).update(updates);
+        } on FirebaseException catch (fe) {
+          // If the existing lead is owned by another executive, keep the
+          // executive's own call_categorizations record without failing.
+          debugPrint(
+            'CallLogsRds.saveCategorization existing lead update skipped (${fe.code}): ${fe.message}',
+          );
+          targetLeadId = null;
+        }
       } else {
         // Create new lead record assigned to this executive
-        String leadStatus = 'Interested';
-        if (category == CallCategory.followUp) {
-          leadStatus = 'Follow-up';
-        } else if (category == CallCategory.reminder) {
-          leadStatus = 'Follow-up';
+        try {
+          final created = await LeadsRds().createLead(
+            name: '', // Generates next auto sequence e.g. L01
+            phone: item.number,
+            collegeBranch: 'Call Log Inquiry',
+            source: 'Call Log',
+            status: statusForCategory,
+            notes:
+                'Auto-categorized as ${category.label} from device call log.',
+            assignToSelfAsWalkIn: true,
+          );
+          targetLeadId = created.id;
+
+          await _leads.doc(created.id).update({
+            'category': category.dbValue,
+            'status': statusForCategory,
+            'updatedAt': FieldValue.serverTimestamp(),
+          });
+        } on DuplicateLeadException catch (dup) {
+          targetLeadId = dup.existingLeadId;
+          try {
+            await _leads.doc(dup.existingLeadId).update({
+              'category': category.dbValue,
+              'status': statusForCategory,
+              'updatedAt': FieldValue.serverTimestamp(),
+            });
+          } catch (_) {}
         }
-
-        final created = await LeadsRds().createLead(
-          name: '', // Generates next auto sequence e.g. L001
-          phone: item.number,
-          collegeBranch: 'Call Log Inquiry',
-          source: 'Call Log',
-          status: leadStatus,
-          notes: 'Auto-categorized as ${category.label} from device call log.',
-          assignToSelfAsWalkIn: true,
-        );
-        targetLeadId = created.id;
-
-        await _leads.doc(created.id).update({
-          'category': category.dbValue,
-        });
       }
 
       // If Follow-up or Reminder, also schedule follow-up on the lead
-      if (category == CallCategory.followUp || category == CallCategory.reminder) {
-        final scheduledTime = DateTime.now().add(const Duration(days: 1)).copyWith(
-          hour: category == CallCategory.reminder ? 11 : 10,
-          minute: 30,
-        );
+      if (targetLeadId != null &&
+          targetLeadId.isNotEmpty &&
+          (category == CallCategory.followUp ||
+              category == CallCategory.reminder)) {
+        final scheduledTime = DateTime.now()
+            .add(const Duration(days: 1))
+            .copyWith(
+              hour: category == CallCategory.reminder ? 11 : 10,
+              minute: 30,
+            );
         final timeLabel = LeadDateHelper.formatFollowUp(scheduledTime);
 
-        await FollowUpsRds().snoozeFollowUp(
-          targetLeadId,
-          timeLabel,
-        );
+        await FollowUpsRds().snoozeFollowUp(targetLeadId, timeLabel);
       }
     } catch (e) {
       debugPrint('CallLogsRds.saveCategorization lead sync error: $e');

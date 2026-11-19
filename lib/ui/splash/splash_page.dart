@@ -1,4 +1,5 @@
 import 'package:acadeno_crm/core/router/app_router.dart';
+import 'package:acadeno_crm/core/services/session_security_service.dart';
 import 'package:gap/gap.dart';
 import 'package:acadeno_crm/shared/extensions/build_context_extension.dart';
 import 'package:acadeno_crm/shared/theme/app_colors.dart';
@@ -90,45 +91,49 @@ class _SplashPageState extends State<SplashPage>
       final results =
           await Future.wait<Object?>([
             cubit.restoreSession().timeout(
-              const Duration(milliseconds: 2000),
+              const Duration(seconds: 6),
               onTimeout: () => false,
             ),
-            Future<Object?>.delayed(const Duration(milliseconds: 2000)),
+            Future<Object?>.delayed(const Duration(milliseconds: 1800)),
           ]).timeout(
-            const Duration(milliseconds: 2500),
+            const Duration(seconds: 7),
             onTimeout: () => [false, null],
           );
 
       restored = (results.first as bool?) ?? false;
       isAdmin = cubit.isAdmin;
 
-      // Offline safety fallback: if session restore timed out or returned false while offline,
-      // verify if a cached user and Hive session exist locally.
+      // Offline / slow-network safety fallback: if session restore timed out while
+      // Firebase Auth still holds a valid signed-in user, restore using local metadata.
       if (!restored) {
         final saved = cubit.savedSession;
         final currentUser = FirebaseAuth.instance.currentUser;
-        if (saved != null &&
-            currentUser != null &&
-            saved.uid == currentUser.uid) {
+        if (currentUser != null) {
           restored = true;
           isAdmin =
-              saved.isAdmin ||
+              (saved?.isAdmin ?? false) ||
               currentUser.uid == 'aOt6zw43GPTebTKWAP4d0hQHYEz2' ||
               const [
                 'admin',
                 'super_admin',
-              ].contains(saved.role?.toLowerCase());
+              ].contains(saved?.role?.toLowerCase());
+          SessionSecurityService.instance.startListening(currentUser.uid);
         }
       }
     } catch (e) {
       debugPrint('Splash restore fallback notice: $e');
       final saved = cubit.savedSession;
       final currentUser = FirebaseAuth.instance.currentUser;
-      if (saved != null &&
-          currentUser != null &&
-          saved.uid == currentUser.uid) {
+      if (currentUser != null) {
         restored = true;
-        isAdmin = saved.isAdmin;
+        isAdmin =
+            (saved?.isAdmin ?? false) ||
+            currentUser.uid == 'aOt6zw43GPTebTKWAP4d0hQHYEz2' ||
+            const [
+              'admin',
+              'super_admin',
+            ].contains(saved?.role?.toLowerCase());
+        SessionSecurityService.instance.startListening(currentUser.uid);
       }
     } finally {
       await cubit.close();
@@ -137,10 +142,13 @@ class _SplashPageState extends State<SplashPage>
     if (!mounted) return;
 
     if (!restored) {
+      isAdminSession = false;
       context.router.replaceAll([const LoginRoute()]);
     } else if (isAdmin) {
+      isAdminSession = true;
       context.router.replaceAll([const DashboardRoute()]);
     } else {
+      isAdminSession = false;
       context.router.replaceAll([const HomeRoute()]);
     }
   }

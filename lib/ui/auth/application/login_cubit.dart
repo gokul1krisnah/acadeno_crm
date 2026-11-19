@@ -78,11 +78,10 @@ class LoginCubit extends Cubit<LoginState> {
   Future<bool> restoreSession() async {
     try {
       final user = await _authRepository.restoreSession().timeout(
-        const Duration(milliseconds: 1500),
+        const Duration(seconds: 5),
         onTimeout: () {
           final current = _authRepository.currentUser;
-          final saved = _authRepository.savedSession;
-          if (current != null && saved != null && current.uid == saved.uid) {
+          if (current != null) {
             _authRepository.sessionVerifiedOnline = false;
             return current;
           }
@@ -100,35 +99,33 @@ class LoginCubit extends Cubit<LoginState> {
       if (denial != null) {
         return false;
       }
-      // Keep persisted session in sync if online; do not block startup
-      if (_authRepository.sessionVerifiedOnline) {
-        try {
-          await _authRepository
-              .saveSession(user, role: currentRole, isAdmin: isAdmin)
-              .timeout(const Duration(milliseconds: 500));
-        } catch (_) {}
-      }
+      // Keep persisted session in sync; do not block startup
+      try {
+        await _authRepository
+            .saveSession(user, role: currentRole, isAdmin: isAdmin)
+            .timeout(const Duration(milliseconds: 800));
+      } catch (_) {}
       return true;
     } catch (_) {
-      // Offline safety: do not wipe session on network timeout
+      // Offline / transient error safety: never wipe an authenticated Firebase session
       final saved = _authRepository.savedSession;
       final current = _authRepository.currentUser;
-      if (saved != null && current != null && saved.uid == current.uid) {
+      if (current != null) {
         final isOfflineAdmin =
-            (saved.isAdmin) ||
+            (saved?.isAdmin ?? false) ||
             current.uid == _kAdminUid ||
-            _kAdminRoles.contains(saved.role?.toLowerCase());
+            _kAdminRoles.contains(saved?.role?.toLowerCase());
         if (isOfflineAdmin) {
           isAdmin = true;
           isAdminSession = true;
-          currentRole = saved.role ?? 'admin';
+          currentRole = saved?.role ?? 'admin';
         } else {
           _resetRole();
-          currentRole = saved.role ?? 'executive';
+          currentRole = saved?.role ?? 'executive';
         }
+        SessionSecurityService.instance.startListening(current.uid);
         return true;
       }
-      await _authRepository.signOut();
       _resetRole();
       return false;
     }
@@ -248,6 +245,7 @@ class LoginCubit extends Cubit<LoginState> {
             await DeviceSecurityService.verifyDeviceBinding(
               user: user,
               userData: data,
+              alreadyFresh: true,
             );
         if (deviceCheckResult != null) {
           await _authRepository.signOut(unbindDevice: false);

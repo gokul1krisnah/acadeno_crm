@@ -659,46 +659,71 @@ class FirestoreLeadsBackend implements LeadsBackend {
 
     // 1. Pre-transaction backend query check against `leads` collection in case
     // pre-existing documents in Firestore were added before `lead_phones` index.
-    final existingByNorm = await _leads
-        .where('phoneNormalized', isEqualTo: phone10)
-        .limit(1)
-        .get();
-    if (existingByNorm.docs.isNotEmpty) {
-      final existing = LeadRecord.fromFirestore(existingByNorm.docs.first);
-      throw DuplicateLeadException(
-        phone10: phone10,
-        existingLeadId: existing.id,
-        existingLeadName: existing.name,
-        existingOwnerName: existing.assignedToName,
-      );
-    }
+    // Non-admin executives only have read permission on their own assigned leads;
+    // global uniqueness is still enforced atomically via `lead_phones/{phone10}`.
+    if (_isAdminOrManagerRole(actor.role)) {
+      final existingByNorm = await _leads
+          .where('phoneNormalized', isEqualTo: phone10)
+          .limit(1)
+          .get();
+      if (existingByNorm.docs.isNotEmpty) {
+        final existing = LeadRecord.fromFirestore(existingByNorm.docs.first);
+        throw DuplicateLeadException(
+          phone10: phone10,
+          existingLeadId: existing.id,
+          existingLeadName: existing.name,
+          existingOwnerName: existing.assignedToName,
+        );
+      }
 
-    final existingByFormatted = await _leads
-        .where('phone', isEqualTo: formattedPhone)
-        .limit(1)
-        .get();
-    if (existingByFormatted.docs.isNotEmpty) {
-      final existing = LeadRecord.fromFirestore(existingByFormatted.docs.first);
-      throw DuplicateLeadException(
-        phone10: phone10,
-        existingLeadId: existing.id,
-        existingLeadName: existing.name,
-        existingOwnerName: existing.assignedToName,
-      );
-    }
+      final existingByFormatted = await _leads
+          .where('phone', isEqualTo: formattedPhone)
+          .limit(1)
+          .get();
+      if (existingByFormatted.docs.isNotEmpty) {
+        final existing = LeadRecord.fromFirestore(
+          existingByFormatted.docs.first,
+        );
+        throw DuplicateLeadException(
+          phone10: phone10,
+          existingLeadId: existing.id,
+          existingLeadName: existing.name,
+          existingOwnerName: existing.assignedToName,
+        );
+      }
 
-    final existingByRaw = await _leads
-        .where('phone', isEqualTo: phone10)
-        .limit(1)
-        .get();
-    if (existingByRaw.docs.isNotEmpty) {
-      final existing = LeadRecord.fromFirestore(existingByRaw.docs.first);
-      throw DuplicateLeadException(
-        phone10: phone10,
-        existingLeadId: existing.id,
-        existingLeadName: existing.name,
-        existingOwnerName: existing.assignedToName,
-      );
+      final existingByRaw = await _leads
+          .where('phone', isEqualTo: phone10)
+          .limit(1)
+          .get();
+      if (existingByRaw.docs.isNotEmpty) {
+        final existing = LeadRecord.fromFirestore(existingByRaw.docs.first);
+        throw DuplicateLeadException(
+          phone10: phone10,
+          existingLeadId: existing.id,
+          existingLeadName: existing.name,
+          existingOwnerName: existing.assignedToName,
+        );
+      }
+    } else {
+      try {
+        final ownExisting = await _leads
+            .where('assignedToUid', isEqualTo: actor.uid)
+            .where('phoneNormalized', isEqualTo: phone10)
+            .limit(1)
+            .get();
+        if (ownExisting.docs.isNotEmpty) {
+          final existing = LeadRecord.fromFirestore(ownExisting.docs.first);
+          throw DuplicateLeadException(
+            phone10: phone10,
+            existingLeadId: existing.id,
+            existingLeadName: existing.name,
+            existingOwnerName: existing.assignedToName,
+          );
+        }
+      } on DuplicateLeadException {
+        rethrow;
+      } catch (_) {}
     }
 
     // 2. Atomic Firestore transaction on `lead_phones/{phone10}` + `leads/{id}`

@@ -67,6 +67,7 @@ class DeviceSecurityService {
   static Future<String?> verifyDeviceBinding({
     required User user,
     required Map<String, dynamic> userData,
+    bool alreadyFresh = false,
   }) async {
     // 1. Play Integrity / Root detection check
     if (await isDeviceCompromised()) {
@@ -78,27 +79,29 @@ class DeviceSecurityService {
     final currentId = device.deviceId;
     final currentName = device.deviceName;
 
-    // Always fetch fresh document directly from Firestore server to prevent stale cache blocks
+    // Fetch fresh document from Firestore server only if caller did not already fetch it
     Map<String, dynamic> liveData = userData;
-    try {
-      final docSnap = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(user.uid)
-          .get(const GetOptions(source: Source.server))
-          .timeout(const Duration(seconds: 4));
-      if (docSnap.exists && docSnap.data() != null) {
-        liveData = docSnap.data()!;
-      }
-    } catch (_) {
+    if (!alreadyFresh) {
       try {
         final docSnap = await FirebaseFirestore.instance
             .collection('users')
             .doc(user.uid)
-            .get();
+            .get(const GetOptions(source: Source.server))
+            .timeout(const Duration(seconds: 4));
         if (docSnap.exists && docSnap.data() != null) {
           liveData = docSnap.data()!;
         }
-      } catch (_) {}
+      } catch (_) {
+        try {
+          final docSnap = await FirebaseFirestore.instance
+              .collection('users')
+              .doc(user.uid)
+              .get();
+          if (docSnap.exists && docSnap.data() != null) {
+            liveData = docSnap.data()!;
+          }
+        } catch (_) {}
+      }
     }
 
     final registeredId =
