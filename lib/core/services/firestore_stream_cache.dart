@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
+import '../router/app_router.dart';
 
 /// Multiplexes and caches Firestore `.snapshots()` streams across the application.
 ///
@@ -32,11 +34,45 @@ class FirestoreStreamCache {
     FirebaseFirestore? firestore,
   }) {
     final db = firestore ?? FirebaseFirestore.instance;
-    final key = 'col:$collectionPath';
+    String? uid;
+    try {
+      uid = FirebaseAuth.instance.currentUser?.uid;
+    } catch (_) {}
+
+    final bool scopeToExecutive =
+        !isAdminSession &&
+        uid != null &&
+        uid.isNotEmpty &&
+        (collectionPath == 'leads' || collectionPath == 'call_categorizations');
+
+    final String ownerField = collectionPath == 'call_categorizations'
+        ? 'executiveUid'
+        : 'assignedToUid';
+
+    final key = scopeToExecutive
+        ? 'col:$collectionPath:exec:$uid'
+        : 'col:$collectionPath';
+
     return _queryCache.putIfAbsent(
       key,
       () => _SharedReplayStream<QuerySnapshot<Map<String, dynamic>>>(
-        () => db.collection(collectionPath).snapshots(),
+        () => scopeToExecutive
+            ? db
+                  .collection(collectionPath)
+                  .where(ownerField, isEqualTo: uid)
+                  .snapshots()
+            : db.collection(collectionPath).snapshots(),
+        fallbackOnPermissionDenied:
+            (!scopeToExecutive &&
+                uid != null &&
+                uid.isNotEmpty &&
+                (collectionPath == 'leads' ||
+                    collectionPath == 'call_categorizations'))
+            ? () => db
+                  .collection(collectionPath)
+                  .where(ownerField, isEqualTo: uid)
+                  .snapshots()
+            : null,
       ),
     );
   }
@@ -130,12 +166,14 @@ class FirestoreStreamCache {
 
 class _SharedReplayStream<T> {
   final Stream<T> Function() _sourceFactory;
+  final Stream<T> Function()? fallbackOnPermissionDenied;
   StreamSubscription<T>? _sourceSub;
   final Set<MultiStreamController<T>> _listeners = {};
   final List<Completer<T>> _pendingFirsts = [];
   T? _latestValue;
   bool _hasValue = false;
   bool _isDisposed = false;
+  bool _usedFallback = false;
 
   late final Stream<T> stream = Stream<T>.multi((controller) {
     if (_isDisposed) {
@@ -160,7 +198,7 @@ class _SharedReplayStream<T> {
     };
   }, isBroadcast: true);
 
-  _SharedReplayStream(this._sourceFactory);
+  _SharedReplayStream(this._sourceFactory, {this.fallbackOnPermissionDenied});
 
   Future<T> firstSnapshot() {
     if (_hasValue && _latestValue != null) {
@@ -174,8 +212,14 @@ class _SharedReplayStream<T> {
 
   void _ensureSubscribed() {
     if (_sourceSub != null || _isDisposed) return;
+    _subscribeWith(_usedFallback && fallbackOnPermissionDenied != null
+        ? fallbackOnPermissionDenied!
+        : _sourceFactory);
+  }
+
+  void _subscribeWith(Stream<T> Function() factory) {
     try {
-      _sourceSub = _sourceFactory().listen(
+      _sourceSub = factory().listen(
         (data) {
           _latestValue = data;
           _hasValue = true;
@@ -196,6 +240,22 @@ class _SharedReplayStream<T> {
           if (msg.contains('INTERNAL ASSERTION FAILED') ||
               msg.contains('b815') ||
               msg.contains('ca9')) {
+            return;
+          }
+          final isPermDenied =
+              (error is FirebaseException &&
+                  error.code == 'permission-denied') ||
+              msg.toLowerCase().contains('permission-denied') ||
+              msg.toLowerCase().contains('permission_denied');
+          if (isPermDenied &&
+              !_usedFallback &&
+              fallbackOnPermissionDenied != null &&
+              !_isDisposed) {
+            _usedFallback = true;
+            final oldSub = _sourceSub;
+            _sourceSub = null;
+            oldSub?.cancel();
+            _subscribeWith(fallbackOnPermissionDenied!);
             return;
           }
           debugPrint('[FirestoreStreamCache] Stream notice: $error');

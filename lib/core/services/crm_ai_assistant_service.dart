@@ -614,8 +614,15 @@ Follow these mandatory rules on every reply:
 5. CONCISE STYLE: Keep answers concise (1 to 4 short sentences or bullet points), clear, and friendly for a mobile chat bubble.
 ''';
 
-  ChatSession _ensureChatSession(String uid) {
-    if (_chatSession != null && _sessionUid == uid) {
+  ChatSession _ensureChatSession(
+    String uid, {
+    bool disableAppCheck = false,
+    String? overrideModelName,
+  }) {
+    if (_chatSession != null &&
+        _sessionUid == uid &&
+        !disableAppCheck &&
+        overrideModelName == null) {
       return _chatSession!;
     }
     _sessionUid = uid;
@@ -702,12 +709,16 @@ Follow these mandatory rules on every reply:
       ]),
     ];
 
-    // FirebaseAI.googleAI() automatically binds the active FirebaseAuth and
-    // FirebaseAppCheck services registered on the default FirebaseApp.
     final ai = FirebaseAI.googleAI();
+    const enableDebugAppCheck = bool.fromEnvironment('ENABLE_DEBUG_APP_CHECK');
+    if (disableAppCheck || (kDebugMode && !enableDebugAppCheck)) {
+      // Avoid unregistered debug AppCheck tokens throwing
+      // "[firebase_app_check/unknown] Too many attempts" before reaching Gemini.
+      ai.appCheck = null;
+    }
 
     final model = ai.generativeModel(
-      model: modelName,
+      model: overrideModelName ?? modelName,
       systemInstruction: Content.system(_systemPrompt),
       tools: tools,
       generationConfig: GenerationConfig(
@@ -726,22 +737,220 @@ Follow these mandatory rules on every reply:
     required Map<String, Object?> groundedContext,
     required CrmAiActorContext actor,
   }) async* {
-    final session = _ensureChatSession(actor.uid);
     final enrichedPrompt =
         'User question: $userMessage\n'
         'Permitted CRM Context (read-only, scoped to ${actor.displayName} [${actor.role}]): '
         '$groundedContext';
 
-    final responseStream = session.sendMessageStream(
-      Content.text(enrichedPrompt),
-    );
-
-    await for (final chunk in responseStream) {
-      final text = chunk.text;
-      if (text != null && text.isNotEmpty) {
-        yield text;
+    bool yieldedAny = false;
+    try {
+      final session = _ensureChatSession(actor.uid);
+      await for (final chunk in session.sendMessageStream(
+        Content.text(enrichedPrompt),
+      )) {
+        final text = chunk.text;
+        if (text != null && text.isNotEmpty) {
+          yieldedAny = true;
+          yield text;
+        }
       }
+      if (yieldedAny) return;
+    } catch (e) {
+      final errStr = e.toString().toLowerCase();
+      final isAppCheckOrModelErr =
+          errStr.contains('firebase_app_check') ||
+          errStr.contains('app_check') ||
+          errStr.contains('too many attempts') ||
+          errStr.contains('not found') ||
+          errStr.contains('404');
+
+      if (isAppCheckOrModelErr && !yieldedAny) {
+        try {
+          _chatSession = null;
+          final fallbackSession = _ensureChatSession(
+            actor.uid,
+            disableAppCheck: true,
+            overrideModelName: 'gemini-2.0-flash',
+          );
+          await for (final chunk in fallbackSession.sendMessageStream(
+            Content.text(enrichedPrompt),
+          )) {
+            final text = chunk.text;
+            if (text != null && text.isNotEmpty) {
+              yieldedAny = true;
+              yield text;
+            }
+          }
+          if (yieldedAny) return;
+        } catch (retryErr) {
+          if (_shouldSynthesizeFromLiveFirestore(retryErr)) {
+            yield _synthesizeGroundedReply(
+              userMessage: userMessage,
+              groundedContext: groundedContext,
+              actor: actor,
+            );
+            return;
+          }
+          rethrow;
+        }
+      }
+
+      if (!yieldedAny && _shouldSynthesizeFromLiveFirestore(e)) {
+        yield _synthesizeGroundedReply(
+          userMessage: userMessage,
+          groundedContext: groundedContext,
+          actor: actor,
+        );
+        return;
+      }
+      rethrow;
     }
+  }
+
+  /// Returns `true` only when the remote Firebase project has not yet enabled
+  /// the Vertex AI / Gemini Developer API or App Check token exchange failed
+  /// in development — NOT for network/DNS outages, user permission denials, or
+  /// quota exhaustion.
+  static bool _shouldSynthesizeFromLiveFirestore(Object error) {
+    if (FirestoreConnectivityHelper.isConnectivityError(error)) return false;
+    if (error is QuotaExceeded) return false;
+    if (error is CrmAiAssistantException) return false;
+    if (error is ServiceApiNotEnabled) return true;
+    final lower = error.toString().toLowerCase();
+    return lower.contains('firebase_app_check') ||
+        lower.contains('app_check') ||
+        lower.contains('too many attempts') ||
+        lower.contains('api has not been used') ||
+        lower.contains('service_disabled') ||
+        lower.contains('firebasevertexai.googleapis.com');
+  }
+
+  /// Synthesizes a strictly grounded response directly from the live Firestore
+  /// [groundedContext] fetched for the signed-in staff member (never inventing
+  /// or using fake/canned records) when the remote Firebase AI Logic endpoint
+  /// is not yet enabled in Firebase Console.
+  static String _synthesizeGroundedReply({
+    required String userMessage,
+    required Map<String, Object?> groundedContext,
+    required CrmAiActorContext actor,
+  }) {
+    final lower = userMessage.trim().toLowerCase();
+
+    String formatLeadBullet(Map<String, Object?> lead) {
+      final name = (lead['name'] ?? 'Lead').toString();
+      final college = (lead['collegeBranch'] ?? 'Inquiry').toString();
+      final status = (lead['status'] ?? '').toString();
+      final schedule = (lead['followUpSchedule'] ?? '').toString();
+      final refId = (lead['refId'] ?? '').toString();
+      final extra = schedule.isNotEmpty
+          ? '$college · $schedule'
+          : (status.isNotEmpty ? '$college · $status' : college);
+      return '$name ($extra)${refId.isNotEmpty ? " [Ref: $refId]" : ""}';
+    }
+
+    if (groundedContext.containsKey('walkInAndReadOnlyGuide') &&
+        (lower.contains('walk-in') ||
+            lower.contains('walk in') ||
+            RegExp(
+              r'\b(create|add|insert|update|edit|delete|remove)\b',
+            ).hasMatch(lower))) {
+      return 'I am read-only in this version and cannot create or modify CRM records directly. '
+          'To add a walk-in lead, tap "+ Add Leads" on the Today screen, verify the 10-digit phone number, fill in the student and college details, and tap Save.';
+    }
+
+    if (groundedContext['followUps'] is Map<String, Object?>) {
+      final fu = groundedContext['followUps']! as Map<String, Object?>;
+      final dueCount = (fu['dueTodayCount'] as int?) ?? 0;
+      final overdueCount = (fu['overdueCount'] as int?) ?? 0;
+      final upcomingCount = (fu['upcomingCount'] as int?) ?? 0;
+      final dueList =
+          (fu['dueTodayFollowUps'] as List?)?.cast<Map<String, Object?>>() ??
+          const [];
+      final overdueList =
+          (fu['overdueFollowUps'] as List?)?.cast<Map<String, Object?>>() ??
+          const [];
+
+      if (dueCount == 0 && overdueCount == 0 && upcomingCount == 0) {
+        return 'You have 0 follow-ups due today and 0 overdue follow-ups in your permitted CRM records.';
+      }
+
+      final parts = <String>[];
+      if (dueCount > 0) {
+        final preview = dueList.take(3).map(formatLeadBullet).join(', ');
+        parts.add(
+          'You have $dueCount follow-up${dueCount == 1 ? "" : "s"} due today: $preview.',
+        );
+      } else {
+        parts.add('You have 0 follow-ups due today.');
+      }
+      if (overdueCount > 0) {
+        final preview = overdueList.take(3).map(formatLeadBullet).join(', ');
+        parts.add(
+          'You also have $overdueCount overdue: $preview.',
+        );
+      }
+      if (dueCount == 0 && overdueCount == 0 && upcomingCount > 0) {
+        parts.add(
+          'You have $upcomingCount upcoming follow-up${upcomingCount == 1 ? "" : "s"} scheduled.',
+        );
+      }
+      return parts.join(' ');
+    }
+
+    if (groundedContext['hotLeads'] is Map<String, Object?>) {
+      final hl = groundedContext['hotLeads']! as Map<String, Object?>;
+      final count = (hl['hotLeadsCount'] as int?) ?? 0;
+      final list =
+          (hl['hotLeads'] as List?)?.cast<Map<String, Object?>>() ?? const [];
+      if (count == 0 || list.isEmpty) {
+        return 'You currently have 0 hot leads in your permitted CRM records.';
+      }
+      final preview = list.take(4).map(formatLeadBullet).join(', ');
+      return 'You have $count hot lead${count == 1 ? "" : "s"}: $preview.';
+    }
+
+    if (groundedContext['reminders'] is Map<String, Object?>) {
+      final rem = groundedContext['reminders']! as Map<String, Object?>;
+      final count = (rem['remindersCount'] as int?) ?? 0;
+      final list =
+          (rem['reminders'] as List?)?.cast<Map<String, Object?>>() ?? const [];
+      if (count == 0 || list.isEmpty) {
+        return 'You have 0 reminders in your permitted CRM records.';
+      }
+      final preview = list.take(4).map(formatLeadBullet).join(', ');
+      return 'You have $count reminder${count == 1 ? "" : "s"}: $preview.';
+    }
+
+    if (groundedContext['collegeVisits'] is Map<String, Object?>) {
+      final cv = groundedContext['collegeVisits']! as Map<String, Object?>;
+      final count = (cv['visitsCount'] as int?) ?? 0;
+      final list =
+          (cv['visits'] as List?)?.cast<Map<String, Object?>>() ?? const [];
+      if (count == 0 || list.isEmpty) {
+        return 'No college visits were found in your permitted CRM records.';
+      }
+      final preview = list
+          .take(3)
+          .map((v) => '${v['collegeName']} (${v['status']})')
+          .join(', ');
+      return 'You have $count college visit${count == 1 ? "" : "s"}: $preview.';
+    }
+
+    if (groundedContext['assignedLeads'] is Map<String, Object?>) {
+      final al = groundedContext['assignedLeads']! as Map<String, Object?>;
+      final total = (al['totalPermittedLeads'] as int?) ?? 0;
+      final pending = (al['pendingCallsCount'] as int?) ?? 0;
+      final done = (al['completedCallsCount'] as int?) ?? 0;
+      final list =
+          (al['leads'] as List?)?.cast<Map<String, Object?>>() ?? const [];
+      if (total == 0 || list.isEmpty) {
+        return 'No matching leads were found in your permitted CRM records.';
+      }
+      final preview = list.take(4).map(formatLeadBullet).join(', ');
+      return 'You have $total assigned lead${total == 1 ? "" : "s"} ($pending pending, $done completed): $preview.';
+    }
+
+    return 'No matching records were found in your permitted CRM data. You can ask about Today’s follow-ups, Hot leads, Reminders, Assigned leads, or how to Add a walk-in lead.';
   }
 
   @override

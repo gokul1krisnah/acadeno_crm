@@ -49,19 +49,26 @@ Future<void> main() async {
 
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
-  // Activate Firebase App Check to protect Firebase AI Logic and backend resources.
-  try {
-    await FirebaseAppCheck.instance
-        .activate(
-          providerAndroid: kDebugMode
-              ? const AndroidDebugProvider()
-              : const AndroidPlayIntegrityProvider(),
-          providerApple: kDebugMode
-              ? const AppleDebugProvider()
-              : const AppleDeviceCheckProvider(),
-        )
-        .timeout(const Duration(milliseconds: 1500), onTimeout: () {});
-  } catch (_) {}
+  // Activate Firebase App Check in release builds (or when explicitly enabled
+  // via --dart-define=ENABLE_DEBUG_APP_CHECK=true after registering the device's
+  // debug token in Firebase Console). Skipping unregistered DebugAppCheckProvider
+  // in local debug builds prevents "Failed to exchange debug token" /
+  // "[firebase_app_check/unknown] Too many attempts" from blocking Firebase AI Logic.
+  const enableDebugAppCheck = bool.fromEnvironment('ENABLE_DEBUG_APP_CHECK');
+  if (!kDebugMode || enableDebugAppCheck) {
+    try {
+      await FirebaseAppCheck.instance
+          .activate(
+            providerAndroid: kDebugMode
+                ? const AndroidDebugProvider()
+                : const AndroidPlayIntegrityProvider(),
+            providerApple: kDebugMode
+                ? const AppleDebugProvider()
+                : const AppleDeviceCheckProvider(),
+          )
+          .timeout(const Duration(milliseconds: 1500), onTimeout: () {});
+    } catch (_) {}
+  }
 
   // Ensure Firebase Auth persists credentials across browser/tab restarts on Web.
   if (kIsWeb) {
