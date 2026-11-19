@@ -32,11 +32,13 @@ class CallLogsCubit extends Cubit<CallLogsState> {
 
     emit(state.copyWith(isLoading: true));
     final hasPerm = await _repository.checkPermission();
+    final hasContactsPerm = await _repository.checkContactsPermission();
     if (!hasPerm) {
       emit(
         state.copyWith(
           isLoading: false,
           hasPermission: false,
+          hasContactsPermission: hasContactsPerm,
           isPermissionDenied: false,
         ),
       );
@@ -44,7 +46,13 @@ class CallLogsCubit extends Cubit<CallLogsState> {
       return;
     }
 
-    emit(state.copyWith(hasPermission: true, isPermissionDenied: false));
+    emit(
+      state.copyWith(
+        hasPermission: true,
+        hasContactsPermission: hasContactsPerm,
+        isPermissionDenied: false,
+      ),
+    );
     await _loadDeviceLogs();
     _listenSavedCategorizations();
   }
@@ -74,14 +82,22 @@ class CallLogsCubit extends Cubit<CallLogsState> {
   Future<void> requestPermission() async {
     emit(state.copyWith(isLoading: true));
     final granted = await _repository.requestPermission();
+    final hasContactsPerm = await _repository.checkContactsPermission();
     if (granted) {
-      emit(state.copyWith(hasPermission: true, isPermissionDenied: false));
+      emit(
+        state.copyWith(
+          hasPermission: true,
+          hasContactsPermission: hasContactsPerm,
+          isPermissionDenied: false,
+        ),
+      );
       await _loadDeviceLogs();
     } else {
       emit(
         state.copyWith(
           isLoading: false,
           hasPermission: false,
+          hasContactsPermission: hasContactsPerm,
           isPermissionDenied: true,
           toastMessage:
               'Call log permission was denied. Please allow it in settings.',
@@ -91,13 +107,37 @@ class CallLogsCubit extends Cubit<CallLogsState> {
     }
   }
 
+  Future<void> requestContactsPermission() async {
+    if (!_repository.isPlatformSupported) return;
+    final granted = await _repository.requestContactsPermission();
+    emit(state.copyWith(hasContactsPermission: granted));
+    if (granted) {
+      await _loadDeviceLogs();
+    } else {
+      emit(
+        state.copyWith(
+          toastMessage:
+              'Contacts permission not granted. Showing phone numbers only.',
+          isToastError: false,
+        ),
+      );
+    }
+  }
+
   Future<void> refresh() async {
     if (!_repository.isPlatformSupported) return;
     final hasPerm = await _repository.checkPermission();
+    final hasContactsPerm = await _repository.checkContactsPermission();
     if (!hasPerm) {
-      emit(state.copyWith(hasPermission: false));
+      emit(
+        state.copyWith(
+          hasPermission: false,
+          hasContactsPermission: hasContactsPerm,
+        ),
+      );
       return;
     }
+    emit(state.copyWith(hasContactsPermission: hasContactsPerm));
     await _loadDeviceLogs();
   }
 
@@ -282,12 +322,16 @@ class CallLogsCubit extends Cubit<CallLogsState> {
     }
 
     if (query.trim().isNotEmpty) {
-      final q = query.trim().replaceAll(RegExp(r'\D'), '');
+      final rawLower = query.trim().toLowerCase();
+      final digits = query.trim().replaceAll(RegExp(r'\D'), '');
       result = result.where((i) {
-        if (q.isNotEmpty) {
-          return i.normalizedPhone.contains(q) || i.number.contains(q);
-        }
-        return i.number.contains(query.trim());
+        final nameMatch =
+            i.hasContactName && i.contactName.toLowerCase().contains(rawLower);
+        final phoneMatch = digits.isNotEmpty
+            ? (i.normalizedPhone.contains(digits) ||
+                  i.number.replaceAll(RegExp(r'\D'), '').contains(digits))
+            : i.number.toLowerCase().contains(rawLower);
+        return nameMatch || phoneMatch;
       }).toList();
     }
 

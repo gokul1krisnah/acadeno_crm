@@ -13,6 +13,10 @@ class CallLogsRepository {
 
   Future<bool> requestPermission() => _rds.requestPermission();
 
+  Future<bool> checkContactsPermission() => _rds.checkContactsPermission();
+
+  Future<bool> requestContactsPermission() => _rds.requestContactsPermission();
+
   Future<List<DeviceCallLogItem>> fetchDeviceCallLogs({int limit = 100}) =>
       _rds.fetchDeviceCallLogs(limit: limit);
 

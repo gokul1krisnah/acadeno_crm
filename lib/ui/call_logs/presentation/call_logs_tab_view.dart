@@ -85,7 +85,7 @@ class _CallLogsBodyState extends State<_CallLogsBody> with WidgetsBindingObserve
     // Open existing white outcome popup and keep it open until saved or cancelled.
     await LeadCallSheets.showCallAndOutcomeSheet(
       context,
-      leadName: item.formattedNumber,
+      leadName: item.hasContactName ? item.contactName : item.formattedNumber,
       maskedPhone: masked,
       initialDuration: item.formattedDuration,
       collegeInfo: 'Call Log Inquiry',
@@ -209,6 +209,71 @@ class _CallLogsBodyState extends State<_CallLogsBody> with WidgetsBindingObserve
                           ),
                         ),
                       ),
+                      if (state.isPlatformSupported &&
+                          state.hasPermission &&
+                          !state.hasContactsPermission) ...[
+                        const Gap(8),
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 8,
+                          ),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFFFBEB),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: const Color(0xFFFDE68A),
+                              width: 1,
+                            ),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(
+                                CupertinoIcons.person_crop_circle,
+                                size: 17,
+                                color: Color(0xFFB45309),
+                              ),
+                              const Gap(8),
+                              Expanded(
+                                child: Text(
+                                  'Allow Contacts access to display saved contact names.',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w500,
+                                    color: const Color(0xFF92400E),
+                                  ),
+                                ),
+                              ),
+                              const Gap(8),
+                              TextButton(
+                                onPressed: cubit.requestContactsPermission,
+                                style: TextButton.styleFrom(
+                                  backgroundColor: const Color(0xFFB45309),
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 4,
+                                  ),
+                                  minimumSize: Size.zero,
+                                  tapTargetSize:
+                                      MaterialTapTargetSize.shrinkWrap,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                ),
+                                child: Text(
+                                  'Allow',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 11.5,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                       const Gap(12),
 
                       // Search bar
@@ -227,7 +292,7 @@ class _CallLogsBodyState extends State<_CallLogsBody> with WidgetsBindingObserve
                             color: const Color(0xFF0F172A),
                           ),
                           decoration: InputDecoration(
-                            hintText: 'Search by phone number',
+                            hintText: 'Search by name or phone number',
                             hintStyle: GoogleFonts.inter(
                               fontSize: 14,
                               color: const Color(0xFF64748B),
@@ -657,19 +722,44 @@ class _CallLogCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Phone Number ONLY (Contact name explicitly suppressed per instructions)
-                    Text(
-                      item.formattedNumber,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.inter(
-                        fontSize: 16.5,
-                        fontWeight: FontWeight.w700,
-                        color: const Color(0xFF0F172A),
-                        letterSpacing: -0.2,
-                        height: 22 / 16.5,
+                    if (item.hasContactName) ...[
+                      Text(
+                        item.contactName,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.inter(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          color: const Color(0xFF0F172A),
+                          letterSpacing: -0.2,
+                          height: 21 / 16,
+                        ),
                       ),
-                    ),
+                      const Gap(1),
+                      Text(
+                        item.formattedNumber,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.inter(
+                          fontSize: 13.5,
+                          fontWeight: FontWeight.w500,
+                          color: const Color(0xFF334155),
+                          height: 18 / 13.5,
+                        ),
+                      ),
+                    ] else
+                      Text(
+                        item.formattedNumber,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.inter(
+                          fontSize: 16.5,
+                          fontWeight: FontWeight.w700,
+                          color: const Color(0xFF0F172A),
+                          letterSpacing: -0.2,
+                          height: 22 / 16.5,
+                        ),
+                      ),
                     const Gap(2),
                     Text(
                       '${item.formattedDateTime} · ${item.formattedDuration}',

@@ -65,6 +65,7 @@ class DeviceCallLogItem {
   final String id;
   final String number;
   final String formattedNumber;
+  final String contactName;
   final DateTime timestamp;
   final int durationSeconds;
   final CallType callType;
@@ -77,6 +78,7 @@ class DeviceCallLogItem {
     required this.id,
     required this.number,
     required this.formattedNumber,
+    this.contactName = '',
     required this.timestamp,
     required this.durationSeconds,
     required this.callType,
@@ -85,6 +87,8 @@ class DeviceCallLogItem {
     this.linkedLeadId,
     this.notes,
   });
+
+  bool get hasContactName => contactName.trim().isNotEmpty;
 
   /// Canonical 10-digit normalized phone number for database lookup.
   String get normalizedPhone => LeadPhoneValidator.normalize10Digits(number);
@@ -169,10 +173,13 @@ class DeviceCallLogItem {
       displayPhone = '+91 $norm10';
     }
 
+    final rawContactName = (map['contactName'] ?? '').toString().trim();
+
     return DeviceCallLogItem(
       id: (map['id'] ?? dt.millisecondsSinceEpoch.toString()).toString(),
       number: rawNumber,
       formattedNumber: displayPhone,
+      contactName: rawContactName,
       timestamp: dt,
       durationSeconds: dur,
       callType: cType,
@@ -185,6 +192,7 @@ class DeviceCallLogItem {
       'id': id,
       'number': number,
       'formattedNumber': formattedNumber,
+      'contactName': contactName,
       'timestamp': timestamp.millisecondsSinceEpoch,
       'durationSeconds': durationSeconds,
       'callType': callType.name,

@@ -8,6 +8,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.CallLog
+import android.provider.ContactsContract
 import android.telephony.PhoneStateListener
 import android.telephony.TelephonyManager
 import android.view.WindowManager
@@ -22,6 +23,9 @@ class MainActivity : FlutterActivity() {
     private val phoneCallChannel = "com.acadeno.crm/phone_call"
     private val notificationChannel = "com.acadeno.crm/notifications"
     private val PERMISSION_REQUEST_CODE = 4421
+    private val CONTACTS_PERMISSION_REQUEST_CODE = 4422
+    private var pendingCallLogPermResult: MethodChannel.Result? = null
+    private var pendingContactsPermResult: MethodChannel.Result? = null
     private var didPlaceCall = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -104,18 +108,42 @@ class MainActivity : FlutterActivity() {
                     val granted = ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CALL_LOG) == PackageManager.PERMISSION_GRANTED
                     result.success(granted)
                 }
+                "checkContactsPermission" -> {
+                    val granted = ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED
+                    result.success(granted)
+                }
                 "requestPermissions" -> {
                     val permissions = arrayOf(
                         Manifest.permission.READ_CALL_LOG,
+                        Manifest.permission.READ_CONTACTS,
                         Manifest.permission.READ_PHONE_STATE
                     )
                     val needsRequest = permissions.any {
                         ContextCompat.checkSelfPermission(this, it) != PackageManager.PERMISSION_GRANTED
                     }
                     if (needsRequest) {
+                        pendingCallLogPermResult?.success(
+                            ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CALL_LOG) == PackageManager.PERMISSION_GRANTED
+                        )
+                        pendingCallLogPermResult = result
                         ActivityCompat.requestPermissions(this, permissions, PERMISSION_REQUEST_CODE)
+                    } else {
+                        result.success(true)
                     }
-                    result.success(true)
+                }
+                "requestContactsPermission" -> {
+                    val granted = ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED
+                    if (granted) {
+                        result.success(true)
+                    } else {
+                        pendingContactsPermResult?.success(false)
+                        pendingContactsPermResult = result
+                        ActivityCompat.requestPermissions(
+                            this,
+                            arrayOf(Manifest.permission.READ_CONTACTS),
+                            CONTACTS_PERMISSION_REQUEST_CODE
+                        )
+                    }
                 }
                 "launchDialer" -> {
                     didPlaceCall = false
@@ -265,11 +293,93 @@ class MainActivity : FlutterActivity() {
         return -2L // Call record not yet committed
     }
 
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == PERMISSION_REQUEST_CODE) {
+            val callLogGranted = ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.READ_CALL_LOG
+            ) == PackageManager.PERMISSION_GRANTED
+            pendingCallLogPermResult?.success(callLogGranted)
+            pendingCallLogPermResult = null
+        } else if (requestCode == CONTACTS_PERMISSION_REQUEST_CODE) {
+            val contactsGranted = ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.READ_CONTACTS
+            ) == PackageManager.PERMISSION_GRANTED
+            pendingContactsPermResult?.success(contactsGranted)
+            pendingContactsPermResult = null
+        }
+    }
+
+    /**
+     * Loads a normalized phone -> displayName map from the device's saved contacts
+     * ONLY when READ_CONTACTS permission is granted.
+     *
+     * Matching rules:
+     * - Strips spaces, dashes, parentheses, and '+' to get raw digits.
+     * - For numbers with >= 10 digits, stores both the full stripped digits and the
+     *   canonical last 10 digits (matching +91/0/local formatting differences safely).
+     * - For 6..9 digit numbers, stores only exact stripped digits (never suffix-matched)
+     *   to avoid false-positive contact names.
+     */
+    private fun loadSavedContactsMap(): Pair<Map<String, String>, Map<String, String>> {
+        val exactMap = mutableMapOf<String, String>()
+        val last10Map = mutableMapOf<String, String>()
+
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
+            return Pair(exactMap, last10Map)
+        }
+
+        try {
+            val projection = arrayOf(
+                ContactsContract.CommonDataKinds.Phone.NUMBER,
+                ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME
+            )
+            val cursor = contentResolver.query(
+                ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+                projection,
+                null,
+                null,
+                null
+            )
+            cursor?.use {
+                val numIdx = it.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)
+                val nameIdx = it.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME)
+                while (it.moveToNext()) {
+                    val rawNum = if (numIdx != -1) it.getString(numIdx) ?: "" else ""
+                    val rawName = if (nameIdx != -1) it.getString(nameIdx)?.trim() ?: "" else ""
+                    if (rawNum.isBlank() || rawName.isBlank()) continue
+
+                    val digits = rawNum.replace(Regex("[^0-9]"), "")
+                    if (digits.length < 6) continue
+
+                    // Avoid storing a name that is just the phone number itself
+                    val nameDigits = rawName.replace(Regex("[^0-9]"), "")
+                    if (nameDigits.isNotEmpty() && nameDigits == digits) continue
+
+                    exactMap.putIfAbsent(digits, rawName)
+                    if (digits.length >= 10) {
+                        val last10 = digits.takeLast(10)
+                        last10Map.putIfAbsent(last10, rawName)
+                    }
+                }
+            }
+        } catch (_: Exception) {}
+
+        return Pair(exactMap, last10Map)
+    }
+
     private fun queryDeviceCallLogs(limit: Int): List<Map<String, Any>> {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CALL_LOG) != PackageManager.PERMISSION_GRANTED) {
             return emptyList()
         }
 
+        val (exactContacts, last10Contacts) = loadSavedContactsMap()
         val logs = mutableListOf<Map<String, Any>>()
         try {
             var simName = "Mobile"
@@ -323,10 +433,18 @@ class MainActivity : FlutterActivity() {
                     }
 
                     if (rawNumber.isNotBlank()) {
+                        val digits = rawNumber.replace(Regex("[^0-9]"), "")
+                        val matchedName = when {
+                            digits.length >= 10 -> exactContacts[digits] ?: last10Contacts[digits.takeLast(10)]
+                            digits.length >= 6 -> exactContacts[digits]
+                            else -> null
+                        } ?: ""
+
                         logs.add(
                             mapOf(
                                 "id" to id,
                                 "number" to rawNumber,
+                                "contactName" to matchedName,
                                 "timestamp" to callDate,
                                 "duration" to duration,
                                 "type" to typeStr,

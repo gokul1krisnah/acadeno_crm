@@ -67,6 +67,32 @@ class CallLogsRds {
     }
   }
 
+  /// Checks if Android READ_CONTACTS permission is granted.
+  Future<bool> checkContactsPermission() async {
+    if (!isPlatformSupported) return false;
+    try {
+      final granted = await _channel.invokeMethod<bool>(
+        'checkContactsPermission',
+      );
+      return granted ?? false;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  /// Requests runtime READ_CONTACTS permission from Android.
+  Future<bool> requestContactsPermission() async {
+    if (!isPlatformSupported) return false;
+    try {
+      final granted = await _channel.invokeMethod<bool>(
+        'requestContactsPermission',
+      );
+      return granted ?? await checkContactsPermission();
+    } catch (_) {
+      return false;
+    }
+  }
+
   /// Fetches real device call logs from the native telephony provider.
   Future<List<DeviceCallLogItem>> fetchDeviceCallLogs({int limit = 100}) async {
     if (!isPlatformSupported) return [];
@@ -141,6 +167,7 @@ class CallLogsRds {
       'callId': item.id,
       'phone': item.number,
       'phoneNormalized': norm,
+      if (item.hasContactName) 'contactName': item.contactName,
       'category': category.dbValue,
       'durationSeconds': item.durationSeconds,
       'callTimestamp': Timestamp.fromDate(item.timestamp),
@@ -211,7 +238,7 @@ class CallLogsRds {
         // Create new lead record assigned to this executive
         try {
           final created = await LeadsRds().createLead(
-            name: '', // Generates next auto sequence e.g. L01
+            name: item.hasContactName ? item.contactName : '',
             phone: item.number,
             collegeBranch: 'Call Log Inquiry',
             source: 'Call Log',
@@ -290,6 +317,7 @@ class CallLogsRds {
       'callId': item.id,
       'phone': item.number,
       'phoneNormalized': norm,
+      if (item.hasContactName) 'contactName': item.contactName,
       'category': CallCategory.other.dbValue,
       'outcome': trimmedOutcome,
       'durationSeconds': item.durationSeconds,
@@ -359,7 +387,7 @@ class CallLogsRds {
     } else {
       try {
         final created = await LeadsRds().createLead(
-          name: '',
+          name: item.hasContactName ? item.contactName : '',
           phone: item.number,
           collegeBranch: 'Call Log Inquiry',
           source: 'Call Log',
@@ -402,7 +430,9 @@ class CallLogsRds {
     try {
       await _firestore.collection('call_logs').add({
         'leadId': targetLeadId ?? '',
-        'leadName': item.formattedNumber,
+        'leadName': item.hasContactName
+            ? item.contactName
+            : item.formattedNumber,
         'phone': item.number,
         'phoneNormalized': norm,
         'collegeInfo': 'Call Log Inquiry',

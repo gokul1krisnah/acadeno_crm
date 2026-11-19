@@ -101,7 +101,7 @@ class AlertsHeaderButton extends StatelessWidget {
                 ),
                 alignment: Alignment.center,
                 child: SvgPicture.asset(
-                  AppSvgs.navAlerts,
+                  AppSvgs.reminder,
                   width: 17,
                   height: 18,
                   colorFilter: ColorFilter.mode(

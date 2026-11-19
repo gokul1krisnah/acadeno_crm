@@ -3,6 +3,7 @@ import '../data/model/call_log_model.dart';
 class CallLogsState {
   final bool isLoading;
   final bool hasPermission;
+  final bool hasContactsPermission;
   final bool isPermissionDenied;
   final bool isPlatformSupported;
   final String simName;
@@ -17,6 +18,7 @@ class CallLogsState {
   const CallLogsState({
     this.isLoading = false,
     this.hasPermission = false,
+    this.hasContactsPermission = false,
     this.isPermissionDenied = false,
     this.isPlatformSupported = true,
     this.simName = 'Mobile',
@@ -32,6 +34,7 @@ class CallLogsState {
   CallLogsState copyWith({
     bool? isLoading,
     bool? hasPermission,
+    bool? hasContactsPermission,
     bool? isPermissionDenied,
     bool? isPlatformSupported,
     String? simName,
@@ -46,6 +49,8 @@ class CallLogsState {
     return CallLogsState(
       isLoading: isLoading ?? this.isLoading,
       hasPermission: hasPermission ?? this.hasPermission,
+      hasContactsPermission:
+          hasContactsPermission ?? this.hasContactsPermission,
       isPermissionDenied: isPermissionDenied ?? this.isPermissionDenied,
       isPlatformSupported: isPlatformSupported ?? this.isPlatformSupported,
       simName: simName ?? this.simName,

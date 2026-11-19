@@ -616,13 +616,27 @@ class FirestoreLeadsBackend implements LeadsBackend {
     String? managerNotes,
     bool assignToSelfAsWalkIn = false,
   }) async {
+    final phoneError = LeadPhoneValidator.validate(phone);
+    if (phoneError != null) {
+      throw ArgumentError(phoneError);
+    }
+    final phone10 = LeadPhoneValidator.normalize10Digits(phone);
+    final formattedPhone = LeadPhoneValidator.formatDisplayPhone(phone10);
+
+    final actor = await _verifyCurrentActor(
+      requireAdminOrManager: !assignToSelfAsWalkIn,
+    );
+
     var trimmedName = name.trim();
     if (trimmedName.isEmpty) {
       try {
-        final lDocs = await _leads
-            .where('name', isGreaterThanOrEqualTo: 'L')
-            .where('name', isLessThanOrEqualTo: 'L\uf8ff')
-            .get();
+        final Query<Map<String, dynamic>> nameQuery =
+            _isAdminOrManagerRole(actor.role)
+            ? _leads
+                  .where('name', isGreaterThanOrEqualTo: 'L')
+                  .where('name', isLessThanOrEqualTo: 'L\uf8ff')
+            : _leads.where('assignedToUid', isEqualTo: actor.uid);
+        final lDocs = await nameQuery.get();
         int maxNum = 0;
         for (final doc in lDocs.docs) {
           final docName = (doc.data()['name'] ?? '').toString().trim();
@@ -638,24 +652,9 @@ class FirestoreLeadsBackend implements LeadsBackend {
         final nextNum = maxNum + 1;
         trimmedName = 'L${nextNum.toString().padLeft(2, '0')}';
       } catch (_) {
-        int total = 0;
-        try {
-          final countSnap = await _leads.count().get();
-          total = countSnap.count ?? 0;
-        } catch (_) {}
-        trimmedName = 'L${(total + 1).toString().padLeft(2, '0')}';
+        trimmedName = 'L${phone10.substring(phone10.length - 4)}';
       }
     }
-    final phoneError = LeadPhoneValidator.validate(phone);
-    if (phoneError != null) {
-      throw ArgumentError(phoneError);
-    }
-    final phone10 = LeadPhoneValidator.normalize10Digits(phone);
-    final formattedPhone = LeadPhoneValidator.formatDisplayPhone(phone10);
-
-    final actor = await _verifyCurrentActor(
-      requireAdminOrManager: !assignToSelfAsWalkIn,
-    );
 
     // 1. Pre-transaction backend query check against `leads` collection in case
     // pre-existing documents in Firestore were added before `lead_phones` index.
@@ -780,8 +779,11 @@ class FirestoreLeadsBackend implements LeadsBackend {
       if (phoneSnap.exists) {
         final pData = phoneSnap.data() ?? const {};
         final existingLeadId = (pData['leadId'] ?? '').toString().trim();
+        final existingOwnerUid = (pData['ownerUid'] ?? '').toString().trim();
         bool isStaleOrphan = existingLeadId.isEmpty;
-        if (!isStaleOrphan) {
+        if (!isStaleOrphan &&
+            (_isAdminOrManagerRole(actor.role) ||
+                existingOwnerUid == actor.uid)) {
           final existingLeadSnap = await tx.get(_leads.doc(existingLeadId));
           isStaleOrphan = !existingLeadSnap.exists;
         }
