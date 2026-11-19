@@ -5,10 +5,12 @@ import 'package:gap/gap.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
+import 'package:acadeno_crm/shared/theme/app_svgs.dart';
 import '../../../../shared/utilities/link_launcher.dart';
 import 'figma_calendar_dialog.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
@@ -143,10 +145,16 @@ class _CollegeVisitsViewState extends State<CollegeVisitsView> {
                           ),
                           filled: true,
                           fillColor: const Color(0xFFF8FAFC),
-                          prefixIcon: const Icon(
-                            Icons.account_balance_outlined,
-                            size: 19,
-                            color: Color(0xFF64748B),
+                          prefixIcon: UnconstrainedBox(
+                            child: SvgPicture.asset(
+                              AppSvgs.college,
+                              width: 19,
+                              height: 19,
+                              colorFilter: const ColorFilter.mode(
+                                Color(0xFF64748B),
+                                BlendMode.srcIn,
+                              ),
+                            ),
                           ),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),

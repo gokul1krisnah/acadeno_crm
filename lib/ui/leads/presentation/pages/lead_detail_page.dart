@@ -10,6 +10,7 @@ import '../../../../core/injection/injection.dart';
 import '../../../../core/services/app_phone_call_service.dart';
 import '../../../../core/services/firestore_connectivity_helper.dart';
 import '../../../../core/services/firestore_stream_cache.dart';
+import '../../../../shared/theme/app_svgs.dart';
 import '../../../../shared/widgets/college_selector_field.dart';
 import '../../../../shared/widgets/staff_watermark_overlay.dart';
 import '../../../dashboard/presentation/widgets/figma_calendar_dialog.dart';
@@ -851,10 +852,16 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
                                       color: const Color(0xFF86EFAC),
                                     ),
                                   ),
-                                  child: const Icon(
-                                    Icons.school_rounded,
-                                    color: Color(0xFF16A34A),
-                                    size: 18,
+                                  child: Center(
+                                    child: SvgPicture.asset(
+                                      AppSvgs.college,
+                                      width: 18,
+                                      height: 18,
+                                      colorFilter: const ColorFilter.mode(
+                                        Color(0xFF16A34A),
+                                        BlendMode.srcIn,
+                                      ),
+                                    ),
                                   ),
                                 ),
                                 const Gap(10),
@@ -1350,14 +1357,18 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Row(
-                                children: const [
-                                  Icon(
-                                    Icons.school_outlined,
-                                    size: 15,
-                                    color: Color(0xFF2563EB),
+                                children: [
+                                  SvgPicture.asset(
+                                    AppSvgs.college,
+                                    width: 15,
+                                    height: 15,
+                                    colorFilter: const ColorFilter.mode(
+                                      Color(0xFF2563EB),
+                                      BlendMode.srcIn,
+                                    ),
                                   ),
-                                  Gap(6),
-                                  Text(
+                                  const Gap(6),
+                                  const Text(
                                     'STUDENT NOTES',
                                     style: TextStyle(
                                       fontSize: 11.5,
@@ -2206,10 +2217,16 @@ class _EditLeadDialogState extends State<_EditLeadDialog> {
                       fontSize: 12.5,
                       color: Color(0xFF94A3B8),
                     ),
-                    prefixIcon: const Icon(
-                      Icons.school_outlined,
-                      size: 18,
-                      color: Color(0xFF64748B),
+                    prefixIcon: UnconstrainedBox(
+                      child: SvgPicture.asset(
+                        AppSvgs.college,
+                        width: 18,
+                        height: 18,
+                        colorFilter: const ColorFilter.mode(
+                          Color(0xFF64748B),
+                          BlendMode.srcIn,
+                        ),
+                      ),
                     ),
                     filled: true,
                     fillColor: const Color(0xFFF8FAFC),

@@ -317,10 +317,14 @@ class _CollegeSelectorFieldState extends State<CollegeSelectorField> {
   Widget _getOtherCategoryIcon(String category) {
     switch (category) {
       case 'Plus Two':
-        return const Icon(
-          Icons.school_outlined,
-          size: 16,
-          color: Color(0xFF4F46E5),
+        return SvgPicture.asset(
+          AppSvgs.college,
+          width: 16,
+          height: 16,
+          colorFilter: const ColorFilter.mode(
+            Color(0xFF4F46E5),
+            BlendMode.srcIn,
+          ),
         );
       case 'Business Development':
         return const Icon(
@@ -341,10 +345,14 @@ class _CollegeSelectorFieldState extends State<CollegeSelectorField> {
           color: Color(0xFF2563EB),
         );
       default:
-        return const Icon(
-          Icons.category_outlined,
-          size: 16,
-          color: Color(0xFF64748B),
+        return SvgPicture.asset(
+          AppSvgs.other,
+          width: 16,
+          height: 16,
+          colorFilter: const ColorFilter.mode(
+            Color(0xFF64748B),
+            BlendMode.srcIn,
+          ),
         );
     }
   }
@@ -388,12 +396,16 @@ class _CollegeSelectorFieldState extends State<CollegeSelectorField> {
                   mainAxisSize: MainAxisSize.min,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(
-                      Icons.account_balance_outlined,
-                      size: 15,
-                      color: !_isOtherCategory
-                          ? const Color(0xFFD45107)
-                          : const Color(0xFF64748B),
+                    SvgPicture.asset(
+                      AppSvgs.college,
+                      width: 15,
+                      height: 15,
+                      colorFilter: ColorFilter.mode(
+                        !_isOtherCategory
+                            ? const Color(0xFFD45107)
+                            : const Color(0xFF64748B),
+                        BlendMode.srcIn,
+                      ),
                     ),
                     const Gap(6),
                     Text(
@@ -441,12 +453,16 @@ class _CollegeSelectorFieldState extends State<CollegeSelectorField> {
                   mainAxisSize: MainAxisSize.min,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(
-                      Icons.category_outlined,
-                      size: 15,
-                      color: _isOtherCategory
-                          ? const Color(0xFFD45107)
-                          : const Color(0xFF64748B),
+                    SvgPicture.asset(
+                      AppSvgs.other,
+                      width: 15,
+                      height: 15,
+                      colorFilter: ColorFilter.mode(
+                        _isOtherCategory
+                            ? const Color(0xFFD45107)
+                            : const Color(0xFF64748B),
+                        BlendMode.srcIn,
+                      ),
                     ),
                     const Gap(6),
                     Text(
@@ -481,10 +497,14 @@ class _CollegeSelectorFieldState extends State<CollegeSelectorField> {
         (c) => AcadenoDropdownItem<String>(
           value: c,
           label: c,
-          icon: const Icon(
-            Icons.school_outlined,
-            size: 16,
-            color: Color(0xFF64748B),
+          icon: SvgPicture.asset(
+            AppSvgs.college,
+            width: 16,
+            height: 16,
+            colorFilter: const ColorFilter.mode(
+              Color(0xFF64748B),
+              BlendMode.srcIn,
+            ),
           ),
         ),
       ),
@@ -497,13 +517,17 @@ class _CollegeSelectorFieldState extends State<CollegeSelectorField> {
           color: Color(0xFFD45107),
         ),
       ),
-      const AcadenoDropdownItem<String>(
+      AcadenoDropdownItem<String>(
         value: _otherCategoryValue,
         label: 'Other (Plus Two, Career Switching...)',
-        icon: Icon(
-          Icons.more_horiz_rounded,
-          size: 16,
-          color: Color(0xFF4F46E5),
+        icon: SvgPicture.asset(
+          AppSvgs.other,
+          width: 16,
+          height: 16,
+          colorFilter: const ColorFilter.mode(
+            Color(0xFF4F46E5),
+            BlendMode.srcIn,
+          ),
         ),
       ),
     ];

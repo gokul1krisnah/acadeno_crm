@@ -11,6 +11,7 @@ import 'package:acadeno_crm/core/router/app_router.dart';
 import 'package:acadeno_crm/shared/extensions/build_context_extension.dart';
 import 'package:acadeno_crm/shared/snackbar_alerts/snack_alert.dart';
 import 'package:acadeno_crm/shared/theme/app_images.dart';
+import 'package:acadeno_crm/shared/theme/app_svgs.dart';
 import 'package:acadeno_crm/shared/theme/app_typography.dart';
 import 'package:acadeno_crm/shared/widgets/staff_watermark_overlay.dart';
 import 'package:auto_route/auto_route.dart';
@@ -2476,10 +2477,14 @@ class _DashboardViewState extends State<_DashboardView> {
                   ),
                   child: Row(
                     children: [
-                      const Icon(
-                        Icons.school_outlined,
-                        size: 20,
-                        color: _primary,
+                      SvgPicture.asset(
+                        AppSvgs.college,
+                        width: 20,
+                        height: 20,
+                        colorFilter: const ColorFilter.mode(
+                          _primary,
+                          BlendMode.srcIn,
+                        ),
                       ),
                       const Gap(12),
                       Expanded(

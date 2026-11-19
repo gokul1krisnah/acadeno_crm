@@ -38,4 +38,6 @@ abstract class AppSvgs {
   static const String navVisits = 'assets/svgs/nav_visits.svg';
   static const String navRecords = 'assets/svgs/nav_records.svg';
   static const String navAlerts = 'assets/svgs/nav_alerts.svg';
+  static const String college = 'assets/svgs/college.svg';
+  static const String other = 'assets/svgs/other.svg';
 }

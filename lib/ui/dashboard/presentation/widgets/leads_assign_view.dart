@@ -1829,10 +1829,14 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                               children: [
                                 Row(
                                   children: [
-                                    const Icon(
-                                      Icons.school_rounded,
-                                      size: 16,
-                                      color: Color(0xFF16A34A),
+                                    SvgPicture.asset(
+                                      AppSvgs.college,
+                                      width: 16,
+                                      height: 16,
+                                      colorFilter: const ColorFilter.mode(
+                                        Color(0xFF16A34A),
+                                        BlendMode.srcIn,
+                                      ),
                                     ),
                                     const Gap(6),
                                     Text(
@@ -1952,10 +1956,14 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                             children: [
                               Row(
                                 children: [
-                                  const Icon(
-                                    Icons.school_outlined,
-                                    size: 14,
-                                    color: Color(0xFF2563EB),
+                                  SvgPicture.asset(
+                                    AppSvgs.college,
+                                    width: 14,
+                                    height: 14,
+                                    colorFilter: const ColorFilter.mode(
+                                      Color(0xFF2563EB),
+                                      BlendMode.srcIn,
+                                    ),
                                   ),
                                   const Gap(6),
                                   Text(

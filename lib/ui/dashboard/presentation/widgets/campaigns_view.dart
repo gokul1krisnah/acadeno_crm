@@ -8,9 +8,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'figma_calendar_dialog.dart';
 
 import '../../../../shared/snackbar_alerts/snack_alert.dart';
+import 'package:acadeno_crm/shared/theme/app_svgs.dart';
 import 'package:acadeno_crm/shared/theme/app_typography.dart';
 
 class _CampaignReason {
@@ -762,10 +764,16 @@ class _CampaignsViewState extends State<CampaignsView> {
                           ),
                           decoration: dialogInputDeco(
                             hintText: 'e.g. CSE, IT, ECE',
-                            prefixIcon: const Icon(
-                              Icons.school_outlined,
-                              size: 18,
-                              color: Color(0xFF64748B),
+                            prefixIcon: UnconstrainedBox(
+                              child: SvgPicture.asset(
+                                AppSvgs.college,
+                                width: 18,
+                                height: 18,
+                                colorFilter: const ColorFilter.mode(
+                                  Color(0xFF64748B),
+                                  BlendMode.srcIn,
+                                ),
+                              ),
                             ),
                           ),
                         ),

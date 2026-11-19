@@ -14,6 +14,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 import 'package:acadeno_crm/shared/extensions/build_context_extension.dart';
+import 'package:acadeno_crm/shared/theme/app_svgs.dart';
 import 'package:acadeno_crm/ui/alerts/presentation/widgets/alerts_header_button.dart';
 import 'package:acadeno_crm/ui/dashboard/presentation/widgets/figma_calendar_dialog.dart';
 import 'package:acadeno_crm/ui/visits/application/visits_cubit.dart';
@@ -1819,10 +1820,16 @@ class _VisitsTabViewState extends State<VisitsTabView> {
                           ),
                           filled: true,
                           fillColor: const Color(0xFFF8FAFC),
-                          prefixIcon: const Icon(
-                            Icons.account_balance_outlined,
-                            size: 19,
-                            color: Color(0xFF64748B),
+                          prefixIcon: UnconstrainedBox(
+                            child: SvgPicture.asset(
+                              AppSvgs.college,
+                              width: 19,
+                              height: 19,
+                              colorFilter: const ColorFilter.mode(
+                                Color(0xFF64748B),
+                                BlendMode.srcIn,
+                              ),
+                            ),
                           ),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
