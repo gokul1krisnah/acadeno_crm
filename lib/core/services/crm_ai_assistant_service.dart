@@ -687,7 +687,7 @@ class FirebaseAiLogicChatTransport implements CrmAiChatTransport {
   FirebaseAiLogicChatTransport({
     required this.dataProvider,
     required this.onToolRefsCollected,
-    this.modelName = 'gemini-2.5-flash',
+    this.modelName = 'gemini-3.1-flash-lite-preview',
   });
 
   static const String _systemPrompt = '''
@@ -798,7 +798,7 @@ Follow these mandatory rules on every reply:
       tools: tools,
       generationConfig: GenerationConfig(
         temperature: 0.2,
-        maxOutputTokens: 450,
+        maxOutputTokens: 1024,
       ),
     );
 
