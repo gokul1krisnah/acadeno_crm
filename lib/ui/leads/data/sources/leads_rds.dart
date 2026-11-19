@@ -627,8 +627,10 @@ class FirestoreLeadsBackend implements LeadsBackend {
       requireAdminOrManager: !assignToSelfAsWalkIn,
     );
 
+    final bool needsAutoName = name.trim().isEmpty;
     var trimmedName = name.trim();
-    if (trimmedName.isEmpty) {
+    int seedMaxNum = 0;
+    if (needsAutoName) {
       try {
         final Query<Map<String, dynamic>> nameQuery =
             _isAdminOrManagerRole(actor.role)
@@ -637,7 +639,6 @@ class FirestoreLeadsBackend implements LeadsBackend {
                   .where('name', isLessThanOrEqualTo: 'L\uf8ff')
             : _leads.where('assignedToUid', isEqualTo: actor.uid);
         final lDocs = await nameQuery.get();
-        int maxNum = 0;
         for (final doc in lDocs.docs) {
           final docName = (doc.data()['name'] ?? '').toString().trim();
           final match = RegExp(
@@ -646,14 +647,10 @@ class FirestoreLeadsBackend implements LeadsBackend {
           ).firstMatch(docName);
           if (match != null) {
             final parsed = int.tryParse(match.group(1) ?? '0') ?? 0;
-            if (parsed > maxNum) maxNum = parsed;
+            if (parsed > seedMaxNum) seedMaxNum = parsed;
           }
         }
-        final nextNum = maxNum + 1;
-        trimmedName = 'L${nextNum.toString().padLeft(2, '0')}';
-      } catch (_) {
-        trimmedName = 'L${phone10.substring(phone10.length - 4)}';
-      }
+      } catch (_) {}
     }
 
     // 1. Pre-transaction backend query check against `leads` collection in case
@@ -774,6 +771,9 @@ class FirestoreLeadsBackend implements LeadsBackend {
       updatedAt: now,
     );
 
+    final counterRef = _firestore.collection('counters').doc('lead_sequence');
+    var finalName = trimmedName;
+
     await _firestore.runTransaction((tx) async {
       final phoneSnap = await tx.get(phoneIndexRef);
       if (phoneSnap.exists) {
@@ -797,8 +797,25 @@ class FirestoreLeadsBackend implements LeadsBackend {
         }
       }
 
+      if (needsAutoName) {
+        final counterSnap = await tx.get(counterRef);
+        final storedLast =
+            (counterSnap.data()?['lastNumber'] as num?)?.toInt() ?? 0;
+        final base = storedLast > seedMaxNum ? storedLast : seedMaxNum;
+        final nextNum = base + 1;
+        finalName = 'L${nextNum.toString().padLeft(2, '0')}';
+        tx.set(counterRef, {
+          'lastNumber': nextNum,
+          'updatedAt': FieldValue.serverTimestamp(),
+        }, SetOptions(merge: true));
+      }
+
+      final recordToSave = finalName == newRecord.name
+          ? newRecord
+          : newRecord.copyWith(name: finalName);
+
       tx.set(newLeadRef, {
-        ...newRecord.toFirestoreMap(),
+        ...recordToSave.toFirestoreMap(),
         'createdAt': FieldValue.serverTimestamp(),
         'updatedAt': FieldValue.serverTimestamp(),
         if (assignToSelfAsWalkIn) 'assignedAt': FieldValue.serverTimestamp(),
@@ -807,7 +824,7 @@ class FirestoreLeadsBackend implements LeadsBackend {
       tx.set(phoneIndexRef, {
         'phoneNormalized': phone10,
         'leadId': newLeadRef.id,
-        'leadName': trimmedName,
+        'leadName': finalName,
         'ownerUid': assignedUid,
         'ownerName': assignedName,
         'status': effectiveStatus,
@@ -828,10 +845,10 @@ class FirestoreLeadsBackend implements LeadsBackend {
           assignedByUid: actor.uid,
           assignedByName: actor.name,
           assignedAt: now,
-          leadName: trimmedName,
+          leadName: finalName,
           leadPhone: formattedPhone,
-          collegeBranch: newRecord.collegeBranch,
-          source: newRecord.source,
+          collegeBranch: recordToSave.collegeBranch,
+          source: recordToSave.source,
           leadStatus: 'Assigned',
         );
         tx.set(assignRef, {
@@ -841,17 +858,21 @@ class FirestoreLeadsBackend implements LeadsBackend {
       }
     });
 
+    final savedRecord = finalName == newRecord.name
+        ? newRecord
+        : newRecord.copyWith(name: finalName);
+
     await _appendAudit(
       actorUid: actor.uid,
       actorName: actor.name,
       action: assignToSelfAsWalkIn
-          ? 'Added walk-in lead (${newRecord.source})'
-          : 'Created lead (${newRecord.source})',
-      target: '$trimmedName · $formattedPhone',
+          ? 'Added walk-in lead (${savedRecord.source})'
+          : 'Created lead (${savedRecord.source})',
+      target: '$finalName · $formattedPhone',
       category: 'lead_create',
     );
 
-    return newRecord;
+    return savedRecord;
   }
 
   @override
@@ -2134,17 +2155,29 @@ class FirestoreLeadsBackend implements LeadsBackend {
       return (found: false, message: err, owner: null, status: null);
     }
     final phone10 = LeadPhoneValidator.normalize10Digits(rawPhone);
-    await _verifyCurrentActor();
+    final actor = await _verifyCurrentActor();
 
     final snap = await _leadPhones.doc(phone10).get();
     if (snap.exists && snap.data() != null) {
       final d = snap.data()!;
       final existingLeadId = (d['leadId'] ?? '').toString().trim();
-      bool leadStillExists = false;
-      if (existingLeadId.isNotEmpty) {
-        final leadSnap = await _leads.doc(existingLeadId).get();
-        leadStillExists = leadSnap.exists;
+      final existingOwnerUid = (d['ownerUid'] ?? '').toString().trim();
+      bool leadStillExists = existingLeadId.isNotEmpty;
+
+      // Only verify against `leads/{id}` if the current user has permission to read it
+      // (admin/manager or the assigned owner). For leads owned by another executive,
+      // `lead_phones/{phone10}` is the authoritative uniqueness index.
+      if (existingLeadId.isNotEmpty &&
+          (_isAdminOrManagerRole(actor.role) ||
+              existingOwnerUid == actor.uid)) {
+        try {
+          final leadSnap = await _leads.doc(existingLeadId).get();
+          leadStillExists = leadSnap.exists;
+        } catch (_) {
+          leadStillExists = true;
+        }
       }
+
       if (!leadStillExists) {
         // Stale index entry from a previously deleted lead — clean it up automatically
         try {

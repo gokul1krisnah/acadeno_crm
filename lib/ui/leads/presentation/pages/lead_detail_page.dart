@@ -32,8 +32,10 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
   String? _rescheduledFollowUp;
   late final TextEditingController _studentNotesCtrl;
   late final TextEditingController _managerNotesCtrl;
-  bool _studentNotesInitialized = false;
-  bool _managerNotesInitialized = false;
+  final FocusNode _studentNotesFocus = FocusNode();
+  final FocusNode _managerNotesFocus = FocusNode();
+  String? _lastSyncedStudentNotes;
+  String? _lastSyncedManagerNotes;
   bool _isSavingStudentNotes = false;
   bool _isSavingManagerNotes = false;
 
@@ -48,23 +50,28 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
   void dispose() {
     _studentNotesCtrl.dispose();
     _managerNotesCtrl.dispose();
+    _studentNotesFocus.dispose();
+    _managerNotesFocus.dispose();
     super.dispose();
   }
 
   Future<void> _saveStudentNotes() async {
     if (_isSavingStudentNotes) return;
+    FocusScope.of(context).unfocus();
     setState(() => _isSavingStudentNotes = true);
     final text = _studentNotesCtrl.text.trim();
+    final docRef = FirebaseFirestore.instance
+        .collection('leads')
+        .doc(widget.lead.id);
+    final payload = <String, dynamic>{
+      'studentNotes': text,
+      'notes': text,
+      'updatedAt': FieldValue.serverTimestamp(),
+    };
     try {
-      await FirebaseFirestore.instance
-          .collection('leads')
-          .doc(widget.lead.id)
-          .set({
-            'studentNotes': text,
-            'notes': text,
-            'updatedAt': FieldValue.serverTimestamp(),
-          }, SetOptions(merge: true));
+      await docRef.update(payload);
       widget.lead.studentNotes = text;
+      _lastSyncedStudentNotes = text;
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -91,18 +98,21 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
 
   Future<void> _saveManagerNotes() async {
     if (_isSavingManagerNotes) return;
+    FocusScope.of(context).unfocus();
     setState(() => _isSavingManagerNotes = true);
     final text = _managerNotesCtrl.text.trim();
+    final docRef = FirebaseFirestore.instance
+        .collection('leads')
+        .doc(widget.lead.id);
+    final payload = <String, dynamic>{
+      'managerNotes': text,
+      'leadManagerNotes': text,
+      'updatedAt': FieldValue.serverTimestamp(),
+    };
     try {
-      await FirebaseFirestore.instance
-          .collection('leads')
-          .doc(widget.lead.id)
-          .set({
-            'managerNotes': text,
-            'leadManagerNotes': text,
-            'updatedAt': FieldValue.serverTimestamp(),
-          }, SetOptions(merge: true));
+      await docRef.update(payload);
       widget.lead.managerNotes = text;
+      _lastSyncedManagerNotes = text;
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -286,11 +296,12 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
                 : '')
             .toString()
             .trim();
-        if (!_studentNotesInitialized && snapData != null) {
-          if (liveStudentNotes.isNotEmpty) {
-            _studentNotesCtrl.text = liveStudentNotes;
-          }
-          _studentNotesInitialized = true;
+        if (snapData != null &&
+            !_studentNotesFocus.hasFocus &&
+            !_isSavingStudentNotes &&
+            liveStudentNotes != _lastSyncedStudentNotes) {
+          _studentNotesCtrl.text = liveStudentNotes;
+          _lastSyncedStudentNotes = liveStudentNotes;
         }
 
         final liveManagerNotes = (snapData != null
@@ -298,11 +309,12 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
                 : '')
             .toString()
             .trim();
-        if (!_managerNotesInitialized && snapData != null) {
-          if (liveManagerNotes.isNotEmpty) {
-            _managerNotesCtrl.text = liveManagerNotes;
-          }
-          _managerNotesInitialized = true;
+        if (snapData != null &&
+            !_managerNotesFocus.hasFocus &&
+            !_isSavingManagerNotes &&
+            liveManagerNotes != _lastSyncedManagerNotes) {
+          _managerNotesCtrl.text = liveManagerNotes;
+          _lastSyncedManagerNotes = liveManagerNotes;
         }
         final liveName = (snapData != null
                 ? (snapData['name'] ?? snapData['studentName'] ?? '')
@@ -1383,6 +1395,7 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
                           const Gap(8),
                           TextField(
                             controller: _studentNotesCtrl,
+                            focusNode: _studentNotesFocus,
                             maxLines: 3,
                             minLines: 2,
                             style: const TextStyle(
@@ -1491,6 +1504,7 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
                           const Gap(8),
                           TextField(
                             controller: _managerNotesCtrl,
+                            focusNode: _managerNotesFocus,
                             maxLines: 3,
                             minLines: 2,
                             style: const TextStyle(

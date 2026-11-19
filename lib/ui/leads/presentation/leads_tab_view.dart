@@ -612,8 +612,8 @@ class _LeadsTabViewState extends State<LeadsTabView> {
                                                             ),
                                                             const Gap(3),
                                                             Text(
-                                                              '${topOverdue.collegeInfo.isNotEmpty ? topOverdue.collegeInfo : 'Student'} · ${topOverdue.note.isNotEmpty ? topOverdue.note : 'Follow-up call scheduled'}',
-                                                              maxLines: 3,
+                                                              '${topOverdue.collegeInfo.isNotEmpty ? topOverdue.collegeInfo : 'Student'} · Follow-up call scheduled',
+                                                              maxLines: 2,
                                                               overflow:
                                                                   TextOverflow
                                                                       .ellipsis,

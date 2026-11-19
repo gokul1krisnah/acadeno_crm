@@ -151,6 +151,13 @@ service cloud.firestore {
     }
 
     // -------------------------------------------------------------------------
+    // Atomic Sequence Counters (`counters/{counterId}`)
+    // -------------------------------------------------------------------------
+    match /counters/{counterId} {
+      allow read, write: if isSignedIn();
+    }
+
+    // -------------------------------------------------------------------------
     // Immutable Audit Log (`audit_log/{auditId}`) — PR-8.1 Append-Only
     // -------------------------------------------------------------------------
     match /audit_log/{auditId} {
