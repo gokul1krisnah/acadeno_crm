@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:acadeno_crm/core/router/app_router.dart';
 import 'package:acadeno_crm/shared/snackbar_alerts/snack_alert.dart';
 import 'package:acadeno_crm/shared/theme/app_svgs.dart';
+import 'package:acadeno_crm/shared/widgets/ai_chat_assistant.dart';
 import 'package:acadeno_crm/shared/widgets/staff_watermark_overlay.dart';
 import 'package:acadeno_crm/ui/auth/data/repository/firebase_auth_repo.dart';
 import 'package:acadeno_crm/ui/auth/data/sources/firebase_auth_rds.dart';
@@ -168,12 +169,22 @@ class _HomeScaffoldViewState extends State<_HomeScaffoldView> {
                               // Active Tab Screen
                               Expanded(
                                 child: switch (state.bottomNavIndex) {
-                                  0 => LeadsTabView(onLogout: _performLogout),
+                                  0 => Stack(
+                                    children: [
+                                      LeadsTabView(onLogout: _performLogout),
+                                      const AiChatAssistantOverlay(),
+                                    ],
+                                  ),
                                   1 => const FollowUpsTabView(),
                                   2 => const CallLogsTabView(),
                                   3 => const VisitsTabView(),
                                   4 => const MyRecordsTabView(),
-                                  _ => LeadsTabView(onLogout: _performLogout),
+                                  _ => Stack(
+                                    children: [
+                                      LeadsTabView(onLogout: _performLogout),
+                                      const AiChatAssistantOverlay(),
+                                    ],
+                                  ),
                                 },
                               ),
 

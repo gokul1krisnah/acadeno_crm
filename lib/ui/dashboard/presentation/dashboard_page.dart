@@ -182,7 +182,11 @@ class _SidebarNavItemState extends State<_SidebarNavItem> {
     final item = widget.item;
     final compact = widget.compact;
 
-    // Hover & selected colors
+    // Hover & selected background fill; no click splash on nav bar items
+    final Color bgColor = isSelected
+        ? const Color(0xFFFFEDE2)
+        : (_isHovered ? const Color(0xFFFFF6F0) : Colors.transparent);
+
     final Color contentColor = isSelected
         ? _orangeAccent
         : (_isHovered ? _orangeAccent : const Color(0xFF475569));
@@ -191,11 +195,12 @@ class _SidebarNavItemState extends State<_SidebarNavItem> {
         ? _orangeAccent
         : (_isHovered ? _orangeAccent : const Color(0xFF64748B));
 
-    // Dynamic 3D Matrix Translation & Elevation
-    final Matrix4 transform = (_isHovered && !isSelected)
-        ? Matrix4.translationValues(3.0, -1.5, 0.0)
-        : Matrix4.identity();
-
+    // Exact Figma Specs:
+    // width: 223 (in 240px sidebar: 8.5px horizontal margin on each side)
+    // height: 44
+    // border-radius: 12px
+    // border-right-width: 4px
+    // padding: 12px vertical, 16px horizontal
     return Padding(
       padding: EdgeInsets.symmetric(
         horizontal: compact ? 6.0 : 8.5,
@@ -211,62 +216,10 @@ class _SidebarNavItemState extends State<_SidebarNavItem> {
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 180),
             curve: Curves.easeOutCubic,
-            transform: transform,
             height: compact ? 40 : 44,
             decoration: BoxDecoration(
-              gradient: _isHovered && !isSelected
-                  ? const LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        Color(0xFFFFFFFF),
-                        Color(0xFFFFF9F5),
-                        Color(0xFFFFF2E8),
-                      ],
-                    )
-                  : null,
-              color: isSelected
-                  ? const Color(0xFFFFEDE2)
-                  : (_isHovered ? null : Colors.transparent),
+              color: bgColor,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: isSelected
-                    ? const Color(0xFFFFD1B8)
-                    : (_isHovered
-                        ? const Color(0xFFFFD4BE)
-                        : Colors.transparent),
-                width: 1.0,
-              ),
-              boxShadow: _isHovered && !isSelected
-                  ? [
-                      const BoxShadow(
-                        color: Color(0x140F172A),
-                        offset: Offset(0, 5),
-                        blurRadius: 12,
-                        spreadRadius: -1,
-                      ),
-                      BoxShadow(
-                        color: _orangeAccent.withValues(alpha: 0.16),
-                        offset: const Offset(2, 4),
-                        blurRadius: 10,
-                        spreadRadius: -1,
-                      ),
-                      const BoxShadow(
-                        color: Color(0x08000000),
-                        offset: Offset(0, 1),
-                        blurRadius: 2,
-                      ),
-                    ]
-                  : (isSelected
-                      ? [
-                          BoxShadow(
-                            color: _orangeAccent.withValues(alpha: 0.20),
-                            offset: const Offset(0, 3),
-                            blurRadius: 8,
-                            spreadRadius: -1,
-                          ),
-                        ]
-                      : null),
             ),
             child: CustomPaint(
               foregroundPainter: _FigmaRightBorderPainter(
@@ -276,55 +229,30 @@ class _SidebarNavItemState extends State<_SidebarNavItem> {
               ),
               child: Padding(
                 padding: EdgeInsets.fromLTRB(
+                  compact ? 12 : 16,
                   compact ? 10 : 12,
-                  compact ? 6 : 7,
-                  compact ? 8 : 12,
-                  compact ? 6 : 7,
+                  compact ? 10 : 16,
+                  compact ? 10 : 12,
                 ),
                 child: Row(
                   children: [
-                    // 3D Elevated Icon Container
-                    AnimatedContainer(
-                      duration: const Duration(milliseconds: 180),
-                      curve: Curves.easeOutCubic,
-                      width: compact ? 26 : 28,
-                      height: compact ? 26 : 28,
-                      decoration: BoxDecoration(
-                        color: isSelected
-                            ? _orangeAccent.withValues(alpha: 0.14)
-                            : (_isHovered
-                                ? const Color(0xFFFFE8DC)
-                                : Colors.transparent),
-                        borderRadius: BorderRadius.circular(7),
-                        boxShadow: _isHovered && !isSelected
-                            ? [
-                                BoxShadow(
-                                  color: _orangeAccent.withValues(alpha: 0.15),
-                                  offset: const Offset(0, 2),
-                                  blurRadius: 4,
-                                ),
-                              ]
-                            : null,
-                      ),
+                    SizedBox(
+                      width: compact ? 18 : 20,
+                      height: compact ? 18 : 20,
                       child: Center(
-                        child: AnimatedScale(
-                          scale: _isHovered ? 1.10 : 1.0,
-                          duration: const Duration(milliseconds: 180),
-                          curve: Curves.easeOutCubic,
-                          child: SvgPicture.asset(
-                            item.svgAsset,
-                            width: compact ? 16 : 18,
-                            height: compact ? 16 : 18,
-                            fit: BoxFit.contain,
-                            colorFilter: ColorFilter.mode(
-                              iconColor,
-                              BlendMode.srcIn,
-                            ),
+                        child: SvgPicture.asset(
+                          item.svgAsset,
+                          width: compact ? 16 : 18,
+                          height: compact ? 16 : 18,
+                          fit: BoxFit.contain,
+                          colorFilter: ColorFilter.mode(
+                            iconColor,
+                            BlendMode.srcIn,
                           ),
                         ),
                       ),
                     ),
-                    Gap(compact ? 8 : 10),
+                    Gap(compact ? 9 : 12),
                     Expanded(
                       child: Text(
                         item.label,
@@ -335,8 +263,8 @@ class _SidebarNavItemState extends State<_SidebarNavItem> {
                           fontWeight: isSelected
                               ? FontWeight.w700
                               : (_isHovered
-                                  ? FontWeight.w600
-                                  : FontWeight.w500),
+                                    ? FontWeight.w600
+                                    : FontWeight.w500),
                           color: contentColor,
                           letterSpacing: -0.2,
                         ),
@@ -508,128 +436,19 @@ class _DashboardViewState extends State<_DashboardView> {
   }
 
   Widget _buildDashboardDateSelector() {
-    return Container(
-      height: 40,
-      constraints: const BoxConstraints(minWidth: 150),
-      padding: const EdgeInsets.symmetric(horizontal: 14),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF5F5F5),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFE5E7EB)),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x0D764BA2),
-            blurRadius: 5,
-            offset: Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          const Icon(
-            Icons.calendar_month_rounded,
-            size: 18,
-            color: Color(0xFF2E1D44),
-          ),
-          const Gap(8),
-          DropdownButtonHideUnderline(
-            child: DropdownButton<String>(
-              value: _dashboardDateRange,
-              focusColor: Colors.transparent,
-              dropdownColor: const Color(0xFFE2E2E2),
-              borderRadius: BorderRadius.circular(12),
-              elevation: 6,
-              icon: const Icon(
-                Icons.keyboard_arrow_down_rounded,
-                size: 20,
-                color: Color(0xFF2E1D44),
-              ),
-              isDense: true,
-              style: GoogleFonts.inter(
-                fontSize: 13.5,
-                fontWeight: FontWeight.w500,
-                color: const Color(0xFF2E1D44),
-              ),
-              selectedItemBuilder: (context) => [
-                'Today',
-                'Yesterday',
-                'This week',
-                'This month',
-                'All Time',
-                'Custom',
-              ].map((val) => Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  _dateRangeDisplayLabel,
-                  style: GoogleFonts.inter(
-                    fontSize: 13.5,
-                    fontWeight: FontWeight.w500,
-                    color: const Color(0xFF2E1D44),
-                  ),
-                ),
-              )).toList(),
-              items: [
-                DropdownMenuItem(
-                  value: 'Today',
-                  child: AcadenoDropdown.buildMenuItemChild(
-                    label: 'Today',
-                    isSelected: _dashboardDateRange == 'Today',
-                  ),
-                ),
-                DropdownMenuItem(
-                  value: 'Yesterday',
-                  child: AcadenoDropdown.buildMenuItemChild(
-                    label: 'Yesterday',
-                    isSelected: _dashboardDateRange == 'Yesterday',
-                  ),
-                ),
-                DropdownMenuItem(
-                  value: 'This week',
-                  child: AcadenoDropdown.buildMenuItemChild(
-                    label: 'This week',
-                    isSelected: _dashboardDateRange == 'This week',
-                  ),
-                ),
-                DropdownMenuItem(
-                  value: 'This month',
-                  child: AcadenoDropdown.buildMenuItemChild(
-                    label: 'This month',
-                    isSelected: _dashboardDateRange == 'This month',
-                  ),
-                ),
-                DropdownMenuItem(
-                  value: 'All Time',
-                  child: AcadenoDropdown.buildMenuItemChild(
-                    label: 'All Time',
-                    isSelected: _dashboardDateRange == 'All Time',
-                  ),
-                ),
-                DropdownMenuItem(
-                  value: 'Custom',
-                  child: AcadenoDropdown.buildMenuItemChild(
-                    label: _selectedCustomDate != null
-                        ? 'Custom (${DateFormat('d MMM yyyy').format(_selectedCustomDate!)})'
-                        : 'Pick custom date...',
-                    isSelected: _dashboardDateRange == 'Custom',
-                  ),
-                ),
-              ],
-              onChanged: (val) async {
-                if (val == null) return;
-                if (val == 'Custom') {
-                  await _pickDashboardCustomDate();
-                } else {
-                  setState(() {
-                    _dashboardDateRange = val;
-                  });
-                }
-              },
-            ),
-          ),
-        ],
-      ),
+    return _DashboardDateSelector(
+      dateRange: _dashboardDateRange,
+      displayLabel: _dateRangeDisplayLabel,
+      selectedCustomDate: _selectedCustomDate,
+      onChanged: (val) async {
+        if (val == 'Custom') {
+          await _pickDashboardCustomDate();
+        } else {
+          setState(() {
+            _dashboardDateRange = val;
+          });
+        }
+      },
     );
   }
 
@@ -674,7 +493,11 @@ class _DashboardViewState extends State<_DashboardView> {
 
     if (dateRange == 'This week') {
       final startOfWeek = now.subtract(Duration(days: now.weekday - 1));
-      final startMidnight = DateTime(startOfWeek.year, startOfWeek.month, startOfWeek.day);
+      final startMidnight = DateTime(
+        startOfWeek.year,
+        startOfWeek.month,
+        startOfWeek.day,
+      );
       return rawLeads.where((l) {
         final ca = l['createdAt'];
         if (ca is Timestamp && ca.toDate().isAfter(startMidnight)) return true;
@@ -687,7 +510,10 @@ class _DashboardViewState extends State<_DashboardView> {
         final adk = _extractDateKey(l['assignedDateKey'], now: now);
         if (adk != null) {
           final p = DateTime.tryParse(adk);
-          if (p != null && (p.isAfter(startMidnight) || p.isAtSameMomentAs(startMidnight))) return true;
+          if (p != null &&
+              (p.isAfter(startMidnight) || p.isAtSameMomentAs(startMidnight))) {
+            return true;
+          }
         }
         return false;
       }).toList();
@@ -707,7 +533,10 @@ class _DashboardViewState extends State<_DashboardView> {
         final adk = _extractDateKey(l['assignedDateKey'], now: now);
         if (adk != null) {
           final p = DateTime.tryParse(adk);
-          if (p != null && (p.isAfter(startOfMonth) || p.isAtSameMomentAs(startOfMonth))) return true;
+          if (p != null &&
+              (p.isAfter(startOfMonth) || p.isAtSameMomentAs(startOfMonth))) {
+            return true;
+          }
         }
         return false;
       }).toList();
@@ -1406,9 +1235,10 @@ class _DashboardViewState extends State<_DashboardView> {
                                                                             dashboardLeads,
                                                                         referenceDate:
                                                                             _effectiveDashboardDate,
-                                                                        onReassign: () => cubit.selectNav(
-                                                                          1,
-                                                                        ),
+                                                                        onReassign: () =>
+                                                                            cubit.selectNav(
+                                                                              1,
+                                                                            ),
                                                                       ),
                                                                     ],
                                                                   ),
@@ -1426,9 +1256,10 @@ class _DashboardViewState extends State<_DashboardView> {
                                                                         sectionGap,
                                                                       ),
                                                                       _CollegeVisits(
-                                                                        onPlanVisit: () => cubit.selectNav(
-                                                                          4,
-                                                                        ),
+                                                                        onPlanVisit: () =>
+                                                                            cubit.selectNav(
+                                                                              4,
+                                                                            ),
                                                                       ),
                                                                     ],
                                                                   ),
@@ -1455,17 +1286,19 @@ class _DashboardViewState extends State<_DashboardView> {
                                                                       dashboardLeads,
                                                                   referenceDate:
                                                                       _effectiveDashboardDate,
-                                                                  onReassign: () =>
-                                                                      cubit.selectNav(
-                                                                        1,
-                                                                      ),
+                                                                  onReassign:
+                                                                      () => cubit
+                                                                          .selectNav(
+                                                                            1,
+                                                                          ),
                                                                 ),
                                                                 const Gap(16),
                                                                 _CollegeVisits(
-                                                                  onPlanVisit: () =>
-                                                                      cubit.selectNav(
-                                                                        4,
-                                                                      ),
+                                                                  onPlanVisit:
+                                                                      () => cubit
+                                                                          .selectNav(
+                                                                            4,
+                                                                          ),
                                                                 ),
                                                               ],
                                                             ),
@@ -1728,7 +1561,8 @@ class _DashboardViewState extends State<_DashboardView> {
       isSelected: selectedIndex == index,
       compact: compact,
       onTap: () {
-        if (index == 0 && (_dashboardDateRange != 'Today' || _selectedCustomDate != null)) {
+        if (index == 0 &&
+            (_dashboardDateRange != 'Today' || _selectedCustomDate != null)) {
           setState(() {
             _dashboardDateRange = 'Today';
             _selectedCustomDate = null;
@@ -1797,42 +1631,11 @@ class _DashboardViewState extends State<_DashboardView> {
           const Gap(14),
           _buildFigmaSearchBar(),
           const Gap(12),
-          SizedBox(
+          _buildAssignLeadsButton(
             height: 48,
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                alignment: Alignment.center,
-                backgroundColor: const Color(0xFFEF8144),
-                foregroundColor: Colors.white,
-                elevation: 0,
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              onPressed: () => context.read<DashboardCubit>().selectNav(1),
-              child: Center(
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    const Icon(Icons.add, size: 16, color: Colors.white),
-                    const Gap(8),
-                    Text(
-                      "Assign Today's Leads",
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.inter(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                        height: 1.0,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
+            horizontalPad: 20,
+            fontSize: 14,
+            isCompact: false,
           ),
         ],
       );
@@ -1900,126 +1703,93 @@ class _DashboardViewState extends State<_DashboardView> {
           child: _buildFigmaSearchBar(height: controlHeight),
         ),
         Gap(headerGap),
-        SizedBox(
+        _buildAssignLeadsButton(
           height: controlHeight,
-          child: ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              alignment: Alignment.center,
-              backgroundColor: const Color(0xFFEF8144),
-              foregroundColor: Colors.white,
-              elevation: 0,
-              padding: EdgeInsets.symmetric(horizontal: buttonHorizontalPad),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-            onPressed: () => context.read<DashboardCubit>().selectNav(1),
-            child: Center(
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.add,
-                    size: isCompactHeader ? 14 : 16,
-                    color: Colors.white,
-                  ),
-                  Gap(isCompactHeader ? 6 : 8),
-                  Text(
-                    "Assign Today's Leads",
-                    textAlign: TextAlign.center,
-                    style: GoogleFonts.inter(
-                      fontSize: buttonFontSize,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
-                      height: 1.0,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
+          horizontalPad: buttonHorizontalPad,
+          fontSize: buttonFontSize,
+          isCompact: isCompactHeader,
         ),
       ],
     );
   }
 
+  Widget _buildAssignLeadsButton({
+    required double height,
+    required double horizontalPad,
+    required double fontSize,
+    required bool isCompact,
+  }) {
+    return SizedBox(
+      height: height,
+      child: ElevatedButton(
+        style: ButtonStyle(
+          alignment: Alignment.center,
+          backgroundColor: WidgetStateProperty.resolveWith((states) {
+            if (states.contains(WidgetState.hovered)) {
+              return const Color(0xFFE67332);
+            }
+            return const Color(0xFFEF8144);
+          }),
+          foregroundColor: WidgetStateProperty.all(Colors.white),
+          elevation: WidgetStateProperty.resolveWith((states) {
+            if (states.contains(WidgetState.hovered)) {
+              return 2.0;
+            }
+            return 0.0;
+          }),
+          shadowColor: WidgetStateProperty.all(const Color(0x33EF8144)),
+          padding: WidgetStateProperty.all(
+            EdgeInsets.symmetric(horizontal: horizontalPad),
+          ),
+          shape: WidgetStateProperty.all(
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+        ),
+        onPressed: () => context.read<DashboardCubit>().selectNav(1),
+        child: Center(
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Icon(Icons.add, size: isCompact ? 14 : 16, color: Colors.white),
+              Gap(isCompact ? 6 : 8),
+              Text(
+                "Assign Today's Leads",
+                textAlign: TextAlign.center,
+                style: GoogleFonts.inter(
+                  fontSize: fontSize,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                  height: 1.0,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildFigmaSearchBar({double? width, double height = 48}) {
-    return Container(
+    return _FigmaSearchBar(
+      controller: _searchCtrl,
+      searchQuery: _searchQuery,
       width: width,
       height: height,
-      decoration: BoxDecoration(
-        color: const Color(0xFFFFFFFF),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFE2E8E5), width: 1),
-      ),
-      alignment: Alignment.center,
-      child: TextField(
-        controller: _searchCtrl,
-        textAlignVertical: TextAlignVertical.center,
-        onChanged: (val) {
-          setState(() {
-            _searchQuery = val.trim();
-          });
-          context.read<AdminLeadsCubit>().setSearchQuery(val.trim());
-        },
-        style: GoogleFonts.inter(
-          fontSize: 14,
-          color: const Color(0xFF111827),
-          fontWeight: FontWeight.w400,
-          height: 20 / 14,
-        ),
-        decoration: InputDecoration(
-          isDense: true,
-          filled: false,
-          border: InputBorder.none,
-          enabledBorder: InputBorder.none,
-          focusedBorder: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 16,
-          ),
-          prefixIcon: const Padding(
-            padding: EdgeInsets.only(left: 16, right: 12),
-            child: Icon(
-              Icons.search_rounded,
-              size: 18,
-              color: Color(0xFF9CA3AF),
-            ),
-          ),
-          prefixIconConstraints: BoxConstraints(
-            minWidth: 46,
-            minHeight: height,
-          ),
-          suffixIcon: _searchQuery.isNotEmpty
-              ? IconButton(
-                  icon: const Icon(
-                    Icons.clear_rounded,
-                    size: 18,
-                    color: Color(0xFF9CA3AF),
-                  ),
-                  onPressed: () {
-                    setState(() {
-                      _searchCtrl.clear();
-                      _searchQuery = '';
-                    });
-                    context.read<AdminLeadsCubit>().setSearchQuery('');
-                  },
-                )
-              : null,
-          suffixIconConstraints: BoxConstraints(
-            minWidth: 42,
-            minHeight: height,
-          ),
-          hintText: 'Search',
-          hintStyle: GoogleFonts.inter(
-            fontSize: 14,
-            color: const Color(0xFF9CA3AF),
-            fontWeight: FontWeight.w400,
-            height: 20 / 14,
-          ),
-        ),
-      ),
+      onChanged: (val) {
+        setState(() {
+          _searchQuery = val.trim();
+        });
+        context.read<AdminLeadsCubit>().setSearchQuery(val.trim());
+      },
+      onClear: () {
+        setState(() {
+          _searchCtrl.clear();
+          _searchQuery = '';
+        });
+        context.read<AdminLeadsCubit>().setSearchQuery('');
+      },
     );
   }
 
@@ -2688,6 +2458,285 @@ class _DashboardViewState extends State<_DashboardView> {
   }
 }
 
+class _DashboardDateSelector extends StatefulWidget {
+  final String dateRange;
+  final String displayLabel;
+  final DateTime? selectedCustomDate;
+  final ValueChanged<String> onChanged;
+
+  const _DashboardDateSelector({
+    required this.dateRange,
+    required this.displayLabel,
+    required this.selectedCustomDate,
+    required this.onChanged,
+  });
+
+  @override
+  State<_DashboardDateSelector> createState() => _DashboardDateSelectorState();
+}
+
+class _DashboardDateSelectorState extends State<_DashboardDateSelector> {
+  bool _isHovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        curve: Curves.easeOutCubic,
+        height: 40,
+        constraints: const BoxConstraints(minWidth: 150),
+        padding: const EdgeInsets.symmetric(horizontal: 14),
+        decoration: BoxDecoration(
+          color: _isHovered ? const Color(0xFFEEEEEE) : const Color(0xFFF5F5F5),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: _isHovered
+                ? const Color(0xFF3F3FB4).withValues(alpha: 0.35)
+                : const Color(0xFFE5E7EB),
+            width: 1,
+          ),
+          boxShadow: _isHovered
+              ? const [
+                  BoxShadow(
+                    color: Color(0x143F3FB4),
+                    blurRadius: 8,
+                    offset: Offset(0, 2),
+                  ),
+                ]
+              : const [
+                  BoxShadow(
+                    color: Color(0x0D764BA2),
+                    blurRadius: 5,
+                    offset: Offset(0, 2),
+                  ),
+                ],
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            const Icon(
+              Icons.calendar_month_rounded,
+              size: 18,
+              color: Color(0xFF2E1D44),
+            ),
+            const Gap(8),
+            DropdownButtonHideUnderline(
+              child: DropdownButton<String>(
+                value: widget.dateRange,
+                focusColor: Colors.transparent,
+                dropdownColor: const Color(0xFFE2E2E2),
+                borderRadius: BorderRadius.circular(12),
+                elevation: 6,
+                icon: const Icon(
+                  Icons.keyboard_arrow_down_rounded,
+                  size: 20,
+                  color: Color(0xFF2E1D44),
+                ),
+                isDense: true,
+                style: GoogleFonts.inter(
+                  fontSize: 13.5,
+                  fontWeight: FontWeight.w500,
+                  color: const Color(0xFF2E1D44),
+                ),
+                selectedItemBuilder: (context) =>
+                    [
+                          'Today',
+                          'Yesterday',
+                          'This week',
+                          'This month',
+                          'All Time',
+                          'Custom',
+                        ]
+                        .map(
+                          (val) => Align(
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              widget.displayLabel,
+                              style: GoogleFonts.inter(
+                                fontSize: 13.5,
+                                fontWeight: FontWeight.w500,
+                                color: const Color(0xFF2E1D44),
+                              ),
+                            ),
+                          ),
+                        )
+                        .toList(),
+                items: [
+                  DropdownMenuItem(
+                    value: 'Today',
+                    child: AcadenoDropdown.buildMenuItemChild(
+                      label: 'Today',
+                      isSelected: widget.dateRange == 'Today',
+                    ),
+                  ),
+                  DropdownMenuItem(
+                    value: 'Yesterday',
+                    child: AcadenoDropdown.buildMenuItemChild(
+                      label: 'Yesterday',
+                      isSelected: widget.dateRange == 'Yesterday',
+                    ),
+                  ),
+                  DropdownMenuItem(
+                    value: 'This week',
+                    child: AcadenoDropdown.buildMenuItemChild(
+                      label: 'This week',
+                      isSelected: widget.dateRange == 'This week',
+                    ),
+                  ),
+                  DropdownMenuItem(
+                    value: 'This month',
+                    child: AcadenoDropdown.buildMenuItemChild(
+                      label: 'This month',
+                      isSelected: widget.dateRange == 'This month',
+                    ),
+                  ),
+                  DropdownMenuItem(
+                    value: 'All Time',
+                    child: AcadenoDropdown.buildMenuItemChild(
+                      label: 'All Time',
+                      isSelected: widget.dateRange == 'All Time',
+                    ),
+                  ),
+                  DropdownMenuItem(
+                    value: 'Custom',
+                    child: AcadenoDropdown.buildMenuItemChild(
+                      label: widget.selectedCustomDate != null
+                          ? 'Custom (${DateFormat('d MMM yyyy').format(widget.selectedCustomDate!)})'
+                          : 'Pick custom date...',
+                      isSelected: widget.dateRange == 'Custom',
+                    ),
+                  ),
+                ],
+                onChanged: (val) {
+                  if (val != null) {
+                    widget.onChanged(val);
+                  }
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _FigmaSearchBar extends StatefulWidget {
+  final TextEditingController controller;
+  final String searchQuery;
+  final ValueChanged<String> onChanged;
+  final VoidCallback onClear;
+  final double? width;
+  final double height;
+
+  const _FigmaSearchBar({
+    required this.controller,
+    required this.searchQuery,
+    required this.onChanged,
+    required this.onClear,
+    this.width,
+    this.height = 48,
+  });
+
+  @override
+  State<_FigmaSearchBar> createState() => _FigmaSearchBarState();
+}
+
+class _FigmaSearchBarState extends State<_FigmaSearchBar> {
+  bool _isHovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        curve: Curves.easeOutCubic,
+        width: widget.width,
+        height: widget.height,
+        decoration: BoxDecoration(
+          color: const Color(0xFFFFFFFF),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: _isHovered
+                ? const Color(0xFF3F3FB4).withValues(alpha: 0.45)
+                : const Color(0xFFE2E8E5),
+            width: 1,
+          ),
+          boxShadow: _isHovered
+              ? const [
+                  BoxShadow(
+                    color: Color(0x0D3F3FB4),
+                    blurRadius: 8,
+                    offset: Offset(0, 2),
+                  ),
+                ]
+              : null,
+        ),
+        alignment: Alignment.center,
+        child: TextField(
+          controller: widget.controller,
+          textAlignVertical: TextAlignVertical.center,
+          onChanged: widget.onChanged,
+          style: GoogleFonts.inter(
+            fontSize: 14,
+            color: const Color(0xFF111827),
+            fontWeight: FontWeight.w400,
+            height: 20 / 14,
+          ),
+          decoration: InputDecoration(
+            isDense: true,
+            filled: false,
+            border: InputBorder.none,
+            enabledBorder: InputBorder.none,
+            focusedBorder: InputBorder.none,
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+            prefixIcon: const Padding(
+              padding: EdgeInsets.only(left: 16, right: 12),
+              child: Icon(
+                Icons.search_rounded,
+                size: 18,
+                color: Color(0xFF9CA3AF),
+              ),
+            ),
+            prefixIconConstraints: BoxConstraints(
+              minWidth: 46,
+              minHeight: widget.height,
+            ),
+            suffixIcon: widget.searchQuery.isNotEmpty
+                ? IconButton(
+                    icon: const Icon(
+                      Icons.clear_rounded,
+                      size: 18,
+                      color: Color(0xFF9CA3AF),
+                    ),
+                    onPressed: widget.onClear,
+                  )
+                : null,
+            suffixIconConstraints: BoxConstraints(
+              minWidth: 42,
+              minHeight: widget.height,
+            ),
+            hintText: 'Search',
+            hintStyle: GoogleFonts.inter(
+              fontSize: 14,
+              color: const Color(0xFF9CA3AF),
+              fontWeight: FontWeight.w400,
+              height: 20 / 14,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _StatCard extends StatefulWidget {
   final String label, value, sub;
   final Color color;
@@ -2742,6 +2791,9 @@ class _StatCardState extends State<_StatCard> {
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 200),
               curve: Curves.easeOutCubic,
+              transform: _isHovered
+                  ? Matrix4.translationValues(0, -2, 0)
+                  : Matrix4.identity(),
               constraints: BoxConstraints(minHeight: minCardHeight),
               clipBehavior: Clip.antiAlias,
               decoration: BoxDecoration(
@@ -2889,14 +2941,17 @@ class _StatCardState extends State<_StatCard> {
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 200),
             curve: Curves.easeOutCubic,
+            transform: _isHovered
+                ? Matrix4.translationValues(0, -2, 0)
+                : Matrix4.identity(),
             constraints: BoxConstraints(minHeight: minCardHeight),
             padding: cardPadding,
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: _isHovered ? const Color(0xFFFAFAFA) : Colors.white,
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
                 color: _isHovered
-                    ? widget.color.withValues(alpha: 0.4)
+                    ? widget.color.withValues(alpha: 0.45)
                     : const Color(0xFFE2E8E5),
                 width: 1,
               ),
@@ -2952,7 +3007,9 @@ class _StatCardState extends State<_StatCard> {
                       height: isCompact ? 28 : 36,
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
-                        color: widget.color.withValues(alpha: _isHovered ? 0.16 : 0.08),
+                        color: widget.color.withValues(
+                          alpha: _isHovered ? 0.16 : 0.08,
+                        ),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: AnimatedScale(
@@ -3021,6 +3078,198 @@ class _StatCardState extends State<_StatCard> {
 // ============================================================================
 // Main Cards
 // ============================================================================
+
+class _HoverableBadge extends StatefulWidget {
+  final String label;
+  final Color bgColor;
+  final Color borderColor;
+  final Color textColor;
+
+  const _HoverableBadge({
+    required this.label,
+    required this.bgColor,
+    required this.borderColor,
+    required this.textColor,
+  });
+
+  @override
+  State<_HoverableBadge> createState() => _HoverableBadgeState();
+}
+
+class _HoverableBadgeState extends State<_HoverableBadge> {
+  bool _hovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      onEnter: (_) => setState(() => _hovered = true),
+      onExit: (_) => setState(() => _hovered = false),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+        decoration: BoxDecoration(
+          color: _hovered
+              ? widget.borderColor.withValues(alpha: 0.65)
+              : widget.bgColor,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: widget.borderColor, width: 1),
+          boxShadow: _hovered
+              ? [
+                  BoxShadow(
+                    color: widget.textColor.withValues(alpha: 0.12),
+                    blurRadius: 4,
+                    offset: const Offset(0, 1),
+                  ),
+                ]
+              : null,
+        ),
+        child: Text(
+          widget.label,
+          style: GoogleFonts.inter(
+            color: widget.textColor,
+            fontSize: 11,
+            fontWeight: FontWeight.w700,
+            height: 16.5 / 11,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+typedef _TeamMemberRecord = ({
+  String name,
+  String role,
+  int called,
+  int assigned,
+  int interested,
+  int converted,
+  int overdue,
+});
+
+class _TeamMemberRow extends StatefulWidget {
+  final _TeamMemberRecord member;
+  final double progress;
+
+  const _TeamMemberRow({required this.member, required this.progress});
+
+  @override
+  State<_TeamMemberRow> createState() => _TeamMemberRowState();
+}
+
+class _TeamMemberRowState extends State<_TeamMemberRow> {
+  bool _isHovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final r = widget.member;
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        curve: Curves.easeOutCubic,
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        decoration: BoxDecoration(
+          color: _isHovered ? const Color(0xFFF8FAFC) : Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: _isHovered ? const Color(0xFFE2E8F0) : Colors.transparent,
+            width: 1,
+          ),
+          boxShadow: _isHovered
+              ? const [
+                  BoxShadow(
+                    color: Color(0x0A0F172A),
+                    blurRadius: 8,
+                    offset: Offset(0, 2),
+                  ),
+                ]
+              : null,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Text(
+                    r.name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.inter(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 16,
+                      color: _isHovered
+                          ? const Color(0xFF3F3FB4)
+                          : const Color(0xFF111827),
+                      letterSpacing: 0.0156,
+                    ),
+                  ),
+                ),
+                const Gap(8),
+                Text(
+                  '${r.called} / ${r.assigned} leads',
+                  style: GoogleFonts.inter(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: const Color(0xFF3F3FB4),
+                    letterSpacing: -0.0957,
+                  ),
+                ),
+              ],
+            ),
+            const Gap(8),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(9999),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 180),
+                height: 6,
+                child: LinearProgressIndicator(
+                  value: widget.progress,
+                  minHeight: 6,
+                  color: const Color(0xFF3F3FB4),
+                  backgroundColor: _isHovered
+                      ? const Color(0xFFE2E8F0)
+                      : const Color(0xFFF3F4F6),
+                ),
+              ),
+            ),
+            const Gap(8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 6,
+              children: [
+                _HoverableBadge(
+                  label: 'INTERESTED: ${r.interested}',
+                  bgColor: const Color(0xFFEFF6FF),
+                  borderColor: const Color(0xFFDBEAFE),
+                  textColor: const Color(0xFF2563EB),
+                ),
+                _HoverableBadge(
+                  label: 'CONVERTED: ${r.converted}',
+                  bgColor: const Color(0xFFF0FDF4),
+                  borderColor: const Color(0xFFDCFCE7),
+                  textColor: const Color(0xFF16A34A),
+                ),
+                if (r.overdue > 0)
+                  _HoverableBadge(
+                    label: 'OVERDUE: ${r.overdue}',
+                    bgColor: const Color(0xFFFFF7ED),
+                    borderColor: const Color(0xFFFFEDD5),
+                    textColor: const Color(0xFFEA580C),
+                  ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
 
 class _TeamToday extends StatelessWidget {
   final List<DashboardUserModel> activeUsers;
@@ -3169,143 +3418,142 @@ class _TeamToday extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       for (var i = 0; i < rows.length; i++) ...[
-                        if (i > 0) const Gap(32),
-                        Builder(
-                          builder: (_) {
-                            final r = rows[i];
-                            final progress = r.assigned > 0
-                                ? (r.called / r.assigned).clamp(0.0, 1.0)
-                                : 0.0;
-                            return Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Expanded(
-                                      child: Text(
-                                        r.name,
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: GoogleFonts.inter(
-                                          fontWeight: FontWeight.w700,
-                                          fontSize: 16,
-                                          color: const Color(0xFF111827),
-                                          letterSpacing: 0.0156,
-                                        ),
-                                      ),
-                                    ),
-                                    const Gap(8),
-                                    Text(
-                                      '${r.called} / ${r.assigned} leads',
-                                      style: GoogleFonts.inter(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w700,
-                                        color: const Color(0xFF3F3FB4),
-                                        letterSpacing: -0.0957,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const Gap(8),
-                                ClipRRect(
-                                  borderRadius: BorderRadius.circular(9999),
-                                  child: LinearProgressIndicator(
-                                    value: progress,
-                                    minHeight: 6,
-                                    color: const Color(0xFF3F3FB4),
-                                    backgroundColor: const Color(0xFFF3F4F6),
-                                  ),
-                                ),
-                                const Gap(8),
-                                Wrap(
-                                  spacing: 8,
-                                  runSpacing: 6,
-                                  children: [
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 12,
-                                        vertical: 4,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: const Color(0xFFEFF6FF),
-                                        borderRadius: BorderRadius.circular(8),
-                                        border: Border.all(
-                                          color: const Color(0xFFDBEAFE),
-                                          width: 1,
-                                        ),
-                                      ),
-                                      child: Text(
-                                        'INTERESTED: ${r.interested}',
-                                        style: GoogleFonts.inter(
-                                          color: const Color(0xFF2563EB),
-                                          fontSize: 11,
-                                          fontWeight: FontWeight.w700,
-                                          height: 16.5 / 11,
-                                        ),
-                                      ),
-                                    ),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 12,
-                                        vertical: 4,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: const Color(0xFFF0FDF4),
-                                        borderRadius: BorderRadius.circular(8),
-                                        border: Border.all(
-                                          color: const Color(0xFFDCFCE7),
-                                          width: 1,
-                                        ),
-                                      ),
-                                      child: Text(
-                                        'CONVERTED: ${r.converted}',
-                                        style: GoogleFonts.inter(
-                                          color: const Color(0xFF16A34A),
-                                          fontSize: 11,
-                                          fontWeight: FontWeight.w700,
-                                          height: 16.5 / 11,
-                                        ),
-                                      ),
-                                    ),
-                                    if (r.overdue > 0)
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 12,
-                                          vertical: 4,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          color: const Color(0xFFFFF7ED),
-                                          borderRadius: BorderRadius.circular(
-                                            8,
-                                          ),
-                                          border: Border.all(
-                                            color: const Color(0xFFFFEDD5),
-                                            width: 1,
-                                          ),
-                                        ),
-                                        child: Text(
-                                          'OVERDUE: ${r.overdue}',
-                                          style: GoogleFonts.inter(
-                                            color: const Color(0xFFEA580C),
-                                            fontSize: 11,
-                                            fontWeight: FontWeight.w700,
-                                            height: 16.5 / 11,
-                                          ),
-                                        ),
-                                      ),
-                                  ],
-                                ),
-                              ],
-                            );
-                          },
+                        if (i > 0) const Gap(14),
+                        _TeamMemberRow(
+                          member: rows[i],
+                          progress: rows[i].assigned > 0
+                              ? (rows[i].called / rows[i].assigned).clamp(
+                                  0.0,
+                                  1.0,
+                                )
+                              : 0.0,
                         ),
                       ],
                     ],
                   ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _SourceConversionRow extends StatefulWidget {
+  final (String, int, int) item;
+
+  const _SourceConversionRow({required this.item});
+
+  @override
+  State<_SourceConversionRow> createState() => _SourceConversionRowState();
+}
+
+class _SourceConversionRowState extends State<_SourceConversionRow> {
+  bool _isHovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final r = widget.item;
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        curve: Curves.easeOutCubic,
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+        decoration: BoxDecoration(
+          color: _isHovered ? const Color(0xFFF8FAFC) : Colors.transparent,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: _isHovered ? const Color(0xFFE2E8F0) : Colors.transparent,
+            width: 1,
+          ),
+          boxShadow: _isHovered
+              ? const [
+                  BoxShadow(
+                    color: Color(0x080F172A),
+                    blurRadius: 6,
+                    offset: Offset(0, 2),
+                  ),
+                ]
+              : null,
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              flex: 32,
+              child: Text(
+                r.$1,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: GoogleFonts.inter(
+                  fontSize: 12,
+                  color: _isHovered
+                      ? const Color(0xFF111827)
+                      : const Color(0xFF6B7280),
+                  fontWeight: _isHovered ? FontWeight.w600 : FontWeight.w500,
+                  height: 16 / 12,
+                ),
+              ),
+            ),
+            const Gap(10),
+            Expanded(
+              flex: 40,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(9999),
+                child: LinearProgressIndicator(
+                  value: r.$3 > 0 ? (r.$2 / r.$3).clamp(0.0, 1.0) : 0.0,
+                  minHeight: 10,
+                  color: r.$2 > 0
+                      ? const Color(0xFFFB923C)
+                      : const Color(0xFF3F3FB4),
+                  backgroundColor: _isHovered
+                      ? const Color(0xFFE2E8F0)
+                      : const Color(0xFFF9FAFB),
+                ),
+              ),
+            ),
+            const Gap(10),
+            SizedBox(
+              width: 52,
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerRight,
+                child: RichText(
+                  textAlign: TextAlign.right,
+                  text: TextSpan(
+                    children: [
+                      TextSpan(
+                        text: '${r.$2}',
+                        style: GoogleFonts.inter(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w700,
+                          color: _isHovered
+                              ? const Color(0xFF3F3FB4)
+                              : const Color(0xFF111827),
+                          height: 16 / 20,
+                        ),
+                      ),
+                      TextSpan(
+                        text: ' ',
+                        style: GoogleFonts.inter(fontSize: 12),
+                      ),
+                      TextSpan(
+                        text: '/ ${r.$3}',
+                        style: GoogleFonts.inter(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w400,
+                          color: const Color(0xFF9FA0A1),
+                          height: 16 / 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -3473,91 +3721,225 @@ class _Conversions extends StatelessWidget {
                         i < displaySources.take(6).length;
                         i++
                       ) ...[
-                        if (i > 0) const Gap(20),
-                        Builder(
-                          builder: (_) {
-                            final r = displaySources[i];
-                            return Row(
-                              children: [
-                                Expanded(
-                                  flex: 32,
-                                  child: Text(
-                                    r.$1,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: GoogleFonts.inter(
-                                      fontSize: 12,
-                                      color: const Color(0xFF6B7280),
-                                      fontWeight: FontWeight.w500,
-                                      height: 16 / 12,
-                                    ),
-                                  ),
-                                ),
-                                const Gap(10),
-                                Expanded(
-                                  flex: 40,
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(9999),
-                                    child: LinearProgressIndicator(
-                                      value: r.$3 > 0
-                                          ? (r.$2 / r.$3).clamp(0.0, 1.0)
-                                          : 0.0,
-                                      minHeight: 10,
-                                      color: r.$2 > 0
-                                          ? const Color(0xFFFB923C)
-                                          : const Color(0xFF3F3FB4),
-                                      backgroundColor: const Color(0xFFF9FAFB),
-                                    ),
-                                  ),
-                                ),
-                                const Gap(10),
-                                SizedBox(
-                                  width: 52,
-                                  child: FittedBox(
-                                    fit: BoxFit.scaleDown,
-                                    alignment: Alignment.centerRight,
-                                    child: RichText(
-                                      textAlign: TextAlign.right,
-                                      text: TextSpan(
-                                        children: [
-                                          TextSpan(
-                                            text: '${r.$2}',
-                                            style: GoogleFonts.inter(
-                                              fontSize: 20,
-                                              fontWeight: FontWeight.w700,
-                                              color: const Color(0xFF111827),
-                                              height: 16 / 20,
-                                            ),
-                                          ),
-                                          TextSpan(
-                                            text: ' ',
-                                            style: GoogleFonts.inter(
-                                              fontSize: 12,
-                                            ),
-                                          ),
-                                          TextSpan(
-                                            text: '/ ${r.$3}',
-                                            style: GoogleFonts.inter(
-                                              fontSize: 12,
-                                              fontWeight: FontWeight.w400,
-                                              color: const Color(0xFF9FA0A1),
-                                              height: 16 / 12,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            );
-                          },
-                        ),
+                        if (i > 0) const Gap(8),
+                        _SourceConversionRow(item: displaySources[i]),
                       ],
                     ],
                   ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _HoverableActionPill extends StatefulWidget {
+  final String label;
+  final VoidCallback onTap;
+  final Color primaryColor;
+
+  const _HoverableActionPill({
+    required this.label,
+    required this.onTap,
+    this.primaryColor = const Color(0xFF3F3FB4),
+  });
+
+  @override
+  State<_HoverableActionPill> createState() => _HoverableActionPillState();
+}
+
+class _HoverableActionPillState extends State<_HoverableActionPill> {
+  bool _hovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final screenW = MediaQuery.of(context).size.width;
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      onEnter: (_) => setState(() => _hovered = true),
+      onExit: (_) => setState(() => _hovered = false),
+      child: GestureDetector(
+        onTap: widget.onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          curve: Curves.easeOutCubic,
+          alignment: Alignment.center,
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+          decoration: BoxDecoration(
+            color: _hovered
+                ? widget.primaryColor
+                : widget.primaryColor.withValues(alpha: 0.12),
+            borderRadius: BorderRadius.circular(6),
+            border: Border.all(
+              color: _hovered
+                  ? widget.primaryColor
+                  : widget.primaryColor.withValues(alpha: 0.25),
+              width: 1,
+            ),
+            boxShadow: _hovered
+                ? [
+                    BoxShadow(
+                      color: widget.primaryColor.withValues(alpha: 0.22),
+                      blurRadius: 6,
+                      offset: const Offset(0, 2),
+                    ),
+                  ]
+                : null,
+          ),
+          child: Text(
+            widget.label,
+            textAlign: TextAlign.center,
+            style: GoogleFonts.inter(
+              color: _hovered ? Colors.white : widget.primaryColor,
+              fontSize: screenW < 960 ? 12 : 13,
+              fontWeight: FontWeight.w600,
+              letterSpacing: 0.041,
+              height: 1.2,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _OverdueLeadRow extends StatefulWidget {
+  final Map<String, dynamic> lead;
+  final VoidCallback onReassign;
+
+  const _OverdueLeadRow({required this.lead, required this.onReassign});
+
+  @override
+  State<_OverdueLeadRow> createState() => _OverdueLeadRowState();
+}
+
+class _OverdueLeadRowState extends State<_OverdueLeadRow> {
+  bool _isHovered = false;
+  bool _btnHovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = widget.lead;
+    final name = (l['name'] ?? 'Student Inquiry').toString();
+    final assigned = l['assignedToName'] ?? l['assignedTo'] ?? '--';
+    final college = l['college'] ?? l['collegeBranch'] ?? '';
+    final course = (l['course'] ?? l['branch'] ?? '').toString();
+
+    return MouseRegion(
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        curve: Curves.easeOutCubic,
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        decoration: BoxDecoration(
+          color: _isHovered
+              ? const Color(0xFFFFF7ED).withValues(alpha: 0.6)
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: _isHovered ? const Color(0xFFFFEDD5) : Colors.transparent,
+            width: 1,
+          ),
+          boxShadow: _isHovered
+              ? const [
+                  BoxShadow(
+                    color: Color(0x0A0F172A),
+                    blurRadius: 6,
+                    offset: Offset(0, 2),
+                  ),
+                ]
+              : null,
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    name,
+                    style: GoogleFonts.inter(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 15,
+                      color: _isHovered
+                          ? const Color(0xFFEA580C)
+                          : const Color(0xFF1A1A1A),
+                      letterSpacing: 0.2197,
+                      height: 22.5 / 15,
+                    ),
+                  ),
+                  const Gap(2),
+                  Text(
+                    course.isNotEmpty
+                        ? 'Assigned: $assigned · $college\n$course'
+                        : 'Assigned: $assigned · $college',
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.inter(
+                      color: const Color(0xFF6B7280),
+                      fontSize: 13,
+                      fontWeight: FontWeight.w400,
+                      height: 19.5 / 13,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Gap(12),
+            MouseRegion(
+              cursor: SystemMouseCursors.click,
+              onEnter: (_) => setState(() => _btnHovered = true),
+              onExit: (_) => setState(() => _btnHovered = false),
+              child: GestureDetector(
+                onTap: widget.onReassign,
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 150),
+                  curve: Curves.easeOutCubic,
+                  alignment: Alignment.center,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: _btnHovered
+                        ? const Color(0xFF5C59B6)
+                        : Colors.transparent,
+                    borderRadius: BorderRadius.circular(9999),
+                    border: Border.all(
+                      color: const Color(0xFF5C59B6),
+                      width: 1,
+                    ),
+                    boxShadow: _btnHovered
+                        ? [
+                            BoxShadow(
+                              color: const Color(
+                                0xFF5C59B6,
+                              ).withValues(alpha: 0.25),
+                              blurRadius: 6,
+                              offset: const Offset(0, 2),
+                            ),
+                          ]
+                        : null,
+                  ),
+                  child: Text(
+                    'Re Assign',
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.inter(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: _btnHovered
+                          ? Colors.white
+                          : const Color(0xFF5C59B6),
+                      letterSpacing: 0.1914,
+                      height: 20 / 14,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -3637,31 +4019,10 @@ class _OverdueFollowUps extends StatelessWidget {
                 ),
               ),
               const Gap(8),
-              InkWell(
+              _HoverableActionPill(
+                label: 'Manage in Leads',
                 onTap: onReassign,
-                borderRadius: BorderRadius.circular(4),
-                child: Container(
-                  alignment: Alignment.center,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: const Color(0x333F3FB4),
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: Text(
-                    'Manage in Leads',
-                    textAlign: TextAlign.center,
-                    style: GoogleFonts.inter(
-                      color: const Color(0xFF5C59B6),
-                      fontSize: screenW < 960 ? 12.5 : 14,
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: 0.041,
-                      height: 20 / 14,
-                    ),
-                  ),
-                ),
+                primaryColor: const Color(0xFF3F3FB4),
               ),
             ],
           ),
@@ -3697,85 +4058,151 @@ class _OverdueFollowUps extends StatelessWidget {
             )
           else
             for (var i = 0; i < overdue.take(4).length; i++) ...[
-              if (i > 0) const Gap(20),
-              Builder(
-                builder: (_) {
-                  final l = overdue[i];
-                  final name = (l['name'] ?? 'Student Inquiry').toString();
-                  final assigned =
-                      l['assignedToName'] ?? l['assignedTo'] ?? '--';
-                  final college = l['college'] ?? l['collegeBranch'] ?? '';
-                  final course = (l['course'] ?? l['branch'] ?? '').toString();
+              if (i > 0) const Gap(8),
+              _OverdueLeadRow(lead: overdue[i], onReassign: onReassign),
+            ],
+        ],
+      ),
+    );
+  }
+}
 
-                  return Row(
+class _CollegeVisitRow extends StatefulWidget {
+  final Map<String, dynamic> visit;
+
+  const _CollegeVisitRow({required this.visit});
+
+  @override
+  State<_CollegeVisitRow> createState() => _CollegeVisitRowState();
+}
+
+class _CollegeVisitRowState extends State<_CollegeVisitRow> {
+  bool _isHovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final v = widget.visit;
+    final name = (v['collegeName'] ?? 'College').toString();
+    final desc = (v['purpose'] ?? v['subtitle'] ?? 'Campus visit').toString();
+    final status = (v['status'] ?? v['statusLabel'] ?? 'Planned').toString();
+
+    Color badgeBg;
+    Color badgeFg;
+    if (status == 'Completed') {
+      badgeBg = const Color(0xFFE8F5E9);
+      badgeFg = const Color(0xFF2E7D32);
+    } else if (status == 'Cancelled') {
+      badgeBg = const Color(0xFFFEE2E2);
+      badgeFg = const Color(0xFFB91C1C);
+    } else {
+      badgeBg = const Color(0xFFEEF0FF);
+      badgeFg = _primary;
+    }
+
+    return MouseRegion(
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        curve: Curves.easeOutCubic,
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        decoration: BoxDecoration(
+          color: _isHovered ? const Color(0xFFF8FAFC) : Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: _isHovered ? const Color(0xFFE2E8F0) : Colors.transparent,
+            width: 1,
+          ),
+          boxShadow: _isHovered
+              ? const [
+                  BoxShadow(
+                    color: Color(0x080F172A),
+                    blurRadius: 6,
+                    offset: Offset(0, 2),
+                  ),
+                ]
+              : null,
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: MouseRegion(
+                cursor: SystemMouseCursors.click,
+                child: InkWell(
+                  onTap: () => LinkLauncher.launchCollegeMapsDirections(
+                    name,
+                    locationHint: desc,
+                  ),
+                  borderRadius: BorderRadius.circular(6),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
+                      Row(
+                        children: [
+                          Flexible(
+                            child: Text(
                               name,
                               style: GoogleFonts.inter(
                                 fontWeight: FontWeight.w600,
                                 fontSize: 15,
-                                color: const Color(0xFF1A1A1A),
-                                letterSpacing: 0.2197,
+                                color: _isHovered
+                                    ? _primary
+                                    : const Color(0xFF1A1A1A),
+                                letterSpacing: -0.1465,
                                 height: 22.5 / 15,
                               ),
                             ),
-                            const Gap(2),
-                            Text(
-                              course.isNotEmpty
-                                  ? 'Assigned: $assigned · $college\n$course'
-                                  : 'Assigned: $assigned · $college',
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              style: GoogleFonts.inter(
-                                color: const Color(0xFF6B7280),
-                                fontSize: 13,
-                                fontWeight: FontWeight.w400,
-                                height: 19.5 / 13,
-                              ),
+                          ),
+                          const Gap(4),
+                          AnimatedScale(
+                            duration: const Duration(milliseconds: 150),
+                            scale: _isHovered ? 1.15 : 1.0,
+                            child: const Icon(
+                              Icons.directions_outlined,
+                              size: 13,
+                              color: _primary,
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
-                      const Gap(12),
-                      InkWell(
-                        onTap: onReassign,
-                        borderRadius: BorderRadius.circular(9999),
-                        child: Container(
-                          alignment: Alignment.center,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 6,
-                          ),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(9999),
-                            border: Border.all(
-                              color: const Color(0xFF5C59B6),
-                              width: 1,
-                            ),
-                          ),
-                          child: Text(
-                            'Re Assign',
-                            textAlign: TextAlign.center,
-                            style: GoogleFonts.inter(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                              color: const Color(0xFF5C59B6),
-                              letterSpacing: 0.1914,
-                              height: 20 / 14,
-                            ),
-                          ),
+                      const Gap(2),
+                      Text(
+                        desc,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.inter(
+                          color: const Color(0xFF6B7280),
+                          fontSize: 13,
+                          fontWeight: FontWeight.w400,
+                          letterSpacing: 0.0127,
+                          height: 19.5 / 13,
                         ),
                       ),
                     ],
-                  );
-                },
+                  ),
+                ),
               ),
-            ],
-        ],
+            ),
+            const Gap(12),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: badgeBg,
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: Text(
+                status,
+                style: GoogleFonts.inter(
+                  color: badgeFg,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 0.0752,
+                  height: 16.5 / 11,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -3833,31 +4260,10 @@ class _CollegeVisits extends StatelessWidget {
                 ),
               ),
               const Gap(8),
-              InkWell(
+              _HoverableActionPill(
+                label: 'Plan Visit',
                 onTap: onPlanVisit,
-                borderRadius: BorderRadius.circular(4),
-                child: Container(
-                  alignment: Alignment.center,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: const Color(0x333F3FB4),
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: Text(
-                    'Plan Visit',
-                    textAlign: TextAlign.center,
-                    style: GoogleFonts.inter(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                      color: const Color(0xFF3F3FB4),
-                      letterSpacing: 0.0752,
-                      height: 16.5 / 11,
-                    ),
-                  ),
-                ),
+                primaryColor: const Color(0xFF3F3FB4),
               ),
             ],
           ),
@@ -3917,107 +4323,7 @@ class _CollegeVisits extends StatelessWidget {
                         height: 24,
                         thickness: 1,
                       ),
-                    Builder(
-                      builder: (_) {
-                        final v = displayVisits[i];
-                        final name = (v['collegeName'] ?? 'College').toString();
-                        final desc =
-                            (v['purpose'] ?? v['subtitle'] ?? 'Campus visit')
-                                .toString();
-                        final status =
-                            (v['status'] ?? v['statusLabel'] ?? 'Planned')
-                                .toString();
-
-                        Color badgeBg;
-                        Color badgeFg;
-                        if (status == 'Completed') {
-                          badgeBg = const Color(0xFFE8F5E9);
-                          badgeFg = const Color(0xFF2E7D32);
-                        } else if (status == 'Cancelled') {
-                          badgeBg = const Color(0xFFFEE2E2);
-                          badgeFg = const Color(0xFFB91C1C);
-                        } else {
-                          badgeBg = const Color(0xFFEEF0FF);
-                          badgeFg = _primary;
-                        }
-
-                        return Row(
-                          children: [
-                            Expanded(
-                              child: InkWell(
-                                onTap: () =>
-                                    LinkLauncher.launchCollegeMapsDirections(
-                                      name,
-                                      locationHint: desc,
-                                    ),
-                                borderRadius: BorderRadius.circular(6),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Row(
-                                      children: [
-                                        Flexible(
-                                          child: Text(
-                                            name,
-                                            style: GoogleFonts.inter(
-                                              fontWeight: FontWeight.w600,
-                                              fontSize: 15,
-                                              color: const Color(0xFF1A1A1A),
-                                              letterSpacing: -0.1465,
-                                              height: 22.5 / 15,
-                                            ),
-                                          ),
-                                        ),
-                                        const Gap(4),
-                                        const Icon(
-                                          Icons.directions_outlined,
-                                          size: 13,
-                                          color: _primary,
-                                        ),
-                                      ],
-                                    ),
-                                    const Gap(2),
-                                    Text(
-                                      desc,
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: GoogleFonts.inter(
-                                        color: const Color(0xFF6B7280),
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.w400,
-                                        letterSpacing: 0.0127,
-                                        height: 19.5 / 13,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                            const Gap(12),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 4,
-                              ),
-                              decoration: BoxDecoration(
-                                color: badgeBg,
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                              child: Text(
-                                status,
-                                style: GoogleFonts.inter(
-                                  color: badgeFg,
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w700,
-                                  letterSpacing: 0.0752,
-                                  height: 16.5 / 11,
-                                ),
-                              ),
-                            ),
-                          ],
-                        );
-                      },
-                    ),
+                    _CollegeVisitRow(visit: displayVisits[i]),
                   ],
                 ],
               );

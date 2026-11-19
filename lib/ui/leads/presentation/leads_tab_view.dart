@@ -2321,7 +2321,6 @@ class _CallTabPill extends StatelessWidget {
 class _CategoryFilterPill extends StatelessWidget {
   final Widget icon;
   final String label;
-  final double? iconSize;
   final int count;
   final bool isSelected;
   final VoidCallback onTap;
@@ -2330,7 +2329,6 @@ class _CategoryFilterPill extends StatelessWidget {
 
   const _CategoryFilterPill({
     required this.icon,
-    this.iconSize,
     required this.label,
     required this.count,
     required this.isSelected,

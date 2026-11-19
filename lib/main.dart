@@ -1,5 +1,6 @@
 import 'dart:io' as io show Platform;
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -47,6 +48,20 @@ Future<void> main() async {
   await AppSecurityService.instance.disableScreenshotProtection();
 
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
+  // Activate Firebase App Check to protect Firebase AI Logic and backend resources.
+  try {
+    await FirebaseAppCheck.instance
+        .activate(
+          providerAndroid: kDebugMode
+              ? const AndroidDebugProvider()
+              : const AndroidPlayIntegrityProvider(),
+          providerApple: kDebugMode
+              ? const AppleDebugProvider()
+              : const AppleDeviceCheckProvider(),
+        )
+        .timeout(const Duration(milliseconds: 1500), onTimeout: () {});
+  } catch (_) {}
 
   // Ensure Firebase Auth persists credentials across browser/tab restarts on Web.
   if (kIsWeb) {
