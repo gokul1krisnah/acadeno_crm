@@ -167,17 +167,22 @@ class LeadCallSheets {
       barrierColor: Colors.black.withValues(alpha: 0.45),
       elevation: 0,
       builder: (ctx) {
-        final bottomInset = MediaQuery.viewInsetsOf(ctx).bottom;
-        final safeBottom = MediaQuery.paddingOf(ctx).bottom;
-        final screenWidth = MediaQuery.sizeOf(ctx).width;
-        final hPad = screenWidth < 360 ? 16.0 : 20.0;
+        final media = MediaQuery.of(ctx);
+        final bottomInset = media.viewInsets.bottom;
+        final safeBottom = media.padding.bottom;
+        final screenWidth = media.size.width;
+        final screenHeight = media.size.height;
+        final isLandscape = media.orientation == Orientation.landscape;
+        final isCompact = screenWidth < 360;
+        final hPad = isCompact ? 14.0 : 20.0;
+        final gridGap = isCompact ? 8.0 : 12.0;
 
         return Center(
           heightFactor: 1.0,
           child: ConstrainedBox(
             constraints: BoxConstraints(
               maxWidth: 512,
-              maxHeight: MediaQuery.sizeOf(ctx).height * 0.92,
+              maxHeight: screenHeight * (isLandscape ? 0.94 : 0.92),
             ),
             child: StatefulBuilder(
               builder: (ctx, setSheetState) {
@@ -212,20 +217,20 @@ class LeadCallSheets {
                             ),
                           ),
                         ),
-                        const Gap(20),
+                        Gap(isLandscape ? 14 : 20),
 
                         // Title: How did the call go?
                         Text(
                           'How did the call go?',
                           style: GoogleFonts.inter(
-                            fontSize: 22,
+                            fontSize: isCompact ? 20 : 22,
                             fontWeight: FontWeight.w700,
                             color: const Color(0xFF0F172A),
                             letterSpacing: -0.3,
                             height: 28 / 22,
                           ),
                         ),
-                        const Gap(20),
+                        Gap(isLandscape ? 14 : 20),
 
                         // 2x4 Outcomes Grid
                         Column(
@@ -234,7 +239,9 @@ class LeadCallSheets {
                             final row = outcomeRows[rowIdx];
                             return Padding(
                               padding: EdgeInsets.only(
-                                bottom: rowIdx < outcomeRows.length - 1 ? 12 : 0,
+                                bottom: rowIdx < outcomeRows.length - 1
+                                    ? gridGap
+                                    : 0,
                               ),
                               child: Row(
                                 children: [
@@ -243,6 +250,7 @@ class LeadCallSheets {
                                       name: row[0].$1,
                                       dotColor: row[0].$2,
                                       isSelected: selectedOutcome == row[0].$1,
+                                      isCompact: isCompact,
                                       onTap: () {
                                         setSheetState(
                                           () => selectedOutcome = row[0].$1,
@@ -250,12 +258,13 @@ class LeadCallSheets {
                                       },
                                     ),
                                   ),
-                                  const SizedBox(width: 12),
+                                  SizedBox(width: gridGap),
                                   Expanded(
                                     child: _buildOutcomeButton(
                                       name: row[1].$1,
                                       dotColor: row[1].$2,
                                       isSelected: selectedOutcome == row[1].$1,
+                                      isCompact: isCompact,
                                       onTap: () {
                                         setSheetState(
                                           () => selectedOutcome = row[1].$1,
@@ -484,7 +493,9 @@ class LeadCallSheets {
 
                         Container(
                           width: double.infinity,
-                          constraints: const BoxConstraints(minHeight: 112),
+                          constraints: BoxConstraints(
+                            minHeight: isLandscape ? 84 : 112,
+                          ),
                           decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(16),
@@ -497,7 +508,7 @@ class LeadCallSheets {
                           child: TextField(
                             controller: notesCtrl,
                             maxLines: 4,
-                            minLines: 3,
+                            minLines: isLandscape ? 2 : 3,
                             style: GoogleFonts.inter(
                               fontSize: 15,
                               fontWeight: FontWeight.w400,
@@ -567,9 +578,11 @@ class LeadCallSheets {
                           const Gap(28),
 
                         // Save Button
-                        SizedBox(
-                          width: double.infinity,
-                          height: 56,
+                        ConstrainedBox(
+                          constraints: const BoxConstraints(
+                            minWidth: double.infinity,
+                            minHeight: 54,
+                          ),
                           child: ElevatedButton(
                             onPressed: isSaving
                                 ? null
@@ -771,6 +784,7 @@ class LeadCallSheets {
     required String name,
     required Color dotColor,
     required bool isSelected,
+    bool isCompact = false,
     required VoidCallback onTap,
   }) {
     return GestureDetector(
@@ -778,8 +792,11 @@ class LeadCallSheets {
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 140),
-        height: 54,
-        padding: const EdgeInsets.symmetric(horizontal: 16),
+        constraints: const BoxConstraints(minHeight: 50),
+        padding: EdgeInsets.symmetric(
+          horizontal: isCompact ? 11 : 16,
+          vertical: 12,
+        ),
         decoration: BoxDecoration(
           color: isSelected ? const Color(0xFFC84B14) : Colors.white,
           borderRadius: BorderRadius.circular(16),
@@ -802,24 +819,28 @@ class LeadCallSheets {
         child: Row(
           children: [
             Container(
-              width: 10,
-              height: 10,
+              width: isCompact ? 8.5 : 10,
+              height: isCompact ? 8.5 : 10,
               decoration: BoxDecoration(
                 color: isSelected ? Colors.white : dotColor,
                 shape: BoxShape.circle,
               ),
             ),
-            const SizedBox(width: 10),
+            SizedBox(width: isCompact ? 7 : 10),
             Expanded(
-              child: Text(
-                name,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: GoogleFonts.inter(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
-                  color: isSelected ? Colors.white : const Color(0xFF0F172A),
-                  height: 20 / 15,
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  name,
+                  maxLines: 1,
+                  softWrap: false,
+                  style: GoogleFonts.inter(
+                    fontSize: isCompact ? 14 : 15,
+                    fontWeight: FontWeight.w600,
+                    color: isSelected ? Colors.white : const Color(0xFF0F172A),
+                    height: 20 / 15,
+                  ),
                 ),
               ),
             ),

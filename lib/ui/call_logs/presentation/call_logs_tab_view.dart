@@ -124,170 +124,174 @@ class _CallLogsBodyState extends State<_CallLogsBody> with WidgetsBindingObserve
       },
       builder: (context, state) {
         final cubit = context.read<CallLogsCubit>();
-        final pad = context.devicePadding;
+        final media = MediaQuery.of(context);
+        final screenWidth = media.size.width;
+        final isLandscape = media.orientation == Orientation.landscape;
+        final isCompact = screenWidth < 360;
+        final pad = isCompact ? 14.0 : context.devicePadding;
+        final topPad = isLandscape ? 12.0 : 16.0;
+        final bottomHeaderPad = isLandscape ? 12.0 : 16.0;
 
-        return RefreshIndicator.adaptive(
-          color: const Color(0xFF4338CA),
-          backgroundColor: Colors.white,
-          onRefresh: cubit.refresh,
-          child: CustomScrollView(
-            physics: const AlwaysScrollableScrollPhysics(
-              parent: BouncingScrollPhysics(),
-            ),
-            slivers: [
-              // 1. Header Section
-              SliverToBoxAdapter(
-                child: Container(
-                  color: Colors.white,
-                  padding: EdgeInsets.fromLTRB(pad, 16, pad, 16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'Call Logs',
-                            style: GoogleFonts.inter(
-                              fontSize: 25,
-                              fontWeight: FontWeight.w700,
-                              color: const Color(0xFF0F172A),
-                              letterSpacing: -0.5,
-                              height: 30 / 25,
+        return Theme(
+          data: Theme.of(context).copyWith(platform: TargetPlatform.iOS),
+          child: RefreshIndicator.adaptive(
+            color: const Color(0xFF4338CA),
+            backgroundColor: Colors.white,
+            displacement: 24,
+            onRefresh: cubit.refresh,
+            child: CustomScrollView(
+              physics: const AlwaysScrollableScrollPhysics(
+                parent: BouncingScrollPhysics(),
+              ),
+              slivers: [
+                // 1. Header Section
+                SliverToBoxAdapter(
+                  child: Container(
+                    color: Colors.white,
+                    padding: EdgeInsets.fromLTRB(
+                      pad,
+                      topPad,
+                      pad,
+                      bottomHeaderPad,
+                    ),
+                    child: Center(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 640),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    'Call Logs',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: GoogleFonts.inter(
+                                      fontSize: isCompact ? 22 : 25,
+                                      fontWeight: FontWeight.w700,
+                                      color: const Color(0xFF0F172A),
+                                      letterSpacing: -0.5,
+                                      height: 30 / 25,
+                                    ),
+                                  ),
+                                ),
+                                const Gap(8),
+                                const AlertsHeaderButton(),
+                              ],
                             ),
-                          ),
-                          Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              InkWell(
-                                onTap: cubit.refresh,
-                                borderRadius: BorderRadius.circular(9999),
-                                child: Container(
-                                  width: 40,
-                                  height: 40,
-                                  decoration: const BoxDecoration(
-                                    color: Color(0xFFF1F5F9),
-                                    shape: BoxShape.circle,
-                                  ),
-                                  alignment: Alignment.center,
-                                  child: const Icon(
-                                    CupertinoIcons.arrow_clockwise,
-                                    size: 19,
-                                    color: Color(0xFF1E293B),
-                                  ),
+                            Gap(isLandscape ? 10 : 14),
+
+                            // SIM info banner ("Showing logs for: ...")
+                            Container(
+                              width: double.infinity,
+                              padding: EdgeInsets.symmetric(
+                                horizontal: isCompact ? 12 : 14,
+                                vertical: isCompact ? 9 : 11,
+                              ),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFE6F4FD),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Text(
+                                state.isPlatformSupported
+                                    ? 'Showing logs for: ${state.simName.isNotEmpty ? state.simName : "Mobile"}'
+                                    : 'Showing categorized records (Web / Desktop preview)',
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: GoogleFonts.inter(
+                                  fontSize: isCompact ? 12.5 : 13.5,
+                                  fontWeight: FontWeight.w500,
+                                  color: const Color(0xFF0C4A6E),
                                 ),
                               ),
-                              const Gap(8),
-                              const AlertsHeaderButton(),
-                            ],
-                          ),
-                        ],
-                      ),
-                      const Gap(14),
-
-                      // SIM info banner ("Showing logs for: ...")
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 14,
-                          vertical: 11,
-                        ),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFE6F4FD),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Text(
-                          state.isPlatformSupported
-                              ? 'Showing logs for: ${state.simName.isNotEmpty ? state.simName : "Mobile"}'
-                              : 'Showing categorized records (Web / Desktop preview)',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: GoogleFonts.inter(
-                            fontSize: 13.5,
-                            fontWeight: FontWeight.w500,
-                            color: const Color(0xFF0C4A6E),
-                          ),
-                        ),
-                      ),
-                      if (state.isPlatformSupported &&
-                          state.hasPermission &&
-                          !state.hasContactsPermission) ...[
-                        const Gap(8),
-                        Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 8,
-                          ),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFFFFBEB),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color: const Color(0xFFFDE68A),
-                              width: 1,
                             ),
-                          ),
-                          child: Row(
-                            children: [
-                              const Icon(
-                                CupertinoIcons.person_crop_circle,
-                                size: 17,
-                                color: Color(0xFFB45309),
-                              ),
+                            if (state.isPlatformSupported &&
+                                state.hasPermission &&
+                                !state.hasContactsPermission) ...[
                               const Gap(8),
-                              Expanded(
-                                child: Text(
-                                  'Allow Contacts access to display saved contact names.',
-                                  style: GoogleFonts.inter(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w500,
-                                    color: const Color(0xFF92400E),
+                              Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 8,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFFFFBEB),
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: const Color(0xFFFDE68A),
+                                    width: 1,
                                   ),
                                 ),
-                              ),
-                              const Gap(8),
-                              TextButton(
-                                onPressed: cubit.requestContactsPermission,
-                                style: TextButton.styleFrom(
-                                  backgroundColor: const Color(0xFFB45309),
-                                  foregroundColor: Colors.white,
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 12,
-                                    vertical: 4,
-                                  ),
-                                  minimumSize: Size.zero,
-                                  tapTargetSize:
-                                      MaterialTapTargetSize.shrinkWrap,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                ),
-                                child: Text(
-                                  'Allow',
-                                  style: GoogleFonts.inter(
-                                    fontSize: 11.5,
-                                    fontWeight: FontWeight.w700,
-                                  ),
+                                child: Row(
+                                  children: [
+                                    const Icon(
+                                      CupertinoIcons.person_crop_circle,
+                                      size: 17,
+                                      color: Color(0xFFB45309),
+                                    ),
+                                    const Gap(8),
+                                    Expanded(
+                                      child: Text(
+                                        'Allow Contacts access to display saved contact names.',
+                                        style: GoogleFonts.inter(
+                                          fontSize: isCompact ? 11.5 : 12,
+                                          fontWeight: FontWeight.w500,
+                                          color: const Color(0xFF92400E),
+                                        ),
+                                      ),
+                                    ),
+                                    const Gap(8),
+                                    TextButton(
+                                      onPressed:
+                                          cubit.requestContactsPermission,
+                                      style: TextButton.styleFrom(
+                                        backgroundColor: const Color(
+                                          0xFFB45309,
+                                        ),
+                                        foregroundColor: Colors.white,
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 12,
+                                          vertical: 6,
+                                        ),
+                                        minimumSize: Size.zero,
+                                        tapTargetSize:
+                                            MaterialTapTargetSize.shrinkWrap,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            8,
+                                          ),
+                                        ),
+                                      ),
+                                      child: Text(
+                                        'Allow',
+                                        style: GoogleFonts.inter(
+                                          fontSize: 11.5,
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                             ],
-                          ),
-                        ),
-                      ],
-                      const Gap(12),
+                            Gap(isLandscape ? 10 : 12),
 
-                      // Search bar
-                      Container(
-                        height: 46,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFF1F5F9),
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                        alignment: Alignment.center,
-                        child: TextField(
-                          controller: _searchCtrl,
-                          onChanged: cubit.search,
-                          style: GoogleFonts.inter(
+                            // Search bar (adaptive minHeight so large text scales never clip)
+                            Container(
+                              constraints: const BoxConstraints(minHeight: 44),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFF1F5F9),
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                              alignment: Alignment.center,
+                              child: TextField(
+                                controller: _searchCtrl,
+                                onChanged: cubit.search,
+                                style: GoogleFonts.inter(
                             fontSize: 14,
                             color: const Color(0xFF0F172A),
                           ),
@@ -374,67 +378,90 @@ class _CallLogsBodyState extends State<_CallLogsBody> with WidgetsBindingObserve
                   ),
                 ),
               ),
+            ),
+          ),
 
-              // 2. Content Body
-              if (state.isLoading && state.allLogs.isEmpty)
-                const SliverFillRemaining(
-                  child: Center(
-                    child: CircularProgressIndicator(
-                      color: Color(0xFF4338CA),
+                // 2. Content Body
+                if (state.isLoading && state.allLogs.isEmpty)
+                  const SliverFillRemaining(
+                    child: Center(
+                      child: CircularProgressIndicator(
+                        color: Color(0xFF4338CA),
+                      ),
                     ),
-                  ),
-                )
-              else if (!state.isPlatformSupported)
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: EdgeInsets.all(pad),
-                    child: _buildUnsupportedCard(context),
-                  ),
-                )
-              else if (!state.hasPermission)
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: EdgeInsets.all(pad),
-                    child: _buildPermissionRequestCard(context, cubit, state),
-                  ),
-                )
-              else if (state.displayedLogs.isEmpty)
-                SliverFillRemaining(
-                  hasScrollBody: false,
-                  child: Padding(
-                    padding: EdgeInsets.all(pad),
-                    child: _buildEmptyState(),
-                  ),
-                )
-              else
-                SliverPadding(
-                  padding: EdgeInsets.fromLTRB(pad, 14, pad, 28),
-                  sliver: SliverList(
-                    delegate: SliverChildBuilderDelegate(
-                      (context, index) {
-                        final item = state.displayedLogs[index];
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 12),
-                          child: _CallLogCard(
-                            item: item,
-                            onSelectCategory: (cat) {
-                              if (cat == CallCategory.other) {
-                                _handleOtherCategory(context, item);
-                              } else {
-                                cubit.setCategory(item, cat);
-                              }
-                            },
-                            onCall: () => _openDialer(item.number),
-                            onWhatsApp: () => _openWhatsApp(item.number),
-                            onOther: () => _handleOtherCategory(context, item),
+                  )
+                else if (!state.isPlatformSupported)
+                  SliverToBoxAdapter(
+                    child: Center(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 640),
+                        child: Padding(
+                          padding: EdgeInsets.all(pad),
+                          child: _buildUnsupportedCard(context),
+                        ),
+                      ),
+                    ),
+                  )
+                else if (!state.hasPermission)
+                  SliverToBoxAdapter(
+                    child: Center(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 640),
+                        child: Padding(
+                          padding: EdgeInsets.all(pad),
+                          child: _buildPermissionRequestCard(
+                            context,
+                            cubit,
+                            state,
                           ),
-                        );
-                      },
-                      childCount: state.displayedLogs.length,
+                        ),
+                      ),
+                    ),
+                  )
+                else if (state.displayedLogs.isEmpty)
+                  SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: Padding(
+                      padding: EdgeInsets.all(pad),
+                      child: _buildEmptyState(),
+                    ),
+                  )
+                else
+                  SliverPadding(
+                    padding: EdgeInsets.fromLTRB(pad, 14, pad, 28),
+                    sliver: SliverList(
+                      delegate: SliverChildBuilderDelegate(
+                        (context, index) {
+                          final item = state.displayedLogs[index];
+                          return Center(
+                            child: ConstrainedBox(
+                              constraints: const BoxConstraints(maxWidth: 640),
+                              child: Padding(
+                                padding: const EdgeInsets.only(bottom: 12),
+                                child: _CallLogCard(
+                                  item: item,
+                                  onSelectCategory: (cat) {
+                                    if (cat == CallCategory.other) {
+                                      _handleOtherCategory(context, item);
+                                    } else {
+                                      cubit.setCategory(item, cat);
+                                    }
+                                  },
+                                  onCall: () => _openDialer(item.number),
+                                  onWhatsApp: () => _openWhatsApp(item.number),
+                                  onOther: () =>
+                                      _handleOtherCategory(context, item),
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                        childCount: state.displayedLogs.length,
+                      ),
                     ),
                   ),
-                ),
-            ],
+              ],
+            ),
           ),
         );
       },
@@ -696,6 +723,10 @@ class _CallLogCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenW = MediaQuery.sizeOf(context).width;
+    final isCompact = screenW < 360;
+    final cardPad = isCompact ? 12.0 : 16.0;
+
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -708,16 +739,16 @@ class _CallLogCard extends StatelessWidget {
           ),
         ],
       ),
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(cardPad),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // 1. Top row: Call direction icon, Phone number, timestamp/duration, 3-dot menu
+          // 1. Top row: Call direction icon, Contact name / Phone number, timestamp/duration, 3-dot menu
           Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              _buildCallTypeIcon(item.callType),
-              const Gap(14),
+              _buildCallTypeIcon(item.callType, isCompact: isCompact),
+              Gap(isCompact ? 10 : 14),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -728,7 +759,7 @@ class _CallLogCard extends StatelessWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: GoogleFonts.inter(
-                          fontSize: 16,
+                          fontSize: isCompact ? 15 : 16,
                           fontWeight: FontWeight.w700,
                           color: const Color(0xFF0F172A),
                           letterSpacing: -0.2,
@@ -741,7 +772,7 @@ class _CallLogCard extends StatelessWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: GoogleFonts.inter(
-                          fontSize: 13.5,
+                          fontSize: isCompact ? 12.5 : 13.5,
                           fontWeight: FontWeight.w500,
                           color: const Color(0xFF334155),
                           height: 18 / 13.5,
@@ -753,7 +784,7 @@ class _CallLogCard extends StatelessWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: GoogleFonts.inter(
-                          fontSize: 16.5,
+                          fontSize: isCompact ? 15.5 : 16.5,
                           fontWeight: FontWeight.w700,
                           color: const Color(0xFF0F172A),
                           letterSpacing: -0.2,
@@ -766,7 +797,7 @@ class _CallLogCard extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: GoogleFonts.inter(
-                        fontSize: 13,
+                        fontSize: isCompact ? 12 : 13,
                         fontWeight: FontWeight.w400,
                         color: const Color(0xFF64748B),
                         height: 18 / 13,
@@ -844,63 +875,88 @@ class _CallLogCard extends StatelessWidget {
           ),
           const Gap(14),
 
-          // 2. Single-row 4 equal-width soft pastel category buttons
-          Row(
-            children: [
-              Expanded(
-                child: _CategoryPill(
-                  label: 'Hot lead',
-                  svgAsset: AppSvgs.flame,
-                  inactiveBg: const Color(0xFFFCE7EC),
-                  inactiveTextColor: const Color(0xFFBE123C),
-                  activeBg: const Color(0xFFE11D48),
-                  isSelected: item.category == CallCategory.hotLead,
-                  onTap: () => onSelectCategory(CallCategory.hotLead),
-                ),
-              ),
-              const Gap(8),
-              Expanded(
-                child: _CategoryPill(
-                  label: 'Follow up',
-                  svgAsset: AppSvgs.followup,
-                  inactiveBg: const Color(0xFFE6F7F0),
-                  inactiveTextColor: const Color(0xFF047857),
-                  activeBg: const Color(0xFF059669),
-                  isSelected: item.category == CallCategory.followUp,
-                  onTap: () => onSelectCategory(CallCategory.followUp),
-                ),
-              ),
-              const Gap(8),
-              Expanded(
-                child: _CategoryPill(
-                  label: 'Reminder',
-                  svgAsset: AppSvgs.reminder,
-                  inactiveBg: const Color(0xFFFEF3DC),
-                  inactiveTextColor: const Color(0xFFB45309),
-                  activeBg: const Color(0xFFD97706),
-                  isSelected: item.category == CallCategory.reminder,
-                  onTap: () => onSelectCategory(CallCategory.reminder),
-                ),
-              ),
-              const Gap(8),
-              Expanded(
-                child: _CategoryPill(
-                  label: 'Other',
-                  inactiveBg: const Color(0xFFF1F5F9),
-                  inactiveTextColor: const Color(0xFF334155),
-                  activeBg: const Color(0xFF334155),
-                  isSelected: item.category == CallCategory.other,
-                  onTap: () => onSelectCategory(CallCategory.other),
-                ),
-              ),
-            ],
+          // 2. Responsive category buttons (single row on phones, 2x2 grid on ultra-narrow widths)
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final hotLeadBtn = _CategoryPill(
+                label: 'Hot lead',
+                svgAsset: AppSvgs.flame,
+                inactiveBg: const Color(0xFFFCE7EC),
+                inactiveTextColor: const Color(0xFFBE123C),
+                activeBg: const Color(0xFFE11D48),
+                isSelected: item.category == CallCategory.hotLead,
+                onTap: () => onSelectCategory(CallCategory.hotLead),
+              );
+              final followUpBtn = _CategoryPill(
+                label: 'Follow up',
+                svgAsset: AppSvgs.followup,
+                inactiveBg: const Color(0xFFE6F7F0),
+                inactiveTextColor: const Color(0xFF047857),
+                activeBg: const Color(0xFF059669),
+                isSelected: item.category == CallCategory.followUp,
+                onTap: () => onSelectCategory(CallCategory.followUp),
+              );
+              final reminderBtn = _CategoryPill(
+                label: 'Reminder',
+                svgAsset: AppSvgs.reminder,
+                inactiveBg: const Color(0xFFFEF3DC),
+                inactiveTextColor: const Color(0xFFB45309),
+                activeBg: const Color(0xFFD97706),
+                isSelected: item.category == CallCategory.reminder,
+                onTap: () => onSelectCategory(CallCategory.reminder),
+              );
+              final otherBtn = _CategoryPill(
+                label: 'Other',
+                inactiveBg: const Color(0xFFF1F5F9),
+                inactiveTextColor: const Color(0xFF334155),
+                activeBg: const Color(0xFF334155),
+                isSelected: item.category == CallCategory.other,
+                onTap: () => onSelectCategory(CallCategory.other),
+              );
+
+              if (constraints.maxWidth < 300) {
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(child: hotLeadBtn),
+                        const Gap(6),
+                        Expanded(child: followUpBtn),
+                      ],
+                    ),
+                    const Gap(6),
+                    Row(
+                      children: [
+                        Expanded(child: reminderBtn),
+                        const Gap(6),
+                        Expanded(child: otherBtn),
+                      ],
+                    ),
+                  ],
+                );
+              }
+
+              final gap = isCompact ? 6.0 : 8.0;
+              return Row(
+                children: [
+                  Expanded(child: hotLeadBtn),
+                  Gap(gap),
+                  Expanded(child: followUpBtn),
+                  Gap(gap),
+                  Expanded(child: reminderBtn),
+                  Gap(gap),
+                  Expanded(child: otherBtn),
+                ],
+              );
+            },
           ),
         ],
       ),
     );
   }
 
-  Widget _buildCallTypeIcon(CallType type) {
+  Widget _buildCallTypeIcon(CallType type, {bool isCompact = false}) {
     Color bg;
     IconData icon;
     Color iconColor;
@@ -932,15 +988,16 @@ class _CallLogCard extends StatelessWidget {
         iconColor = const Color(0xFF64748B);
     }
 
+    final size = isCompact ? 38.0 : 44.0;
     return Container(
-      width: 44,
-      height: 44,
+      width: size,
+      height: size,
       decoration: BoxDecoration(
         color: bg,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(isCompact ? 12 : 14),
       ),
       alignment: Alignment.center,
-      child: Icon(icon, color: iconColor, size: 20),
+      child: Icon(icon, color: iconColor, size: isCompact ? 18 : 20),
     );
   }
 }
@@ -975,8 +1032,8 @@ class _CategoryPill extends StatelessWidget {
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 160),
           curve: Curves.easeOutCubic,
-          height: 40,
-          padding: const EdgeInsets.symmetric(horizontal: 6),
+          constraints: const BoxConstraints(minHeight: 38),
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
           decoration: BoxDecoration(
             color: isSelected ? activeBg : inactiveBg,
             borderRadius: BorderRadius.circular(12),
