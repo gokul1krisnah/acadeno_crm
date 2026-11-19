@@ -144,7 +144,14 @@ class _FakeCrmAiDataProvider implements CrmAiDataProvider {
 
 class _FakeChatTransport implements CrmAiChatTransport {
   Object? errorToThrow;
+  bool unregisteredTokenLatched = false;
+  int sendAttempts = 0;
   final List<String> receivedMessages = [];
+
+  @override
+  void allowManualRetry() {
+    unregisteredTokenLatched = false;
+  }
 
   @override
   Stream<String> sendChatMessageStream({
@@ -152,9 +159,16 @@ class _FakeChatTransport implements CrmAiChatTransport {
     required Map<String, Object?> groundedContext,
     required CrmAiActorContext actor,
   }) async* {
+    if (unregisteredTokenLatched) {
+      throw CrmAiAssistantService.buildAppCheckException(isDebugOverride: true);
+    }
+    sendAttempts++;
     receivedMessages.add(userMessage);
     await Future<void>.delayed(const Duration(milliseconds: 120));
     if (errorToThrow != null) {
+      if (CrmAiAssistantService.isAppCheckError(errorToThrow!)) {
+        unregisteredTokenLatched = true;
+      }
       throw errorToThrow!;
     }
 
@@ -179,6 +193,8 @@ class _FakeChatTransport implements CrmAiChatTransport {
   @override
   void resetSession() {
     receivedMessages.clear();
+    unregisteredTokenLatched = false;
+    sendAttempts = 0;
   }
 }
 
@@ -239,6 +255,76 @@ void main() {
           const SocketException('Failed host lookup'),
         ).kind,
         CrmAiErrorKind.network,
+      );
+
+      // App Check debug token error classification & token redaction
+      final rawAppCheckErr = FirebaseException(
+        plugin: 'firebase_app_check',
+        code: 'unknown',
+        message:
+            'Failed to exchange debug token (6a718e2d-f5bf-420a-af08-95802b1a43b6). Too many attempts.',
+      );
+      final classifiedAppCheck = CrmAiAssistantService.classifyError(
+        rawAppCheckErr,
+        isDebugOverride: true,
+      );
+      expect(classifiedAppCheck.kind, CrmAiErrorKind.appCheck);
+      expect(
+        classifiedAppCheck.message,
+        contains('Manage debug tokens'),
+      );
+      expect(
+        classifiedAppCheck.message,
+        isNot(contains('6a718e2d-f5bf-420a-af08-95802b1a43b6')),
+      );
+      expect(
+        CrmAiAssistantService.redactTokens(rawAppCheckErr.message!),
+        isNot(contains('6a718e2d-f5bf-420a-af08-95802b1a43b6')),
+      );
+    });
+
+    test('latches unregistered App Check debug token without repeated retries until manual Retry', () async {
+      final provider = _FakeCrmAiDataProvider();
+      final transport = _FakeChatTransport()
+        ..errorToThrow = FirebaseException(
+          plugin: 'firebase_app_check',
+          code: 'unknown',
+          message: 'Too many attempts.',
+        );
+      final service = CrmAiAssistantService(
+        dataProvider: provider,
+        transport: transport,
+      );
+
+      // First call hits transport once and latches the App Check error
+      await expectLater(
+        service.sendMessageStream('Hot leads').toList(),
+        throwsA(
+          isA<CrmAiAssistantException>().having(
+            (e) => e.kind,
+            'kind',
+            CrmAiErrorKind.appCheck,
+          ),
+        ),
+      );
+      expect(transport.sendAttempts, 1);
+
+      // Subsequent non-manual call fails fast without re-hitting transport
+      await expectLater(
+        service.sendMessageStream('Hot leads').toList(),
+        throwsA(isA<CrmAiAssistantException>()),
+      );
+      expect(transport.sendAttempts, 1);
+
+      // Manual retry after token registration clears latch and succeeds
+      transport.errorToThrow = null;
+      final chunks = await service
+          .sendMessageStream('Hot leads', isManualRetry: true)
+          .toList();
+      expect(transport.sendAttempts, 2);
+      expect(
+        chunks.last.accumulatedText,
+        contains('0 hot leads'),
       );
     });
   });

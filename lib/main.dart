@@ -49,25 +49,31 @@ Future<void> main() async {
 
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
-  // Activate Firebase App Check in release builds (or when explicitly enabled
-  // via --dart-define=ENABLE_DEBUG_APP_CHECK=true after registering the device's
-  // debug token in Firebase Console). Skipping unregistered DebugAppCheckProvider
-  // in local debug builds prevents "Failed to exchange debug token" /
-  // "[firebase_app_check/unknown] Too many attempts" from blocking Firebase AI Logic.
-  const enableDebugAppCheck = bool.fromEnvironment('ENABLE_DEBUG_APP_CHECK');
-  if (!kDebugMode || enableDebugAppCheck) {
-    try {
-      await FirebaseAppCheck.instance
-          .activate(
-            providerAndroid: kDebugMode
-                ? const AndroidDebugProvider()
-                : const AndroidPlayIntegrityProvider(),
-            providerApple: kDebugMode
-                ? const AppleDebugProvider()
-                : const AppleDeviceCheckProvider(),
-          )
-          .timeout(const Duration(milliseconds: 1500), onTimeout: () {});
-    } catch (_) {}
+  // Initialize Firebase App Check immediately after Firebase.initializeApp and
+  // before any other Firebase service (Auth, Firestore, Messaging, or Firebase AI Logic).
+  // Uses debug providers in local debug builds and Play Integrity / App Attest in release builds.
+  try {
+    const recaptchaSiteKey = String.fromEnvironment('RECAPTCHA_V3_SITE_KEY');
+    await FirebaseAppCheck.instance.activate(
+      providerAndroid: kDebugMode
+          ? const AndroidDebugProvider()
+          : const AndroidPlayIntegrityProvider(),
+      providerApple: kDebugMode
+          ? const AppleDebugProvider()
+          : const AppleAppAttestWithDeviceCheckFallbackProvider(),
+      providerWeb: recaptchaSiteKey.isNotEmpty
+          ? (kDebugMode
+                ? WebDebugProvider()
+                : ReCaptchaV3Provider(recaptchaSiteKey))
+          : (kDebugMode ? WebDebugProvider() : null),
+    );
+  } catch (e) {
+    // Do not log raw token values; only log generic activation status in debug builds.
+    if (kDebugMode) {
+      debugPrint(
+        '[AppCheck] Activation notice (${e.runtimeType}). Register your local debug token in Firebase Console → App Check → Apps → Manage debug tokens.',
+      );
+    }
   }
 
   // Ensure Firebase Auth persists credentials across browser/tab restarts on Web.

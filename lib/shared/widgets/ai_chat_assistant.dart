@@ -123,7 +123,9 @@ class _AiChatAssistantOverlayState extends State<AiChatAssistantOverlay> {
 
     int? activeBotIndex;
 
-    _streamSub = _service.sendMessageStream(text).listen(
+    _streamSub = _service
+        .sendMessageStream(text, isManualRetry: isRetry)
+        .listen(
       (chunk) {
         if (!mounted) return;
         setState(() {

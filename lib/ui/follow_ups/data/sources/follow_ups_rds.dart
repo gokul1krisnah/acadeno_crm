@@ -28,10 +28,17 @@ class FollowUpsRds {
   /// Streams real-time follow-ups for the currently signed-in executive.
   Stream<List<ExecutiveFollowUpItem>> watchFollowUps({String? executiveUid}) {
     final uid = executiveUid ?? _firebaseAuth.currentUser?.uid;
+    if (uid == null || uid.trim().isEmpty) {
+      return Stream.value(const <ExecutiveFollowUpItem>[]);
+    }
 
-    return FirestoreStreamCache.instance
-        .watchCollection('leads', firestore: _firestore)
-        .map((snap) {
+    final Stream<QuerySnapshot<Map<String, dynamic>>> sourceStream =
+        FirestoreStreamCache.instance.watchQuery(
+          'leads:assigned:$uid',
+          () => _leads.where('assignedToUid', isEqualTo: uid),
+        );
+
+    return sourceStream.map((snap) {
       if (snap.docs.isEmpty) {
         return const <ExecutiveFollowUpItem>[];
       }
@@ -39,10 +46,7 @@ class FollowUpsRds {
       final matchingDocs = snap.docs.where((doc) {
         final data = doc.data();
         final assignedUid = (data['assignedToUid'] ?? '').toString();
-        if (uid != null &&
-            uid.isNotEmpty &&
-            assignedUid.isNotEmpty &&
-            assignedUid != uid) {
+        if (assignedUid.isNotEmpty && assignedUid != uid) {
           return false;
         }
         if (_isLeadDone(data)) return false;
@@ -84,19 +88,19 @@ class FollowUpsRds {
     String? executiveUid,
   }) async {
     final uid = executiveUid ?? _firebaseAuth.currentUser?.uid;
-    final snap = await FirestoreStreamCache.instance.getCollection(
-      'leads',
-      firestore: _firestore,
-    );
+    if (uid == null || uid.trim().isEmpty) {
+      return const <ExecutiveFollowUpItem>[];
+    }
+
+    final snap = await _leads
+        .where('assignedToUid', isEqualTo: uid)
+        .get();
 
     final items = <ExecutiveFollowUpItem>[];
     for (final doc in snap.docs) {
       final data = doc.data();
       final assignedUid = (data['assignedToUid'] ?? '').toString();
-      if (uid != null &&
-          uid.isNotEmpty &&
-          assignedUid.isNotEmpty &&
-          assignedUid != uid) {
+      if (assignedUid.isNotEmpty && assignedUid != uid) {
         continue;
       }
       if (_isLeadDone(data)) continue;

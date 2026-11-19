@@ -168,15 +168,25 @@ class AlertsRds {
             emitCombined(uid);
           });
 
-      // 4. Collection 'leads'
-      leadsSub = FirestoreStreamCache.instance
-          .watchCollection('leads', firestore: _firestore)
-          .listen((snap) {
+      // 4. Collection 'leads' (scoped by role to match firestore.rules)
+      final Stream<QuerySnapshot<Map<String, dynamic>>> leadsStream =
+          (isAdmin || uid.isEmpty)
+          ? FirestoreStreamCache.instance.watchCollection(
+              'leads',
+              firestore: _firestore,
+            )
+          : FirestoreStreamCache.instance.watchQuery(
+              'leads:assigned:$uid',
+              () => _firestore
+                  .collection('leads')
+                  .where('assignedToUid', isEqualTo: uid),
+            );
+      leadsSub = leadsStream.listen((snap) {
             leadsDocs = snap.docs.where((d) {
               if (isAdmin) return true;
               final data = d.data();
               final assignedUid = (data['assignedToUid'] ?? data['executiveUid'] ?? '').toString().trim();
-              return uid.isEmpty || assignedUid.isEmpty || assignedUid == uid;
+              return uid.isEmpty || assignedUid == uid;
             }).toList();
             emitCombined(uid);
           }, onError: (_) {

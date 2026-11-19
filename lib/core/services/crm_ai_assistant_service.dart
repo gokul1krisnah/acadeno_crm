@@ -14,6 +14,7 @@ import 'firestore_connectivity_helper.dart';
 /// error banners while preserving the user's message for one-tap retry.
 enum CrmAiErrorKind {
   network,
+  appCheck,
   permission,
   quota,
   service,
@@ -224,6 +225,39 @@ class FirestoreCrmAiDataProvider implements CrmAiDataProvider {
     }
   }
 
+  /// Queries `call_categorizations` scoped according to `firestore.rules`:
+  /// `executiveUid == actor.uid` for non-admin staff, or bounded slice for
+  /// admins/managers.
+  Future<List<QueryDocumentSnapshot<Map<String, dynamic>>>>
+  _fetchPermittedCategorizationDocs(
+    CrmAiActorContext actor, {
+    required String categoryValue,
+    int limit = 25,
+  }) async {
+    try {
+      Query<Map<String, dynamic>> query = _firestore
+          .collection('call_categorizations')
+          .where('category', isEqualTo: categoryValue);
+      if (!actor.isAdminOrManager) {
+        query = query.where('executiveUid', isEqualTo: actor.uid);
+      }
+      final snap = await query
+          .limit(limit)
+          .get()
+          .timeout(const Duration(seconds: 8));
+
+      return snap.docs.where((doc) {
+        if (!actor.isAdminOrManager) {
+          final execUid = (doc.data()['executiveUid'] ?? '').toString().trim();
+          return execUid == actor.uid;
+        }
+        return true;
+      }).toList();
+    } catch (e) {
+      _rethrowClassified(e);
+    }
+  }
+
   /// Projects a Firestore lead document into a minimal, privacy-safe map
   /// (omitting raw unmasked phone numbers, emails, payment receipts, etc.)
   /// and builds a [CrmAiRecordReference] for the UI.
@@ -370,9 +404,14 @@ class FirestoreCrmAiDataProvider implements CrmAiDataProvider {
   fetchHotLeadsContext() async {
     final actor = await verifyCurrentActor();
     final docs = await _fetchPermittedLeadDocs(actor, limit: 40);
+    final catDocs = await _fetchPermittedCategorizationDocs(
+      actor,
+      categoryValue: 'hot_lead',
+    );
 
     final items = <Map<String, Object?>>[];
     final refs = <CrmAiRecordReference>[];
+    final seenPhones = <String>{};
 
     for (final doc in docs) {
       final data = doc.data();
@@ -383,11 +422,28 @@ class FirestoreCrmAiDataProvider implements CrmAiDataProvider {
           (cat.isEmpty && (status == 'hot lead' || status == 'hot'));
       if (!isHot) continue;
 
+      final phoneNorm = (data['phoneNormalized'] ?? '').toString().trim();
+      if (phoneNorm.isNotEmpty) seenPhones.add(phoneNorm);
+
       final projected = _projectLead(doc);
       if (items.length < 10) {
         items.add(projected.summary);
         refs.add(projected.ref);
       }
+    }
+
+    for (final cDoc in catDocs) {
+      if (items.length >= 10) break;
+      final cData = cDoc.data();
+      final phoneNorm = (cData['phoneNormalized'] ?? '').toString().trim();
+      if (phoneNorm.isNotEmpty && seenPhones.contains(phoneNorm)) continue;
+      final contactName = (cData['contactName'] ?? '').toString().trim();
+      items.add(<String, Object?>{
+        'categorizationId': cDoc.id,
+        'name': contactName.isNotEmpty ? contactName : 'Call Log Hot Lead',
+        'category': 'hot_lead',
+        'source': 'Call Log',
+      });
     }
 
     return (
@@ -404,9 +460,14 @@ class FirestoreCrmAiDataProvider implements CrmAiDataProvider {
   fetchRemindersContext() async {
     final actor = await verifyCurrentActor();
     final docs = await _fetchPermittedLeadDocs(actor, limit: 40);
+    final catDocs = await _fetchPermittedCategorizationDocs(
+      actor,
+      categoryValue: 'reminder',
+    );
 
     final items = <Map<String, Object?>>[];
     final refs = <CrmAiRecordReference>[];
+    final seenPhones = <String>{};
 
     for (final doc in docs) {
       final data = doc.data();
@@ -418,11 +479,28 @@ class FirestoreCrmAiDataProvider implements CrmAiDataProvider {
           (cat.isEmpty && status.contains('reminder'));
       if (!isReminder) continue;
 
+      final phoneNorm = (data['phoneNormalized'] ?? '').toString().trim();
+      if (phoneNorm.isNotEmpty) seenPhones.add(phoneNorm);
+
       final projected = _projectLead(doc);
       if (items.length < 10) {
         items.add(projected.summary);
         refs.add(projected.ref);
       }
+    }
+
+    for (final cDoc in catDocs) {
+      if (items.length >= 10) break;
+      final cData = cDoc.data();
+      final phoneNorm = (cData['phoneNormalized'] ?? '').toString().trim();
+      if (phoneNorm.isNotEmpty && seenPhones.contains(phoneNorm)) continue;
+      final contactName = (cData['contactName'] ?? '').toString().trim();
+      items.add(<String, Object?>{
+        'categorizationId': cDoc.id,
+        'name': contactName.isNotEmpty ? contactName : 'Call Log Reminder',
+        'category': 'reminder',
+        'source': 'Call Log',
+      });
     }
 
     return (
@@ -584,6 +662,9 @@ abstract class CrmAiChatTransport {
     required CrmAiActorContext actor,
   });
 
+  /// Clears any circuit-breaker latch when the user explicitly taps Retry.
+  void allowManualRetry() {}
+
   void resetSession();
 }
 
@@ -597,6 +678,11 @@ class FirebaseAiLogicChatTransport implements CrmAiChatTransport {
 
   ChatSession? _chatSession;
   String? _sessionUid;
+
+  /// Circuit-breaker latch that prevents repeatedly hammering App Check token
+  /// exchange when an unregistered debug token is detected. Cleared only when
+  /// the user explicitly taps Retry or the session is reset.
+  bool _unregisteredAppCheckTokenLatched = false;
 
   FirebaseAiLogicChatTransport({
     required this.dataProvider,
@@ -614,15 +700,8 @@ Follow these mandatory rules on every reply:
 5. CONCISE STYLE: Keep answers concise (1 to 4 short sentences or bullet points), clear, and friendly for a mobile chat bubble.
 ''';
 
-  ChatSession _ensureChatSession(
-    String uid, {
-    bool disableAppCheck = false,
-    String? overrideModelName,
-  }) {
-    if (_chatSession != null &&
-        _sessionUid == uid &&
-        !disableAppCheck &&
-        overrideModelName == null) {
+  ChatSession _ensureChatSession(String uid) {
+    if (_chatSession != null && _sessionUid == uid) {
       return _chatSession!;
     }
     _sessionUid = uid;
@@ -709,16 +788,12 @@ Follow these mandatory rules on every reply:
       ]),
     ];
 
+    // FirebaseAI.googleAI() binds both FirebaseAuth and FirebaseAppCheck
+    // registered on the default FirebaseApp. App Check is never bypassed.
     final ai = FirebaseAI.googleAI();
-    const enableDebugAppCheck = bool.fromEnvironment('ENABLE_DEBUG_APP_CHECK');
-    if (disableAppCheck || (kDebugMode && !enableDebugAppCheck)) {
-      // Avoid unregistered debug AppCheck tokens throwing
-      // "[firebase_app_check/unknown] Too many attempts" before reaching Gemini.
-      ai.appCheck = null;
-    }
 
     final model = ai.generativeModel(
-      model: overrideModelName ?? modelName,
+      model: modelName,
       systemInstruction: Content.system(_systemPrompt),
       tools: tools,
       generationConfig: GenerationConfig(
@@ -732,17 +807,25 @@ Follow these mandatory rules on every reply:
   }
 
   @override
+  void allowManualRetry() {
+    _unregisteredAppCheckTokenLatched = false;
+  }
+
+  @override
   Stream<String> sendChatMessageStream({
     required String userMessage,
     required Map<String, Object?> groundedContext,
     required CrmAiActorContext actor,
   }) async* {
+    if (_unregisteredAppCheckTokenLatched) {
+      throw CrmAiAssistantService.buildAppCheckException();
+    }
+
     final enrichedPrompt =
         'User question: $userMessage\n'
         'Permitted CRM Context (read-only, scoped to ${actor.displayName} [${actor.role}]): '
         '$groundedContext';
 
-    bool yieldedAny = false;
     try {
       final session = _ensureChatSession(actor.uid);
       await for (final chunk in session.sendMessageStream(
@@ -750,213 +833,24 @@ Follow these mandatory rules on every reply:
       )) {
         final text = chunk.text;
         if (text != null && text.isNotEmpty) {
-          yieldedAny = true;
           yield text;
         }
       }
-      if (yieldedAny) return;
     } catch (e) {
-      final errStr = e.toString().toLowerCase();
-      final isAppCheckOrModelErr =
-          errStr.contains('firebase_app_check') ||
-          errStr.contains('app_check') ||
-          errStr.contains('too many attempts') ||
-          errStr.contains('not found') ||
-          errStr.contains('404');
-
-      if (isAppCheckOrModelErr && !yieldedAny) {
-        try {
-          _chatSession = null;
-          final fallbackSession = _ensureChatSession(
-            actor.uid,
-            disableAppCheck: true,
-            overrideModelName: 'gemini-2.0-flash',
-          );
-          await for (final chunk in fallbackSession.sendMessageStream(
-            Content.text(enrichedPrompt),
-          )) {
-            final text = chunk.text;
-            if (text != null && text.isNotEmpty) {
-              yieldedAny = true;
-              yield text;
-            }
-          }
-          if (yieldedAny) return;
-        } catch (retryErr) {
-          if (_shouldSynthesizeFromLiveFirestore(retryErr)) {
-            yield _synthesizeGroundedReply(
-              userMessage: userMessage,
-              groundedContext: groundedContext,
-              actor: actor,
-            );
-            return;
-          }
-          rethrow;
-        }
-      }
-
-      if (!yieldedAny && _shouldSynthesizeFromLiveFirestore(e)) {
-        yield _synthesizeGroundedReply(
-          userMessage: userMessage,
-          groundedContext: groundedContext,
-          actor: actor,
-        );
-        return;
+      if (CrmAiAssistantService.isAppCheckError(e)) {
+        // Latch so an unregistered debug token is not repeatedly retried.
+        _unregisteredAppCheckTokenLatched = true;
+        throw CrmAiAssistantService.buildAppCheckException();
       }
       rethrow;
     }
-  }
-
-  /// Returns `true` only when the remote Firebase project has not yet enabled
-  /// the Vertex AI / Gemini Developer API or App Check token exchange failed
-  /// in development — NOT for network/DNS outages, user permission denials, or
-  /// quota exhaustion.
-  static bool _shouldSynthesizeFromLiveFirestore(Object error) {
-    if (FirestoreConnectivityHelper.isConnectivityError(error)) return false;
-    if (error is QuotaExceeded) return false;
-    if (error is CrmAiAssistantException) return false;
-    if (error is ServiceApiNotEnabled) return true;
-    final lower = error.toString().toLowerCase();
-    return lower.contains('firebase_app_check') ||
-        lower.contains('app_check') ||
-        lower.contains('too many attempts') ||
-        lower.contains('api has not been used') ||
-        lower.contains('service_disabled') ||
-        lower.contains('firebasevertexai.googleapis.com');
-  }
-
-  /// Synthesizes a strictly grounded response directly from the live Firestore
-  /// [groundedContext] fetched for the signed-in staff member (never inventing
-  /// or using fake/canned records) when the remote Firebase AI Logic endpoint
-  /// is not yet enabled in Firebase Console.
-  static String _synthesizeGroundedReply({
-    required String userMessage,
-    required Map<String, Object?> groundedContext,
-    required CrmAiActorContext actor,
-  }) {
-    final lower = userMessage.trim().toLowerCase();
-
-    String formatLeadBullet(Map<String, Object?> lead) {
-      final name = (lead['name'] ?? 'Lead').toString();
-      final college = (lead['collegeBranch'] ?? 'Inquiry').toString();
-      final status = (lead['status'] ?? '').toString();
-      final schedule = (lead['followUpSchedule'] ?? '').toString();
-      final refId = (lead['refId'] ?? '').toString();
-      final extra = schedule.isNotEmpty
-          ? '$college · $schedule'
-          : (status.isNotEmpty ? '$college · $status' : college);
-      return '$name ($extra)${refId.isNotEmpty ? " [Ref: $refId]" : ""}';
-    }
-
-    if (groundedContext.containsKey('walkInAndReadOnlyGuide') &&
-        (lower.contains('walk-in') ||
-            lower.contains('walk in') ||
-            RegExp(
-              r'\b(create|add|insert|update|edit|delete|remove)\b',
-            ).hasMatch(lower))) {
-      return 'I am read-only in this version and cannot create or modify CRM records directly. '
-          'To add a walk-in lead, tap "+ Add Leads" on the Today screen, verify the 10-digit phone number, fill in the student and college details, and tap Save.';
-    }
-
-    if (groundedContext['followUps'] is Map<String, Object?>) {
-      final fu = groundedContext['followUps']! as Map<String, Object?>;
-      final dueCount = (fu['dueTodayCount'] as int?) ?? 0;
-      final overdueCount = (fu['overdueCount'] as int?) ?? 0;
-      final upcomingCount = (fu['upcomingCount'] as int?) ?? 0;
-      final dueList =
-          (fu['dueTodayFollowUps'] as List?)?.cast<Map<String, Object?>>() ??
-          const [];
-      final overdueList =
-          (fu['overdueFollowUps'] as List?)?.cast<Map<String, Object?>>() ??
-          const [];
-
-      if (dueCount == 0 && overdueCount == 0 && upcomingCount == 0) {
-        return 'You have 0 follow-ups due today and 0 overdue follow-ups in your permitted CRM records.';
-      }
-
-      final parts = <String>[];
-      if (dueCount > 0) {
-        final preview = dueList.take(3).map(formatLeadBullet).join(', ');
-        parts.add(
-          'You have $dueCount follow-up${dueCount == 1 ? "" : "s"} due today: $preview.',
-        );
-      } else {
-        parts.add('You have 0 follow-ups due today.');
-      }
-      if (overdueCount > 0) {
-        final preview = overdueList.take(3).map(formatLeadBullet).join(', ');
-        parts.add(
-          'You also have $overdueCount overdue: $preview.',
-        );
-      }
-      if (dueCount == 0 && overdueCount == 0 && upcomingCount > 0) {
-        parts.add(
-          'You have $upcomingCount upcoming follow-up${upcomingCount == 1 ? "" : "s"} scheduled.',
-        );
-      }
-      return parts.join(' ');
-    }
-
-    if (groundedContext['hotLeads'] is Map<String, Object?>) {
-      final hl = groundedContext['hotLeads']! as Map<String, Object?>;
-      final count = (hl['hotLeadsCount'] as int?) ?? 0;
-      final list =
-          (hl['hotLeads'] as List?)?.cast<Map<String, Object?>>() ?? const [];
-      if (count == 0 || list.isEmpty) {
-        return 'You currently have 0 hot leads in your permitted CRM records.';
-      }
-      final preview = list.take(4).map(formatLeadBullet).join(', ');
-      return 'You have $count hot lead${count == 1 ? "" : "s"}: $preview.';
-    }
-
-    if (groundedContext['reminders'] is Map<String, Object?>) {
-      final rem = groundedContext['reminders']! as Map<String, Object?>;
-      final count = (rem['remindersCount'] as int?) ?? 0;
-      final list =
-          (rem['reminders'] as List?)?.cast<Map<String, Object?>>() ?? const [];
-      if (count == 0 || list.isEmpty) {
-        return 'You have 0 reminders in your permitted CRM records.';
-      }
-      final preview = list.take(4).map(formatLeadBullet).join(', ');
-      return 'You have $count reminder${count == 1 ? "" : "s"}: $preview.';
-    }
-
-    if (groundedContext['collegeVisits'] is Map<String, Object?>) {
-      final cv = groundedContext['collegeVisits']! as Map<String, Object?>;
-      final count = (cv['visitsCount'] as int?) ?? 0;
-      final list =
-          (cv['visits'] as List?)?.cast<Map<String, Object?>>() ?? const [];
-      if (count == 0 || list.isEmpty) {
-        return 'No college visits were found in your permitted CRM records.';
-      }
-      final preview = list
-          .take(3)
-          .map((v) => '${v['collegeName']} (${v['status']})')
-          .join(', ');
-      return 'You have $count college visit${count == 1 ? "" : "s"}: $preview.';
-    }
-
-    if (groundedContext['assignedLeads'] is Map<String, Object?>) {
-      final al = groundedContext['assignedLeads']! as Map<String, Object?>;
-      final total = (al['totalPermittedLeads'] as int?) ?? 0;
-      final pending = (al['pendingCallsCount'] as int?) ?? 0;
-      final done = (al['completedCallsCount'] as int?) ?? 0;
-      final list =
-          (al['leads'] as List?)?.cast<Map<String, Object?>>() ?? const [];
-      if (total == 0 || list.isEmpty) {
-        return 'No matching leads were found in your permitted CRM records.';
-      }
-      final preview = list.take(4).map(formatLeadBullet).join(', ');
-      return 'You have $total assigned lead${total == 1 ? "" : "s"} ($pending pending, $done completed): $preview.';
-    }
-
-    return 'No matching records were found in your permitted CRM data. You can ask about Today’s follow-ups, Hot leads, Reminders, Assigned leads, or how to Add a walk-in lead.';
   }
 
   @override
   void resetSession() {
     _chatSession = null;
     _sessionUid = null;
+    _unregisteredAppCheckTokenLatched = false;
   }
 }
 
@@ -967,6 +861,15 @@ class CrmAiAssistantService {
   final CrmAiDataProvider _dataProvider;
   late final CrmAiChatTransport _transport;
   final List<CrmAiRecordReference> _turnRefs = [];
+
+  static const String debugAppCheckRegistrationMessage =
+      'App Check error: This debug build’s App Check debug token is not registered in Firebase Console. '
+      'Copy the debug token from your local IDE/logcat console and register it under '
+      'Firebase Console → App Check → Apps → Manage debug tokens, then tap Retry.';
+
+  static const String releaseAppCheckErrorMessage =
+      'App Check error: Device attestation (Play Integrity / App Attest) failed. '
+      'Ensure App Check is configured for this app in Firebase Console and tap Retry.';
 
   CrmAiAssistantService({
     CrmAiDataProvider? dataProvider,
@@ -995,9 +898,18 @@ class CrmAiAssistantService {
 
   /// Sends [userMessage] to Gemini grounded in the signed-in staff member's
   /// permitted CRM records and streams incremental [CrmAiStreamChunk] updates.
-  Stream<CrmAiStreamChunk> sendMessageStream(String userMessage) async* {
+  /// Pass [isManualRetry] = `true` when the user explicitly taps the Retry
+  /// button so an App Check circuit-breaker latch can be re-tested once.
+  Stream<CrmAiStreamChunk> sendMessageStream(
+    String userMessage, {
+    bool isManualRetry = false,
+  }) async* {
     final trimmed = userMessage.trim();
     if (trimmed.isEmpty) return;
+
+    if (isManualRetry) {
+      _transport.allowManualRetry();
+    }
 
     _turnRefs.clear();
 
@@ -1148,10 +1060,61 @@ class CrmAiAssistantService {
         .trim();
   }
 
-  /// Maps Firebase AI Logic, Firestore, Auth, and network exceptions into
-  /// clear, user-friendly [CrmAiAssistantException] instances.
-  static CrmAiAssistantException classifyError(Object error) {
+  /// Returns `true` when [error] is an App Check token exchange or attestation
+  /// failure (`[firebase_app_check/...]`, `Failed to exchange debug token`,
+  /// `Too many attempts` from App Check, or HTTP 401/403 App Check rejection).
+  static bool isAppCheckError(Object error) {
+    if (error is CrmAiAssistantException) {
+      return error.kind == CrmAiErrorKind.appCheck;
+    }
+    if (error is FirebaseException &&
+        error.plugin.toLowerCase().contains('app_check')) {
+      return true;
+    }
+    final lower = error.toString().toLowerCase();
+    return lower.contains('firebase_app_check') ||
+        lower.contains('app_check') ||
+        lower.contains('appcheck') ||
+        lower.contains('app check') ||
+        lower.contains('failed to exchange debug token') ||
+        (lower.contains('too many attempts') &&
+            !lower.contains('firebase_auth'));
+  }
+
+  /// Builds a clear, token-redacted [CrmAiAssistantException] for App Check
+  /// failures in debug vs. release builds.
+  static CrmAiAssistantException buildAppCheckException({bool? isDebugOverride}) {
+    final isDebug = isDebugOverride ?? kDebugMode;
+    return CrmAiAssistantException(
+      CrmAiErrorKind.appCheck,
+      isDebug
+          ? debugAppCheckRegistrationMessage
+          : releaseAppCheckErrorMessage,
+    );
+  }
+
+  /// Redacts any UUID token strings before logging so debug tokens are never
+  /// leaked into user-visible or shared diagnostic output.
+  static String redactTokens(String input) {
+    return input.replaceAll(
+      RegExp(
+        r'\b[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\b',
+      ),
+      '<redacted-token>',
+    );
+  }
+
+  /// Maps Firebase AI Logic, App Check, Firestore, Auth, and network exceptions
+  /// into clear, user-friendly [CrmAiAssistantException] instances.
+  static CrmAiAssistantException classifyError(
+    Object error, {
+    bool? isDebugOverride,
+  }) {
     if (error is CrmAiAssistantException) return error;
+
+    if (isAppCheckError(error)) {
+      return buildAppCheckException(isDebugOverride: isDebugOverride);
+    }
 
     if (FirestoreConnectivityHelper.isConnectivityError(error)) {
       FirestoreConnectivityHelper.reportIfConnectivityError(error);
@@ -1171,14 +1134,14 @@ class CrmAiAssistantService {
     if (error is InvalidApiKey) {
       return CrmAiAssistantException(
         CrmAiErrorKind.permission,
-        'Permission error: ${error.message}',
+        'Permission error: ${redactTokens(error.message)}',
       );
     }
 
     if (error is UnsupportedUserLocation) {
       return CrmAiAssistantException(
         CrmAiErrorKind.permission,
-        'Permission error: ${error.message}',
+        'Permission error: ${redactTokens(error.message)}',
       );
     }
 
@@ -1203,11 +1166,10 @@ class CrmAiAssistantService {
       if (msg.contains('permission') ||
           msg.contains('401') ||
           msg.contains('403') ||
-          msg.contains('app check') ||
           msg.contains('unauthenticated')) {
         return const CrmAiAssistantException(
           CrmAiErrorKind.permission,
-          'Permission error: Request was denied by Firebase Auth or App Check.',
+          'Permission error: Request was denied by Firebase Auth or project permissions.',
         );
       }
       return const CrmAiAssistantException(
@@ -1251,7 +1213,9 @@ class CrmAiAssistantService {
       );
     }
 
-    debugPrint('CrmAiAssistantService error: $error');
+    debugPrint(
+      'CrmAiAssistantService error: ${redactTokens(error.toString())}',
+    );
     return const CrmAiAssistantException(
       CrmAiErrorKind.service,
       'Service error: Something went wrong while generating a reply. Please tap Retry.',
