@@ -104,9 +104,17 @@ class AdminLeadsState {
           return false;
         }
       }
-      if (sourceFilter != 'All sources' &&
-          l.source.toLowerCase() != sourceFilter.toLowerCase()) {
-        return false;
+      if (sourceFilter != 'All sources') {
+        final src = l.source.trim().toLowerCase();
+        final filterLower = sourceFilter.toLowerCase();
+        if (filterLower == 'other') {
+          const standardSources = {'social media', 'contact', 'referral'};
+          if (standardSources.contains(src)) {
+            return false;
+          }
+        } else if (src != filterLower) {
+          return false;
+        }
       }
       if (collegeFilter != 'All colleges' &&
           !l.collegeBranch.toLowerCase().contains(

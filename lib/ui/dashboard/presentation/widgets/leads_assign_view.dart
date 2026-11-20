@@ -988,14 +988,11 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
       lead.status,
     }.toList();
     final sourceOptions = <String>{
-      'Direct visit',
-      'AI Webinar',
-      'Python workshop',
-      'Industrial visit',
-      'Add-on course',
-      'College visit',
-      'Workshop',
-      lead.source,
+      'Social Media',
+      'Contact',
+      'Referral',
+      'Other',
+      if (lead.source.trim().isNotEmpty) lead.source,
     }.toList();
     const defaultCourses = <String>[
       'AI & Python Workshop',
@@ -2707,13 +2704,10 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                   value: state.sourceFilter,
                   items: const [
                     'All sources',
-                    'Direct visit',
-                    'AI Webinar',
-                    'Python workshop',
-                    'Industrial visit',
-                    'Add-on course',
-                    'College visit',
-                    'Workshop',
+                    'Social Media',
+                    'Contact',
+                    'Referral',
+                    'Other',
                   ],
                   onChanged: cubit.setSourceFilter,
                 );
