@@ -34,6 +34,7 @@ class LeadCallSheets {
     'MERN Stack Development',
     'Robotics & IoT',
     'Flutter Mobile App',
+    'UI / UX',
     'Digital Marketing',
     'Cyber Security',
   ];
@@ -43,6 +44,13 @@ class LeadCallSheets {
     final lower = raw.trim().toLowerCase();
     for (final prog in acadenoPrograms) {
       if (prog.toLowerCase() == lower) return prog;
+    }
+    if (lower.contains('ui/ux') ||
+        lower.contains('ui / ux') ||
+        lower.contains('ui ux') ||
+        lower.contains('uiux') ||
+        lower.contains('ux')) {
+      return 'UI / UX';
     }
     if (lower.contains('flutter') || lower.contains('mobile')) {
       return 'Flutter Mobile App';

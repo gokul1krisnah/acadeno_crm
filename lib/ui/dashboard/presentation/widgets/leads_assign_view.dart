@@ -997,26 +997,20 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
       'Workshop',
       lead.source,
     }.toList();
-    final courseOptions = <String>[
+    const defaultCourses = <String>[
       'AI & Python Workshop',
       'Full Stack Development',
       'Data Science & Analytics',
       'Flutter & Mobile App Development',
+      'UI / UX',
       'Cyber Security',
       'Cloud Computing (AWS/GCP)',
       'Digital Marketing',
       'Embedded Systems & IoT',
-      if (lead.course.isNotEmpty &&
-          ![
-            'AI & Python Workshop',
-            'Full Stack Development',
-            'Data Science & Analytics',
-            'Flutter & Mobile App Development',
-            'Cyber Security',
-            'Cloud Computing (AWS/GCP)',
-            'Digital Marketing',
-            'Embedded Systems & IoT',
-          ].contains(lead.course))
+    ];
+    final courseOptions = <String>[
+      ...defaultCourses,
+      if (lead.course.isNotEmpty && !defaultCourses.contains(lead.course))
         lead.course,
     ];
 

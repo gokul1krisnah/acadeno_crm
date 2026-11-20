@@ -2260,6 +2260,7 @@ class _EditLeadDialogState extends State<_EditLeadDialog> {
                     'Python Full Stack',
                     'MERN Stack',
                     'Flutter Mobile',
+                    'UI / UX',
                     'AI & ML',
                   ].map((prog) {
                     return InkWell(
