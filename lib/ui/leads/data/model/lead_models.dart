@@ -1,59 +1,87 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
-/// Phone number normalization, validation, and masking utilities.
+/// Phone number normalization, validation, and masking utilities
+/// supporting both Indian mobile numbers and landline numbers (with or without STD code).
 abstract final class LeadPhoneValidator {
-  /// Extracts the canonical 10-digit mobile number from [raw].
-  /// Returns `''` if the input does not contain a valid 10-digit number.
+  /// Extracts the canonical normalized phone key (6–11 digits) from [raw].
+  /// - 10-digit Indian mobiles (with optional 0, +91, 91, 091, 0091) -> 10 digits.
+  /// - Indian landlines with STD code (e.g. `0495 2701234`, `+91 484 2345678`) -> 10 digits.
+  /// - Local landlines without STD code (6–8 digits, e.g. `2701234`) -> 6–8 digits.
+  /// Returns `''` if the input does not contain a valid mobile or landline number.
   static String normalize10Digits(String? raw) {
     if (raw == null) return '';
-    final digits = raw.replaceAll(RegExp(r'\D'), '');
-    if (digits.length == 10) return digits;
-    if (digits.length == 11 && digits.startsWith('0')) {
-      return digits.substring(1);
+    var digits = raw.replaceAll(RegExp(r'\D'), '');
+    if (digits.isEmpty || RegExp(r'^0+$').hasMatch(digits)) return '';
+
+    // Strip Indian international prefix (+91 / 091 / 0091) when present
+    if (digits.length >= 12 && digits.length <= 14) {
+      if (digits.startsWith('0091') && digits.length - 4 >= 8) {
+        digits = digits.substring(4);
+      } else if (digits.startsWith('091') && digits.length - 3 >= 8) {
+        digits = digits.substring(3);
+      } else if (digits.startsWith('91') && digits.length - 2 >= 8) {
+        digits = digits.substring(2);
+      }
     }
-    if (digits.length == 12 && digits.startsWith('91')) {
-      return digits.substring(2);
+
+    // Strip leading trunk '0' (e.g. 09847012345 -> 9847012345, 04952701234 -> 4952701234)
+    if (digits.startsWith('0') && digits.length >= 7 && digits.length <= 12) {
+      digits = digits.substring(1);
     }
-    if (digits.length == 13 && digits.startsWith('091')) {
-      return digits.substring(3);
-    }
-    if (digits.length == 14 && digits.startsWith('0091')) {
-      return digits.substring(4);
+
+    if (digits.length >= 6 && digits.length <= 11) {
+      return digits;
     }
     return '';
   }
 
-  /// Validates a phone string and returns an error message or `null` if valid.
+  /// Returns `true` when [normalized] is a standard 10-digit Indian mobile number.
+  static bool isIndianMobile(String normalized) =>
+      RegExp(r'^[6-9]\d{9}$').hasMatch(normalized);
+
+  /// Validates a mobile or landline phone string and returns an error message or `null` if valid.
   static String? validate(String? raw) {
     if (raw == null || raw.trim().isEmpty) {
       return 'Phone number is required';
     }
     final normalized = normalize10Digits(raw);
-    if (normalized.length != 10) {
-      return 'Enter a valid 10-digit phone number';
-    }
-    if (!RegExp(r'^[6-9]\d{9}$').hasMatch(normalized)) {
-      return 'Enter a valid 10-digit mobile number starting with 6–9';
+    if (normalized.isEmpty) {
+      return 'Enter a valid mobile or landline number (6–11 digits)';
     }
     return null;
   }
 
-  /// Formats a 10-digit phone as `'98470 33333'`.
+  /// Formats a 10-digit mobile as `'98470 33333'`, or preserves clean landline formatting.
   static String formatDisplayPhone(String raw) {
-    final norm = normalize10Digits(raw);
-    if (norm.length == 10) {
+    final trimmed = raw.trim();
+    final norm = normalize10Digits(trimmed);
+    if (isIndianMobile(norm)) {
       return '${norm.substring(0, 5)} ${norm.substring(5)}';
     }
-    final trimmed = raw.trim();
-    return trimmed.isEmpty ? '—' : trimmed;
+    if (trimmed.isNotEmpty) {
+      // If user typed raw 10-digit landline without leading 0 or separator (e.g. 4952701234),
+      // format nicely as '0495 2701234'; otherwise keep their readable landline format.
+      if (RegExp(r'^\d{10}$').hasMatch(trimmed)) {
+        return '0${trimmed.substring(0, 3)} ${trimmed.substring(3)}';
+      }
+      return trimmed;
+    }
+    return norm.isNotEmpty ? norm : '—';
   }
 
-  /// Formats a 10-digit phone as `'98470 •••33'` for Sales Executive privacy.
+  /// Formats a phone as `'98470 •••33'` (or masked landline) for Sales Executive privacy.
   static String maskPhone(String raw) {
     final norm = normalize10Digits(raw);
-    if (norm.length == 10) {
+    if (norm.length == 10 && isIndianMobile(norm)) {
       return '${norm.substring(0, 5)} •••${norm.substring(8)}';
+    }
+    if (norm.length >= 7) {
+      final prefixLen = norm.length >= 9 ? 4 : 3;
+      return '${norm.substring(0, prefixLen)} •••${norm.substring(norm.length - 2)}';
+    }
+    if (norm.length == 6) {
+      return '${norm.substring(0, 2)} •••${norm.substring(4)}';
     }
     final digits = raw.replaceAll(RegExp(r'\D'), '');
     if (digits.length >= 7) {

@@ -3,8 +3,8 @@ mixin FormValidatorMixin {
     if (value == null || value.trim().isEmpty) {
       return 'Phone number is required';
     }
-    if (value.length < 8) {
-      return 'Enter a valid phone number';
+    if (value.replaceAll(RegExp(r'\D'), '').length < 6) {
+      return 'Enter a valid mobile or landline number';
     }
     return null;
   }

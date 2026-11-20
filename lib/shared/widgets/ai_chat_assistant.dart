@@ -538,22 +538,28 @@ class _AiChatAssistantOverlayState extends State<AiChatAssistantOverlay> {
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   const Icon(
-                                    Icons.open_in_new_rounded,
-                                    size: 11,
+                                    Icons.person_outline_rounded,
+                                    size: 13,
                                     color: _indigo,
                                   ),
                                   const Gap(4),
                                   Flexible(
                                     child: Text(
-                                      '${ref.displayName} (#${ref.id})',
+                                      ref.displayName,
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
                                       style: AppTypography.body(
-                                        size: 10.5,
+                                        size: 11,
                                         weight: FontWeight.w600,
                                         color: _indigo,
                                       ),
                                     ),
+                                  ),
+                                  const Gap(2),
+                                  const Icon(
+                                    Icons.chevron_right_rounded,
+                                    size: 14,
+                                    color: _indigo,
                                   ),
                                 ],
                               ),

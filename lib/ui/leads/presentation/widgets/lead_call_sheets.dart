@@ -108,7 +108,8 @@ class LeadCallSheets {
       String? courseEnrolled,
       String? batch,
       String? followUpTime,
-    })? onSave,
+    })?
+    onSave,
   }) async {
     final LeadsCubit cubit;
     LeadsCubit? tempCubit;
@@ -138,7 +139,9 @@ class LeadCallSheets {
     bool isSaving = false;
     String? saveError;
     String selectedFollowUpSlot = LeadDateHelper.formatFollowUp(
-      DateTime.now().add(const Duration(days: 1)).copyWith(hour: 10, minute: 30),
+      DateTime.now()
+          .add(const Duration(days: 1))
+          .copyWith(hour: 10, minute: 30),
     );
     String selectedProgram = matchProgram(course);
     String selectedPaymentMode = 'UPI';
@@ -719,27 +722,27 @@ class LeadCallSheets {
                                       if (context.mounted) {
                                         SnackBarAlert.showToast(
                                           context: context,
-                                          message:
-                                              'Saved as $selectedOutcome',
+                                          message: 'Saved as $selectedOutcome',
                                         );
                                       }
                                     } catch (e) {
                                       debugPrint('recordCallOutcome error: $e');
-                                      FirestoreConnectivityHelper
-                                          .reportIfConnectivityError(e);
+                                      FirestoreConnectivityHelper.reportIfConnectivityError(
+                                        e,
+                                      );
                                       if (ctx.mounted) {
                                         final friendly =
-                                            FirestoreConnectivityHelper
-                                                .userFriendlyMessage(
-                                                  e,
-                                                  fallback:
-                                                      'Failed to save outcome. Please try again.',
-                                                );
+                                            FirestoreConnectivityHelper.userFriendlyMessage(
+                                              e,
+                                              fallback:
+                                                  'Failed to save outcome. Please try again.',
+                                            );
                                         setSheetState(() {
                                           isSaving = false;
                                           saveError =
-                                              FirestoreConnectivityHelper
-                                                  .isConnectivityError(e)
+                                              FirestoreConnectivityHelper.isConnectivityError(
+                                                e,
+                                              )
                                               ? friendly
                                               : 'Failed to save: $friendly';
                                         });
@@ -1152,7 +1155,7 @@ class LeadCallSheets {
                       const Gap(6),
                       // Short Heading (Inter Regular 400, 13px, line-height 21.13px)
                       Text(
-                        'Type a 10-digit phone number to check duplicates before saving.',
+                        'Type a mobile or landline number to check duplicates before saving.',
                         style: GoogleFonts.inter(
                           fontSize: 13,
                           fontWeight: FontWeight.w400,
@@ -1181,7 +1184,7 @@ class LeadCallSheets {
                                   color: const Color(0xFF0F172A),
                                 ),
                                 decoration: InputDecoration(
-                                  hintText: '10-digit mobile nu...',
+                                  hintText: 'Mobile or landline...',
                                   hintStyle: GoogleFonts.inter(
                                     fontSize: 13,
                                     fontWeight: FontWeight.w400,
@@ -1419,28 +1422,29 @@ class LeadCallSheets {
                               fontWeight: FontWeight.w500,
                               color: const Color(0xFF2E1D44),
                             ),
-                            selectedItemBuilder: (context) => [
-                              'Social Media',
-                              'Contact',
-                              'Referral',
-                              'Other',
-                            ].map((c) => Align(
-                              alignment: Alignment.centerLeft,
-                              child: Text(
-                                c,
-                                style: GoogleFonts.inter(
-                                  fontSize: 13.5,
-                                  fontWeight: FontWeight.w500,
-                                  color: const Color(0xFF2E1D44),
-                                ),
-                              ),
-                            )).toList(),
+                            selectedItemBuilder: (context) =>
+                                ['Social Media', 'Contact', 'Referral', 'Other']
+                                    .map(
+                                      (c) => Align(
+                                        alignment: Alignment.centerLeft,
+                                        child: Text(
+                                          c,
+                                          style: GoogleFonts.inter(
+                                            fontSize: 13.5,
+                                            fontWeight: FontWeight.w500,
+                                            color: const Color(0xFF2E1D44),
+                                          ),
+                                        ),
+                                      ),
+                                    )
+                                    .toList(),
                             items: [
                               DropdownMenuItem(
                                 value: 'Social Media',
                                 child: AcadenoDropdown.buildMenuItemChild(
                                   label: 'Social Media',
-                                  isSelected: selectedCampaign == 'Social Media',
+                                  isSelected:
+                                      selectedCampaign == 'Social Media',
                                 ),
                               ),
                               DropdownMenuItem(
@@ -1554,11 +1558,11 @@ class LeadCallSheets {
                                     );
                                     final effectiveCampaign =
                                         (selectedCampaign == 'Other' &&
-                                                otherSourceCtrl.text
-                                                    .trim()
-                                                    .isNotEmpty)
-                                            ? otherSourceCtrl.text.trim()
-                                            : selectedCampaign;
+                                            otherSourceCtrl.text
+                                                .trim()
+                                                .isNotEmpty)
+                                        ? otherSourceCtrl.text.trim()
+                                        : selectedCampaign;
                                     final ok = await cubit.addWalkInLead(
                                       name: nameCtrl.text,
                                       phone: phoneCtrl.text,
@@ -1573,14 +1577,16 @@ class LeadCallSheets {
                                       });
                                     }
                                   } catch (e) {
-                                    FirestoreConnectivityHelper
-                                        .reportIfConnectivityError(e);
+                                    FirestoreConnectivityHelper.reportIfConnectivityError(
+                                      e,
+                                    );
                                     if (ctx.mounted) {
                                       setSheetState(() {
                                         isSaving = false;
                                         lookupFeedback =
-                                            FirestoreConnectivityHelper
-                                                .userFriendlyMessage(e);
+                                            FirestoreConnectivityHelper.userFriendlyMessage(
+                                              e,
+                                            );
                                         lookupFoundDuplicate = true;
                                       });
                                     }
@@ -1601,7 +1607,8 @@ class LeadCallSheets {
                               borderRadius: BorderRadius.circular(16),
                             ),
                           ),
-                          child: isSaving ? const SpinKitThreeBounce(
+                          child: isSaving
+                              ? const SpinKitThreeBounce(
                                   color: Colors.white,
                                   size: 20,
                                 )
@@ -1653,14 +1660,20 @@ class LeadCallSheets {
           return Dialog(
             backgroundColor: const Color(0xFFFFFFFF),
             surfaceTintColor: Colors.transparent,
-            insetPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 20),
+            insetPadding: const EdgeInsets.symmetric(
+              horizontal: 10,
+              vertical: 20,
+            ),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(32),
               side: const BorderSide(color: Color(0xFFE2E8F0), width: 1),
             ),
             child: Container(
               width: double.infinity,
-              constraints: const BoxConstraints(maxWidth: 420, maxHeight: 764.4),
+              constraints: const BoxConstraints(
+                maxWidth: 420,
+                maxHeight: 764.4,
+              ),
               decoration: BoxDecoration(
                 color: const Color(0xFFFFFFFF),
                 borderRadius: BorderRadius.circular(32),
@@ -1716,121 +1729,135 @@ class LeadCallSheets {
                       ),
                     ],
                   ),
-              const Gap(18),
-              // Responsive metric boxes with 10 left/right padding, height 84, gap 4px, radius 16
-              Row(
-                children: [
-                  Expanded(
-                    child: _buildRecordMetricBox(
-                      value: '$totalCalls',
-                      label: 'Total Calls',
-                      valueColor: const Color(0xFF0F172A),
-                      bgColor: const Color(0xFFF3E8FF).withValues(alpha: 0.55),
-                    ),
-                  ),
-                  const Gap(4),
-                  Expanded(
-                    child: _buildRecordMetricBox(
-                      value: '$interestedCount',
-                      label: 'Interested',
-                      valueColor: const Color(0xFF0284C7),
-                      bgColor: const Color(0xFFE0F2FE),
-                    ),
-                  ),
-                  const Gap(4),
-                  Expanded(
-                    child: _buildRecordMetricBox(
-                      value: '$convertedCount',
-                      label: 'Converted',
-                      valueColor: const Color(0xFF16A34A),
-                      bgColor: const Color(0xFFDCFCE7),
-                    ),
-                  ),
-                ],
-              ),
-              const Gap(22),
-              const Text(
-                'RECENT PERMANENT CALL LOGS (READ-ONLY)',
-                style: TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w700,
-                  color: Color(0xFF64748B),
-                  letterSpacing: 0.5,
-                ),
-              ),
-              const Gap(12),
-              Flexible(
-                child: SingleChildScrollView(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
+                  const Gap(18),
+                  // Responsive metric boxes with 10 left/right padding, height 84, gap 4px, radius 16
+                  Row(
                     children: [
-                      if (state.callRecords.isEmpty)
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            vertical: 28,
-                            horizontal: 16,
-                          ),
-                          alignment: Alignment.center,
-                          child: Column(
-                            children: [
-                              Icon(
-                                Icons.call_end_outlined,
-                                size: 36,
-                                color: Colors.grey.shade400,
+                      Expanded(
+                        child: _buildRecordMetricBox(
+                          value: '$totalCalls',
+                          label: 'Total Calls',
+                          valueColor: const Color(0xFF0F172A),
+                          bgColor: const Color(
+                            0xFFF3E8FF,
+                          ).withValues(alpha: 0.55),
+                        ),
+                      ),
+                      const Gap(4),
+                      Expanded(
+                        child: _buildRecordMetricBox(
+                          value: '$interestedCount',
+                          label: 'Interested',
+                          valueColor: const Color(0xFF0284C7),
+                          bgColor: const Color(0xFFE0F2FE),
+                        ),
+                      ),
+                      const Gap(4),
+                      Expanded(
+                        child: _buildRecordMetricBox(
+                          value: '$convertedCount',
+                          label: 'Converted',
+                          valueColor: const Color(0xFF16A34A),
+                          bgColor: const Color(0xFFDCFCE7),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const Gap(22),
+                  const Text(
+                    'RECENT PERMANENT CALL LOGS (READ-ONLY)',
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF64748B),
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                  const Gap(12),
+                  Flexible(
+                    child: SingleChildScrollView(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (state.callRecords.isEmpty)
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                vertical: 28,
+                                horizontal: 16,
                               ),
-                              const Gap(8),
-                              Text(
-                                'No call records logged yet',
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.grey.shade600,
-                                ),
-                              ),
-                              const Gap(4),
-                              Text(
-                                'Calls you make will be recorded here with duration and outcome.',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  fontSize: 11.5,
-                                  color: Colors.grey.shade500,
-                                ),
-                              ),
-                            ],
-                          ),
-                        )
-                      else
-                        ...state.callRecords.map(
-                          (rec) => Container(
-                            margin: const EdgeInsets.only(bottom: 10),
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 14,
-                            ),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFF8FAFC),
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  children: [
-                                    Expanded(
-                                      child: Text(
-                                        '${rec.leadName} · ${rec.outcome}',
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: const TextStyle(
-                                          fontSize: 13.5,
-                                          fontWeight: FontWeight.w700,
-                                          color: Color(0xFF0F172A),
-                                        ),
-                                      ),
+                              alignment: Alignment.center,
+                              child: Column(
+                                children: [
+                                  Icon(
+                                    Icons.call_end_outlined,
+                                    size: 36,
+                                    color: Colors.grey.shade400,
+                                  ),
+                                  const Gap(8),
+                                  Text(
+                                    'No call records logged yet',
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.grey.shade600,
                                     ),
-                                    const Gap(8),
+                                  ),
+                                  const Gap(4),
+                                  Text(
+                                    'Calls you make will be recorded here with duration and outcome.',
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      fontSize: 11.5,
+                                      color: Colors.grey.shade500,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            )
+                          else
+                            ...state.callRecords.map(
+                              (rec) => Container(
+                                margin: const EdgeInsets.only(bottom: 10),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 14,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFF8FAFC),
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Expanded(
+                                          child: Text(
+                                            '${rec.leadName} · ${rec.outcome}',
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: const TextStyle(
+                                              fontSize: 13.5,
+                                              fontWeight: FontWeight.w700,
+                                              color: Color(0xFF0F172A),
+                                            ),
+                                          ),
+                                        ),
+                                        const Gap(8),
+                                        Text(
+                                          '${rec.duration.isNotEmpty ? "${rec.duration} · " : ""}${rec.timestamp}',
+                                          style: const TextStyle(
+                                            fontSize: 12,
+                                            color: Color(0xFF64748B),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    const Gap(4),
                                     Text(
-                                      '${rec.duration.isNotEmpty ? "${rec.duration} · " : ""}${rec.timestamp}',
+                                      rec.notes.isNotEmpty
+                                          ? rec.notes
+                                          : 'Logged ${rec.outcome} outcome',
                                       style: const TextStyle(
                                         fontSize: 12,
                                         color: Color(0xFF64748B),
@@ -1838,32 +1865,20 @@ class LeadCallSheets {
                                     ),
                                   ],
                                 ),
-                                const Gap(4),
-                                Text(
-                                  rec.notes.isNotEmpty
-                                      ? rec.notes
-                                      : 'Logged ${rec.outcome} outcome',
-                                  style: const TextStyle(
-                                    fontSize: 12,
-                                    color: Color(0xFF64748B),
-                                  ),
-                                ),
-                              ],
+                              ),
                             ),
-                          ),
-                        ),
-                    ],
+                        ],
+                      ),
+                    ),
                   ),
-                ),
+                ],
               ),
-            ],
-          ),
-        ),
-      );
-    },
-  ),
-);
-}
+            ),
+          );
+        },
+      ),
+    );
+  }
 
   static Widget _buildRecordMetricBox({
     required String value,

@@ -27,12 +27,20 @@ void main() {
       expect(norm, equals('9847012345'));
     });
 
-    test('TC-PRIV-005: Validates phone numbers accurately', () {
+    test('TC-PRIV-005: Validates mobile and landline phone numbers accurately', () {
       expect(LeadPhoneValidator.validate(null), isNotNull);
       expect(LeadPhoneValidator.validate(''), isNotNull);
       expect(LeadPhoneValidator.validate('12345'), isNotNull);
+      expect(LeadPhoneValidator.validate('00000000'), isNotNull);
       expect(LeadPhoneValidator.validate('abcdefghij'), isNotNull);
       expect(LeadPhoneValidator.validate('9847012345'), isNull);
+      // Indian landline numbers (with STD code, +91, or local 6–8 digits)
+      expect(LeadPhoneValidator.validate('0495 2701234'), isNull);
+      expect(LeadPhoneValidator.validate('+91 484 2345678'), isNull);
+      expect(LeadPhoneValidator.validate('011-23456789'), isNull);
+      expect(LeadPhoneValidator.validate('2701234'), isNull);
+      expect(LeadPhoneValidator.normalize10Digits('0495 2701234'), equals('4952701234'));
+      expect(LeadPhoneValidator.normalize10Digits('2701234'), equals('2701234'));
     });
   });
 }

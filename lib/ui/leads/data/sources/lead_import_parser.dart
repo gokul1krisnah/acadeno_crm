@@ -529,7 +529,7 @@ Mohammed R,9847033333,mohammed.r@outlook.com,GEC Thrissur,ME,2nd Year,Robotics &
         continue;
       }
 
-      // Validation 2: Required Phone & 10-digit Indian mobile format
+      // Validation 2: Required Phone (mobile or landline, 6–11 digits)
       if (rawPhone.isEmpty) {
         item.status = LeadImportStatus.invalid;
         item.issueMessage = 'Phone number is missing – skipped';
@@ -537,19 +537,12 @@ Mohammed R,9847033333,mohammed.r@outlook.com,GEC Thrissur,ME,2nd Year,Robotics &
         continue;
       }
 
-      final phone10 = LeadPhoneValidator.normalize10Digits(rawPhone);
-      item.phoneNormalized = phone10;
+      final phoneNorm = LeadPhoneValidator.normalize10Digits(rawPhone);
+      item.phoneNormalized = phoneNorm;
 
-      if (phone10.length != 10) {
+      if (phoneNorm.isEmpty) {
         item.status = LeadImportStatus.invalid;
-        item.issueMessage = 'Invalid phone digits – skipped';
-        results.add(item);
-        continue;
-      }
-
-      if (!RegExp(r'^[6-9]\d{9}$').hasMatch(phone10)) {
-        item.status = LeadImportStatus.invalid;
-        item.issueMessage = 'Invalid mobile (must start with 6–9) – skipped';
+        item.issueMessage = 'Invalid phone number – skipped';
         results.add(item);
         continue;
       }
@@ -564,8 +557,8 @@ Mohammed R,9847033333,mohammed.r@outlook.com,GEC Thrissur,ME,2nd Year,Robotics &
       }
 
       // Validation 4: In-file duplicate detection
-      if (seenPhoneToRowMap.containsKey(phone10)) {
-        final firstRow = seenPhoneToRowMap[phone10]!;
+      if (seenPhoneToRowMap.containsKey(phoneNorm)) {
+        final firstRow = seenPhoneToRowMap[phoneNorm]!;
         item.status = LeadImportStatus.duplicateInFile;
         item.issueMessage = 'Duplicate in file – merged with row $firstRow';
         results.add(item);
@@ -573,7 +566,7 @@ Mohammed R,9847033333,mohammed.r@outlook.com,GEC Thrissur,ME,2nd Year,Robotics &
       }
 
       // Record first appearance of this phone
-      seenPhoneToRowMap[phone10] = rowNumber;
+      seenPhoneToRowMap[phoneNorm] = rowNumber;
       item.status = LeadImportStatus.valid;
       item.issueMessage = 'Valid new lead';
       results.add(item);

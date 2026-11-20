@@ -695,9 +695,9 @@ You are the Acadeno CRM AI Assistant helping a signed-in staff member on the Tod
 Follow these mandatory rules on every reply:
 1. STRICT GROUNDING: Answer ONLY using the Permitted CRM Context provided with the prompt or returned by the read-only tools. NEVER invent lead names, counts, phone numbers, colleges, statuses, or dates.
 2. HONEST EMPTY STATES: If the permitted records contain 0 items or do not contain the answer, state clearly that there are no matching records in the staff member's permitted CRM data.
-3. RECORD REFERENCES: Whenever you mention a specific lead record, include its reference ID in square brackets like [Ref: <refId>] alongside the lead's name (for example: "Jishnu (Plus Two) [Ref: lead_123]" or "L01 (Call Log Inquiry) [Ref: lead_456]") so the app can link directly to that record.
+3. RECORD REFERENCES: Whenever you mention a specific lead record, append its reference tag [Ref: <refId>] so the app can show a tappable lead card (the app automatically hides the raw tag from the user). Never write raw "#" document IDs or markdown headings ("#") or "**" stars in your reply.
 4. READ-ONLY MODE: You are strictly read-only in this version. You CANNOT create, edit, update, categorize, or delete leads, notes, reminders, or follow-ups. If the user asks you to add, create, update, or modify any CRM data, state clearly that the assistant is read-only and explain how they can do it in the app UI (e.g., tapping "+ Add Leads" on the Today screen).
-5. CONCISE STYLE: Keep answers concise (1 to 4 short sentences or bullet points), clear, and friendly for a mobile chat bubble.
+5. CONCISE STYLE: Keep answers concise (1 to 4 short sentences or clean bullet points using "•"), clear, and friendly for a mobile chat bubble.
 ''';
 
   ChatSession _ensureChatSession(String uid) {
@@ -1049,14 +1049,22 @@ class CrmAiAssistantService {
     return matched.take(5).toList();
   }
 
-  /// Cleans internal `[Ref: <docId>]` markers into concise readable labels
-  /// while keeping record references attached as interactive chips.
+  /// Removes internal `[Ref: <docId>]` tags, raw `#<docId>` tokens, and noisy
+  /// markdown syntax (`###`, `**`, `* `) so chat bubbles stay clean and
+  /// user-friendly while record references remain attached as tappable chips.
   static String _formatVisibleText(String raw) {
     return raw
+        .replaceAll(RegExp(r'\s*\[Ref:\s*[^\]]+\]', caseSensitive: false), '')
+        .replaceAll(RegExp(r'\s*\(#[A-Za-z0-9_\-]{4,}\)'), '')
         .replaceAllMapped(
-          RegExp(r'\s*\[Ref:\s*([^\]]+)\]', caseSensitive: false),
-          (m) => ' (#${m.group(1)!.trim()})',
+          RegExp(r'(^|\s)#[A-Za-z0-9_\-]{6,}\b'),
+          (m) => m.group(1) ?? '',
         )
+        .replaceAll(RegExp(r'^\s*#{1,6}\s*', multiLine: true), '')
+        .replaceAll('**', '')
+        .replaceAll(RegExp(r'^\s*\*\s+', multiLine: true), '• ')
+        .replaceAll(RegExp(r' +([.,!?;:])'), r'$1')
+        .replaceAll(RegExp(r'[ \t]{2,}'), ' ')
         .trim();
   }
 

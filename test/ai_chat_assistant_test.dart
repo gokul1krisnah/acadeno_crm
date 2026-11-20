@@ -216,7 +216,9 @@ void main() {
       expect(provider.hotLeadsCalls, 0);
       expect(provider.remindersCalls, 0);
       expect(chunks.last.isDone, isTrue);
-      expect(chunks.last.accumulatedText, contains('Jishnu (Plus Two) (#lead_101)'));
+      expect(chunks.last.accumulatedText, contains('Jishnu (Plus Two)'));
+      expect(chunks.last.accumulatedText, isNot(contains('#lead_101')));
+      expect(chunks.last.accumulatedText, isNot(contains('[Ref:')));
       expect(chunks.last.references.length, 1);
       expect(chunks.last.references.first.id, 'lead_101');
     });
@@ -389,9 +391,10 @@ void main() {
           findsOneWidget,
         );
 
-        // Tap the record reference pill to open the CRM record
-        final refPill = find.text('Jishnu (#lead_101)');
+        // Tap the record reference pill to open the CRM record (clean name without raw #id)
+        final refPill = find.text('Jishnu');
         expect(refPill, findsOneWidget);
+        expect(find.textContaining('#lead_101'), findsNothing);
         await tester.tap(refPill);
         await tester.pump();
         expect(openedLead?.id, 'lead_101');

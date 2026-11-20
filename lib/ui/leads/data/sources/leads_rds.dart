@@ -1190,7 +1190,7 @@ class FirestoreLeadsBackend implements LeadsBackend {
         final rawPhone = (data['phone'] ?? '').toString();
         final fallback10 = LeadPhoneValidator.normalize10Digits(rawPhone);
         if (pNorm.isNotEmpty) phonesToDelete.add(pNorm);
-        if (fallback10.length == 10) phonesToDelete.add(fallback10);
+        if (fallback10.isNotEmpty) phonesToDelete.add(fallback10);
       }
 
       // Also clean up any lead_phones and lead_assignments referencing these leadIds (in chunks of 30 for whereIn)

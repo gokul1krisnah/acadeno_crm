@@ -508,7 +508,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                         ),
                         const Gap(6),
                         Text(
-                          'Type a 10-digit phone number to check duplicates before saving.',
+                          'Type a mobile or landline number to check duplicates before saving.',
                           style: GoogleFonts.inter(
                             fontSize: 13,
                             fontWeight: FontWeight.w400,
@@ -563,7 +563,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                             color: const Color(0xFF0F172A),
                           ),
                           decoration: InputDecoration(
-                            hintText: '10-digit mobile nu...',
+                            hintText: 'Mobile or landline number',
                             hintStyle: GoogleFonts.inter(
                               color: const Color(0xFF94A3B8),
                               fontSize: 13,

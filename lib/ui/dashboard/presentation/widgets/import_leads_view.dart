@@ -123,10 +123,7 @@ class _ImportLeadsBodyState extends State<_ImportLeadsBody> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           titleCol,
-                          if (resetBtn != null) ...[
-                            const Gap(10),
-                            resetBtn,
-                          ],
+                          if (resetBtn != null) ...[const Gap(10), resetBtn],
                         ],
                       );
                     }
@@ -136,10 +133,7 @@ class _ImportLeadsBodyState extends State<_ImportLeadsBody> {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Expanded(child: titleCol),
-                        if (resetBtn != null) ...[
-                          const Gap(16),
-                          resetBtn,
-                        ],
+                        if (resetBtn != null) ...[const Gap(16), resetBtn],
                       ],
                     );
                   },
@@ -197,13 +191,7 @@ class _ImportLeadsBodyState extends State<_ImportLeadsBody> {
 
     if (isMobile) {
       return Column(
-        children: [
-          steps[0],
-          const Gap(8),
-          steps[1],
-          const Gap(8),
-          steps[2],
-        ],
+        children: [steps[0], const Gap(8), steps[1], const Gap(8), steps[2]],
       );
     }
 
@@ -335,8 +323,12 @@ class _ImportLeadsBodyState extends State<_ImportLeadsBody> {
             builder: (context, c) {
               final maxW = c.maxWidth;
               final isNarrow = isMobile || maxW < 640;
-              final fieldW1 = isNarrow ? double.infinity : 340.0.clamp(160.0, maxW);
-              final fieldW2 = isNarrow ? double.infinity : 280.0.clamp(160.0, maxW);
+              final fieldW1 = isNarrow
+                  ? double.infinity
+                  : 340.0.clamp(160.0, maxW);
+              final fieldW2 = isNarrow
+                  ? double.infinity
+                  : 280.0.clamp(160.0, maxW);
 
               return Wrap(
                 spacing: 16,
@@ -690,10 +682,7 @@ class _ImportLeadsBodyState extends State<_ImportLeadsBody> {
                 children: [
                   const Text(
                     'Skip already existing leads:',
-                    style: TextStyle(
-                      fontSize: 12.5,
-                      color: Color(0xFF475467),
-                    ),
+                    style: TextStyle(fontSize: 12.5, color: Color(0xFF475467)),
                   ),
                   const Gap(8),
                   Switch(
@@ -756,10 +745,7 @@ class _ImportLeadsBodyState extends State<_ImportLeadsBody> {
                 children: [
                   filterChips,
                   const Gap(10),
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: toggleWidget,
-                  ),
+                  Align(alignment: Alignment.centerRight, child: toggleWidget),
                 ],
               );
             },
@@ -1418,7 +1404,7 @@ class _ImportLeadsBodyState extends State<_ImportLeadsBody> {
                 TextField(
                   controller: phoneCtrl,
                   decoration: const InputDecoration(
-                    labelText: 'Phone (10-digit Indian Mobile) *',
+                    labelText: 'Phone (Mobile or Landline) *',
                     border: OutlineInputBorder(),
                     isDense: true,
                   ),
