@@ -76,7 +76,7 @@ class AppPhoneCallService with WidgetsBindingObserver {
     final rawPhone = lead.fullPhone.isNotEmpty
         ? lead.fullPhone
         : lead.maskedPhone;
-    final cleanPhone = rawPhone.replaceAll(RegExp(r'[^0-9+]'), '');
+    final cleanPhone = LeadPhoneValidator.formatDialablePhone(rawPhone);
 
     if (cleanPhone.isEmpty) {
       if (context.mounted) {

@@ -468,6 +468,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
     String source = 'Social Media';
     String? backendError;
     bool saving = false;
+    bool isCollegeContact = false;
 
     showDialog(
       context: context,
@@ -610,7 +611,9 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                             color: const Color(0xFF0F172A),
                           ),
                           decoration: InputDecoration(
-                            hintText: 'Student Name (Optional)',
+                            hintText: isCollegeContact
+                                ? 'College Name (Optional)'
+                                : 'Student Name (Optional)',
                             hintStyle: GoogleFonts.inter(
                               color: const Color(0xFF94A3B8),
                               fontSize: 13,
@@ -647,18 +650,118 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                           validator: null,
                         ),
                         const Gap(14),
-                        CollegeSelectorField(
-                          controller: collegeC,
-                          additionalColleges: state.allLeads
-                              .map(
-                                (l) => l.collegeBranch
-                                    .split(RegExp(r'[·\-]'))
-                                    .first
-                                    .trim(),
-                              )
-                              .where((s) => s.isNotEmpty)
-                              .toList(),
+                        InkWell(
+                          onTap: () =>
+                              setD(() => isCollegeContact = !isCollegeContact),
+                          borderRadius: BorderRadius.circular(12),
+                          child: Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 12,
+                            ),
+                            decoration: BoxDecoration(
+                              color: isCollegeContact
+                                  ? const Color(0xFFFFF7ED)
+                                  : const Color(0xFFF8FAFC),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: isCollegeContact
+                                    ? const Color(0xFFD45107)
+                                    : const Color(0xFFE2E8F0),
+                                width: isCollegeContact ? 1.5 : 1,
+                              ),
+                            ),
+                            child: Row(
+                              children: [
+                                AnimatedContainer(
+                                  duration: const Duration(milliseconds: 150),
+                                  width: 22,
+                                  height: 22,
+                                  decoration: BoxDecoration(
+                                    color: isCollegeContact
+                                        ? const Color(0xFFD45107)
+                                        : Colors.white,
+                                    borderRadius: BorderRadius.circular(6),
+                                    border: Border.all(
+                                      color: isCollegeContact
+                                          ? const Color(0xFFD45107)
+                                          : const Color(0xFFCBD5E1),
+                                      width: 1.5,
+                                    ),
+                                  ),
+                                  alignment: Alignment.center,
+                                  child: isCollegeContact
+                                      ? SvgPicture.asset(
+                                          AppSvgs.tick,
+                                          width: 11,
+                                          height: 11,
+                                          colorFilter: const ColorFilter.mode(
+                                            Colors.white,
+                                            BlendMode.srcIn,
+                                          ),
+                                        )
+                                      : null,
+                                ),
+                                const Gap(10),
+                                Expanded(
+                                  child: Text(
+                                    'College contact',
+                                    style: GoogleFonts.inter(
+                                      fontSize: 13.5,
+                                      fontWeight: FontWeight.w600,
+                                      color: const Color(0xFF0F172A),
+                                    ),
+                                  ),
+                                ),
+                                if (isCollegeContact)
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 10,
+                                      vertical: 4,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFEEF2FF),
+                                      borderRadius: BorderRadius.circular(9999),
+                                      border: Border.all(
+                                        color: const Color(
+                                          0xFF6366F1,
+                                        ).withValues(alpha: 0.35),
+                                      ),
+                                    ),
+                                    child: Text(
+                                      'COLLEGE',
+                                      style: GoogleFonts.inter(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.w700,
+                                        letterSpacing: 0.5,
+                                        color: const Color(0xFF4F46E5),
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
                         ),
+                        if (!isCollegeContact) ...[
+                          const Gap(14),
+                          CollegeSelectorField(
+                            controller: collegeC,
+                            additionalColleges: state.allLeads
+                                .map(
+                                  (l) => l.collegeBranch
+                                      .split(RegExp(r'[·\-]'))
+                                      .first
+                                      .trim(),
+                                )
+                                .where(
+                                  (s) =>
+                                      s.isNotEmpty &&
+                                      s.toUpperCase() != 'COLLEGE',
+                                )
+                                .toList(),
+                          ),
+                        ],
                         const Gap(14),
                         Text(
                           'Source Event',
@@ -877,9 +980,15 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                                           }
                                           setD(() => saving = true);
                                           try {
-                                            await CollegeSelectorField.saveCollegeIfNew(
-                                              collegeC.text,
-                                            );
+                                            final effectiveCollegeBranch =
+                                                isCollegeContact
+                                                ? 'COLLEGE'
+                                                : collegeC.text.trim();
+                                            if (!isCollegeContact) {
+                                              await CollegeSelectorField.saveCollegeIfNew(
+                                                collegeC.text,
+                                              );
+                                            }
                                             final effSource = (source == 'Other' &&
                                                     otherSourceC.text
                                                         .trim()
@@ -890,8 +999,8 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                                                 .createLead(
                                                   name: nameC.text.trim(),
                                                   phone: phoneC.text.trim(),
-                                                  collegeBranch: collegeC.text
-                                                      .trim(),
+                                                  collegeBranch:
+                                                      effectiveCollegeBranch,
                                                   source: effSource,
                                                   notes: studentNotesC.text.trim(),
                                                   studentNotes: studentNotesC.text.trim(),
@@ -4034,18 +4143,44 @@ class _DesktopLeadTableRowState extends State<_DesktopLeadTableRow> {
                         flex: 7,
                         child: Align(
                           alignment: Alignment.centerLeft,
-                          child: Text(
-                            r.collegeBranch,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: GoogleFonts.poppins(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                              height: 20 / 14,
-                              letterSpacing: -0.0957,
-                              color: const Color(0xFF4B5563),
-                            ),
-                          ),
+                          child: r.collegeBranch.trim().toUpperCase() ==
+                                  'COLLEGE'
+                              ? Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 10,
+                                    vertical: 4,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFEEF2FF),
+                                    borderRadius: BorderRadius.circular(9999),
+                                    border: Border.all(
+                                      color: const Color(
+                                        0xFF6366F1,
+                                      ).withValues(alpha: 0.35),
+                                    ),
+                                  ),
+                                  child: Text(
+                                    'COLLEGE',
+                                    style: GoogleFonts.inter(
+                                      fontSize: 10.5,
+                                      fontWeight: FontWeight.w700,
+                                      letterSpacing: 0.5,
+                                      color: const Color(0xFF4F46E5),
+                                    ),
+                                  ),
+                                )
+                              : Text(
+                                  r.collegeBranch,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500,
+                                    height: 20 / 14,
+                                    letterSpacing: -0.0957,
+                                    color: const Color(0xFF4B5563),
+                                  ),
+                                ),
                         ),
                       ),
                       Expanded(
@@ -4245,14 +4380,41 @@ class _MobileLeadCardRowState extends State<_MobileLeadCardRow> {
                             ),
                             const Gap(6),
                             if (r.collegeBranch.isNotEmpty) ...[
-                              Text(
-                                r.collegeBranch,
-                                style: const TextStyle(
-                                  color: _muted,
-                                  fontSize: 12,
+                              if (r.collegeBranch.trim().toUpperCase() ==
+                                  'COLLEGE')
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 9,
+                                    vertical: 3,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFEEF2FF),
+                                    borderRadius: BorderRadius.circular(9999),
+                                    border: Border.all(
+                                      color: const Color(
+                                        0xFF6366F1,
+                                      ).withValues(alpha: 0.35),
+                                    ),
+                                  ),
+                                  child: Text(
+                                    'COLLEGE',
+                                    style: GoogleFonts.inter(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w700,
+                                      letterSpacing: 0.5,
+                                      color: const Color(0xFF4F46E5),
+                                    ),
+                                  ),
+                                )
+                              else
+                                Text(
+                                  r.collegeBranch,
+                                  style: const TextStyle(
+                                    color: _muted,
+                                    fontSize: 12,
+                                  ),
                                 ),
-                              ),
-                              const Gap(2),
+                              const Gap(4),
                             ],
                             Text(
                               'Source: ${r.source} · Last: ${r.lastContact} · Assigned: ${r.assignedToName.isEmpty ? '—' : r.assignedToName}',

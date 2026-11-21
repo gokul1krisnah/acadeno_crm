@@ -39,6 +39,7 @@ class CollegeSelectorField extends StatefulWidget {
   static Future<void> saveCollegeIfNew(String rawText) async {
     final clean = rawText.split(RegExp(r'[·\-]')).first.trim();
     if (clean.isEmpty || clean.length < 2) return;
+    if (clean.toUpperCase() == 'COLLEGE') return;
     // Don't save standard non-college categories to colleges collection
     for (final otherCat in _CollegeSelectorFieldState._otherCategories) {
       if (clean.toLowerCase() == otherCat.toLowerCase()) return;
@@ -137,6 +138,7 @@ class _CollegeSelectorFieldState extends State<CollegeSelectorField> {
               final name = raw.split(RegExp(r'[·\-]')).first.trim();
               if (name.length >= 2 &&
                   name != '—' &&
+                  name.toUpperCase() != 'COLLEGE' &&
                   !_otherCategories.any((cat) => cat.toLowerCase() == name.toLowerCase()) &&
                   !_collegeList.contains(name)) {
                 _collegeList.add(name);

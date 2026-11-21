@@ -1972,19 +1972,22 @@ class _TodayLeadCard extends StatelessWidget {
                                 color: Color(0xFF111827),
                               ),
                             ),
-                            const Gap(2),
-                            Text(
-                              item.collegeInfo,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                fontFamily: 'Inter',
-                                fontSize: 12,
-                                fontWeight: FontWeight.w400,
-                                height: 16 / 12,
-                                color: Color(0xFF6B7280),
+                            if (item.collegeInfo.trim().toUpperCase() !=
+                                'COLLEGE') ...[
+                              const Gap(2),
+                              Text(
+                                item.collegeInfo,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  fontFamily: 'Inter',
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w400,
+                                  height: 16 / 12,
+                                  color: Color(0xFF6B7280),
+                                ),
                               ),
-                            ),
+                            ],
                           ],
                         ),
                       ),
@@ -2200,6 +2203,35 @@ class _TodayLeadCard extends StatelessWidget {
                                 letterSpacing: 0.06,
                                 color: Color(0xFF6366F1),
                               ),
+                            ),
+                          ),
+                        ),
+                      ],
+                      if (item.collegeInfo.trim().toUpperCase() ==
+                          'COLLEGE') ...[
+                        const Gap(6),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 9,
+                            vertical: 3.5,
+                          ),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFEEF2FF),
+                            borderRadius: BorderRadius.circular(9999),
+                            border: Border.all(
+                              color: const Color(
+                                0xFF6366F1,
+                              ).withValues(alpha: 0.35),
+                            ),
+                          ),
+                          child: const Text(
+                            'COLLEGE',
+                            style: TextStyle(
+                              fontFamily: 'Inter',
+                              fontSize: 9.5,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 0.05,
+                              color: Color(0xFF4F46E5),
                             ),
                           ),
                         ),

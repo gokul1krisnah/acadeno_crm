@@ -52,22 +52,37 @@ abstract final class LeadPhoneValidator {
     return null;
   }
 
-  /// Formats a 10-digit mobile as `'98470 33333'`, or preserves clean landline formatting.
+  /// Collapses an accidental double leading `'00'` on previously saved Indian
+  /// landline records (e.g. `'0049 5270123'` -> `'0495270123'`), while preserving
+  /// international `'0091...'` prefixes and masked `'00000...'` placeholders.
+  static String _collapseAccidentalDoubleZero(String value) {
+    final digits = value.replaceAll(RegExp(r'\D'), '');
+    if (value.startsWith('00') &&
+        !digits.startsWith('0091') &&
+        !RegExp(r'^0+$').hasMatch(digits) &&
+        digits.length >= 7 &&
+        digits.length <= 12) {
+      return value.substring(1).replaceAll(' ', '');
+    }
+    return value;
+  }
+
+  /// Formats a 10-digit mobile as `'98470 33333'`, or preserves the exact number entered.
   static String formatDisplayPhone(String raw) {
-    final trimmed = raw.trim();
+    final trimmed = _collapseAccidentalDoubleZero(raw.trim());
+    if (trimmed.isEmpty) return '—';
     final norm = normalize10Digits(trimmed);
-    if (isIndianMobile(norm)) {
+    if (isIndianMobile(norm) && !trimmed.startsWith('0')) {
       return '${norm.substring(0, 5)} ${norm.substring(5)}';
     }
-    if (trimmed.isNotEmpty) {
-      // If user typed raw 10-digit landline without leading 0 or separator (e.g. 4952701234),
-      // format nicely as '0495 2701234'; otherwise keep their readable landline format.
-      if (RegExp(r'^\d{10}$').hasMatch(trimmed)) {
-        return '0${trimmed.substring(0, 3)} ${trimmed.substring(3)}';
-      }
-      return trimmed;
-    }
-    return norm.isNotEmpty ? norm : '—';
+    return trimmed;
+  }
+
+  /// Returns the exact dialable digits (and optional leading `+`) entered/saved,
+  /// without adding or stripping any leading `0`.
+  static String formatDialablePhone(String raw) {
+    final clean = raw.replaceAll(RegExp(r'[^0-9+]'), '');
+    return _collapseAccidentalDoubleZero(clean);
   }
 
   /// Formats a phone as `'98470 •••33'` (or masked landline) for Sales Executive privacy.
@@ -1098,7 +1113,9 @@ class LeadRecord {
       name: name,
       initials: initials,
       maskedPhone: maskedPhone,
-      fullPhone: phoneNormalized.isNotEmpty ? phoneNormalized : phone,
+      fullPhone: LeadPhoneValidator.formatDialablePhone(
+        phone.trim().isNotEmpty ? phone : phoneNormalized,
+      ),
       collegeInfo: collegeBranch,
       statusTag: effectiveStatus,
       statusColor: colors.$1,

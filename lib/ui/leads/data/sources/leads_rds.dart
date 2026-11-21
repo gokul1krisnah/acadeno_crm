@@ -622,7 +622,7 @@ class FirestoreLeadsBackend implements LeadsBackend {
       throw ArgumentError(phoneError);
     }
     final phone10 = LeadPhoneValidator.normalize10Digits(phone);
-    final formattedPhone = LeadPhoneValidator.formatDisplayPhone(phone10);
+    final formattedPhone = LeadPhoneValidator.formatDisplayPhone(phone);
 
     final actor = await _verifyCurrentActor(
       requireAdminOrManager: !assignToSelfAsWalkIn,
@@ -925,7 +925,7 @@ class FirestoreLeadsBackend implements LeadsBackend {
       throw ArgumentError(phoneError);
     }
     final newPhone10 = LeadPhoneValidator.normalize10Digits(phone);
-    final formattedPhone = LeadPhoneValidator.formatDisplayPhone(newPhone10);
+    final formattedPhone = LeadPhoneValidator.formatDisplayPhone(phone);
 
     final actor = await _verifyCurrentActor();
     final isAdminOrManager = _isAdminOrManagerRole(actor.role);

@@ -357,9 +357,11 @@ class CallLogsRds {
         : (rawDigits.isNotEmpty ? rawDigits : item.id);
     if (phoneKey.isEmpty) return null;
 
-    final displayPhone = norm.isNotEmpty
-        ? LeadPhoneValidator.formatDisplayPhone(norm)
-        : (item.number.trim().isNotEmpty ? item.number.trim() : phoneKey);
+    final displayPhone = item.number.trim().isNotEmpty
+        ? LeadPhoneValidator.formatDisplayPhone(item.number)
+        : (norm.isNotEmpty
+              ? LeadPhoneValidator.formatDisplayPhone(norm)
+              : phoneKey);
 
     final now = DateTime.now();
     final todayKey = LeadDateHelper.todayDateKey(now);

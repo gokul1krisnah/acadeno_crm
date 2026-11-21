@@ -138,69 +138,72 @@ class _TeamManagementViewState extends State<TeamManagementView> {
     );
   }
 
+  String? _leadDateKey(dynamic raw) {
+    if (raw == null) return null;
+    if (raw is Timestamp) {
+      return DateFormat('yyyy-MM-dd').format(raw.toDate());
+    }
+    if (raw is DateTime) {
+      return DateFormat('yyyy-MM-dd').format(raw);
+    }
+    final s = raw.toString().trim();
+    if (s.isEmpty) return null;
+    if (RegExp(r'^\d{4}-\d{2}-\d{2}$').hasMatch(s)) return s;
+    final parsed = DateTime.tryParse(s);
+    if (parsed != null) return DateFormat('yyyy-MM-dd').format(parsed);
+    return null;
+  }
+
   List<Map<String, dynamic>> _filterLeadsByDate(
     List<Map<String, dynamic>> allLeads,
   ) {
     if (_selectedDateRange == 'All Time') return allLeads;
 
     final now = DateTime.now();
-    final todayKey = DateFormat('yyyy-MM-dd').format(now);
+    final String startKey;
+    final String endKey;
 
     if (_selectedDateRange == 'Today') {
-      return allLeads.where((l) {
-        if (l['assignedDateKey'] == todayKey) return true;
-        final ca = l['createdAt'];
-        if (ca is Timestamp) {
-          return DateFormat('yyyy-MM-dd').format(ca.toDate()) == todayKey;
-        }
-        return false;
-      }).toList();
+      final k = DateFormat('yyyy-MM-dd').format(now);
+      startKey = k;
+      endKey = k;
+    } else if (_selectedDateRange == 'This week') {
+      final monday = now.subtract(Duration(days: now.weekday - 1));
+      final start = DateTime(monday.year, monday.month, monday.day);
+      final end = start.add(const Duration(days: 6));
+      startKey = DateFormat('yyyy-MM-dd').format(start);
+      endKey = DateFormat('yyyy-MM-dd').format(end);
+    } else if (_selectedDateRange == 'This month') {
+      final start = DateTime(now.year, now.month, 1);
+      final end = DateTime(now.year, now.month + 1, 0);
+      startKey = DateFormat('yyyy-MM-dd').format(start);
+      endKey = DateFormat('yyyy-MM-dd').format(end);
+    } else if (_selectedDateRange == 'Custom' && _selectedCustomDate != null) {
+      final k = DateFormat('yyyy-MM-dd').format(_selectedCustomDate!);
+      startKey = k;
+      endKey = k;
+    } else {
+      return allLeads;
     }
 
-    if (_selectedDateRange == 'This week') {
-      final startOfWeek = now.subtract(Duration(days: now.weekday - 1));
-      final startMidnight = DateTime(
-        startOfWeek.year,
-        startOfWeek.month,
-        startOfWeek.day,
-      );
-      return allLeads.where((l) {
-        final ca = l['createdAt'];
-        if (ca is Timestamp) {
-          return ca.toDate().isAfter(startMidnight);
+    return allLeads.where((l) {
+      final keys = <String?>[
+        _leadDateKey(l['assignedDateKey']),
+        _leadDateKey(l['assignedAt']),
+        _leadDateKey(l['createdAt']),
+        _leadDateKey(l['lastCalledAt']),
+        _leadDateKey(l['lastContactAt']),
+        _leadDateKey(l['updatedAt']),
+      ];
+      for (final k in keys) {
+        if (k != null &&
+            k.compareTo(startKey) >= 0 &&
+            k.compareTo(endKey) <= 0) {
+          return true;
         }
-        final aa = l['assignedAt'];
-        if (aa is Timestamp) {
-          return aa.toDate().isAfter(startMidnight);
-        }
-        return true;
-      }).toList();
-    }
-
-    if (_selectedDateRange == 'This month') {
-      final startOfMonth = DateTime(now.year, now.month, 1);
-      return allLeads.where((l) {
-        final ca = l['createdAt'];
-        if (ca is Timestamp) {
-          return ca.toDate().isAfter(startOfMonth);
-        }
-        return true;
-      }).toList();
-    }
-
-    if (_selectedDateRange == 'Custom' && _selectedCustomDate != null) {
-      final customKey = DateFormat('yyyy-MM-dd').format(_selectedCustomDate!);
-      return allLeads.where((l) {
-        if (l['assignedDateKey'] == customKey) return true;
-        final ca = l['createdAt'];
-        if (ca is Timestamp) {
-          return DateFormat('yyyy-MM-dd').format(ca.toDate()) == customKey;
-        }
-        return false;
-      }).toList();
-    }
-
-    return allLeads;
+      }
+      return false;
+    }).toList();
   }
 
   @override

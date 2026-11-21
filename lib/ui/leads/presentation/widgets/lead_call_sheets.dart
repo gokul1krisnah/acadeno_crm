@@ -9,9 +9,11 @@ import '../pages/lead_detail_page.dart';
 import 'package:gap/gap.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:acadeno_crm/shared/theme/app_svgs.dart';
 import 'package:acadeno_crm/shared/widgets/college_selector_field.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:acadeno_crm/shared/snackbar_alerts/snack_alert.dart';
 
 import 'package:acadeno_crm/ui/dashboard/presentation/widgets/figma_calendar_dialog.dart';
@@ -1113,6 +1115,7 @@ class LeadCallSheets {
     String? lookupFeedback;
     bool lookupFoundDuplicate = false;
     bool isSaving = false;
+    bool isCollegeContact = false;
 
     showDialog(
       context: context,
@@ -1326,7 +1329,9 @@ class LeadCallSheets {
                             color: const Color(0xFF0F172A),
                           ),
                           decoration: InputDecoration(
-                            hintText: 'Student Name (Optional)',
+                            hintText: isCollegeContact
+                                ? 'College Name (Optional)'
+                                : 'Student Name (Optional)',
                             hintStyle: GoogleFonts.inter(
                               fontSize: 13,
                               fontWeight: FontWeight.w400,
@@ -1365,16 +1370,114 @@ class LeadCallSheets {
                       ),
                       const Gap(14),
 
-                      // College Selection Dropdown + Add New College + College · Branch · Year
-                      CollegeSelectorField(controller: collegeCtrl),
-                      const Gap(4),
-                      Text(
-                        'You can freely edit or fine-tune college, bran...',
-                        style: GoogleFonts.inter(
-                          fontSize: 11,
-                          color: const Color(0xFF94A3B8),
+                      // College Contact Tick Box (uses tick.svg; when ticked, tags lead as COLLEGE without Plus Two / Degree / Year)
+                      InkWell(
+                        onTap: () => setSheetState(
+                          () => isCollegeContact = !isCollegeContact,
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                        child: Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 12,
+                          ),
+                          decoration: BoxDecoration(
+                            color: isCollegeContact
+                                ? const Color(0xFFFFF7ED)
+                                : const Color(0xFFF8FAFC),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: isCollegeContact
+                                  ? const Color(0xFFD45107)
+                                  : const Color(0xFFE2E8F0),
+                              width: isCollegeContact ? 1.5 : 1,
+                            ),
+                          ),
+                          child: Row(
+                            children: [
+                              AnimatedContainer(
+                                duration: const Duration(milliseconds: 150),
+                                width: 22,
+                                height: 22,
+                                decoration: BoxDecoration(
+                                  color: isCollegeContact
+                                      ? const Color(0xFFD45107)
+                                      : Colors.white,
+                                  borderRadius: BorderRadius.circular(6),
+                                  border: Border.all(
+                                    color: isCollegeContact
+                                        ? const Color(0xFFD45107)
+                                        : const Color(0xFFCBD5E1),
+                                    width: 1.5,
+                                  ),
+                                ),
+                                alignment: Alignment.center,
+                                child: isCollegeContact
+                                    ? SvgPicture.asset(
+                                        AppSvgs.tick,
+                                        width: 11,
+                                        height: 11,
+                                        colorFilter: const ColorFilter.mode(
+                                          Colors.white,
+                                          BlendMode.srcIn,
+                                        ),
+                                      )
+                                    : null,
+                              ),
+                              const Gap(10),
+                              Expanded(
+                                child: Text(
+                                  'College contact',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 13.5,
+                                    fontWeight: FontWeight.w600,
+                                    color: const Color(0xFF0F172A),
+                                  ),
+                                ),
+                              ),
+                              if (isCollegeContact)
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 10,
+                                    vertical: 4,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFEEF2FF),
+                                    borderRadius: BorderRadius.circular(9999),
+                                    border: Border.all(
+                                      color: const Color(
+                                        0xFF6366F1,
+                                      ).withValues(alpha: 0.35),
+                                    ),
+                                  ),
+                                  child: Text(
+                                    'COLLEGE',
+                                    style: GoogleFonts.inter(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w700,
+                                      letterSpacing: 0.5,
+                                      color: const Color(0xFF4F46E5),
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
                         ),
                       ),
+                      if (!isCollegeContact) ...[
+                        const Gap(14),
+                        // College Selection Dropdown + Add New College + College · Branch · Year
+                        CollegeSelectorField(controller: collegeCtrl),
+                        const Gap(4),
+                        Text(
+                          'You can freely edit or fine-tune college, bran...',
+                          style: GoogleFonts.inter(
+                            fontSize: 11,
+                            color: const Color(0xFF94A3B8),
+                          ),
+                        ),
+                      ],
                       const Gap(14),
 
                       // Source Event Label
@@ -1553,9 +1656,15 @@ class LeadCallSheets {
                                     isSaving = true;
                                   });
                                   try {
-                                    await CollegeSelectorField.saveCollegeIfNew(
-                                      collegeCtrl.text,
-                                    );
+                                    final effectiveCollegeBranch =
+                                        isCollegeContact
+                                        ? 'COLLEGE'
+                                        : collegeCtrl.text;
+                                    if (!isCollegeContact) {
+                                      await CollegeSelectorField.saveCollegeIfNew(
+                                        collegeCtrl.text,
+                                      );
+                                    }
                                     final effectiveCampaign =
                                         (selectedCampaign == 'Other' &&
                                             otherSourceCtrl.text
@@ -1566,7 +1675,7 @@ class LeadCallSheets {
                                     final ok = await cubit.addWalkInLead(
                                       name: nameCtrl.text,
                                       phone: phoneCtrl.text,
-                                      collegeBranchYear: collegeCtrl.text,
+                                      collegeBranchYear: effectiveCollegeBranch,
                                       campaign: effectiveCampaign,
                                     );
                                     if (ok && ctx.mounted) {

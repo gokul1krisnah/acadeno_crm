@@ -491,51 +491,87 @@ class _DashboardViewState extends State<_DashboardView> {
 
     final now = DateTime.now();
 
-    if (dateRange == 'This week') {
-      final startOfWeek = now.subtract(Duration(days: now.weekday - 1));
-      final startMidnight = DateTime(
-        startOfWeek.year,
-        startOfWeek.month,
-        startOfWeek.day,
-      );
-      return rawLeads.where((l) {
-        final ca = l['createdAt'];
-        if (ca is Timestamp && ca.toDate().isAfter(startMidnight)) return true;
-        final aa = l['assignedAt'];
-        if (aa is Timestamp && aa.toDate().isAfter(startMidnight)) return true;
-        final lc = l['lastCalledAt'] ?? l['lastContactAt'];
-        if (lc is Timestamp && lc.toDate().isAfter(startMidnight)) return true;
-        final ua = l['updatedAt'];
-        if (ua is Timestamp && ua.toDate().isAfter(startMidnight)) return true;
-        final adk = _extractDateKey(l['assignedDateKey'], now: now);
-        if (adk != null) {
-          final p = DateTime.tryParse(adk);
-          if (p != null &&
-              (p.isAfter(startMidnight) || p.isAtSameMomentAs(startMidnight))) {
-            return true;
-          }
-        }
-        return false;
-      }).toList();
+    bool isKeyInRange(String? key, String startKey, String endKey) {
+      if (key == null || key.isEmpty) return false;
+      return key.compareTo(startKey) >= 0 && key.compareTo(endKey) <= 0;
     }
 
-    if (dateRange == 'This month') {
-      final startOfMonth = DateTime(now.year, now.month, 1);
+    if (dateRange == 'This week' || dateRange == 'This month') {
+      final DateTime rangeStart;
+      final DateTime rangeEnd;
+      if (dateRange == 'This week') {
+        final monday = now.subtract(Duration(days: now.weekday - 1));
+        rangeStart = DateTime(monday.year, monday.month, monday.day);
+        rangeEnd = rangeStart.add(const Duration(days: 6));
+      } else {
+        rangeStart = DateTime(now.year, now.month, 1);
+        rangeEnd = DateTime(now.year, now.month + 1, 0);
+      }
+      final startKey = LeadDateHelper.dateKey(rangeStart);
+      final endKey = LeadDateHelper.dateKey(rangeEnd);
+
+      final assignedLeadIdsInRange = <String>{};
+      for (final a in rawAssignments) {
+        final aKey =
+            _extractDateKey(a['dateKey'], now: now) ??
+            _extractDateKey(a['assignedAt'], now: now);
+        final leadId = (a['leadId'] ?? '').toString().trim();
+        if (leadId.isNotEmpty && isKeyInRange(aKey, startKey, endKey)) {
+          assignedLeadIdsInRange.add(leadId);
+        }
+      }
+
+      final calledLeadIdsInRange = <String>{};
+      final calledNamesInRange = <String>{};
+      for (final c in rawCallLogs) {
+        final cKey = _extractDateKey(c['createdAt'] ?? c['timestamp'], now: now);
+        if (isKeyInRange(cKey, startKey, endKey)) {
+          final leadId = (c['leadId'] ?? '').toString().trim();
+          final leadName = (c['leadName'] ?? '').toString().trim().toLowerCase();
+          if (leadId.isNotEmpty) calledLeadIdsInRange.add(leadId);
+          if (leadName.isNotEmpty) calledNamesInRange.add(leadName);
+        }
+      }
+
       return rawLeads.where((l) {
-        final ca = l['createdAt'];
-        if (ca is Timestamp && ca.toDate().isAfter(startOfMonth)) return true;
-        final aa = l['assignedAt'];
-        if (aa is Timestamp && aa.toDate().isAfter(startOfMonth)) return true;
-        final lc = l['lastCalledAt'] ?? l['lastContactAt'];
-        if (lc is Timestamp && lc.toDate().isAfter(startOfMonth)) return true;
-        final ua = l['updatedAt'];
-        if (ua is Timestamp && ua.toDate().isAfter(startOfMonth)) return true;
-        final adk = _extractDateKey(l['assignedDateKey'], now: now);
-        if (adk != null) {
-          final p = DateTime.tryParse(adk);
-          if (p != null &&
-              (p.isAfter(startOfMonth) || p.isAtSameMomentAs(startOfMonth))) {
-            return true;
+        final leadId = (l['id'] ?? '').toString().trim();
+        final leadNameLower = (l['name'] ?? l['studentName'] ?? '')
+            .toString()
+            .trim()
+            .toLowerCase();
+
+        if (leadId.isNotEmpty &&
+            (assignedLeadIdsInRange.contains(leadId) ||
+                calledLeadIdsInRange.contains(leadId))) {
+          return true;
+        }
+        if (leadNameLower.isNotEmpty &&
+            calledNamesInRange.contains(leadNameLower)) {
+          return true;
+        }
+
+        final candidateKeys = <String?>[
+          _extractDateKey(l['assignedDateKey'], now: now),
+          _extractDateKey(l['assignedDateLabel'], now: now),
+          _extractDateKey(l['assignedAt'], now: now),
+          _extractDateKey(l['createdAt'], now: now),
+          _extractDateKey(l['lastCalledAt'], now: now),
+          _extractDateKey(l['lastContactAt'], now: now),
+          _extractDateKey(l['updatedAt'], now: now),
+        ];
+        for (final k in candidateKeys) {
+          if (isKeyInRange(k, startKey, endKey)) return true;
+        }
+
+        final rawTimeline = l['timeline'];
+        if (rawTimeline is Iterable) {
+          for (final item in rawTimeline) {
+            final entryStr = item.toString().trim();
+            if (entryStr.isEmpty) continue;
+            final stampPart = entryStr.split('·').first.trim();
+            if (isKeyInRange(_extractDateKey(stampPart, now: now), startKey, endKey)) {
+              return true;
+            }
           }
         }
         return false;

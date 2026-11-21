@@ -41,6 +41,15 @@ void main() {
       expect(LeadPhoneValidator.validate('2701234'), isNull);
       expect(LeadPhoneValidator.normalize10Digits('0495 2701234'), equals('4952701234'));
       expect(LeadPhoneValidator.normalize10Digits('2701234'), equals('2701234'));
+      // Display & dialer formatting keep the exact entered number without adding extra '0'
+      expect(LeadPhoneValidator.formatDisplayPhone('0495270123'), equals('0495270123'));
+      expect(LeadPhoneValidator.formatDisplayPhone('0495 2701234'), equals('0495 2701234'));
+      expect(LeadPhoneValidator.formatDisplayPhone('0049 5270123'), equals('0495270123'));
+      expect(LeadPhoneValidator.formatDialablePhone('0049 5270123'), equals('0495270123'));
+      expect(LeadPhoneValidator.formatDialablePhone('0495 2701234'), equals('04952701234'));
+      expect(LeadPhoneValidator.formatDialablePhone('0495270123'), equals('0495270123'));
+      expect(LeadPhoneValidator.formatDialablePhone('9847012345'), equals('9847012345'));
+      expect(LeadPhoneValidator.formatDialablePhone('+91 495 2701234'), equals('+914952701234'));
     });
   });
 }
