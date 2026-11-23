@@ -1086,6 +1086,7 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
 
     final statusOptions = <String>{
       'New',
+      'Hot Lead',
       'Assigned',
       'Follow-up',
       'No answer',
@@ -2331,8 +2332,47 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
     );
   }
 
-  Widget _statusBadge(String status) {
+  Widget _statusBadge(String status, {String category = ''}) {
     final s = status.trim().toLowerCase();
+    final c = category.trim().toLowerCase();
+    final isHotLead =
+        c == 'hot_lead' || s == 'hot lead' || s == 'hot_lead' || s == 'hot';
+
+    if (isHotLead) {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 3.5),
+        decoration: BoxDecoration(
+          color: const Color(0xFF991B1B),
+          borderRadius: BorderRadius.circular(9999),
+          border: Border.all(color: const Color(0xFF7F1D1D), width: 1),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SvgPicture.asset(
+              AppSvgs.flame,
+              width: 11,
+              height: 11,
+              colorFilter: const ColorFilter.mode(
+                Colors.white,
+                BlendMode.srcIn,
+              ),
+            ),
+            const Gap(4),
+            Text(
+              'Hot Lead',
+              style: GoogleFonts.poppins(
+                color: Colors.white,
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+                height: 16.5 / 11,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
     final (Color bg, Color fg, Border? border) = switch (s) {
       'contacted' || 'interested' => (
         const Color(0xFFF0FDF4),
@@ -3884,7 +3924,10 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                       _openLeadDetailAndEditDialog(context, rows[i], state),
                   onSelectChanged: (v) =>
                       cubit.toggleLeadSelection(rows[i].id, v ?? false),
-                  statusBadge: _statusBadge(rows[i].status),
+                  statusBadge: _statusBadge(
+                    rows[i].status,
+                    category: rows[i].category,
+                  ),
                   checkboxBuilder: _buildFigmaCheckbox,
                 ),
               ],
@@ -3918,7 +3961,10 @@ class _LeadsAssignBodyState extends State<_LeadsAssignBody> {
                       _openLeadDetailAndEditDialog(context, rows[i], state),
                   onSelectChanged: (v) =>
                       cubit.toggleLeadSelection(rows[i].id, v ?? false),
-                  statusBadge: _statusBadge(rows[i].status),
+                  statusBadge: _statusBadge(
+                    rows[i].status,
+                    category: rows[i].category,
+                  ),
                   checkboxBuilder: _buildFigmaCheckbox,
                 ),
               ],
