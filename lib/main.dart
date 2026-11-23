@@ -179,6 +179,8 @@ class _AcadenoAppState extends State<AcadenoApp> with WidgetsBindingObserver {
       }
       // Re-verify DNS/network reachability and drain any queued offline writes.
       OfflineQueueService.instance.checkConnectivityAndSync();
+      // Check any due repeating lead category reminders (6h / 12h / 24h).
+      AppNotificationService.instance.checkDueLeadReminders();
     }
   }
 

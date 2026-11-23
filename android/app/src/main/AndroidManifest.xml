@@ -59,6 +59,11 @@
             android:name="firebase_messaging_auto_init_enabled"
             android:value="true" />
 
+        <!-- Repeating Lead Category Reminder Receiver (Hot Lead 6h / Follow-up 12h / Reminder 24h) -->
+        <receiver
+            android:name=".LeadReminderReceiver"
+            android:exported="false" />
+
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data

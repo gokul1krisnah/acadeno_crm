@@ -1634,107 +1634,142 @@ class LeadCallSheets {
                       ],
                       const Gap(20),
 
-                      // Save Button (Figma spec: width 343, height 44, borderRadius 16, padding-top 14.5, padding-bottom 15.5)
-                      SizedBox(
-                        width: double.infinity,
-                        height: 48,
-                        child: ElevatedButton(
-                          onPressed: (lookupFoundDuplicate || isSaving)
-                              ? null
-                              : () async {
-                                  final phoneErr = LeadPhoneValidator.validate(
-                                    phoneCtrl.text,
-                                  );
-                                  if (phoneErr != null) {
-                                    setSheetState(() {
-                                      lookupFeedback = phoneErr;
-                                      lookupFoundDuplicate = true;
-                                    });
-                                    return;
-                                  }
-                                  setSheetState(() {
-                                    isSaving = true;
-                                  });
-                                  try {
-                                    final effectiveCollegeBranch =
-                                        isCollegeContact
-                                        ? 'COLLEGE'
-                                        : collegeCtrl.text;
-                                    if (!isCollegeContact) {
-                                      await CollegeSelectorField.saveCollegeIfNew(
-                                        collegeCtrl.text,
-                                      );
-                                    }
-                                    final effectiveCampaign =
-                                        (selectedCampaign == 'Other' &&
-                                            otherSourceCtrl.text
-                                                .trim()
-                                                .isNotEmpty)
-                                        ? otherSourceCtrl.text.trim()
-                                        : selectedCampaign;
-                                    final ok = await cubit.addWalkInLead(
-                                      name: nameCtrl.text,
-                                      phone: phoneCtrl.text,
-                                      collegeBranchYear: effectiveCollegeBranch,
-                                      campaign: effectiveCampaign,
-                                    );
-                                    if (ok && ctx.mounted) {
-                                      Navigator.pop(ctx);
-                                    } else if (ctx.mounted) {
-                                      setSheetState(() {
-                                        isSaving = false;
-                                      });
-                                    }
-                                  } catch (e) {
-                                    FirestoreConnectivityHelper.reportIfConnectivityError(
-                                      e,
-                                    );
-                                    if (ctx.mounted) {
-                                      setSheetState(() {
-                                        isSaving = false;
-                                        lookupFeedback =
-                                            FirestoreConnectivityHelper.userFriendlyMessage(
-                                              e,
-                                            );
-                                        lookupFoundDuplicate = true;
-                                      });
-                                    }
-                                  }
-                                },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFFD45107),
-                            disabledBackgroundColor: const Color(
-                              0xFFD45107,
-                            ).withValues(alpha: 0.6),
-                            foregroundColor: Colors.white,
-                            elevation: 0,
-                            padding: const EdgeInsets.only(
-                              top: 14.5,
-                              bottom: 15.5,
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                          ),
-                          child: isSaving
-                              ? const SpinKitThreeBounce(
-                                  color: Colors.white,
-                                  size: 20,
-                                )
-                              : FittedBox(
-                                  fit: BoxFit.scaleDown,
-                                  child: Text(
-                                    'Save Walk-in Lead',
-                                    maxLines: 1,
-                                    softWrap: false,
-                                    style: GoogleFonts.inter(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.w700,
-                                      color: Colors.white,
-                                    ),
+                      // Action Buttons: Cancel (same style as Lead Detail) + Save Walk-in Lead
+                      Row(
+                        children: [
+                          Expanded(
+                            child: SizedBox(
+                              height: 48,
+                              child: OutlinedButton(
+                                onPressed: isSaving
+                                    ? null
+                                    : () => Navigator.of(ctx).pop(),
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: const Color(0xFF64748B),
+                                  side: const BorderSide(
+                                    color: Color(0xFFE2E8F0),
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(16),
                                   ),
                                 ),
-                        ),
+                                child: Text(
+                                  'Cancel',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                    color: const Color(0xFF64748B),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          const Gap(10),
+                          Expanded(
+                            flex: 2,
+                            child: SizedBox(
+                              height: 48,
+                              child: ElevatedButton(
+                                onPressed: (lookupFoundDuplicate || isSaving)
+                                    ? null
+                                    : () async {
+                                        final phoneErr =
+                                            LeadPhoneValidator.validate(
+                                              phoneCtrl.text,
+                                            );
+                                        if (phoneErr != null) {
+                                          setSheetState(() {
+                                            lookupFeedback = phoneErr;
+                                            lookupFoundDuplicate = true;
+                                          });
+                                          return;
+                                        }
+                                        setSheetState(() {
+                                          isSaving = true;
+                                        });
+                                        try {
+                                          final effectiveCollegeBranch =
+                                              isCollegeContact
+                                              ? 'COLLEGE'
+                                              : collegeCtrl.text;
+                                          if (!isCollegeContact) {
+                                            await CollegeSelectorField.saveCollegeIfNew(
+                                              collegeCtrl.text,
+                                            );
+                                          }
+                                          final effectiveCampaign =
+                                              (selectedCampaign == 'Other' &&
+                                                  otherSourceCtrl.text
+                                                      .trim()
+                                                      .isNotEmpty)
+                                              ? otherSourceCtrl.text.trim()
+                                              : selectedCampaign;
+                                          final ok = await cubit.addWalkInLead(
+                                            name: nameCtrl.text,
+                                            phone: phoneCtrl.text,
+                                            collegeBranchYear:
+                                                effectiveCollegeBranch,
+                                            campaign: effectiveCampaign,
+                                          );
+                                          if (ok && ctx.mounted) {
+                                            Navigator.pop(ctx);
+                                          } else if (ctx.mounted) {
+                                            setSheetState(() {
+                                              isSaving = false;
+                                            });
+                                          }
+                                        } catch (e) {
+                                          FirestoreConnectivityHelper.reportIfConnectivityError(
+                                            e,
+                                          );
+                                          if (ctx.mounted) {
+                                            setSheetState(() {
+                                              isSaving = false;
+                                              lookupFeedback =
+                                                  FirestoreConnectivityHelper.userFriendlyMessage(
+                                                    e,
+                                                  );
+                                              lookupFoundDuplicate = true;
+                                            });
+                                          }
+                                        }
+                                      },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFFD45107),
+                                  disabledBackgroundColor: const Color(
+                                    0xFFD45107,
+                                  ).withValues(alpha: 0.6),
+                                  foregroundColor: Colors.white,
+                                  elevation: 0,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 14,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
+                                ),
+                                child: isSaving
+                                    ? const SpinKitThreeBounce(
+                                        color: Colors.white,
+                                        size: 20,
+                                      )
+                                    : FittedBox(
+                                        fit: BoxFit.scaleDown,
+                                        child: Text(
+                                          'Save Walk-in Lead',
+                                          maxLines: 1,
+                                          softWrap: false,
+                                          style: GoogleFonts.inter(
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.w700,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                      ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),

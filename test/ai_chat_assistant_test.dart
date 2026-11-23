@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:acadeno_crm/core/services/crm_ai_assistant_service.dart';
+import 'package:acadeno_crm/core/services/offline_queue_service.dart';
 import 'package:acadeno_crm/shared/widgets/ai_chat_assistant.dart';
 import 'package:acadeno_crm/ui/leads/data/model/lead_models.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -200,6 +201,15 @@ class _FakeChatTransport implements CrmAiChatTransport {
 
 void main() {
   group('CrmAiAssistantService grounding, scoping & error classification', () {
+    setUp(() {
+      OfflineQueueService.instance.suppressDebugLogs = true;
+    });
+
+    tearDown(() {
+      OfflineQueueService.instance.resetRecoveryStateForTest();
+      OfflineQueueService.instance.suppressDebugLogs = false;
+      OfflineQueueService.instance.isOnlineNotifier.value = true;
+    });
     test('fetches only scoped follow-ups context and extracts record reference', () async {
       final provider = _FakeCrmAiDataProvider();
       final transport = _FakeChatTransport();

@@ -4,6 +4,8 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../core/services/firestore_connectivity_helper.dart';
+import '../../../core/services/offline_queue_service.dart';
 import '../data/model/lead_models.dart';
 import '../data/repository/leads_repo.dart';
 import 'admin_leads_state.dart';
@@ -303,8 +305,9 @@ class AdminLeadsCubit extends Cubit<AdminLeadsState> {
     bool autoSelectNewLead = true,
   }) async {
     emit(state.copyWith(isSubmitting: true, clearToast: true));
-    try {
-      final created = await _repository.createLead(
+
+    Future<LeadRecord> saveOfflineAdminLead() async {
+      final queued = await OfflineQueueService.instance.enqueueNewLead(
         name: name,
         phone: phone,
         collegeBranch: collegeBranch,
@@ -313,7 +316,54 @@ class AdminLeadsCubit extends Cubit<AdminLeadsState> {
         notes: notes,
         studentNotes: studentNotes,
         managerNotes: managerNotes,
+        assignToSelfAsWalkIn: false,
       );
+      final parsed = LeadRecord.parseCollegeBranch(queued.collegeBranch);
+      final localRecord = LeadRecord(
+        id: queued.clientId,
+        name: queued.name.isNotEmpty ? queued.name : 'Pending Sync',
+        phone: queued.phone,
+        phoneNormalized: queued.phoneNormalized,
+        collegeBranch: queued.collegeBranch,
+        college: parsed.college,
+        branch: parsed.branch,
+        year: parsed.year,
+        source: queued.source,
+        status: queued.status,
+        assignedToName: '—',
+        lastContact: 'Pending sync',
+        notes: queued.notes,
+        studentNotes: queued.studentNotes ?? '',
+        managerNotes: queued.managerNotes ?? '',
+      );
+      emit(
+        state.copyWith(
+          isSubmitting: false,
+          toastMessage:
+              'Lead saved offline — will sync automatically when online',
+          isToastError: false,
+        ),
+      );
+      return localRecord;
+    }
+
+    if (!OfflineQueueService.instance.isOnline) {
+      return saveOfflineAdminLead();
+    }
+
+    try {
+      final created = await _repository
+          .createLead(
+            name: name,
+            phone: phone,
+            collegeBranch: collegeBranch,
+            source: source,
+            status: status,
+            notes: notes,
+            studentNotes: studentNotes,
+            managerNotes: managerNotes,
+          )
+          .timeout(const Duration(seconds: 7));
       final nextSelected = Set<String>.from(state.selectedLeadIds);
       if (autoSelectNewLead) {
         nextSelected.add(created.id);
@@ -337,6 +387,10 @@ class AdminLeadsCubit extends Cubit<AdminLeadsState> {
       );
       rethrow;
     } catch (e) {
+      if (FirestoreConnectivityHelper.isConnectivityError(e)) {
+        FirestoreConnectivityHelper.reportIfConnectivityError(e);
+        return saveOfflineAdminLead();
+      }
       emit(
         state.copyWith(
           isSubmitting: false,

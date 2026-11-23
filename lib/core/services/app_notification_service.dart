@@ -1,6 +1,7 @@
 import 'package:hive/hive.dart';
 import '../../ui/auth/data/sources/auth_session_local_ds.dart';
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -266,6 +267,9 @@ class AppNotificationService {
 
       // 9. Start automated 9:00 AM daily morning notification
       scheduleDailyMorningBriefing();
+
+      // 10. Check any due repeating lead category reminders (6h Hot Lead / 12h Follow-up / 24h Reminder)
+      checkDueLeadReminders();
     } catch (e) {
       debugPrint('AppNotificationService init notice: $e');
     }
@@ -437,6 +441,207 @@ class AppNotificationService {
           'dateLabel': 'Today',
         }, SetOptions(merge: true));
       } catch (_) {}
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Repeating Lead Category Reminders:
+  // - Hot Lead: every 6 hours
+  // - Follow-up / Callback: every 12 hours
+  // - Reminder: every 24 hours
+  // ---------------------------------------------------------------------------
+  static const String _leadRemindersPrefKey = 'lead_category_reminders_v1';
+
+  /// Returns the repeating reminder interval for a lead category/status,
+  /// or `null` if the status should cancel any active reminder.
+  static Duration? reminderIntervalForCategory(String categoryOrStatus) {
+    final s = categoryOrStatus.trim().toLowerCase();
+    if (s == 'hot_lead' || s == 'hot lead' || s == 'hot') {
+      return const Duration(hours: 6);
+    }
+    if (s == 'follow_up' ||
+        s == 'follow-up' ||
+        s == 'follow up' ||
+        s == 'followup' ||
+        s == 'callback') {
+      return const Duration(hours: 12);
+    }
+    if (s == 'reminder' || s == 'reminders') {
+      return const Duration(hours: 24);
+    }
+    return null;
+  }
+
+  static int _requestCodeForLeadKey(String leadKey) {
+    // Deterministic positive ID in range 20000..999999 so it never collides with 1001/9001
+    return 20000 + (leadKey.hashCode.abs() % 900000);
+  }
+
+  Future<Map<String, dynamic>> _loadLeadReminderSchedules() async {
+    try {
+      if (!Hive.isBoxOpen(AuthSessionLocalDs.boxName)) {
+        await Hive.openBox<dynamic>(AuthSessionLocalDs.boxName);
+      }
+      final box = Hive.box<dynamic>(AuthSessionLocalDs.boxName);
+      final raw = box.get(_leadRemindersPrefKey)?.toString();
+      if (raw != null && raw.isNotEmpty) {
+        final decoded = jsonDecode(raw);
+        if (decoded is Map<String, dynamic>) {
+          return Map<String, dynamic>.from(decoded);
+        }
+      }
+    } catch (_) {}
+    return <String, dynamic>{};
+  }
+
+  Future<void> _saveLeadReminderSchedules(
+    Map<String, dynamic> schedules,
+  ) async {
+    try {
+      if (!Hive.isBoxOpen(AuthSessionLocalDs.boxName)) {
+        await Hive.openBox<dynamic>(AuthSessionLocalDs.boxName);
+      }
+      final box = Hive.box<dynamic>(AuthSessionLocalDs.boxName);
+      await box.put(_leadRemindersPrefKey, jsonEncode(schedules));
+    } catch (_) {}
+  }
+
+  /// Schedules a repeating notification for a lead based on its category/status:
+  /// - Hot Lead -> every 6 hours
+  /// - Follow-up / Callback -> every 12 hours
+  /// - Reminder -> every 24 hours
+  /// Cancels any existing repeating reminder if [categoryOrStatus] is terminal
+  /// (e.g. Converted, Not interested, Wrong number).
+  Future<void> scheduleLeadCategoryReminder({
+    required String leadKey,
+    required String leadName,
+    required String categoryOrStatus,
+  }) async {
+    final cleanKey = leadKey.trim();
+    if (cleanKey.isEmpty) return;
+
+    final interval = reminderIntervalForCategory(categoryOrStatus);
+    if (interval == null) {
+      await cancelLeadCategoryReminder(cleanKey);
+      return;
+    }
+
+    final displayLead = leadName.trim().isNotEmpty ? leadName.trim() : 'Lead';
+    final int hours = interval.inHours;
+    final String title;
+    final String body;
+    final String subText;
+
+    if (hours == 6) {
+      title = '🔥 Hot Lead Reminder';
+      body = '$displayLead is a Hot Lead — follow up now! (Repeats every 6h)';
+      subText = 'Hot Leads';
+    } else if (hours == 12) {
+      title = '📞 Follow-up Reminder';
+      body = 'Time to follow up with $displayLead. (Repeats every 12h)';
+      subText = 'Follow-ups';
+    } else {
+      title = '⏰ Lead Reminder';
+      body = 'Daily reminder to contact $displayLead. (Repeats every 24h)';
+      subText = 'Reminders';
+    }
+
+    final requestCode = _requestCodeForLeadKey(cleanKey);
+    final nextDueAt = DateTime.now().add(interval);
+
+    // 1. Persist schedule locally in Hive for resume/fallback checks
+    final schedules = await _loadLeadReminderSchedules();
+    schedules[cleanKey] = {
+      'leadKey': cleanKey,
+      'leadName': displayLead,
+      'category': categoryOrStatus,
+      'intervalHours': hours,
+      'requestCode': requestCode,
+      'title': title,
+      'body': body,
+      'subText': subText,
+      'nextDueIso': nextDueAt.toIso8601String(),
+    };
+    await _saveLeadReminderSchedules(schedules);
+
+    // 2. Schedule native Android repeating alarm (works even when app is closed)
+    if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
+      try {
+        const platformChannel = MethodChannel('com.acadeno.crm/notifications');
+        await platformChannel.invokeMethod('scheduleRepeatingLeadReminder', {
+          'requestCode': requestCode,
+          'intervalHours': hours,
+          'title': title,
+          'body': body,
+          'subText': subText,
+          'payload': 'lead:$cleanKey',
+        });
+      } catch (e) {
+        debugPrint('scheduleRepeatingLeadReminder notice: $e');
+      }
+    }
+  }
+
+  /// Cancels any active repeating reminder for [leadKey] (e.g. when Converted or removed).
+  Future<void> cancelLeadCategoryReminder(String leadKey) async {
+    final cleanKey = leadKey.trim();
+    if (cleanKey.isEmpty) return;
+
+    final requestCode = _requestCodeForLeadKey(cleanKey);
+    final schedules = await _loadLeadReminderSchedules();
+    if (schedules.remove(cleanKey) != null) {
+      await _saveLeadReminderSchedules(schedules);
+    }
+
+    if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
+      try {
+        const platformChannel = MethodChannel('com.acadeno.crm/notifications');
+        await platformChannel.invokeMethod('cancelLeadReminder', {
+          'requestCode': requestCode,
+        });
+      } catch (_) {}
+    }
+  }
+
+  /// Checks locally stored repeating reminders on app launch/resume and fires
+  /// any overdue reminder while advancing its next due timestamp.
+  Future<void> checkDueLeadReminders() async {
+    if (kIsWeb) return;
+    try {
+      final schedules = await _loadLeadReminderSchedules();
+      if (schedules.isEmpty) return;
+
+      final now = DateTime.now();
+      bool changed = false;
+
+      for (final entry in schedules.entries) {
+        final data = entry.value;
+        if (data is! Map) continue;
+        final nextDue = DateTime.tryParse(data['nextDueIso']?.toString() ?? '');
+        final intervalHours = (data['intervalHours'] as num?)?.toInt() ?? 12;
+        if (nextDue != null && !now.isBefore(nextDue)) {
+          await showNativeNotification(
+            title: data['title']?.toString() ?? 'Lead Reminder',
+            body: data['body']?.toString() ?? 'Follow up with your lead.',
+            tag: 'lead_reminder_${entry.key}',
+            payload: 'lead:${entry.key}',
+            id: (data['requestCode'] as num?)?.toInt() ??
+                _requestCodeForLeadKey(entry.key),
+          );
+          final updated = Map<String, dynamic>.from(data);
+          updated['nextDueIso'] = now
+              .add(Duration(hours: intervalHours))
+              .toIso8601String();
+          schedules[entry.key] = updated;
+          changed = true;
+        }
+      }
+
+      if (changed) {
+        await _saveLeadReminderSchedules(schedules);
+      }
+    } catch (e) {
+      debugPrint('checkDueLeadReminders notice: $e');
     }
   }
 

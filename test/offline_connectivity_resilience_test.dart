@@ -89,9 +89,15 @@ void main() {
   });
 
   group('OfflineQueueService connectivity resilience', () {
+    setUp(() {
+      OfflineQueueService.instance.suppressDebugLogs = true;
+    });
+
     tearDown(() {
       final svc = OfflineQueueService.instance;
+      svc.resetRecoveryStateForTest();
       svc.reachabilityProbeOverride = null;
+      svc.suppressDebugLogs = false;
       svc.isOnlineNotifier.value = true;
     });
 

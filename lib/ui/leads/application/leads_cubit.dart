@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
+import '../../../core/services/app_notification_service.dart';
 import '../../../core/services/firestore_connectivity_helper.dart';
 import '../../../core/services/offline_queue_service.dart';
 import '../data/model/lead_models.dart';
@@ -23,6 +24,29 @@ class LeadsCubit extends Cubit<LeadsState> {
     : _overrideDateKey = dateKey,
       super(const LeadsState(isLoading: true, leads: [], callRecords: [])) {
     _subscribe();
+  }
+
+  List<ExecutiveLeadItem> _mergeQueuedNewLeads(
+    List<ExecutiveLeadItem> remoteLeads,
+  ) {
+    final queued = OfflineQueueService.instance.getQueuedNewLeads();
+    if (queued.isEmpty) return remoteLeads;
+    final existingIds = remoteLeads.map((l) => l.id).toSet();
+    final existingPhones = remoteLeads
+        .map((l) => LeadPhoneValidator.normalize10Digits(l.fullPhone))
+        .where((p) => p.isNotEmpty)
+        .toSet();
+    final pendingItems = <ExecutiveLeadItem>[];
+    for (final q in queued) {
+      if (existingIds.contains(q.clientId)) continue;
+      if (q.phoneNormalized.isNotEmpty &&
+          existingPhones.contains(q.phoneNormalized)) {
+        continue;
+      }
+      pendingItems.add(q.toExecutiveLeadItem());
+    }
+    if (pendingItems.isEmpty) return remoteLeads;
+    return [...pendingItems, ...remoteLeads];
   }
 
   void _subscribe({bool isRefresh = false}) {
@@ -49,7 +73,7 @@ class LeadsCubit extends Cubit<LeadsState> {
                 isLoading: false,
                 clearError: true,
                 isPermissionDenied: false,
-                leads: assignedLeads,
+                leads: _mergeQueuedNewLeads(assignedLeads),
               ),
             );
           },
@@ -140,6 +164,15 @@ class LeadsCubit extends Cubit<LeadsState> {
       resolvedLeadId = lead.id;
       collegeInfo = lead.collegeInfo;
       campaign = lead.campaignTag;
+
+      // Schedule or cancel repeating reminder (Hot Lead 6h / Follow-up 12h / Reminder 24h)
+      unawaited(
+        AppNotificationService.instance.scheduleLeadCategoryReminder(
+          leadKey: resolvedLeadId.isNotEmpty ? resolvedLeadId : leadName,
+          leadName: leadName,
+          categoryOrStatus: outcome,
+        ),
+      );
 
       // Status rules: Converted is never overwritten; No answer never erases Interested
       if (lead.statusTag != 'Converted') {
@@ -387,21 +420,55 @@ class LeadsCubit extends Cubit<LeadsState> {
     }
   }
 
-  // Add a walk-in lead after backend duplicate check
+  // Add a walk-in lead after backend duplicate check (with seamless offline queue fallback)
   Future<bool> addWalkInLead({
     required String name,
     required String phone,
     required String collegeBranchYear,
     required String campaign,
   }) async {
-    try {
-      final created = await _repository.createLead(
+    final phoneErr = LeadPhoneValidator.validate(phone);
+    if (phoneErr != null) {
+      emit(state.copyWith(toastMessage: phoneErr, isToastError: true));
+      return false;
+    }
+
+    Future<bool> saveOfflineFallback() async {
+      final queued = await OfflineQueueService.instance.enqueueNewLead(
         name: name,
         phone: phone,
         collegeBranch: collegeBranchYear,
         source: campaign,
         assignToSelfAsWalkIn: true,
       );
+      final updatedLeads = _mergeQueuedNewLeads(state.leads);
+      final display = queued.name.isNotEmpty ? queued.name : 'Walk-in lead';
+      emit(
+        state.copyWith(
+          leads: updatedLeads,
+          showingPendingCalls: true,
+          toastMessage:
+              '$display saved offline — will sync automatically when online',
+          isToastError: false,
+        ),
+      );
+      return true;
+    }
+
+    if (!OfflineQueueService.instance.isOnline) {
+      return saveOfflineFallback();
+    }
+
+    try {
+      final created = await _repository
+          .createLead(
+            name: name,
+            phone: phone,
+            collegeBranch: collegeBranchYear,
+            source: campaign,
+            assignToSelfAsWalkIn: true,
+          )
+          .timeout(const Duration(seconds: 7));
       final display = created.name.isNotEmpty ? created.name : name.trim();
       emit(
         state.copyWith(
@@ -415,7 +482,10 @@ class LeadsCubit extends Cubit<LeadsState> {
       emit(state.copyWith(toastMessage: e.toString(), isToastError: true));
       return false;
     } catch (e) {
-      FirestoreConnectivityHelper.reportIfConnectivityError(e);
+      if (FirestoreConnectivityHelper.isConnectivityError(e)) {
+        FirestoreConnectivityHelper.reportIfConnectivityError(e);
+        return saveOfflineFallback();
+      }
       emit(
         state.copyWith(toastMessage: _cleanErrorMessage(e), isToastError: true),
       );

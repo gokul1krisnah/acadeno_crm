@@ -1,6 +1,8 @@
 package com.example.acadeno_crm
 
 import android.Manifest
+import android.app.AlarmManager
+import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -219,6 +221,63 @@ class MainActivity : FlutterActivity() {
                         result.success(true)
                     } catch (e: Exception) {
                         result.error("NOTIFICATION_ERROR", e.localizedMessage, null)
+                    }
+                }
+                "scheduleRepeatingLeadReminder" -> {
+                    val requestCode = (call.argument<Number>("requestCode"))?.toInt() ?: 3001
+                    val intervalHours = (call.argument<Number>("intervalHours"))?.toLong() ?: 12L
+                    val title = call.argument<String>("title") ?: "Lead Reminder"
+                    val body = call.argument<String>("body") ?: ""
+                    val subText = call.argument<String>("subText") ?: "Leads"
+                    val payload = call.argument<String>("payload") ?: ""
+                    try {
+                        val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+                        val intent = Intent(applicationContext, LeadReminderReceiver::class.java).apply {
+                            putExtra("title", title)
+                            putExtra("body", body)
+                            putExtra("subText", subText)
+                            putExtra("payload", payload)
+                            putExtra("id", requestCode)
+                        }
+                        val flags = PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                        val pendingIntent = PendingIntent.getBroadcast(
+                            applicationContext,
+                            requestCode,
+                            intent,
+                            flags
+                        )
+                        val intervalMillis = intervalHours * 60L * 60L * 1000L
+                        val firstTriggerAt = System.currentTimeMillis() + intervalMillis
+                        alarmManager.setInexactRepeating(
+                            AlarmManager.RTC_WAKEUP,
+                            firstTriggerAt,
+                            intervalMillis,
+                            pendingIntent
+                        )
+                        result.success(true)
+                    } catch (e: Exception) {
+                        result.error("SCHEDULE_ERROR", e.localizedMessage, null)
+                    }
+                }
+                "cancelLeadReminder" -> {
+                    val requestCode = (call.argument<Number>("requestCode"))?.toInt() ?: 3001
+                    try {
+                        val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+                        val intent = Intent(applicationContext, LeadReminderReceiver::class.java)
+                        val flags = PendingIntent.FLAG_NO_CREATE or PendingIntent.FLAG_IMMUTABLE
+                        val pendingIntent = PendingIntent.getBroadcast(
+                            applicationContext,
+                            requestCode,
+                            intent,
+                            flags
+                        )
+                        if (pendingIntent != null) {
+                            alarmManager.cancel(pendingIntent)
+                            pendingIntent.cancel()
+                        }
+                        result.success(true)
+                    } catch (e: Exception) {
+                        result.error("CANCEL_ERROR", e.localizedMessage, null)
                     }
                 }
                 else -> result.notImplemented()

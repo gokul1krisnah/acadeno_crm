@@ -128,6 +128,98 @@ class QueuedVisitOutcome {
       );
 }
 
+/// Representation of a new lead (walk-in or admin) queued locally while offline.
+class QueuedNewLead {
+  final String clientId;
+  final String name;
+  final String phone;
+  final String phoneNormalized;
+  final String collegeBranch;
+  final String source;
+  final String status;
+  final String notes;
+  final String? studentNotes;
+  final String? managerNotes;
+  final bool assignToSelfAsWalkIn;
+  final DateTime recordedAt;
+  final int retryCount;
+  final String? executiveUid;
+  final String? executiveName;
+
+  const QueuedNewLead({
+    required this.clientId,
+    required this.name,
+    required this.phone,
+    required this.phoneNormalized,
+    required this.collegeBranch,
+    required this.source,
+    this.status = 'Assigned',
+    this.notes = '',
+    this.studentNotes,
+    this.managerNotes,
+    this.assignToSelfAsWalkIn = true,
+    required this.recordedAt,
+    this.retryCount = 0,
+    this.executiveUid,
+    this.executiveName,
+  });
+
+  Map<String, dynamic> toMap() => {
+    'type': 'new_lead',
+    'clientId': clientId,
+    'name': name,
+    'phone': phone,
+    'phoneNormalized': phoneNormalized,
+    'collegeBranch': collegeBranch,
+    'source': source,
+    'status': status,
+    'notes': notes,
+    'studentNotes': studentNotes,
+    'managerNotes': managerNotes,
+    'assignToSelfAsWalkIn': assignToSelfAsWalkIn,
+    'recordedAt': recordedAt.toIso8601String(),
+    'retryCount': retryCount,
+    'executiveUid': executiveUid,
+    'executiveName': executiveName,
+  };
+
+  factory QueuedNewLead.fromMap(Map<String, dynamic> map) => QueuedNewLead(
+    clientId: map['clientId'] as String,
+    name: map['name'] as String? ?? '',
+    phone: map['phone'] as String? ?? '',
+    phoneNormalized: map['phoneNormalized'] as String? ?? '',
+    collegeBranch: map['collegeBranch'] as String? ?? '—',
+    source: map['source'] as String? ?? 'Social Media',
+    status: map['status'] as String? ?? 'Assigned',
+    notes: map['notes'] as String? ?? '',
+    studentNotes: map['studentNotes'] as String?,
+    managerNotes: map['managerNotes'] as String?,
+    assignToSelfAsWalkIn: map['assignToSelfAsWalkIn'] as bool? ?? true,
+    recordedAt:
+        DateTime.tryParse(map['recordedAt'] as String? ?? '') ?? DateTime.now(),
+    retryCount: (map['retryCount'] as num?)?.toInt() ?? 0,
+    executiveUid: map['executiveUid'] as String?,
+    executiveName: map['executiveName'] as String?,
+  );
+
+  ExecutiveLeadItem toExecutiveLeadItem() {
+    final displayName = name.trim().isNotEmpty ? name.trim() : 'New Lead (Pending Sync)';
+    final colors = ExecutiveLeadItem.statusColorsFor(status);
+    return ExecutiveLeadItem(
+      id: clientId,
+      name: displayName,
+      initials: LeadPhoneValidator.initialsFromName(displayName),
+      maskedPhone: LeadPhoneValidator.maskPhone(phone),
+      fullPhone: LeadPhoneValidator.formatDialablePhone(phone),
+      collegeInfo: collegeBranch.trim().isEmpty ? '—' : collegeBranch.trim(),
+      statusTag: 'Pending Sync',
+      statusColor: colors.$1,
+      statusBg: colors.$2,
+      campaignTag: source,
+    );
+  }
+}
+
 /// Enterprise-grade Offline Queue and Network Synchronization Manager.
 ///
 /// Features:
@@ -181,9 +273,37 @@ class OfflineQueueService {
   @visibleForTesting
   Future<bool> Function()? reachabilityProbeOverride;
 
+  /// Allows tests to suppress expected offline-mode console logs.
+  @visibleForTesting
+  bool suppressDebugLogs = false;
+
   /// Exposes the current automatic recovery attempt count for diagnostics/tests.
   @visibleForTesting
   int get recoveryAttemptCount => _recoveryAttempt;
+
+  /// Cancels any active recovery probe timer (used in tests and cleanup).
+  @visibleForTesting
+  void resetRecoveryStateForTest() {
+    _recoveryProbeTimer?.cancel();
+    _offlineDebounceTimer?.cancel();
+    _reconnectBannerTimer?.cancel();
+    _justSyncedTimer?.cancel();
+    _recoveryAttempt = 0;
+  }
+
+  Future<Box<String>?> _ensureBox() async {
+    if (_box != null && _box!.isOpen) return _box;
+    if (Hive.isBoxOpen(boxName)) {
+      _box = Hive.box<String>(boxName);
+      return _box;
+    }
+    try {
+      _box = await Hive.openBox<String>(boxName);
+      return _box;
+    } catch (_) {
+      return null;
+    }
+  }
 
   /// Verifies actual DNS resolution for `firestore.googleapis.com` on mobile/desktop.
   /// Returns `false` when DNS fails (`UnknownHostException`) even if the OS
@@ -216,9 +336,11 @@ class OfflineQueueService {
     _offlineDebounceTimer?.cancel();
     if (isOnlineNotifier.value) {
       isOnlineNotifier.value = false;
-      debugPrint(
-        '📴 Firestore unreachable (DNS/network failure). Entering offline mode.',
-      );
+      if (!suppressDebugLogs) {
+        debugPrint(
+          '📴 Firestore unreachable (DNS/network failure). Entering offline mode.',
+        );
+      }
     }
     _scheduleBoundedRecoveryProbe();
   }
@@ -402,8 +524,8 @@ class OfflineQueueService {
       } catch (_) {}
 
       if (pendingCountNotifier.value > 0) {
-        // Drain queued items
-        syncPendingQueue();
+        // Drain queued items and wait for completion so callers like syncNow() observe final state
+        await syncPendingQueue();
       } else {
         // Show brief "Back online" reassurance banner for 2 seconds then auto-dismiss
         justReconnectedNotifier.value = true;
@@ -485,7 +607,8 @@ class OfflineQueueService {
       executiveName: name,
     );
 
-    await _box?.put(resolvedClientId, jsonEncode(queued.toMap()));
+    final box = await _ensureBox();
+    await box?.put(resolvedClientId, jsonEncode(queued.toMap()));
     _updateCounts();
     debugPrint(
       '💾 Queued call outcome locally (client_id: $resolvedClientId). Queue count: ${pendingCountNotifier.value}',
@@ -521,7 +644,8 @@ class OfflineQueueService {
       executiveUid: uid,
     );
 
-    await _box?.put(clientId, jsonEncode(queued.toMap()));
+    final box = await _ensureBox();
+    await box?.put(clientId, jsonEncode(queued.toMap()));
     _updateCounts();
     debugPrint(
       '💾 Queued visit outcome locally (client_id: $clientId). Queue count: ${pendingCountNotifier.value}',
@@ -530,6 +654,84 @@ class OfflineQueueService {
     if (isOnlineNotifier.value) {
       syncPendingQueue();
     }
+  }
+
+  /// Returns locally queued new leads so the UI can display them immediately while offline.
+  List<QueuedNewLead> getQueuedNewLeads() {
+    final box = _box ?? (Hive.isBoxOpen(boxName) ? Hive.box<String>(boxName) : null);
+    if (box == null) return const [];
+    final list = <QueuedNewLead>[];
+    for (final key in box.keys) {
+      if (_isInternalMetadataKey(key)) continue;
+      final raw = box.get(key);
+      if (raw == null) continue;
+      try {
+        final decoded = jsonDecode(raw);
+        if (decoded is Map<String, dynamic> && decoded['type'] == 'new_lead') {
+          list.add(QueuedNewLead.fromMap(decoded));
+        }
+      } catch (_) {}
+    }
+    list.sort((a, b) => b.recordedAt.compareTo(a.recordedAt));
+    return list;
+  }
+
+  /// Queues a new walk-in or admin lead locally in Hive so leads can be saved
+  /// seamlessly offline and automatically pushed to Firestore once back online.
+  Future<QueuedNewLead> enqueueNewLead({
+    required String name,
+    required String phone,
+    required String collegeBranch,
+    required String source,
+    String status = 'New',
+    String notes = '',
+    String? studentNotes,
+    String? managerNotes,
+    bool assignToSelfAsWalkIn = true,
+    String? executiveUid,
+    String? executiveName,
+  }) async {
+    final uid = executiveUid ?? FirebaseAuth.instance.currentUser?.uid;
+    final execName =
+        executiveName ??
+        FirebaseAuth.instance.currentUser?.displayName ??
+        FirebaseAuth.instance.currentUser?.email?.split('@').first ??
+        'Sales Executive';
+    final phoneNorm = LeadPhoneValidator.normalize10Digits(phone);
+    final formattedPhone = LeadPhoneValidator.formatDisplayPhone(phone);
+    final clientId =
+        'offline_lead_${phoneNorm.isNotEmpty ? phoneNorm : DateTime.now().millisecondsSinceEpoch}_${DateTime.now().millisecondsSinceEpoch}';
+
+    final queued = QueuedNewLead(
+      clientId: clientId,
+      name: name.trim(),
+      phone: formattedPhone,
+      phoneNormalized: phoneNorm,
+      collegeBranch: collegeBranch.trim().isEmpty ? '—' : collegeBranch.trim(),
+      source: source.trim().isEmpty ? 'Social Media' : source.trim(),
+      status: assignToSelfAsWalkIn ? 'Assigned' : status,
+      notes: notes.trim(),
+      studentNotes: studentNotes?.trim(),
+      managerNotes: managerNotes?.trim(),
+      assignToSelfAsWalkIn: assignToSelfAsWalkIn,
+      recordedAt: DateTime.now(),
+      executiveUid: uid,
+      executiveName: execName,
+    );
+
+    final box = await _ensureBox();
+    await box?.put(clientId, jsonEncode(queued.toMap()));
+    _updateCounts();
+    if (!suppressDebugLogs) {
+      debugPrint(
+        '💾 Queued new lead locally (client_id: $clientId). Queue count: ${pendingCountNotifier.value}',
+      );
+    }
+
+    if (isOnlineNotifier.value) {
+      syncPendingQueue();
+    }
+    return queued;
   }
 
   /// Public trigger to manually force a connectivity check & sync.
@@ -541,8 +743,9 @@ class OfflineQueueService {
   /// Uses idempotent document `.set(..., SetOptions(merge: true))` to ensure
   /// ZERO duplicate writes even under repetitive network reconnects.
   Future<void> syncPendingQueue() async {
+    final box = await _ensureBox();
     if (isSyncingNotifier.value ||
-        _box == null ||
+        box == null ||
         pendingCountNotifier.value == 0) {
       return;
     }
@@ -590,6 +793,9 @@ class OfflineQueueService {
           } else if (type == 'visit_outcome') {
             final item = QueuedVisitOutcome.fromMap(data);
             success = await _syncVisitOutcome(firestore, item);
+          } else if (type == 'new_lead') {
+            final item = QueuedNewLead.fromMap(data);
+            success = await _syncNewLead(firestore, item);
           }
 
           if (success) {
@@ -646,9 +852,9 @@ class OfflineQueueService {
     QueuedCallOutcome item,
   ) async {
     try {
-      final todayKey = LeadDateHelper.todayDateKey();
+      final recordedDateKey = LeadDateHelper.dateKey(item.recordedAt);
       final leadRef = firestore.collection('leads').doc(item.leadId);
-      final assignId = '${item.leadId}_$todayKey';
+      final assignId = '${item.leadId}_$recordedDateKey';
       final assignRef1 = firestore.collection('assignments').doc(assignId);
       final assignRef2 = firestore.collection('lead_assignments').doc(assignId);
 
@@ -683,6 +889,9 @@ class OfflineQueueService {
             'lockedByUid': null,
             'lockedMessage': null,
             'followUpTime': ?resolvedFollowUp,
+            if (item.courseEnrolled != null &&
+                item.courseEnrolled!.trim().isNotEmpty)
+              'course': item.courseEnrolled!.trim(),
             if (item.notes.trim().isNotEmpty) 'notes': item.notes.trim(),
             'timeline': FieldValue.arrayUnion([
               '${LeadDateHelper.timelineStamp(item.recordedAt)} · ${item.outcome} logged by ${item.executiveName ?? "executive"}${item.notes.trim().isNotEmpty ? " (${item.notes.trim()})" : ""}',
@@ -763,6 +972,160 @@ class OfflineQueueService {
         rethrow;
       }
       debugPrint('Sync visit outcome failed for ${item.visitId}: $e');
+      return false;
+    }
+  }
+
+  /// Idempotent Firestore sync for a locally queued new lead (walk-in or admin).
+  Future<bool> _syncNewLead(
+    FirebaseFirestore firestore,
+    QueuedNewLead item,
+  ) async {
+    try {
+      final phoneNorm = item.phoneNormalized.isNotEmpty
+          ? item.phoneNormalized
+          : LeadPhoneValidator.normalize10Digits(item.phone);
+      final formattedPhone = LeadPhoneValidator.formatDisplayPhone(item.phone);
+      final dateKey = LeadDateHelper.dateKey(item.recordedAt);
+      final dateLabel = LeadDateHelper.dateLabel(
+        item.recordedAt,
+        now: item.recordedAt,
+      );
+
+      // Avoid creating duplicates if this phone already exists in Firestore
+      if (phoneNorm.isNotEmpty) {
+        final phoneIdxSnap = await firestore
+            .collection('lead_phones')
+            .doc(phoneNorm)
+            .get()
+            .timeout(const Duration(seconds: 8));
+        if (phoneIdxSnap.exists) {
+          final existingLeadId = (phoneIdxSnap.data()?['leadId'] ?? '').toString();
+          if (existingLeadId.isNotEmpty && existingLeadId != item.clientId) {
+            debugPrint(
+              'ℹ️ Offline lead $phoneNorm already exists in Firestore ($existingLeadId); skipping duplicate.',
+            );
+            return true;
+          }
+        }
+      }
+
+      // Resolve auto-sequential name L01/L02/... if user left name blank
+      String resolvedName = item.name.trim();
+      if (resolvedName.isEmpty) {
+        try {
+          final counterRef = firestore.collection('counters').doc('lead_sequence');
+          final nextNum = await firestore.runTransaction<int>((tx) async {
+            final snap = await tx.get(counterRef);
+            final current = (snap.data()?['lastNumber'] as num?)?.toInt() ?? 0;
+            final next = current + 1;
+            tx.set(counterRef, {
+              'lastNumber': next,
+              'updatedAt': FieldValue.serverTimestamp(),
+            }, SetOptions(merge: true));
+            return next;
+          }).timeout(const Duration(seconds: 8));
+          resolvedName = 'L${nextNum.toString().padLeft(2, '0')}';
+        } catch (_) {
+          resolvedName = 'L${item.recordedAt.millisecondsSinceEpoch % 1000}';
+        }
+      }
+
+      final parsed = LeadRecord.parseCollegeBranch(item.collegeBranch);
+      final effectiveStatus = item.assignToSelfAsWalkIn ? 'Assigned' : item.status;
+      final assignedUid = item.assignToSelfAsWalkIn
+          ? (item.executiveUid ?? FirebaseAuth.instance.currentUser?.uid)
+          : null;
+      final assignedName = item.assignToSelfAsWalkIn
+          ? (item.executiveName ?? 'Sales Executive')
+          : '—';
+      final ts = Timestamp.fromDate(item.recordedAt);
+
+      final leadRef = firestore.collection('leads').doc(item.clientId);
+      await leadRef
+          .set({
+            'id': item.clientId,
+            'name': resolvedName,
+            'phone': formattedPhone,
+            'phoneNormalized': phoneNorm,
+            'collegeBranch': item.collegeBranch,
+            'college': parsed.college,
+            'branch': parsed.branch,
+            'year': parsed.year,
+            'source': item.source,
+            'status': effectiveStatus,
+            'assignedToUid': assignedUid,
+            'assignedToName': assignedName,
+            'assignedTo': assignedName,
+            if (item.assignToSelfAsWalkIn) 'assignedDateKey': dateKey,
+            if (item.assignToSelfAsWalkIn) 'assignedDateLabel': dateLabel,
+            if (item.assignToSelfAsWalkIn) 'assignedAt': ts,
+            'lastContact': 'Just now',
+            'notes': item.notes,
+            if (item.studentNotes != null && item.studentNotes!.isNotEmpty)
+              'studentNotes': item.studentNotes,
+            if (item.managerNotes != null && item.managerNotes!.isNotEmpty)
+              'managerNotes': item.managerNotes,
+            'isDone': false,
+            'followUpDone': false,
+            'optedOut': false,
+            'isOfflineSynced': true,
+            'timeline': FieldValue.arrayUnion([
+              '${LeadDateHelper.timelineStamp(item.recordedAt)} · ${item.assignToSelfAsWalkIn ? 'Walk-in claimed by $assignedName' : 'Lead added'} (Offline synced)',
+            ]),
+            'createdAt': ts,
+            'updatedAt': FieldValue.serverTimestamp(),
+          }, SetOptions(merge: true))
+          .timeout(const Duration(seconds: 8));
+
+      if (phoneNorm.isNotEmpty) {
+        await firestore
+            .collection('lead_phones')
+            .doc(phoneNorm)
+            .set({
+              'leadId': item.clientId,
+              'leadName': resolvedName,
+              'phone': formattedPhone,
+              'phoneNormalized': phoneNorm,
+              'assignedToName': assignedName,
+              'updatedAt': FieldValue.serverTimestamp(),
+            }, SetOptions(merge: true))
+            .timeout(const Duration(seconds: 8));
+      }
+
+      if (item.assignToSelfAsWalkIn && assignedUid != null && assignedUid.isNotEmpty) {
+        final assignDocId = '${item.clientId}_$dateKey';
+        final assignPayload = {
+          'leadId': item.clientId,
+          'leadName': resolvedName,
+          'leadPhone': formattedPhone,
+          'leadStatus': effectiveStatus,
+          'executiveUid': assignedUid,
+          'executiveName': assignedName,
+          'dateKey': dateKey,
+          'dateLabel': dateLabel,
+          'isDone': false,
+          'assignedAt': ts,
+          'updatedAt': FieldValue.serverTimestamp(),
+        };
+        await firestore
+            .collection('assignments')
+            .doc(assignDocId)
+            .set(assignPayload, SetOptions(merge: true))
+            .timeout(const Duration(seconds: 8));
+        await firestore
+            .collection('lead_assignments')
+            .doc(assignDocId)
+            .set(assignPayload, SetOptions(merge: true))
+            .timeout(const Duration(seconds: 8));
+      }
+
+      return true;
+    } catch (e) {
+      if (FirestoreConnectivityHelper.isConnectivityError(e)) {
+        rethrow;
+      }
+      debugPrint('Sync new lead failed for ${item.clientId}: $e');
       return false;
     }
   }

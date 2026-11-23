@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'dart:io' show Platform;
+import 'package:acadeno_crm/core/services/app_notification_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
@@ -222,6 +224,18 @@ class CallLogsRds {
         followUpTime: defaultFollowUpSlot,
       ),
     ]);
+
+    // Schedule repeating category reminder: Hot Lead (6h), Follow-up (12h), Reminder (24h)
+    final reminderLeadName = item.hasContactName
+        ? item.contactName
+        : item.formattedNumber;
+    unawaited(
+      AppNotificationService.instance.scheduleLeadCategoryReminder(
+        leadKey: baseKey,
+        leadName: reminderLeadName,
+        categoryOrStatus: category.dbValue,
+      ),
+    );
   }
 
   /// Saves a detailed outcome from the "Other" popup to `call_categorizations`,
@@ -331,6 +345,18 @@ class CallLogsRds {
     } catch (e) {
       debugPrint('CallLogsRds.saveOtherOutcome call_logs append notice: $e');
     }
+
+    // Update or cancel repeating reminder based on the chosen "Other" outcome
+    final otherLeadName = item.hasContactName
+        ? item.contactName
+        : item.formattedNumber;
+    unawaited(
+      AppNotificationService.instance.scheduleLeadCategoryReminder(
+        leadKey: baseKey,
+        leadName: otherLeadName,
+        categoryOrStatus: trimmedOutcome,
+      ),
+    );
   }
 
   /// Finds, claims, or creates a `leads` document assigned to [uid] for [item]
