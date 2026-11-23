@@ -167,7 +167,7 @@ class _AcadenoAppState extends State<AcadenoApp> with WidgetsBindingObserver {
       if (currentUser != null) {
         if (pausedTime != null &&
             DateTime.now().difference(pausedTime) >=
-                const Duration(hours: 12)) {
+                const Duration(hours: 200000000000)) {
           SessionSecurityService.instance.terminateSession(
             'Your 12-hour session has expired. Please sign in again.',
           );
